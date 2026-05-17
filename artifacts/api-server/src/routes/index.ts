@@ -23,6 +23,7 @@ import supportTicketsRouter from "./supportTickets";
 import stcpayRouter from "./stcpay";
 import propertiesRouter from "./properties";
 import emailRouter from "./email";
+import billingPlansRouter from "./billingPlans";
 
 const router: IRouter = Router();
 
@@ -50,5 +51,6 @@ router.use(supportTicketsRouter);
 router.use(stcpayRouter);
 router.use(propertiesRouter);
 router.use(emailRouter);
+router.use(billingPlansRouter);
 
 export default router;

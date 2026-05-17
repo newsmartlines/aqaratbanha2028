@@ -409,4 +409,61 @@ router.post("/auth/change-password", async (req: Request, res) => {
   }
 });
 
+// ── Google OAuth ──────────────────────────────────────────────────────────────
+
+router.post("/auth/google", async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) return res.status(400).json({ success: false, error: "credential required" });
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) return res.status(503).json({ success: false, error: "Google Sign-In not configured" });
+  try {
+    const { OAuth2Client } = await import("google-auth-library");
+    const client = new OAuth2Client(clientId);
+    const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId });
+    const payload = ticket.getPayload();
+    if (!payload?.email) return res.status(400).json({ success: false, error: "Invalid Google credential" });
+    const { email, name, picture, sub: googleId } = payload;
+    let [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    if (!user) {
+      const [newUser] = await db.insert(usersTable).values({
+        name: name ?? email.split("@")[0],
+        email,
+        passwordHash: crypto.randomBytes(32).toString("hex"),
+        role: "user",
+        avatar: picture ?? null,
+        googleId,
+        authProvider: "google",
+      } as any).returning();
+      user = newUser;
+      db.insert(notificationsTable).values({
+        userId: null as any,
+        type: "info",
+        title: `تسجيل جديد عبر جوجل: ${name ?? email}`,
+        message: `حساب جوجل — ${new Date().toLocaleString("ar-SA")}`,
+        link: "/admin/users",
+      }).catch(() => {});
+    } else if (!(user as any).googleId) {
+      await db.update(usersTable).set({
+        googleId, authProvider: "google",
+        avatar: user.avatar ?? (picture ?? null),
+      } as any).where(eq(usersTable.id, user.id));
+    }
+    if (user.status === "suspended") return res.status(403).json({ success: false, error: "الحساب موقوف" });
+    const providerId = user.role === "provider" ? await getProviderId(user.id) : undefined;
+    const token = await createSession(user.id, user.role, providerId);
+    setSessionCookie(res, token);
+    const { permissions, staffRole, isSuperAdmin } = await getEffectivePermissions(user.id);
+    res.json({
+      success: true,
+      data: {
+        id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar,
+        regionId: user.regionId, cityId: user.cityId, providerId, staffRole, permissions, isSuperAdmin,
+      },
+    });
+  } catch (err: any) {
+    console.error("[Google Auth]", err.message);
+    res.status(400).json({ success: false, error: "فشل التحقق من حساب جوجل" });
+  }
+});
+
 export default router;

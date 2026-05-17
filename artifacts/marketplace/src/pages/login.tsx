@@ -9,6 +9,7 @@ import {
   Eye, EyeOff, User, Briefcase, CheckCircle2,
   Loader2, ArrowRight, Mail, KeyRound, ShieldCheck, Building2,
 } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { api, type Region } from "@/lib/api";
@@ -107,6 +108,22 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
   const returnTo = typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("returnTo")
     : null;
+
+  const handleGoogleLogin = async (credential: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.fetchJson<any>("/auth/google", { method: "POST", body: JSON.stringify({ credential }) });
+      setUser(result);
+      toast({ title: "تم تسجيل الدخول بجوجل بنجاح!" });
+      const dest = safeReturnTo(returnTo, result.role) ?? getRedirectPath(result.role);
+      setLocation(dest);
+    } catch (err: any) {
+      setError(err?.message ?? "فشل تسجيل الدخول بجوجل");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

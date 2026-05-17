@@ -1,0 +1,186 @@
+اعمل نظام جديد داخل لوحة الأدمن باسم Message & Email Templates Manager أو إدارة الرسائل والقوالب، وأضف صفحة مستقلة داخل الـ Admin Navbar.
+
+المطلوب يكون نظام احترافي جدًا يسمح للأدمن بالتحكم الكامل في كل النصوص والرسائل والإيميلات التي يتم إرسالها من الموقع، بدون الحاجة لتعديل الكود.
+
+النظام لازم يكون شبيه بأنظمة:
+
+Stripe Notifications
+Notion Email Templates
+Clerk Auth Templates
+Firebase Email Templates
+Shopify Notifications
+الهدف من النظام
+
+أي رسالة تظهر للمستخدم أو تُرسل له عبر:
+
+Email
+Notification
+WhatsApp
+SMS
+In-App Toast
+Alerts
+
+تكون قابلة للتعديل بالكامل من لوحة التحكم.
+
+المطلوب الأساسي
+صفحة Templates Dashboard
+
+اعمل Dashboard حديث يحتوي على:
+
+Categories:
+Authentication Messages
+Property Messages
+Admin Notifications
+Email Templates
+WhatsApp Templates
+SMS Templates
+System Alerts
+Subscription Messages
+Payment Messages
+SEO Notifications
+أمثلة الرسائل التي يجب التحكم بها
+Authentication
+تم إرسال رسالة تفعيل إلى بريدك الإلكتروني.
+شكراً لتسجيلك في عقارات بنها.
+تم تغيير كلمة المرور بنجاح.
+رمز التحقق غير صحيح.
+انتهت صلاحية الجلسة.
+تم تسجيل الدخول بنجاح.
+Property System
+تم إضافة العقار بنجاح.
+إعلانك الآن قيد المراجعة.
+تم قبول العقار.
+تم رفض العقار.
+لديك رسالة جديدة بخصوص عقارك.
+تم انتهاء اشتراك الإعلان.
+Subscription & Payments
+تم تفعيل الباقة.
+فشل الدفع.
+تم إصدار الفاتورة.
+انتهى اشتراكك.
+Contact & Leads
+تم إرسال رسالتك بنجاح.
+لديك عميل جديد مهتم بالعقار.
+تم استلام طلب المعاينة.
+نظام Templates احترافي
+داخل كل Template:
+
+اعمل:
+
+Template Name
+Category
+Subject
+Message Body
+Rich Text Editor
+HTML Editor
+Live Preview
+Mobile Preview
+Dark Mode Preview
+Variables System
+
+يدعم متغيرات ديناميكية مثل:
+
+{{user_name}}
+{{property_title}}
+{{property_price}}
+{{agent_name}}
+{{verification_link}}
+{{reset_link}}
+{{city}}
+{{phone}}
+{{email}}
+
+ويتم استبدالها تلقائيًا وقت الإرسال.
+
+Email Template Builder
+
+اعمل Drag & Drop Email Builder عالمي جدًا:
+
+يدعم:
+
+Header
+Logo
+Hero Section
+Buttons
+Property Cards
+CTA Sections
+Footer
+Social Icons
+Templates جاهزة احترافية
+
+اعمل مجموعة Templates جاهزة Premium مثل:
+
+Welcome Email
+
+تصميم فاخر يحتوي على:
+
+Logo
+رسالة ترحيب
+زر تفعيل الحساب
+معلومات الموقع
+Footer احترافي
+Property Approved Email
+صورة العقار
+عنوان العقار
+حالة القبول
+زر مشاهدة العقار
+Reset Password
+Security Notice
+Reset Button
+Expiry Time
+Subscription Activated
+تفاصيل الباقة
+تاريخ الانتهاء
+المميزات
+AI Template Assistant
+
+اعمل AI ذكي يساعد الأدمن:
+
+يولد نصوص احترافية.
+يحسن الرسائل.
+يولد Subject جذاب.
+يحسن معدل فتح الإيميلات.
+يولد CTA احترافي.
+يقترح تصميمات.
+التحكم الكامل
+
+الأدمن يقدر:
+
+تعديل أي رسالة.
+تعطيل أي رسالة.
+تغيير اللغة.
+إنشاء Templates جديدة.
+Duplicate Template.
+Restore Default.
+Export / Import Templates.
+Multi Language Support
+عربي / إنجليزي.
+RTL / LTR تلقائي.
+ترجمة منفصلة لكل رسالة.
+Notification Channels
+
+كل Template يمكن تحديد:
+
+Email
+SMS
+WhatsApp
+Push Notification
+In-App Notification
+التصميم المطلوب
+تصميم حديث جدًا مثل:
+Notion
+Resend
+Stripe
+Linear
+Minimal + Elegant.
+Dark / Light Mode.
+Glassmorphism خفيف.
+Responsive كامل.
+Animations ناعمة.
+مهم جدًا
+لا تفسد أي تصميم موجود.
+اجعل النظام Modular وقابل للتوسع.
+أضف صفحة Templates Manager داخل Navbar الأدمن.
+استخدم أفضل UX/UI ممكن.
+اجعل النظام يشعر المستخدم أنه SaaS عالمي احترافي.
+اجعل تعديل الرسائل يتم Live بدون الحاجة لإعادة تشغيل الموقع.

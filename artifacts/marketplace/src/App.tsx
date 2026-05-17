@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -55,6 +56,7 @@ import AdminProperties from "@/pages/admin/properties";
 import AdminWatermark from "@/pages/admin/watermark";
 import AdminSeo from "@/pages/admin/seo";
 import AdminEmailTemplates from "@/pages/admin/email-templates";
+import AdminPlansCommissions from "@/pages/admin/plans-commissions";
 import PropertyDetail from "@/pages/property-detail";
 import PropertiesPage from "@/pages/properties";
 import CategoriesPage from "@/pages/categories";
@@ -308,6 +310,9 @@ function Router() {
       <Route path="/admin/email-templates">
         {() => <AdminProtectedRoute component={AdminEmailTemplates} />}
       </Route>
+      <Route path="/admin/plans-commissions">
+        {() => <AdminProtectedRoute component={AdminPlansCommissions} />}
+      </Route>
 
       <Route component={NotFound} />
     </Switch>
@@ -339,20 +344,22 @@ function FaviconUpdater() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <FaviconUpdater />
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Router />
-            </WouterRouter>
-            <Toaster />
-            <HotToaster position="top-center" />
-          </TooltipProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ""}>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <FaviconUpdater />
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <Router />
+              </WouterRouter>
+              <Toaster />
+              <HotToaster position="top-center" />
+            </TooltipProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   );
 }
 

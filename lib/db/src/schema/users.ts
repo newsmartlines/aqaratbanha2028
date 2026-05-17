@@ -14,6 +14,8 @@ export const usersTable = pgTable("users", {
   /** FK enforced in DB migration; kept as int here to avoid schema circular imports */
   regionId: integer("region_id"),
   cityId: integer("city_id"),
+  googleId: text("google_id").unique(),
+  authProvider: text("auth_provider").default("email"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

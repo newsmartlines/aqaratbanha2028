@@ -25,3 +25,4 @@ export * from "./sessions";
 export * from "./resetTokens";
 export * from "./properties";
 export * from "./emailTemplates";
+export * from "./billingPlans";
