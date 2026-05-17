@@ -1,0 +1,119 @@
+import { Router } from "express";
+import { db } from "@workspace/db";
+import { categoriesTable, subcategoriesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+
+const router = Router();
+
+router.get("/categories", async (_req, res) => {
+  try {
+    const categories = await db.select().from(categoriesTable).orderBy(categoriesTable.id);
+    res.json({ success: true, data: categories });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to fetch categories" });
+  }
+});
+
+router.get("/categories/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const [category] = await db.select().from(categoriesTable).where(eq(categoriesTable.id, id));
+    if (!category) return res.status(404).json({ success: false, error: "Not found" });
+    res.json({ success: true, data: category });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to fetch category" });
+  }
+});
+
+router.post("/categories", async (req, res) => {
+  try {
+    const { nameAr, nameEn, icon, slug, description, image } = req.body;
+    if (!nameAr || !nameEn || !slug) return res.status(400).json({ success: false, error: "nameAr, nameEn, slug required" });
+    const [cat] = await db.insert(categoriesTable).values({ nameAr, nameEn, icon: icon ?? "Grid", slug, description, image }).returning();
+    res.json({ success: true, data: cat });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to create category";
+    res.status(500).json({ success: false, error: msg });
+  }
+});
+
+router.put("/categories/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { nameAr, nameEn, icon, slug, description, image } = req.body;
+    const [updated] = await db.update(categoriesTable).set({ nameAr, nameEn, icon, slug, description, image }).where(eq(categoriesTable.id, id)).returning();
+    if (!updated) return res.status(404).json({ success: false, error: "Not found" });
+    res.json({ success: true, data: updated });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to update category";
+    res.status(500).json({ success: false, error: msg });
+  }
+});
+
+router.delete("/categories/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.delete(categoriesTable).where(eq(categoriesTable.id, id));
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to delete category" });
+  }
+});
+
+// --- Subcategories ---
+
+router.get("/categories/:id/subcategories", async (req, res) => {
+  try {
+    const categoryId = parseInt(req.params.id);
+    const subs = await db.select().from(subcategoriesTable).where(eq(subcategoriesTable.categoryId, categoryId)).orderBy(subcategoriesTable.id);
+    res.json({ success: true, data: subs });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to fetch subcategories" });
+  }
+});
+
+router.get("/subcategories", async (_req, res) => {
+  try {
+    const subs = await db.select().from(subcategoriesTable).orderBy(subcategoriesTable.categoryId, subcategoriesTable.id);
+    res.json({ success: true, data: subs });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to fetch subcategories" });
+  }
+});
+
+router.post("/categories/:id/subcategories", async (req, res) => {
+  try {
+    const categoryId = parseInt(req.params.id);
+    const { nameAr, nameEn, icon, slug } = req.body;
+    if (!nameAr || !nameEn || !slug) return res.status(400).json({ success: false, error: "nameAr, nameEn, slug required" });
+    const [sub] = await db.insert(subcategoriesTable).values({ categoryId, nameAr, nameEn, icon: icon ?? "Tag", slug }).returning();
+    res.json({ success: true, data: sub });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to create subcategory";
+    res.status(500).json({ success: false, error: msg });
+  }
+});
+
+router.put("/subcategories/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { nameAr, nameEn, icon, slug } = req.body;
+    const [updated] = await db.update(subcategoriesTable).set({ nameAr, nameEn, icon, slug }).where(eq(subcategoriesTable.id, id)).returning();
+    if (!updated) return res.status(404).json({ success: false, error: "Not found" });
+    res.json({ success: true, data: updated });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to update subcategory" });
+  }
+});
+
+router.delete("/subcategories/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.delete(subcategoriesTable).where(eq(subcategoriesTable.id, id));
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to delete subcategory" });
+  }
+});
+
+export default router;

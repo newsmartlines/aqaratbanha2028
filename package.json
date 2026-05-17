@@ -1,0 +1,20 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently \"cross-env PORT=8080 pnpm --filter @workspace/api-server start\" \"pnpm --filter @workspace/marketplace dev\" \"node -e \\\"const h=require('http'),net=require('net');h.createServer((req,res)=>{const p=h.request({host:'localhost',port:5000,path:req.url,method:req.method,headers:req.headers},r=>{res.writeHead(r.statusCode,r.headers);r.pipe(res)});req.pipe(p)}).listen(20787,()=>console.log('proxy 20787->5000'))\\\"\"",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build:deploy": "pnpm --filter @workspace/marketplace run build && pnpm --filter @workspace/api-server run build",
+    "start:deploy": "cross-env NODE_ENV=production node --enable-source-maps artifacts/api-server/dist/index.mjs",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2"
+  }
+}

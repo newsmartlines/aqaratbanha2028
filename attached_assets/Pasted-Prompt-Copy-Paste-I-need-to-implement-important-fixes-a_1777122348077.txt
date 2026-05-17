@@ -1,0 +1,70 @@
+Prompt (Copy & Paste)
+
+I need to implement important fixes and enhancements in the service provider registration and subscription system:
+
+1) Fix “Communication & Visibility” Issue
+
+In the service provider registration page, there is a field:
+
+"How do you prefer clients to contact you?"
+
+Requirements:
+Save the selected option correctly in the database
+When displaying the data in:
+Service provider profile
+Admin/dashboard
+Edit page
+👉 It MUST always show the exact selected value (no reset, no default overwrite)
+Ensure the system does not override the saved value with a default option
+2) Subscription Plans + Payment Flow (Critical)
+
+When a service provider registers and selects a paid plan:
+
+Requirements:
+Create a dedicated payment page before activating the account
+The account must NOT be activated until payment is successfully completed
+After successful payment:
+Activate the selected plan automatically
+Set subscription status to Active
+Enable all plan features immediately in the user account
+3) Payment Gateway Integration (Moyasar)
+
+Integrate the following payment gateway:
+
+Moyasar
+
+Requirements:
+Support Visa / MasterCard payments
+Build a clean checkout page
+Securely send payment data via API
+Enable Test Mode (Sandbox) for safe testing without real charges
+Track payment status:
+success
+failed
+pending
+4) Post-Payment Activation Logic
+
+After successful payment:
+
+Update subscription table:
+is_active = true
+payment_status = paid
+plan_start_date = current timestamp
+Link subscription directly to the user account
+Redirect user to dashboard with message:
+“Your subscription has been activated successfully”
+5) Security & Validation
+No plan should be activated without verified payment confirmation via webhook
+Prevent any bypass or manual activation without payment
+Log all payment transactions in a payment_logs table
+6) User Experience
+During payment:
+Show loading state: “Processing payment…”
+On success:
+Show success confirmation screen
+On failure:
+Show error message with retry option and failure reason
+Final Goal:
+
+A fully working subscription system:
+Registration → Plan selection → Payment → Auto activation → Dashboard access

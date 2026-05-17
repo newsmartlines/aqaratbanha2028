@@ -1,0 +1,171 @@
+I want to design a complete authentication and onboarding flow for a services marketplace platform.
+
+This includes:
+- Login / Register page
+- User type selection
+- Multi-step onboarding wizard for Service Providers
+
+---
+
+ENTRY POINTS:
+- When user clicks “Login” → open Login/Register page
+- When user clicks “كن مقدم خدمة” → go directly to Register as Service Provider
+
+---
+
+AUTH PAGE (LOGIN / REGISTER):
+
+Create a modern split authentication page:
+
+LEFT SIDE:
+- Branding / illustration / background image
+
+RIGHT SIDE:
+- Login form:
+  - Input: Username OR Email OR Phone number
+  - Password
+  - “Forgot Password?” link
+  - Login button
+
+- Divider: “or”
+
+- Register section:
+  - Button: “Create New Account”
+
+---
+
+REGISTER FLOW (STEP 1 – ACCOUNT TYPE):
+
+- Ask user:
+  “Choose account type”
+  - Regular User
+  - Service Provider
+
+- UI:
+  - Two large selectable cards
+  - Icons + short description
+  - Highlight selected option
+
+---
+
+IF USER SELECTS “REGULAR USER”:
+- Simple registration:
+  - Name
+  - Email / Phone
+  - Password
+- Done
+
+---
+
+IF USER SELECTS “SERVICE PROVIDER”:
+→ Start MULTI-STEP WIZARD
+
+---
+
+PROVIDER WIZARD:
+
+STEP 1: BASIC INFO
+- Full Name
+- Profile Image
+- Cover Image (Hero Banner)
+- Phone Number
+- Email
+- Short Bio
+
+---
+
+STEP 2: LOCATION
+- Select Region / City
+- “Select on Map” (Google Maps integration)
+- تحديد الموقع بدقة
+- Service areas (multi-select regions he serves)
+
+---
+
+STEP 3: SERVICE DETAILS
+- Main Category
+- Subcategories
+- Add multiple services:
+  - Service Title
+  - Description
+  - Price
+- Ability to add/remove services dynamically
+
+---
+
+STEP 4: GALLERY
+- Upload images for previous work
+- Drag & drop uploader
+- Preview before upload
+
+---
+
+STEP 5: CONTACT & VISIBILITY
+- Show phone? (toggle)
+- WhatsApp number
+- Preferred contact method
+
+---
+
+STEP 6: PACKAGE SELECTION
+- Display pricing plans (like current system):
+  - Free
+  - Bronze
+  - Premium
+- Highlight recommended plan
+- CTA: Subscribe
+
+---
+
+STEP 7: REVIEW & SUBMIT
+- Show summary of all entered data
+- Button: “Submit Request”
+
+---
+
+SUCCESS SCREEN:
+- Message:
+  “شكراً لك 🙌 تم استلام طلبك بنجاح”
+  “سيتم مراجعة حسابك خلال وقت قصير”
+  “برجاء متابعة البريد الإلكتروني”
+
+- Add:
+  - Go to homepage button
+
+---
+
+UX REQUIREMENTS:
+- Progress bar (Step indicator)
+- “Next” and “Back” buttons
+- Save progress automatically
+- Smooth transitions between steps
+
+---
+
+DESIGN STYLE:
+- Clean, modern, startup-style
+- Inspired by onboarding flows like Airbnb / Fiverr
+- Large spacing
+- Friendly UI
+- Micro-interactions
+
+---
+
+MOBILE EXPERIENCE:
+- Fully responsive
+- Steps become vertical
+- Sticky next button
+
+---
+
+LOGIC:
+- If user clicks “كن مقدم خدمة” → skip account type → go directly to Provider Wizard
+- Validate each step before moving forward
+
+---
+
+OUTPUT REQUIRED:
+- Full UX flow
+- UI components per step
+- Validation logic
+- Ready for React / Next.js or WordPress implementation

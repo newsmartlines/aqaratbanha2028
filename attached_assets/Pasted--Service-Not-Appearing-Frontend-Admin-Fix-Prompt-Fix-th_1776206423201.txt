@@ -1,0 +1,161 @@
+## 🔥 Service Not Appearing (Frontend + Admin) – Fix Prompt
+
+Fix the issue where newly added services by a **Service Provider** are not appearing in both **Frontend** and **Admin Panel**.
+
+---
+
+# ❌ Current Problem
+
+* Provider adds a service successfully
+* But:
+
+  * Service does NOT appear in provider dashboard
+  * Service does NOT appear in frontend listings
+  * Service does NOT appear in admin panel
+
+---
+
+# ✅ Required Fixes
+
+## 🗄️ 1. Database Saving (Critical)
+
+* Ensure service is actually saved in database
+
+### Required fields:
+
+* `id`
+* `provider_id` (VERY IMPORTANT)
+* `category_id`
+* `subcategory_id`
+* `service_name`
+* `price`
+* `status` (active / pending / inactive)
+* `created_at`
+
+---
+
+### ⚠️ Important:
+
+* Make sure:
+
+```sql id="wpl9kg"
+provider_id = AUTH_USER_ID
+```
+
+---
+
+## 🔐 2. Data Ownership Fix
+
+* Each service must be linked to the correct provider
+* Prevent:
+
+  * Saving service without provider_id
+  * Saving with wrong user_id
+
+---
+
+## 👤 3. Provider Dashboard
+
+* After adding service:
+
+  * It must appear immediately in:
+
+    * “My Services” section
+
+### Fix:
+
+* API should return:
+
+```sql id="i3v0y6"
+SELECT * FROM services WHERE provider_id = AUTH_USER_ID;
+```
+
+---
+
+## 🌐 4. Frontend Visibility
+
+* Show service ONLY if:
+
+  * `status = active`
+  * Provider is **approved**
+
+### Query example:
+
+```sql id="3t6s8q"
+SELECT * FROM services 
+WHERE status = 'active'
+AND provider_id IN (
+  SELECT id FROM users WHERE role = 'provider' AND status = 'active'
+);
+```
+
+---
+
+## 🧑‍💼 5. Admin Panel Visibility
+
+* In admin → Services tab:
+
+  * Show ALL services:
+
+    * Pending
+    * Active
+    * Rejected
+
+### Admin query:
+
+```sql id="gq7v7g"
+SELECT * FROM services ORDER BY created_at DESC;
+```
+
+---
+
+## ⚙️ 6. Status Workflow (Very Important)
+
+* When provider adds service:
+
+  * Default:
+
+```sql id="l7lmci"
+status = 'pending'
+```
+
+* Admin:
+
+  * Approve → `active`
+  * Reject → `inactive`
+
+---
+
+## 🔄 7. Real-time Update
+
+* After adding service:
+
+  * Refresh list automatically OR
+  * Append new service to UI instantly
+
+---
+
+## 🧪 8. Debug Checklist
+
+* Check:
+
+  * API response after adding service
+  * Database insertion
+  * provider_id value
+  * status value
+  * frontend filtering logic
+  * admin query
+
+---
+
+# 🎯 Expected Result
+
+* أي خدمة تتضاف تظهر فوراً في حساب مقدم الخدمة ✔
+* تظهر في الأدمن ✔
+* تظهر في الفرونت بعد موافقة الأدمن ✔
+* كل خدمة مربوطة بصاحبها صح ✔
+* مفيش خدمات ضايعة أو مختفية ✔
+
+---
+
+**Ensure full synchronization between Database + API + Frontend + Admin Panel.**

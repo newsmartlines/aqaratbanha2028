@@ -1,0 +1,62 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "l1Jd6pFxBp_C3ol1w-BbE"
+uri = "file://artifacts/marketplace/public/images/food.jpg"
+type = "image"
+title = "traditional arabic food dish homemade catering spread on table"
+
+[[outputs]]
+id = "Ojf-uy7Vb9xzFQUGaeTGB"
+uri = "file://artifacts/marketplace/public/images/handmade.jpg"
+type = "image"
+title = "handmade crafts pottery ceramics beautifully displayed"
+
+[[outputs]]
+id = "OhPXmG2_NiQknr8O6jfBh"
+uri = "file://artifacts/marketplace/public/images/event.jpg"
+type = "image"
+title = "event setup decoration wedding arabic modern lighting"
+
+[[outputs]]
+id = "M_79OG5gmpaWHNoDzZ6pS"
+uri = "file://artifacts/marketplace/public/images/hero.jpg"
+type = "image"
+title = "modern riyadh coworking space airy light sand teal accents architecture"
+
+[[outputs]]
+id = "ukvVu76l2zBsCa4B5uO38"
+uri = "file://artifacts/marketplace/public/images/maintenance2.jpg"
+type = "image"
+title = "professional home maintenance service worker fixing plumbing or AC"
+
+[[outputs]]
+id = "AQ-eRhj1RFCTi_qvQwZra"
+uri = "file://artifacts/marketplace/public/images/beauty2.jpg"
+type = "image"
+title = "professional beauty salon makeup and hair styling tools"
+
+[[outputs]]
+id = "gk5ZWFSSfzqQ5bcdZWFmW"
+uri = "file://artifacts/marketplace/public/images/food2.jpg"
+type = "image"
+title = "delicious homemade arabic food catering spread"
+
+[[outputs]]
+id = "n5M_9yCaVw6fD-2wP8Ox7"
+uri = "file://artifacts/marketplace/public/images/delivery2.jpg"
+type = "image"
+title = "delivery driver holding package smiling"
+
+[[outputs]]
+id = "beVP08gYolxbkg_b-KOAA"
+uri = "file://dalil-cpanel-package.tar.gz"
+type = "unspecified"
+title = "حزمة رفع الموقع على cPanel (dist + API docs + دليل الرفع)"
+
+[[outputs]]
+id = "ZR2W4bltz8lqbu8Dxjycp"
+uri = "file://dalil-plus-cpanel.zip"
+type = "unspecified"
+title = "dalil-plus-cpanel.zip — حزمة رفع cPanel"

@@ -1,0 +1,220 @@
+## 🔥 Home Maintenance Services Platform – Admin Dashboard Prompt
+
+Design and develop a **modern, scalable Admin Dashboard** to manage a platform for **Home Maintenance Services (Website + Mobile App)**.
+
+---
+
+# 🎯 Main Goal
+
+The system is used to:
+
+* Manage **service provider companies**
+* Manage **services, categories, and subcategories**
+* Define **faults/issues and their pricing**
+* Assign **different prices per company for each service**
+* Manage **orders, users, and analytics**
+
+---
+
+# 🧩 Dashboard Structure
+
+## 🏢 1. Companies Tab (Service Providers)
+
+Create a tab called **“Companies”**
+
+### Features:
+
+* Add / Edit / Delete company
+* Company data:
+
+  * Company Name
+  * Logo
+  * Description
+  * Phone / Email
+  * Address
+  * Covered Areas (multi-select)
+* Toggle button:
+
+  * **Active / Inactive (Enable / Disable company)**
+
+---
+
+## 🛠️ 2. Services & Categories
+
+Create a tab called **“Services”**
+
+### Structure:
+
+* Main Categories (e.g., Plumbing, Electrical, AC, etc.)
+* Subcategories under each category
+* Each subcategory contains:
+
+  * Service Name
+  * Base Price
+  * Description (optional)
+
+---
+
+### Features:
+
+* Add / Edit / Delete:
+
+  * Categories
+  * Subcategories
+  * Services
+* Each service has:
+
+  * Toggle (Show / Hide)
+  * Status (Active / Inactive)
+
+---
+
+## ⚠️ 3. Faults / Issues Management
+
+* Under each service:
+
+  * Add **specific issues (faults)**
+    (e.g., "Water Leak", "AC Not Cooling")
+
+* Each issue includes:
+
+  * Issue Name
+  * Default Price
+  * Description
+  * Status (Active / Inactive)
+
+---
+
+## 💰 4. Company Pricing System
+
+* لكل شركة يكون لها **سعر خاص لكل خدمة / عطل**
+
+### Features:
+
+* Assign pricing per:
+
+  * Company
+  * Service
+  * Issue
+* Override default price
+* Example:
+
+  * "AC Repair → Not Cooling"
+
+    * Company A = $50
+    * Company B = $65
+
+---
+
+## 📦 5. Orders Tab
+
+* Display all orders
+* Order details:
+
+  * Customer info
+  * Selected service + issue
+  * Assigned company
+  * Price
+  * Status (Pending / Accepted / Completed / Cancelled)
+
+### Features:
+
+* Change order status
+* Assign / reassign company
+* التواصل مع العميل
+
+---
+
+## 👥 6. Users Tab
+
+* Manage all users:
+
+  * Name
+  * Email
+  * Phone
+  * Role (User / Provider)
+  * Status (Active / Blocked)
+
+* View full profile page
+
+---
+
+## 📊 7. Analytics / Statistics Tab
+
+* Dashboard charts:
+
+  * Total Orders
+  * Revenue
+  * Active Companies
+  * Top Services
+* Graphs:
+
+  * Daily / Monthly performance
+  * Orders per category
+
+---
+
+# 🏠 Dashboard Home (Main Page)
+
+Design a **high-end modern dashboard homepage**:
+
+### Include:
+
+* KPI Cards:
+
+  * Total Orders
+  * Total Revenue
+  * Active Companies
+  * New Users
+
+* Charts:
+
+  * Orders trend
+  * Revenue growth
+
+* Recent activity:
+
+  * Latest orders
+  * Latest registered companies
+
+* Clean UI:
+
+  * Cards with shadows
+  * Icons
+  * Modern spacing (like SaaS dashboards)
+
+---
+
+# 🎨 UI / UX Requirements
+
+* Modern SaaS dashboard design (like Stripe / Uber dashboards)
+* Sidebar on LEFT
+* Responsive design
+* Smooth animations
+* Clean typography
+* Use cards, tables, and filters
+
+---
+
+# ⚙️ Technical Requirements
+
+* Fully dynamic (database-driven)
+* Role-based access (Admin only)
+* REST API ready for mobile app
+* Scalable architecture
+* Clean and optimized queries
+
+---
+
+# ✅ Expected Result
+
+* Complete system to manage:
+
+  * Companies
+  * Services & Issues
+  * Pricing per company
+  * Orders
+  * Users
+  * Analytics
+
+* Professional dashboard ready for scaling 🚀

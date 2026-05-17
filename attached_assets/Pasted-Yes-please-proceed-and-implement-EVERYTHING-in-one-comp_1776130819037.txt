@@ -1,0 +1,135 @@
+Yes, please proceed and implement EVERYTHING in one complete flow instead of step-by-step.
+
+I want a FULLY INTEGRATED and WORKING system, not partial features.
+
+---
+
+IMPORTANT:
+
+Do NOT stop after one feature.
+Do NOT ask for confirmation after each step.
+
+Build the entire system in one go with all features connected and working together.
+
+---
+
+INCLUDE EVERYTHING:
+
+1) FRONTEND:
+- Homepage
+- Search results page
+- Provider details page
+- Categories page
+- About Us page
+- Login / Register صفحات
+
+---
+
+2) USER SYSTEM:
+- Register / Login (email / phone / username)
+- User dashboard:
+  - Profile edit
+  - Favorites
+  - Requests / activity
+  - Reviews
+
+---
+
+3) SERVICE PROVIDER SYSTEM:
+
+- Full provider dashboard including:
+
+A) My Services Page (VERY IMPORTANT):
+- Add new service
+- Edit service
+- Delete service
+- لكل خدمة:
+  - Title
+  - Description
+  - Price
+  - Category + Subcategory
+  - Images
+- Changes must reflect on frontend instantly
+
+---
+
+B) Profile Management:
+- Edit profile
+- Banner (Hero section)
+- Phone / WhatsApp
+- Location (Google Map)
+
+---
+
+C) Subscription System:
+- Show current package
+- Expiry date
+- Buttons:
+  - Renew Now
+  - Upgrade Plan
+
+---
+
+D) Requests / Leads:
+- View incoming requests from users
+
+---
+
+E) Payments:
+- View payments & invoices
+
+---
+
+4) ADMIN DASHBOARD (FULL CONTROL):
+
+- Manage:
+  - Providers (approve / reject / edit)
+  - Users
+  - Services
+  - Categories + Subcategories
+  - Packages
+  - Payments
+  - Commission system
+
+- Admin must control ALL frontend content dynamically
+
+---
+
+5) DATABASE (MySQL):
+- Fully connected relational database
+- All tables linked properly
+
+---
+
+6) LOGIC:
+
+- Any change from:
+  - Admin
+  - Provider
+  - User
+→ Must update instantly everywhere
+
+- All buttons must work:
+  - Add
+  - Edit
+  - Delete
+  - Next
+  - Submit
+
+---
+
+7) UX:
+
+- Smooth experience
+- Fast loading
+- Mobile responsive
+
+---
+
+8) FINAL REQUIREMENT:
+
+Deliver a COMPLETE WORKING SYSTEM:
+- Frontend + Dashboards + Backend + Database
+- No placeholders
+- No static data
+- Everything dynamic and functional

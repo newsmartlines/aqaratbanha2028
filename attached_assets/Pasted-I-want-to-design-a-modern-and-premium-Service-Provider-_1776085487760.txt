@@ -1,0 +1,112 @@
+I want to design a modern and premium Service Provider Details Page for a services marketplace platform.
+
+Reference:
+https://dalel.sa/s-provider/98 (this is the old version that must be completely redesigned)
+
+---
+
+MAIN GOAL:
+Create a highly engaging, trust-building, and conversion-focused profile page for service providers.
+
+---
+
+HEADER SECTION:
+- Large cover image or banner (optional)
+- Profile card overlapping the banner:
+  - Profile image (rounded)
+  - Provider name
+  - Category
+  - Location
+  - Rating (stars + number of reviews)
+  - “Verified” badge (if applicable)
+
+---
+
+CONTACT SECTION (IMPORTANT):
+- Add a button: “عرض رقم الهاتف”
+- Phone number is hidden by default (e.g. 05XXXXXXX)
+- On click:
+  - Reveal full number
+  - Add smooth animation (fade or slide)
+- Add buttons:
+  - Call Now
+  - WhatsApp
+  - Send Message
+
+---
+
+ABOUT SECTION:
+- Full description of the service provider
+- Read more / show less toggle
+- Clean typography for readability
+
+---
+
+SERVICES / OFFERINGS:
+- Cards or list showing services provided
+- Each includes:
+  - Title
+  - Short description
+  - Price (optional)
+- Hover animation
+
+---
+
+GALLERY SECTION:
+- Image gallery (grid or slider)
+- Click to open lightbox
+- Smooth transitions
+
+---
+
+REVIEWS SECTION:
+- User reviews with:
+  - Name
+  - Rating
+  - Comment
+- Add “Write a review” button
+
+---
+
+LOCATION:
+- Map integration (Google Maps or similar)
+- Show approximate location
+
+---
+
+SIDEBAR (IMPORTANT FOR DESKTOP):
+- Sticky sidebar including:
+  - Contact box
+  - Quick actions
+  - Featured badge (optional)
+
+---
+
+SIMILAR PROVIDERS:
+- Show similar providers (like Haraj suggestions)
+- Horizontal scroll or grid
+
+---
+
+DESIGN STYLE:
+- Clean, modern, trust-focused
+- White + soft neutral colors
+- Rounded cards
+- Subtle shadows
+- Smooth animations
+
+---
+
+UX & INTERACTION:
+- Sticky contact buttons on mobile
+- Smooth scrolling
+- Micro-interactions on buttons
+- Fast loading
+
+---
+
+OUTPUT REQUIRED:
+- Full UI layout
+- Component structure
+- Interaction behavior
+- Ready for implementation in React / Next.js or WordPress

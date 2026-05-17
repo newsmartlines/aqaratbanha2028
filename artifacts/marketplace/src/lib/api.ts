@@ -1,0 +1,842 @@
+// Central HTTP client for the Vite app → proxied `/api/*` → API server (e.g. :8080)
+// In production builds, set VITE_API_BASE_URL to your backend domain (e.g. https://api.yourdomain.com)
+
+const _viteApiBase = (import.meta as { env?: Record<string, string> }).env?.VITE_API_BASE_URL ?? "";
+const API = _viteApiBase ? `${_viteApiBase.replace(/\/$/, "")}/api` : "/api";
+
+function stripTrailingSlash(s: string) {
+  return s.replace(/\/$/, "");
+}
+
+const APP_BASE = typeof import.meta !== "undefined" ? stripTrailingSlash(import.meta.env.BASE_URL || "") : "";
+
+/** Turn stored paths like `/uploads/...` into a browser-loadable URL (Vite proxies `/uploads` in dev). */
+export function mediaUrl(url: string | null | undefined, fallback = ""): string {
+  if (!url) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const path = url.startsWith("/") ? url : `/${url}`;
+  return `${APP_BASE}${path}`;
+}
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function qs(params?: Record<string, string | number | boolean | undefined | null>) {
+  if (!params) return "";
+  const u = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null || v === "") continue;
+    u.set(k, String(v));
+  }
+  const s = u.toString();
+  return s ? `?${s}` : "";
+}
+
+async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const url = path.startsWith("http") ? path : `${API}${path.startsWith("/") ? path : `/${path}`}`;
+  const res = await fetch(url, {
+    credentials: "include",
+    cache: "no-store",
+    ...init,
+    headers: {
+      ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...init?.headers,
+    },
+  });
+
+  let body: unknown = null;
+  const ct = res.headers.get("content-type");
+  if (ct?.includes("application/json")) {
+    try {
+      body = await res.json();
+    } catch {
+      body = null;
+    }
+  }
+
+  const b = body as Record<string, unknown> | null;
+
+  if (!res.ok) {
+    const msg =
+      (typeof b?.error === "string" && b.error) ||
+      (typeof b?.message === "string" && b.message) ||
+      res.statusText ||
+      `HTTP ${res.status}`;
+    throw new ApiError(res.status, msg);
+  }
+
+  if (b && typeof b === "object" && b.success === false) {
+    throw new ApiError(res.status, (typeof b.error === "string" && b.error) || "تعذر تنفيذ الطلب");
+  }
+
+  if (b && typeof b === "object" && "data" in b) return b.data as T;
+  return body as T;
+}
+
+const ensureArray = <T,>(res: unknown): T[] => {
+  if (!res) return [];
+  if (Array.isArray(res)) return res as T[];
+  if (res && typeof res === "object" && Array.isArray((res as { data?: unknown }).data)) {
+    return (res as { data: T[] }).data;
+  }
+  return [];
+};
+
+async function uploadFile(path: string, field: string, file: File): Promise<{ url: string }> {
+  const form = new FormData();
+  form.append(field, file);
+  const res = await fetch(`${API}${path}`, { method: "POST", body: form, credentials: "include", cache: "no-store" });
+  const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!res.ok) {
+    const msg = (typeof body?.error === "string" && body.error) || res.statusText;
+    throw new ApiError(res.status, msg);
+  }
+  const data = body?.data as { url?: string } | undefined;
+  if (!data?.url) throw new ApiError(res.status, "Invalid upload response");
+  return { url: data.url };
+}
+
+// ── Types (UI-facing; aligned with API JSON) ─────────────────────────────
+
+export interface Category {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  icon: string | null;
+  slug: string;
+  description: string | null;
+  image: string | null;
+  status?: string | null;
+}
+export interface Subcategory {
+  id: number;
+  categoryId: number;
+  nameAr: string;
+  nameEn: string;
+  icon: string | null;
+  slug: string;
+  status?: string | null;
+}
+export interface Provider {
+  id: number;
+  bio: string | null;
+  avatar: string | null;
+  banner: string | null;
+  /** Some payloads use these aliases; prefer `banner` / `avatar` when absent. */
+  cover_image?: string | null;
+  profile_image?: string | null;
+  city: string | null;
+  district: string | null;
+  phone: string | null;
+  whatsapp?: string | null;
+  contactMethods?: string | null;
+  rating: string;
+  reviewsCount: number;
+  verified: boolean;
+  featured: boolean;
+  categoryId: number | null;
+  userName: string;
+  categoryNameAr: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  createdAt?: string;
+}
+export interface AdminProvider extends Provider {
+  userId: number;
+  userEmail: string;
+  approved: boolean;
+  suspended: boolean;
+  createdAt?: string;
+  regionNameAr?: string | null;
+}
+export interface ProviderDetail extends Provider {
+  userId: number;
+  userEmail: string;
+  whatsapp: string | null;
+  approved: boolean;
+  suspended: boolean;
+  services: Service[];
+  reviews: Review[];
+  subscription: {
+    id: number;
+    startDate: string;
+    endDate: string;
+    packageName?: string | null;
+    packageNameAr?: string | null;
+    packagePrice?: string | null;
+  } | null;
+}
+export interface Service {
+  id: number;
+  providerId: number;
+  categoryId: number | null;
+  title: string;
+  description: string | null;
+  price: string | null;
+  subcategory: string | null;
+  img: string | null;
+  status: string;
+  createdAt: string;
+}
+export interface Listing extends Service {
+  providerName: string;
+  categoryNameAr: string | null;
+}
+export interface Review {
+  id: number;
+  rating: number;
+  text: string | null;
+  reply: string | null;
+  createdAt: string;
+  userName: string | null;
+  userAvatar?: string | null;
+}
+export interface UserReviewItem {
+  id: number;
+  providerId: number;
+  rating: number;
+  text: string | null;
+  reply: string | null;
+  createdAt: string;
+  providerName: string | null;
+  providerAvatar: string | null;
+}
+export interface Package {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  price: string;
+  durationDays: number;
+  maxListings: number | null;
+  commissionRate: string;
+  featuredAllowed: number | null;
+  topBadge: boolean;
+  priorityRank: number;
+}
+export interface UserInfo {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  avatar: string | null;
+  providerId?: number;
+  providerApproved?: boolean;
+  regionId?: number | null;
+  cityId?: number | null;
+  staffRole?: string | null;
+  permissions?: Record<string, boolean>;
+  isSuperAdmin?: boolean;
+}
+export interface ProviderInteractions {
+  phone: number;
+  whatsapp: number;
+  message: number;
+}
+export interface ProviderStats {
+  totalOrders: number;
+  pendingOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
+  servicesCount: number;
+  reviewsCount: number;
+  avgRating: string;
+  subscription: {
+    id: number;
+    packageId: number;
+    startDate: string;
+    endDate: string;
+    packageNameAr: string | null;
+    packagePrice: string | null;
+    durationDays: number | null;
+    daysLeft: number | null;
+    isActive: boolean;
+  } | null;
+}
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  avatar: string | null;
+  status: string;
+  createdAt: string;
+  regionId?: number | null;
+  cityId?: number | null;
+  regionNameAr?: string | null;
+  cityNameAr?: string | null;
+}
+export interface Order {
+  id: number;
+  message: string | null;
+  notes: string | null;
+  status: string;
+  createdAt: string;
+  userId: number | null;
+  providerId: number | null;
+  serviceId: number | null;
+  userName: string | null;
+  userPhone: string | null;
+  serviceTitle: string | null;
+  servicePrice: string | null;
+  providerName: string | null;
+}
+export interface UserRequestItem {
+  id: number;
+  providerId: number | null;
+  message: string | null;
+  notes: string | null;
+  status: string;
+  createdAt: string;
+  providerName: string | null;
+  providerAvatar: string | null;
+  serviceTitle: string | null;
+  servicePrice: string | null;
+}
+export interface FavoriteItem {
+  id: number;
+  providerId: number;
+  providerName: string;
+  providerAvatar: string | null;
+  providerCity: string | null;
+  providerRating: string;
+  providerReviewsCount: number;
+  categoryNameAr: string | null;
+}
+/** Row from `GET /messages/inbox` */
+export interface InboxThread {
+  otherId: number;
+  otherName?: string;
+  otherAvatar?: string;
+  otherRole?: string;
+  content?: string;
+  updatedAt?: string;
+  unreadCount?: number;
+}
+export interface Notification {
+  id: number;
+  userId: number | null;
+  type: string;
+  title: string;
+  message: string | null;
+  read: boolean;
+  link: string | null;
+  createdAt: string;
+}
+export interface SiteSettings {
+  siteName: string;
+  siteNameEn: string;
+  logoUrl: string;
+  faviconUrl: string;
+  heroImage: string;
+  primaryColor: string;
+  aboutContent: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  faqContent: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  ctaText: string;
+  ctaButtonText: string;
+  [key: string]: string;
+}
+export interface StaffMember {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  permissions: string;
+  status: string;
+  createdAt: string;
+}
+export interface Area {
+  id: number;
+  cityId: number;
+  nameAr: string;
+  nameEn: string;
+  enabled: boolean;
+}
+export interface City {
+  id: number;
+  regionId: number;
+  nameAr: string;
+  nameEn: string;
+  enabled: boolean;
+  areas?: Area[];
+}
+export interface Region {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  order: number;
+  enabled: boolean;
+  cities: City[];
+}
+export interface ServiceArea {
+  id: number;
+  providerId: number;
+  regionId: number;
+  cityId: number | null;
+  areaId: number | null;
+}
+
+export type SupportTicketDto = {
+  id: string;
+  subject: string;
+  category: string;
+  status: string;
+  message: string;
+  adminReply?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminSupportTicket = {
+  id: string;
+  providerId: number;
+  providerName: string;
+  providerEmail: string;
+  subject: string;
+  category: string;
+  status: string;
+  message: string;
+  adminReply: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const api = {
+  regions: {
+    list: async () => ensureArray<Region>(await fetchJson(`/regions`)),
+    create: (data: unknown) => fetchJson(`/regions`, { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/regions/${id}`, { method: "DELETE" }),
+  },
+
+  locations: {
+    getAreasByCity: async (cityId: number) => ensureArray<Area>(await fetchJson(`/cities/${cityId}/areas`)),
+    admin: {
+      allRegions: async () => ensureArray<Region>(await fetchJson(`/admin/regions`)),
+      createRegion: (data: { nameAr: string; nameEn?: string; order?: number }) =>
+        fetchJson<Region>(`/admin/regions`, { method: "POST", body: JSON.stringify(data) }),
+      updateRegion: (id: number, data: unknown) =>
+        fetchJson<Region>(`/admin/regions/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+      toggleRegion: (id: number) => fetchJson<Region>(`/admin/regions/${id}/toggle`, { method: "PATCH" }),
+      allCities: async () => ensureArray<City>(await fetchJson(`/admin/cities`)),
+      allAreas: async (cityId?: number) =>
+        ensureArray<Area>(await fetchJson(`/admin/areas${cityId != null ? `?cityId=${cityId}` : ""}`)),
+      createCity: (data: unknown) => fetchJson<City>(`/admin/cities`, { method: "POST", body: JSON.stringify(data) }),
+      updateCity: (id: number, data: unknown) => fetchJson<City>(`/admin/cities/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+      toggleCity: (id: number) => fetchJson(`/admin/cities/${id}/toggle`, { method: "PATCH" }),
+      deleteCity: (id: number) => fetchJson(`/admin/cities/${id}`, { method: "DELETE" }),
+      createArea: (data: unknown) => fetchJson<Area>(`/admin/areas`, { method: "POST", body: JSON.stringify(data) }),
+      updateArea: (id: number, data: unknown) => fetchJson<Area>(`/admin/areas/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+      toggleArea: (id: number) => fetchJson(`/admin/areas/${id}/toggle`, { method: "PATCH" }),
+      deleteArea: (id: number) => fetchJson(`/admin/areas/${id}`, { method: "DELETE" }),
+    },
+  },
+
+  auth: {
+    login: (email: string, password: string) =>
+      fetchJson<UserInfo & { providerId?: number }>(`/auth/login`, {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }),
+    register: (data: unknown) =>
+      fetchJson<UserInfo & { providerId?: number }>(`/auth/register`, { method: "POST", body: JSON.stringify(data) }),
+    /** Creates provider row + role for logged-in users starting `/provider/register` onboarding; refreshes session. */
+    becomeProvider: () =>
+      fetchJson<UserInfo & { providerId?: number; providerApproved?: boolean }>(`/auth/become-provider`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      }),
+    me: () => fetchJson<UserInfo & { providerId?: number; providerApproved?: boolean }>(`/auth/me`),
+    logout: () => fetchJson(`/auth/logout`, { method: "POST" }),
+    forgotPassword: (email: string) =>
+      fetchJson<{ dev_reset_token?: string }>(`/auth/forgot-password`, { method: "POST", body: JSON.stringify({ email }) }),
+    resetPassword: (token: string, newPassword: string) =>
+      fetchJson(`/auth/reset-password`, { method: "POST", body: JSON.stringify({ token, newPassword }) }),
+    changePassword: (currentPassword: string, newPassword: string) =>
+      fetchJson(`/auth/change-password`, { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) }),
+  },
+
+  admin: {
+    sidebarCounts: () =>
+      fetchJson<{
+        pendingProviders: number;
+        suspendedUsers: number;
+        pendingOrders: number;
+        openTickets: number;
+      }>(`/admin/sidebar-counts`),
+    payments: {
+      list: (params?: { from?: string; to?: string; status?: string }) =>
+        fetchJson<{
+          rows: Array<{
+            id: number;
+            providerId: number | null;
+            providerName: string | null;
+            providerEmail: string | null;
+            providerPhone: string | null;
+            type: string;
+            amount: string;
+            status: string;
+            invoiceId: string | null;
+            createdAt: string;
+          }>;
+          totals: {
+            paid: number;
+            pending: number;
+            failed: number;
+            paidAmount: number;
+            pendingAmount: number;
+            failedAmount: number;
+            totalAmount: number;
+          };
+        }>(`/admin/payments${qs(params)}`),
+      exportUrl: (params?: { from?: string; to?: string; status?: string }) =>
+        `/api/admin/payments/export${qs(params)}`,
+    },
+    subscriptions: {
+      list: (params?: { status?: string }) =>
+        fetchJson<{
+          rows: Array<{
+            id: number;
+            providerId: number | null;
+            providerName: string | null;
+            providerEmail: string | null;
+            packageId: number | null;
+            packageNameAr: string | null;
+            packageNameEn: string | null;
+            packagePrice: string | null;
+            durationDays: number | null;
+            startDate: string;
+            endDate: string;
+            status: string;
+            createdAt: string;
+            isActive: boolean;
+            isPastDue: boolean;
+          }>;
+          totals: {
+            premiumActive: number;
+            bronzeActive: number;
+            monthlyRecurring: number;
+          };
+        }>(`/admin/subscriptions${qs(params)}`),
+    },
+    users: {
+      list: async (params?: { regionId?: number; cityId?: number }) => {
+        const rows = await fetchJson<AdminUser[]>(`/admin/users${qs({ limit: 500, ...params })}`);
+        return Array.isArray(rows) ? rows : ensureArray(rows);
+      },
+      get: (id: number) => fetchJson<AdminUser>(`/admin/users/${id}`),
+      update: (id: number, data: unknown) => fetchJson<AdminUser>(`/admin/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+      setStatus: (id: number, status: string) =>
+        fetchJson(`/admin/users/${id}`, { method: "PUT", body: JSON.stringify({ status }) }),
+      delete: (id: number) => fetchJson(`/admin/users/${id}`, { method: "DELETE" }),
+    },
+    notifications: {
+      list: async () => ensureArray<Notification>(await fetchJson(`/notifications`)),
+      create: (data: unknown) => fetchJson(`/notifications`, { method: "POST", body: JSON.stringify(data) }),
+      markRead: (id: number) => fetchJson(`/notifications/${id}/read`, { method: "PATCH" }),
+      markAllRead: () => fetchJson(`/notifications/read-all`, { method: "PATCH", body: JSON.stringify({}) }),
+      delete: (id: number) => fetchJson(`/notifications/${id}`, { method: "DELETE" }),
+    },
+    stats: () => fetchJson(`/admin/analytics`),
+    providers: {
+      list: async (params?: Record<string, string>) =>
+        ensureArray<AdminProvider>(await fetchJson(`/admin/providers${qs(params)}`)),
+      create: (data: unknown) => fetchJson<AdminProvider>(`/admin/providers`, { method: "POST", body: JSON.stringify(data) }),
+      update: (id: number, data: unknown) => fetchJson(`/providers/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+      approve: (id: number) => fetchJson(`/providers/${id}/approve`, { method: "PATCH" }),
+      reject: (id: number) => fetchJson(`/providers/${id}/reject`, { method: "PATCH" }),
+      suspend: (id: number) => fetchJson(`/providers/${id}/suspend`, { method: "PATCH" }),
+    },
+    orders: {
+      list: async () => ensureArray<Order>(await fetchJson(`/admin/orders`)),
+      update: (id: number, data: unknown) =>
+        fetchJson<Order>(`/admin/orders/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    },
+    supportTickets: {
+      list: async () => ensureArray<AdminSupportTicket>(await fetchJson(`/admin/support-tickets`)),
+      update: (publicId: string, body: { adminReply?: string | null; status?: "Open" | "Closed" }) =>
+        fetchJson<AdminSupportTicket>(`/admin/support-tickets/${encodeURIComponent(publicId)}`, {
+          method: "PATCH",
+          body: JSON.stringify(body),
+        }),
+    },
+    staff: {
+      list: async () => ensureArray<StaffMember>(await fetchJson(`/admin/staff`)),
+      create: (data: unknown) => fetchJson<StaffMember>(`/admin/staff`, { method: "POST", body: JSON.stringify(data) }),
+      update: (id: number, data: unknown) => fetchJson<StaffMember>(`/admin/staff/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+      delete: (id: number) => fetchJson(`/admin/staff/${id}`, { method: "DELETE" }),
+    },
+  },
+
+  categories: {
+    list: async () => ensureArray<Category>(await fetchJson(`/categories`)),
+    get: (id: number) => fetchJson<Category>(`/categories/${id}`),
+    create: (data: unknown) => fetchJson<Category>(`/categories`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: unknown) => fetchJson<Category>(`/categories/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/categories/${id}`, { method: "DELETE" }),
+  },
+
+  subcategories: {
+    list: async () => ensureArray<Subcategory>(await fetchJson(`/subcategories`)),
+    listByCategory: async (categoryId: number) =>
+      ensureArray<Subcategory>(await fetchJson(`/categories/${categoryId}/subcategories`)),
+    create: (categoryId: number, data: unknown) =>
+      fetchJson<Subcategory>(`/categories/${categoryId}/subcategories`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: unknown) =>
+      fetchJson<Subcategory>(`/subcategories/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/subcategories/${id}`, { method: "DELETE" }),
+  },
+
+  providers: {
+    list: async (params?: Record<string, string | number | boolean | undefined | null>) =>
+      ensureArray<Provider>(await fetchJson(`/providers${qs(params)}`)),
+    get: (id: number) => fetchJson<ProviderDetail>(`/providers/${id}`),
+    stats: (id: number) => fetchJson<ProviderStats>(`/providers/${id}/stats`),
+    update: (id: number, data: unknown) => fetchJson(`/providers/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    trackInteraction: (id: number, type: string) =>
+      fetchJson(`/providers/${id}/interactions`, { method: "POST", body: JSON.stringify({ type }) }),
+    getInteractions: (id: number) => fetchJson<ProviderInteractions>(`/providers/${id}/interactions`),
+  },
+
+  services: {
+    list: async (providerId: number) => ensureArray<Service>(await fetchJson(`/providers/${providerId}/services`)),
+    create: (providerId: number, data: unknown) =>
+      fetchJson<Service>(`/providers/${providerId}/services`, { method: "POST", body: JSON.stringify(data) }),
+    update: (providerId: number, id: number, data: unknown) =>
+      fetchJson<Service>(`/providers/${providerId}/services/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (providerId: number, id: number) => fetchJson(`/providers/${providerId}/services/${id}`, { method: "DELETE" }),
+  },
+
+  upload: {
+    avatar: (file: File) => uploadFile("/upload/avatar", "avatar", file),
+    banner: (file: File) => uploadFile("/upload/banner", "banner", file),
+    service: (file: File) => uploadFile("/upload/service", "image", file),
+  },
+
+  subscriptions: {
+    subscribe: (providerId: number, packageId: number, opts?: { simulated?: boolean }) =>
+      fetchJson(`/providers/${providerId}/subscribe`, {
+        method: "POST",
+        body: JSON.stringify({ packageId, ...(opts?.simulated ? { simulated: true } : {}) }),
+      }),
+    /** @deprecated No dedicated route; use `api.providers.stats` subscription field */
+    current: async () => null,
+  },
+
+  payments: {
+    stcpayCreateSession: (packageId: number, fromOnboarding?: boolean) =>
+      fetchJson<{ refId: string; redirectUrl: string; amount: number; currency: string; mode: "test" | "live" }>(
+        `/stcpay/create-session`,
+        {
+          method: "POST",
+          body: JSON.stringify({ packageId, fromOnboarding: !!fromOnboarding }),
+        },
+      ),
+    stcpayCreateRequestSession: (input: { providerId: number; serviceId?: number | null; amount: number }) =>
+      fetchJson<{
+        refId: string;
+        redirectUrl: string;
+        amount: number;
+        currency: string;
+        kind: "service_request";
+        mode: "test" | "live";
+      }>(
+        `/stcpay/create-request-session`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            providerId: input.providerId,
+            serviceId: input.serviceId ?? undefined,
+            amount: input.amount,
+          }),
+        },
+      ),
+    stcpayStatus: (refId: string) =>
+      fetchJson<{
+        refId: string;
+        status: "pending" | "paid" | "failed" | "cancelled";
+        amount: string;
+        currency: string;
+        kind: "subscription" | "service_request";
+        packageId: number | null;
+        packageName: string | null;
+        providerId: number;
+        serviceId: number | null;
+        commissionAmount: string | null;
+        paidAt: string | null;
+        createdAt: string;
+      }>(`/stcpay/status/${encodeURIComponent(refId)}`),
+    walletMe: () =>
+      fetchJson<{
+        balance: string;
+        currency: string;
+        transactions: Array<{
+          id: number; providerId: number | null; type: string;
+          amount: string; refId: string | null; note: string | null; createdAt: string;
+        }>;
+      }>(`/wallet/me`),
+    /** Customer's payment transaction history (paid / pending / failed). */
+    myPayments: () =>
+      fetchJson<{
+        rows: Array<{
+          id: number; refId: string; kind: string;
+          providerId: number; providerName: string | null;
+          serviceId: number | null; serviceTitle: string | null;
+          amount: string; commissionAmount: string | null; currency: string;
+          status: "pending" | "paid" | "failed" | "cancelled";
+          gateway: string; gatewayRef: string | null;
+          paidAt: string | null; createdAt: string;
+        }>;
+        totals: {
+          paid: number; pending: number; failed: number;
+          paidAmount: number; pendingAmount: number; failedAmount: number;
+        };
+      }>(`/users/me/payments`),
+    /** Provider's incoming payment transaction history. */
+    providerMyPayments: () =>
+      fetchJson<{
+        rows: Array<{
+          id: number; refId: string; kind: string;
+          userId: number | null; customerName: string | null; customerPhone: string | null;
+          serviceId: number | null; serviceTitle: string | null;
+          amount: string; commissionAmount: string | null; currency: string;
+          status: "pending" | "paid" | "failed" | "cancelled";
+          gateway: string;
+          paidAt: string | null; createdAt: string;
+        }>;
+        totals: {
+          paid: number; pending: number; failed: number;
+          paidAmount: number; pendingAmount: number; failedAmount: number;
+          netEarnings: number;
+        };
+      }>(`/providers/me/payments`),
+    adminWallet: () =>
+      fetchJson<{
+        totalCommission: string;
+        currency: string;
+        transactions: Array<{
+          id: number; providerId: number | null; type: string;
+          amount: string; refId: string | null; note: string | null; createdAt: string;
+        }>;
+      }>(`/admin/wallet`),
+  },
+
+  requests: {
+    create: (data: unknown) => fetchJson(`/requests`, { method: "POST", body: JSON.stringify(data) }),
+    listByUser: async (userId: number) => ensureArray<UserRequestItem>(await fetchJson(`/users/${userId}/requests`)),
+    listByProvider: async (providerId: number) => ensureArray(await fetchJson(`/providers/${providerId}/requests`)),
+    cancel: (requestId: number) =>
+      fetchJson(`/requests/${requestId}/status`, { method: "PATCH", body: JSON.stringify({ status: "cancelled" }) }),
+    updateStatus: (requestId: number, status: string) =>
+      fetchJson(`/requests/${requestId}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  },
+
+  messages: {
+    inbox: async () => ensureArray<InboxThread>(await fetchJson(`/messages/inbox`)),
+    conversation: async (otherId: number) => ensureArray(await fetchJson(`/messages/conversation/${otherId}`)),
+    getChat: async (id: number) => ensureArray(await fetchJson(`/messages/conversation/${id}`)),
+    send: (receiverId: number, content: string) =>
+      fetchJson(`/messages`, { method: "POST", body: JSON.stringify({ receiverId, content }) }),
+  },
+
+  notifications: {
+    list: async () => ensureArray<Notification>(await fetchJson(`/notifications`)),
+    unreadCount: () => fetchJson<number>(`/notifications/unread-count`),
+    markRead: (id: number) => fetchJson(`/notifications/${id}/read`, { method: "PATCH", body: JSON.stringify({}) }),
+    markAllRead: () => fetchJson(`/notifications/read-all`, { method: "PATCH", body: JSON.stringify({}) }),
+    delete: (id: number) => fetchJson(`/notifications/${id}`, { method: "DELETE" }),
+  },
+
+  settings: {
+    list: () => fetchJson<SiteSettings>(`/settings`),
+    update: (data: unknown) => fetchJson(`/settings`, { method: "POST", body: JSON.stringify(data) }),
+    save: (data: unknown) => fetchJson(`/settings`, { method: "POST", body: JSON.stringify(data) }),
+  },
+
+  favorites: {
+    list: async (userId: number) => ensureArray<FavoriteItem>(await fetchJson(`/users/${userId}/favorites`)),
+    add: (userId: number, providerId: number) =>
+      fetchJson(`/users/${userId}/favorites`, { method: "POST", body: JSON.stringify({ providerId }) }),
+    remove: (userId: number, providerId: number) => fetchJson(`/users/${userId}/favorites/${providerId}`, { method: "DELETE" }),
+  },
+
+  packages: {
+    list: async () => ensureArray<Package>(await fetchJson(`/packages`)),
+    create: (data: unknown) => fetchJson<Package>(`/packages`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: unknown) => fetchJson<Package>(`/packages/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/packages/${id}`, { method: "DELETE" }),
+  },
+
+  stats: {
+    platform: () =>
+      fetchJson<{ providers: number; users: number; services: number; requests: number }>(`/stats`),
+  },
+
+  reviews: {
+    create: (providerId: number, data: unknown) =>
+      fetchJson<Review>(`/providers/${providerId}/reviews`, { method: "POST", body: JSON.stringify(data) }),
+    addReply: (reviewId: number, reply: string) =>
+      fetchJson<Review>(`/reviews/${reviewId}/reply`, { method: "PATCH", body: JSON.stringify({ reply }) }),
+    listByProvider: async (providerId: number) =>
+      ensureArray<Review>(await fetchJson(`/providers/${providerId}/reviews`)),
+    listByUser: async (userId: number) =>
+      ensureArray<UserReviewItem>(await fetchJson(`/users/${userId}/reviews`)),
+    update: (reviewId: number, data: { rating?: number; text?: string }) =>
+      fetchJson<Review>(`/reviews/${reviewId}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (reviewId: number) =>
+      fetchJson(`/reviews/${reviewId}`, { method: "DELETE" }),
+  },
+
+  listings: {
+    list: async () => ensureArray<Listing>(await fetchJson(`/listings`)),
+    update: (id: number, data: unknown) => fetchJson<Listing>(`/listings/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/listings/${id}`, { method: "DELETE" }),
+  },
+
+  users: {
+    update: (id: number, data: unknown) => fetchJson<UserInfo>(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  },
+
+  serviceAreas: {
+    get: async (providerId: number) =>
+      ensureArray<ServiceArea>(await fetchJson(`/providers/${providerId}/service-areas`)),
+    save: (providerId: number, areas: { regionId: number; cityId?: number | null; areaId?: number | null }[]) =>
+      fetchJson<ServiceArea[]>(`/providers/${providerId}/service-areas`, {
+        method: "PUT",
+        body: JSON.stringify({ areas }),
+      }),
+  },
+
+  supportTickets: {
+    list: async (providerId: number, userId?: number) =>
+      ensureArray<SupportTicketDto>(
+        await fetchJson(`/providers/${providerId}/support-tickets`, {
+          headers: userId ? { "x-user-id": String(userId) } : undefined,
+        })
+      ),
+    create: (providerId: number, body: { subject: string; category: string; message: string }, userId?: number) =>
+      fetchJson<SupportTicketDto>(`/providers/${providerId}/support-tickets`, {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: userId ? { "x-user-id": String(userId) } : undefined,
+      }),
+    updateStatus: (providerId: number, publicId: string, status: string, userId?: number) =>
+      fetchJson<SupportTicketDto>(`/providers/${providerId}/support-tickets/${encodeURIComponent(publicId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+        headers: userId ? { "x-user-id": String(userId) } : undefined,
+      }),
+  },
+};

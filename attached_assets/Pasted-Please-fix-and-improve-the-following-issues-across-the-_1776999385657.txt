@@ -1,0 +1,61 @@
+Please fix and improve the following issues across the platform (Frontend + Backend where applicable):
+
+1. Search Results Page
+Remove fake/incorrect ratings and star calculations.
+Ensure provider ratings and review counts are calculated dynamically from real data only.
+
+2. Service Provider Profile Image
+Remove “upload via URL” for profile image.
+Replace with proper image upload (file upload: profile image + banner image).
+Uploaded images should be stored securely and linked to provider account.
+3. Admin Panel Enhancements
+In service providers table:
+When selecting a region from dropdown, show number of providers per region.
+Same logic should apply for cities (providers per city).
+In regions management:
+Allow adding a city and assigning it to a region.
+Ability to activate/deactivate visibility of regions and cities.
+Add notification badge counter:
+For new service providers.
+For users.
+For orders.
+For support tickets.
+For subscriptions.
+4. Authentication Issue
+Fix login issue for newly created employee accounts.
+Ensure email/password authentication works correctly for admin-created users.
+5. Orders Page Bug
+When opening an order, missing data must be fixed:
+Customer name must appear.
+Service provider name must appear.
+Service details must appear.
+6. Provider Registration Improvements
+Replace profile image and banner URL input with proper file upload.
+When selecting a region, show only cities related to that region (single unified selection, not duplicated dropdowns).
+Remove “neighborhood/area” field completely.
+7. Location System
+Add map selection for provider location:
+OR use “My Current Location”.
+Remove neighborhood/area field completely.
+8. Provider Rules
+A provider can ONLY have one main category (no multiple primary categories).
+Fix error occurring during provider application submission.
+9. Subscription System
+In provider dashboard:
+Show available subscription plans correctly.
+Free plan:
+Cannot be re-selected or renewed once used.
+Prevent re-subscription if already active.
+Fix error when clicking “Confirm Subscription”.
+10. Dashboard Data Issue (IMPORTANT)
+Fix provider dashboard home page:
+It MUST NOT display fake or incorrect statistics.
+Either:
+Show real backend data only, OR
+Show empty/zero state if no data exists.
+Never generate or mock real-looking statistics.
+11. Provider Dashboard Bug
+The service created during registration is not appearing in provider dashboard.
+Ensure services are correctly saved and displayed after registration.
+
+If any part of the system is unclear, follow existing backend architecture and ensure data consistency across all modules.

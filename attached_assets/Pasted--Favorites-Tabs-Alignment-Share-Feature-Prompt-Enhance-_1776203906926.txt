@@ -1,0 +1,116 @@
+## 🔥 Favorites, Tabs Alignment & Share Feature Prompt
+
+Enhance the frontend UI/UX for provider listings and details pages with the following features:
+
+---
+
+# ❤️ Favorites (Heart Icon)
+
+### 🏠 Homepage / Listings
+
+* Add a **Heart Icon (Favorite Button)** on each service provider card
+* Behavior:
+
+  * On click → Add to favorites
+  * On second click → Remove from favorites (toggle)
+* Visual states:
+
+  * Default: outlined heart 🤍
+  * Active: filled heart ❤️
+
+---
+
+### 📄 Provider Details Page
+
+* Display the **same heart icon** at the top of the provider profile
+* Sync state with favorites system (if already added → show active)
+
+---
+
+### ⚙️ Logic
+
+* If user is NOT logged in:
+
+  * Redirect to login before adding to favorites
+* Save favorites in database linked to user ID
+* Update UI instantly (no page reload)
+
+---
+
+# 📑 Tabs Layout (Right Alignment)
+
+### In Provider Details Page:
+
+* Arrange tabs in this order:
+
+  1. About (نبذة)
+  2. Services
+  3. Gallery
+  4. Reviews
+
+* Requirements:
+
+  * Tabs start from the **RIGHT side**
+  * Full content aligned **right (RTL-friendly)**
+  * Clean tab UI (underline or pill style)
+  * Smooth switching (no reload)
+
+---
+
+### 🧑‍🔧 About Provider Section
+
+* Ensure:
+
+  * Text is **right-aligned**
+  * Proper spacing and readability
+  * Clean typography
+
+---
+
+# 🔗 Share Feature (زر المشاركة)
+
+* Add a **Share Button (Icon)** in provider details page
+
+### Behavior:
+
+* On click:
+
+  * Open native share options (mobile) OR
+  * Show share popup (desktop)
+
+### Share Options:
+
+* Copy link
+* WhatsApp
+* Facebook
+* Twitter (X)
+
+---
+
+# 🎯 UX Requirements
+
+* Smooth animations for favorite toggle
+* Instant feedback (color change / small animation)
+* Responsive design (mobile + desktop)
+* Lightweight icons (SVG)
+
+---
+
+# ⚙️ Technical Notes
+
+* Use API:
+
+  * POST /favorites (add)
+  * DELETE /favorites (remove)
+* Ensure proper authentication check
+* Avoid duplicate favorites
+* Share link should be dynamic per provider
+
+---
+
+# ✅ Expected Result
+
+* Favorites system شغال وسريع
+* Tabs منظمة ويمين 100%
+* زر المشاركة شغال باحتراف
+* تجربة مستخدم حديثة وسهلة

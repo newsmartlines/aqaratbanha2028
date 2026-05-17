@@ -1,0 +1,173 @@
+## 🔥 Full System Improvements & Fixes Prompt
+
+Implement the following improvements and fixes across **Admin Panel, Frontend, and Provider Dashboard** with clean UI, correct logic, and fully functional features:
+
+---
+
+# 🛠️ Admin Panel Fixes
+
+### 👥 Users Tab
+
+* In **Users tab**:
+
+  * Display **ONLY regular users**
+  * Do NOT show service providers here
+
+### 🧑‍🔧 Service Providers Tab
+
+* In **Service Providers tab**:
+
+  * Display **ONLY service providers**
+  * Ensure correct filtering based on user role
+
+### 📂 Sidebar Layout
+
+* Move the **main sidebar menu to the LEFT side** (since the system is in English / LTR layout)
+
+---
+
+# 🌐 Frontend Improvements
+
+### 🏠 Hero Section (Homepage)
+
+* In the **location field**:
+
+  * Load **ALL approved areas from database**
+  * Show only areas approved by admin (status = active)
+  * No static values
+
+---
+
+### 📝 Provider Registration Page
+
+* Show:
+
+  * All **Cities**
+  * Related **Areas (based on selected city)**
+* Ensure dynamic dependency:
+
+  * Selecting a city filters its areas
+* Data must come from database only
+
+---
+
+### ❤️ Favorites (Heart Icon)
+
+* On homepage (providers listing):
+
+  * Add **heart icon (favorite button)** on each provider card
+* On click:
+
+  * Add/remove provider from **user favorites**
+* Update UI instantly (toggle state)
+
+---
+
+# 📄 Provider Details Page
+
+### 📑 Tabs Layout
+
+* Move tabs to the **RIGHT side**
+* Align content to the **right**
+* ترتيب التابات:
+
+  1. About (نبذة)
+  2. Services
+  3. Gallery
+  4. Reviews
+  5. About Provider
+
+---
+
+### 💬 Contact / Message
+
+* When clicking **“Send Message”**:
+
+  * Open a **popup modal**
+  * Allow user to type and send message
+  * Or implement best UX solution (modal/chat)
+
+---
+
+### 🚫 Featured Badge Logic
+
+* Do NOT show **“Featured” badge** by default
+* Show it ONLY:
+
+  * If user is NOT logged in OR
+  * If user is logged as regular user AND clicks “Register as Provider”
+    → Redirect to **Packages Page**
+
+---
+
+# 🧑‍💼 Provider Dashboard Fixes
+
+### 💳 Payments & Subscriptions
+
+* Fix:
+
+  * **Invoice download not working**
+* Implement:
+
+  * Proper invoice generation (PDF or styled page)
+  * Clean, modern invoice design:
+
+    * Logo
+    * Provider name
+    * Package details
+    * Amount
+    * Date
+
+---
+
+### 📦 Orders Tab
+
+* Activate buttons:
+
+  * Accept Order ✅
+  * Reject Order ❌
+  * Contact Client 💬
+* Ensure all actions are functional and connected to backend
+
+---
+
+### ⭐ Reviews Tab
+
+* Allow provider to:
+
+  * Add reply to reviews
+  * Submit response successfully
+* Ensure data is saved and displayed correctly
+
+---
+
+### 💰 Payments Tab
+
+* Enable:
+
+  * Download Invoice
+* Improve invoice UI:
+
+  * Professional, clean, well-structured layout
+
+---
+
+# 🎯 Technical Requirements
+
+* All data must be dynamic (database-driven)
+* Ensure correct API integration
+* Fix all broken buttons and actions
+* Apply proper role-based logic (User / Provider / Admin)
+* Clean and responsive UI
+* No broken links or incorrect redirects
+
+---
+
+# ✅ Expected Result
+
+* Clean separation between users and providers in admin
+* Dynamic location system يعمل صح 100%
+* Favorites system شغال
+* Provider pages منظمة ومحترفة
+* كل الأزرار شغالة بدون مشاكل
+* نظام الفواتير احترافي

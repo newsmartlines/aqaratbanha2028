@@ -1,0 +1,131 @@
+## 🔥 Add Service Enhancement – Image Upload & Category Selection Prompt
+
+Enhance the **“Add Service”** feature in the Service Provider Dashboard with proper image upload and category selection.
+
+---
+
+# 🛠️ Add Service Form Requirements
+
+## 🖼️ 1. Service Image Upload
+
+* Add field:
+
+  * **Upload Service Image (File Upload)**
+* Requirements:
+
+  * Accept formats: JPG / PNG / WEBP
+  * Store image in:
+
+    * `/uploads/services/`
+* Save image path in database:
+
+```sql
+service_image = 'uploads/services/service123.jpg'
+```
+
+* Display image in:
+
+  * Provider dashboard (My Services)
+  * Frontend service listing
+  * Service details page
+
+---
+
+## 🧩 2. Category & Subcategory Selection
+
+### Main Category:
+
+* Dropdown (Select)
+* Load dynamically from database:
+
+```sql
+SELECT * FROM categories WHERE status = 'active';
+```
+
+---
+
+### Subcategory (Optional):
+
+* يظهر فقط بعد اختيار القسم الرئيسي
+* Dropdown dependent (Dynamic)
+
+```sql
+SELECT * FROM subcategories WHERE category_id = SELECTED_CATEGORY_ID;
+```
+
+---
+
+### Behavior:
+
+* User must select:
+
+  * Category (Required)
+  * Subcategory (Optional if exists)
+
+---
+
+## 📝 3. Service Details
+
+* Service Name
+* Description
+* Price
+* Status:
+
+  * Default = pending
+
+---
+
+# 🔄 4. Data Saving (IMPORTANT)
+
+Ensure service is saved with:
+
+```sql
+provider_id = AUTH_USER_ID
+category_id
+subcategory_id
+service_image
+service_name
+price
+status = 'pending'
+```
+
+---
+
+# 🌐 5. Frontend Display Logic
+
+* Show service ONLY if:
+
+  * status = active
+  * provider is approved
+
+---
+
+# 🧑‍💼 6. Admin Panel
+
+* Admin can:
+
+  * View service with image
+  * Approve / Reject service
+
+---
+
+# 🎯 UX Requirements
+
+* Image preview before upload
+* Smooth dropdown transitions
+* Clean form layout
+* Validation messages واضحة
+
+---
+
+# ✅ Expected Result
+
+* رفع صورة الخدمة شغال ✔
+* اختيار القسم الرئيسي والفرعي شغال ✔
+* البيانات بتتخزن صح ✔
+* الخدمة تظهر في الداشبورد ✔
+* تظهر في الفرونت بعد الموافقة ✔
+
+---
+
+**Ensure full integration between form, database, admin, and frontend display.**

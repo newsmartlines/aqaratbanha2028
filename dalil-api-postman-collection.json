@@ -1,0 +1,1945 @@
+{
+  "info": {
+    "_postman_id": "dalil-services-api-v1",
+    "name": "Dalil Services API — دليل الخدمات",
+    "description": "Complete API collection for the Dalil Services marketplace platform. Covers auth, providers, categories, services, requests, messages, payments (STC Pay), and admin endpoints.\n\n**Setup:**\n1. Import this file into Postman.\n2. Create an environment and set `base_url` = `https://your-domain.com/api`.\n3. Run **Auth → Login** — the token is stored automatically.\n4. All protected routes will use `{{token}}` from that variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://your-domain.com/api", "type": "string" },
+    { "key": "token",    "value": "",                             "type": "string" },
+    { "key": "user_id",  "value": "1",                           "type": "string" },
+    { "key": "provider_id", "value": "1",                        "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "🔑 Auth",
+      "item": [
+
+        {
+          "name": "Register — User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth","register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"أحمد محمد\",\n  \"email\": \"ahmed@example.com\",\n  \"phone\": \"+966501234567\",\n  \"password\": \"password123\",\n  \"role\": \"user\",\n  \"regionId\": 1,\n  \"cityId\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 10,\n    \"name\": \"أحمد محمد\",\n    \"email\": \"ahmed@example.com\",\n    \"role\": \"user\",\n    \"avatar\": null\n  },\n  \"token\": \"abc123sessiontoken\"\n}"
+            },
+            {
+              "name": "409 Email Already Exists",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"success\": false,\n  \"error\": \"البريد الإلكتروني مسجل مسبقاً\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.token) pm.collectionVariables.set('token', json.token);",
+                  "  if (json.data?.id) pm.collectionVariables.set('user_id', String(json.data.id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Register — Provider",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth","register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"شركة النظافة المثالية\",\n  \"email\": \"provider@example.com\",\n  \"phone\": \"+966509876543\",\n  \"password\": \"provider123\",\n  \"role\": \"provider\",\n  \"regionId\": 1,\n  \"cityId\": 2\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 10,\n    \"name\": \"أحمد محمد\",\n    \"email\": \"ahmed@example.com\",\n    \"role\": \"user\",\n    \"avatar\": null,\n    \"regionId\": 1,\n    \"cityId\": 1,\n    \"providerId\": null,\n    \"permissions\": {},\n    \"isSuperAdmin\": false\n  },\n  \"token\": \"abc123sessiontoken\"\n}"
+            },
+            {
+              "name": "401 Wrong Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"success\": false,\n  \"error\": \"بيانات الدخول غير صحيحة\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.token) pm.collectionVariables.set('token', json.token);",
+                  "  if (json.data?.id) pm.collectionVariables.set('user_id', String(json.data.id));",
+                  "  if (json.data?.providerId) pm.collectionVariables.set('provider_id', String(json.data.providerId));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth","me"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 10,\n    \"name\": \"أحمد محمد\",\n    \"email\": \"ahmed@example.com\",\n    \"phone\": \"+966501234567\",\n    \"role\": \"user\",\n    \"avatar\": null,\n    \"regionId\": 1,\n    \"cityId\": 1,\n    \"providerId\": null,\n    \"providerApproved\": null\n  }\n}"
+            },
+            {
+              "name": "401 Not Authenticated",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"success\": false,\n  \"error\": \"يجب تسجيل الدخول أولاً\"\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth","logout"] }
+          },
+          "response": [
+            { "name": "200 OK", "status": "OK", "code": 200, "body": "{\n  \"success\": true\n}" }
+          ]
+        },
+
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/forgot-password", "host": ["{{base_url}}"], "path": ["auth","forgot-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني\",\n  \"dev_reset_token\": \"abc123resettoken\"\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/reset-password", "host": ["{{base_url}}"], "path": ["auth","reset-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"abc123resettoken\",\n  \"newPassword\": \"newpassword123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"تم تغيير كلمة المرور بنجاح\"\n}"
+            },
+            {
+              "name": "400 Invalid Token",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"error\": \"رمز إعادة التعيين غير صالح\"\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Change Password (Logged In)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/change-password", "host": ["{{base_url}}"], "path": ["auth","change-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}"
+            }
+          },
+          "response": [
+            { "name": "200 OK", "status": "OK", "code": 200, "body": "{\n  \"success\": true,\n  \"message\": \"تم تغيير كلمة المرور بنجاح\"\n}" }
+          ]
+        },
+
+        {
+          "name": "Become Provider",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/auth/become-provider", "host": ["{{base_url}}"], "path": ["auth","become-provider"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 10,\n    \"name\": \"أحمد محمد\",\n    \"role\": \"provider\",\n    \"providerId\": 5,\n    \"providerApproved\": false\n  }\n}"
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "👥 Users",
+      "item": [
+
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"أحمد محمد\",\n      \"email\": \"ahmed@example.com\",\n      \"phone\": \"+966501234567\",\n      \"role\": \"user\",\n      \"avatar\": null,\n      \"status\": \"active\",\n      \"createdAt\": \"2025-01-01T00:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users","{{user_id}}"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users","{{user_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"أحمد محمد العلي\",\n  \"phone\": \"+966501234999\",\n  \"regionId\": 1,\n  \"cityId\": 2\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update User Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/status", "host": ["{{base_url}}"], "path": ["users","{{user_id}}","status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"suspended\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users","{{user_id}}"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get User Favorites",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/favorites", "host": ["{{base_url}}"], "path": ["users","{{user_id}}","favorites"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Add Favorite",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/favorites", "host": ["{{base_url}}"], "path": ["users","{{user_id}}","favorites"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": 3\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Remove Favorite",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/favorites/3", "host": ["{{base_url}}"], "path": ["users","{{user_id}}","favorites","3"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get User Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/requests", "host": ["{{base_url}}"], "path": ["users","{{user_id}}","requests"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get User Reviews",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/reviews", "host": ["{{base_url}}"], "path": ["users","{{user_id}}","reviews"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🏢 Providers",
+      "item": [
+
+        {
+          "name": "List Providers (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/providers?search=&category=&city=&featured=true",
+              "host": ["{{base_url}}"],
+              "path": ["providers"],
+              "query": [
+                { "key": "search",   "value": "",     "description": "Search by name or bio" },
+                { "key": "category", "value": "",     "description": "Category ID" },
+                { "key": "city",     "value": "",     "description": "City name in Arabic" },
+                { "key": "featured", "value": "true", "description": "Show featured only" },
+                { "key": "regionId", "value": "",     "description": "Region ID" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"bio\": \"متخصصون في تنظيف المنازل\",\n      \"city\": \"الرياض\",\n      \"rating\": \"4.8\",\n      \"reviewsCount\": 120,\n      \"verified\": true,\n      \"featured\": true,\n      \"userName\": \"شركة النظافة المثالية\",\n      \"categoryNameAr\": \"تنظيف المنازل\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Get Provider by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Find Nearby Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/providers/nearby?lat=24.7136&lng=46.6753&radius=10&category=1",
+              "host": ["{{base_url}}"],
+              "path": ["providers","nearby"],
+              "query": [
+                { "key": "lat",      "value": "24.7136" },
+                { "key": "lng",      "value": "46.6753" },
+                { "key": "radius",   "value": "10",  "description": "Radius in km (max 200)" },
+                { "key": "category", "value": "1",   "description": "Optional category filter" }
+              ]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Provider Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"متخصصون في تنظيف المنازل بأحدث الأساليب والمعدات\",\n  \"city\": \"الرياض\",\n  \"district\": \"العليا\",\n  \"phone\": \"+966509876543\",\n  \"whatsapp\": \"+966509876543\",\n  \"categoryId\": 1,\n  \"latitude\": 24.7136,\n  \"longitude\": 46.6753,\n  \"contactMethods\": [\"phone\", \"whatsapp\"]\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get Provider Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/stats", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","stats"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"totalOrders\": 45,\n    \"pendingOrders\": 5,\n    \"completedOrders\": 38,\n    \"cancelledOrders\": 2,\n    \"servicesCount\": 8,\n    \"reviewsCount\": 30,\n    \"avgRating\": \"4.7\",\n    \"subscription\": {\n      \"packageNameAr\": \"باقة المميزة\",\n      \"daysLeft\": 22,\n      \"isActive\": true\n    }\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Track Provider Interaction",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/interactions", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","interactions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"phone\"\n}"
+            },
+            "description": "type can be: phone | whatsapp | message"
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get Provider Interactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/interactions", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","interactions"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Subscribe to Free Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/subscribe", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","subscribe"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"packageId\": 1\n}"
+            },
+            "description": "Only works for free packages (price=0). Paid packages require STC Pay flow."
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get Provider Service Areas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/service-areas", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","service-areas"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Set Provider Service Areas",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/service-areas", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","service-areas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"areas\": [\n    { \"regionId\": 1, \"cityId\": 1, \"areaId\": null },\n    { \"regionId\": 1, \"cityId\": 2, \"areaId\": 5 }\n  ]\n}"
+            }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🗂️ Categories",
+      "item": [
+
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    { \"id\": 1, \"nameAr\": \"تنظيف المنازل\", \"nameEn\": \"Home Cleaning\", \"icon\": \"Sparkles\", \"slug\": \"home-cleaning\" },\n    { \"id\": 2, \"nameAr\": \"السباكة\", \"nameEn\": \"Plumbing\", \"icon\": \"Droplets\", \"slug\": \"plumbing\" }\n  ]\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/categories/1", "host": ["{{base_url}}"], "path": ["categories","1"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"الكهرباء\",\n  \"nameEn\": \"Electrical\",\n  \"icon\": \"Zap\",\n  \"slug\": \"electrical\",\n  \"description\": \"خدمات الكهرباء المنزلية والصناعية\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Category (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/1", "host": ["{{base_url}}"], "path": ["categories","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"تنظيف المنازل المتميزة\",\n  \"nameEn\": \"Premium Home Cleaning\",\n  \"icon\": \"Sparkles\",\n  \"slug\": \"premium-home-cleaning\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Category (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/categories/1", "host": ["{{base_url}}"], "path": ["categories","1"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List All Subcategories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/subcategories", "host": ["{{base_url}}"], "path": ["subcategories"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Subcategories by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/categories/1/subcategories", "host": ["{{base_url}}"], "path": ["categories","1","subcategories"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Subcategory (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/1/subcategories", "host": ["{{base_url}}"], "path": ["categories","1","subcategories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"تنظيف السجاد\",\n  \"nameEn\": \"Carpet Cleaning\",\n  \"icon\": \"Wind\",\n  \"slug\": \"carpet-cleaning\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Subcategory (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/subcategories/1", "host": ["{{base_url}}"], "path": ["subcategories","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"تنظيف السجاد والأثاث\",\n  \"nameEn\": \"Carpet & Furniture Cleaning\",\n  \"slug\": \"carpet-furniture-cleaning\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Subcategory (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/subcategories/1", "host": ["{{base_url}}"], "path": ["subcategories","1"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🔧 Services (Provider Listings)",
+      "item": [
+
+        {
+          "name": "List Provider Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/services", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","services"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/services", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","services"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"تنظيف شامل للمنزل\",\n  \"description\": \"تنظيف شامل يشمل جميع الغرف والحمامات والمطبخ\",\n  \"price\": \"350.00\",\n  \"categoryId\": 1,\n  \"subcategory\": \"تنظيف السجاد\",\n  \"status\": \"active\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/services/1", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","services","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"تنظيف شامل للمنزل — عرض خاص\",\n  \"price\": \"299.00\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/services/1", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","services","1"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List All Listings (Admin View)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/listings", "host": ["{{base_url}}"], "path": ["listings"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Listing Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/listings/1", "host": ["{{base_url}}"], "path": ["listings","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}"
+            },
+            "description": "status can be: active | pending | rejected"
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Listing (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/listings/1", "host": ["{{base_url}}"], "path": ["listings","1"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "📋 Requests",
+      "item": [
+
+        {
+          "name": "Create Service Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/requests", "host": ["{{base_url}}"], "path": ["requests"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": 1,\n  \"serviceId\": 2,\n  \"message\": \"أحتاج لتنظيف شامل للمنزل يوم الجمعة القادمة من الساعة 9 صباحاً\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 55,\n    \"userId\": 10,\n    \"providerId\": 1,\n    \"serviceId\": 2,\n    \"message\": \"أحتاج لتنظيف شامل...\",\n    \"status\": \"new\",\n    \"createdAt\": \"2025-06-01T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "401 Not Authenticated",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"success\": false,\n  \"error\": \"يجب تسجيل الدخول لطلب الخدمة\"\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "List All Requests (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/requests", "host": ["{{base_url}}"], "path": ["requests"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Provider Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/requests", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","requests"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Request Status (Provider/Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/requests/1/status", "host": ["{{base_url}}"], "path": ["requests","1","status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\"\n}"
+            },
+            "description": "status options: new | in_progress | completed | cancelled"
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Request Notes",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/requests/1", "host": ["{{base_url}}"], "path": ["requests","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"notes\": \"تم الانتهاء من العمل بنجاح. العميل راضٍ.\"\n}"
+            }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "💬 Messages",
+      "item": [
+
+        {
+          "name": "Get Inbox (Conversations)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/messages/inbox", "host": ["{{base_url}}"], "path": ["messages","inbox"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 5,\n      \"content\": \"مرحباً، هل أنتم متاحون الجمعة؟\",\n      \"createdAt\": \"2025-06-01T09:00:00.000Z\",\n      \"isRead\": false,\n      \"otherId\": 3,\n      \"otherName\": \"شركة النظافة\",\n      \"unreadCount\": 2\n    }\n  ]\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Get Conversation with User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/messages/conversation/3", "host": ["{{base_url}}"], "path": ["messages","conversation","3"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/messages", "host": ["{{base_url}}"], "path": ["messages"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": 3,\n  \"content\": \"مرحباً، هل أنتم متاحون يوم الجمعة للتنظيف؟\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 12,\n    \"senderId\": 10,\n    \"receiverId\": 3,\n    \"content\": \"مرحباً، هل أنتم متاحون يوم الجمعة للتنظيف؟\",\n    \"isRead\": false,\n    \"createdAt\": \"2025-06-01T10:05:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Get Unread Message Count",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/messages/unread-count", "host": ["{{base_url}}"], "path": ["messages","unread-count"] }
+          },
+          "response": [
+            { "name": "200 OK", "status": "OK", "code": 200, "body": "{\n  \"success\": true,\n  \"data\": 4\n}" }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "⭐ Reviews",
+      "item": [
+
+        {
+          "name": "List Provider Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/reviews", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","reviews"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/reviews", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","reviews"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 10,\n  \"rating\": 5,\n  \"text\": \"خدمة ممتازة جداً، التزاماً بالوقت وجودة عمل عالية. سأتعامل معهم مرة أخرى.\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/reviews/1", "host": ["{{base_url}}"], "path": ["reviews","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"text\": \"خدمة جيدة، لكن التأخير في الوصول كان ملحوظاً.\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Reply to Review (Provider)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/reviews/1/reply", "host": ["{{base_url}}"], "path": ["reviews","1","reply"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reply\": \"شكراً جزيلاً على تقييمك الكريم. نعتذر عن التأخير ونعدكم بتحسين الخدمة.\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Review (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/reviews/1", "host": ["{{base_url}}"], "path": ["reviews","1"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "📦 Packages & Subscriptions",
+      "item": [
+
+        {
+          "name": "List Packages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/packages", "host": ["{{base_url}}"], "path": ["packages"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"nameAr\": \"الباقة المجانية\",\n      \"nameEn\": \"Free Plan\",\n      \"price\": \"0.00\",\n      \"durationDays\": 30,\n      \"maxListings\": 3,\n      \"featuredAllowed\": false\n    },\n    {\n      \"id\": 2,\n      \"nameAr\": \"الباقة الذهبية\",\n      \"nameEn\": \"Gold Plan\",\n      \"price\": \"199.00\",\n      \"durationDays\": 90,\n      \"maxListings\": 20,\n      \"featuredAllowed\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Create Package (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/packages", "host": ["{{base_url}}"], "path": ["packages"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"الباقة البلاتينية\",\n  \"nameEn\": \"Platinum Plan\",\n  \"price\": \"499.00\",\n  \"durationDays\": 365,\n  \"maxListings\": 100,\n  \"commissionRate\": \"5.00\",\n  \"featuredAllowed\": true,\n  \"topBadge\": true,\n  \"priorityRank\": 1\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Package (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/packages/2", "host": ["{{base_url}}"], "path": ["packages","2"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": \"249.00\",\n  \"durationDays\": 120\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Package (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/packages/2", "host": ["{{base_url}}"], "path": ["packages","2"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "💳 Payments — STC Pay",
+      "item": [
+
+        {
+          "name": "Create Subscription Payment Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/stcpay/create-session", "host": ["{{base_url}}"], "path": ["stcpay","create-session"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"packageId\": 2,\n  \"fromOnboarding\": false\n}"
+            },
+            "description": "Requires provider role. Returns redirectUrl for STC Pay checkout."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"refId\": \"STC-1717000000-ABCD1234\",\n    \"redirectUrl\": \"https://stcpay.example.com/checkout/xyz\",\n    \"amount\": 199,\n    \"currency\": \"SAR\",\n    \"mode\": \"test\"\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Create Service Request Payment Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/stcpay/create-request-session", "host": ["{{base_url}}"], "path": ["stcpay","create-request-session"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": 1,\n  \"serviceId\": 2,\n  \"amount\": 350.00\n}"
+            },
+            "description": "Customer-initiated paid service request flow."
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/stcpay/status/STC-1717000000-ABCD1234", "host": ["{{base_url}}"], "path": ["stcpay","status","STC-1717000000-ABCD1234"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"refId\": \"STC-1717000000-ABCD1234\",\n    \"status\": \"paid\",\n    \"amount\": \"199.00\",\n    \"currency\": \"SAR\",\n    \"kind\": \"subscription\",\n    \"packageId\": 2,\n    \"packageName\": \"الباقة الذهبية\",\n    \"paidAt\": \"2025-06-01T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "STC Pay Webhook (Callback)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/stcpay/webhook", "host": ["{{base_url}}"], "path": ["stcpay","webhook"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"BillNumber\": \"STC-1717000000-ABCD1234\",\n  \"PaymentStatus\": \"paid\"\n}"
+            },
+            "description": "Server-to-server callback from STC Pay. No auth required."
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🔔 Notifications",
+      "item": [
+
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/notifications?userId={{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [{ "key": "userId", "value": "{{user_id}}", "description": "Omit for admin global notifications" }]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get Unread Notification Count",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/notifications/unread-count?userId={{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications","unread-count"],
+              "query": [{ "key": "userId", "value": "{{user_id}}" }]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/notifications", "host": ["{{base_url}}"], "path": ["notifications"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 10,\n  \"type\": \"info\",\n  \"title\": \"طلبك قيد المعالجة\",\n  \"message\": \"تم استلام طلبك وسيتم التواصل معك قريباً\",\n  \"link\": \"/profile/requests\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/notifications/1/read", "host": ["{{base_url}}"], "path": ["notifications","1","read"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/notifications/read-all", "host": ["{{base_url}}"], "path": ["notifications","read-all"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 10\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/notifications/1", "host": ["{{base_url}}"], "path": ["notifications","1"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🎫 Support Tickets",
+      "item": [
+
+        {
+          "name": "List Provider Support Tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/support-tickets", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","support-tickets"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Support Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/support-tickets", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","support-tickets"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"مشكلة في تفعيل الاشتراك\",\n  \"category\": \"Payment\",\n  \"message\": \"لقد دفعت قيمة الباقة الذهبية ولكن الاشتراك لم يتفعل بعد. يرجى المساعدة.\"\n}"
+            },
+            "description": "category options: Technical | Payment | Account | Other"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"TK-42817\",\n    \"subject\": \"مشكلة في تفعيل الاشتراك\",\n    \"category\": \"Payment\",\n    \"status\": \"Pending\",\n    \"message\": \"لقد دفعت...\",\n    \"adminReply\": null,\n    \"createdAt\": \"2025-06-01T12:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Update Ticket Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/providers/{{provider_id}}/support-tickets/TK-42817", "host": ["{{base_url}}"], "path": ["providers","{{provider_id}}","support-tickets","TK-42817"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\"\n}"
+            },
+            "description": "status options: Replied | Pending | Closed"
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🗺️ Regions & Cities",
+      "item": [
+
+        {
+          "name": "List Regions (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/regions", "host": ["{{base_url}}"], "path": ["regions"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"nameAr\": \"الرياض\",\n      \"nameEn\": \"Riyadh\",\n      \"enabled\": true,\n      \"cities\": [\n        { \"id\": 1, \"nameAr\": \"الرياض\", \"enabled\": true, \"areas\": [] },\n        { \"id\": 2, \"nameAr\": \"الدرعية\", \"enabled\": true, \"areas\": [] }\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "List Areas by City",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/cities/1/areas", "host": ["{{base_url}}"], "path": ["cities","1","areas"] }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "⚙️ Settings",
+      "item": [
+
+        {
+          "name": "Get All Site Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/settings", "host": ["{{base_url}}"], "path": ["settings"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"siteName\": \"دليل الخدمات\",\n    \"siteNameEn\": \"Dalil Al-Khidmat\",\n    \"primaryColor\": \"#0d9488\",\n    \"contactEmail\": \"info@dalel.sa\",\n    \"contactPhone\": \"+966500000000\",\n    \"heroTitle\": \"اكتشف أفضل الخدمات\"\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Get Setting by Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/settings/siteName", "host": ["{{base_url}}"], "path": ["settings","siteName"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Site Settings (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/settings", "host": ["{{base_url}}"], "path": ["settings"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siteName\": \"دليل الخدمات المميزة\",\n  \"primaryColor\": \"#1e40af\",\n  \"contactEmail\": \"support@dalel.sa\",\n  \"commissionPercent\": \"10\"\n}"
+            }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "📊 Stats",
+      "item": [
+
+        {
+          "name": "Get Platform Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/stats", "host": ["{{base_url}}"], "path": ["stats"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"providers\": 142,\n    \"users\": 3850,\n    \"services\": 620,\n    \"requests\": 1205\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/healthz", "host": ["{{base_url}}"], "path": ["healthz"] }
+          },
+          "response": [
+            { "name": "200 OK", "status": "OK", "code": 200, "body": "{\n  \"status\": \"ok\"\n}" }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "📁 File Upload",
+      "item": [
+
+        {
+          "name": "Upload Avatar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/upload/avatar", "host": ["{{base_url}}"], "path": ["upload","avatar"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "avatar", "type": "file", "description": "Image file (JPG, PNG, WebP, max 5MB)" }]
+            }
+          },
+          "response": [
+            { "name": "200 OK", "status": "OK", "code": 200, "body": "{\n  \"success\": true,\n  \"data\": { \"url\": \"/uploads/avatars/abc123def456.jpg\" }\n}" }
+          ]
+        },
+
+        {
+          "name": "Upload Banner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/upload/banner", "host": ["{{base_url}}"], "path": ["upload","banner"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "banner", "type": "file", "description": "Image file (JPG, PNG, WebP, max 5MB)" }]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Upload Service Image",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/upload/service", "host": ["{{base_url}}"], "path": ["upload","service"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "image", "type": "file", "description": "Image file (JPG, PNG, WebP, max 5MB)" }]
+            }
+          },
+          "response": []
+        }
+
+      ]
+    },
+
+    {
+      "name": "🛡️ Admin",
+      "item": [
+
+        {
+          "name": "Sidebar Badge Counts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/sidebar-counts", "host": ["{{base_url}}"], "path": ["admin","sidebar-counts"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"pendingProviders\": 7,\n    \"suspendedUsers\": 2,\n    \"pendingOrders\": 15,\n    \"openTickets\": 4\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "List All Providers (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/providers?status=pending&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin","providers"],
+              "query": [
+                { "key": "status", "value": "pending", "description": "approved | pending | suspended | rejected" },
+                { "key": "search", "value": "" },
+                { "key": "regionId", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Provider (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/providers", "host": ["{{base_url}}"], "path": ["admin","providers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"شركة الخدمات المتكاملة\",\n  \"email\": \"integrated@example.com\",\n  \"phone\": \"+966501112233\",\n  \"password\": \"secure456\",\n  \"bio\": \"نقدم خدمات متكاملة لجميع احتياجاتك المنزلية\",\n  \"city\": \"جدة\",\n  \"district\": \"النزهة\",\n  \"categoryId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Companies (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/companies?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["admin","companies"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Get Company by ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/companies/1", "host": ["{{base_url}}"], "path": ["admin","companies","1"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Company (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/companies", "host": ["{{base_url}}"], "path": ["admin","companies"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"شركة النظافة الشاملة\",\n  \"email\": \"clean@company.sa\",\n  \"phone\": \"+966503334455\",\n  \"password\": \"company123\",\n  \"city\": \"الرياض\",\n  \"district\": \"الملقا\",\n  \"categoryId\": 1,\n  \"coveredAreas\": [1, 2, 3]\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Company (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/companies/1", "host": ["{{base_url}}"], "path": ["admin","companies","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true,\n  \"verified\": true,\n  \"featured\": false,\n  \"suspended\": false\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Toggle Company Active (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/companies/1/toggle-active", "host": ["{{base_url}}"], "path": ["admin","companies","1","toggle-active"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Company Covered Areas (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/companies/1/covered-areas", "host": ["{{base_url}}"], "path": ["admin","companies","1","covered-areas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"areas\": [1, 2, 5, 7]\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Company (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/companies/1", "host": ["{{base_url}}"], "path": ["admin","companies","1"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Categories (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/categories", "host": ["{{base_url}}"], "path": ["admin","categories"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Category (Admin Full)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/categories", "host": ["{{base_url}}"], "path": ["admin","categories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"الدهانات والديكور\",\n  \"nameEn\": \"Painting & Decor\",\n  \"slug\": \"painting-decor\",\n  \"icon\": \"PaintBucket\",\n  \"description\": \"خدمات الدهانات والديكور الداخلي والخارجي\",\n  \"status\": \"active\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Update Category (Admin Full)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/categories/1", "host": ["{{base_url}}"], "path": ["admin","categories","1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"تنظيف المنازل المتخصص\",\n  \"status\": \"active\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Toggle Category Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/categories/1/toggle-status", "host": ["{{base_url}}"], "path": ["admin","categories","1","toggle-status"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Category (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/categories/1", "host": ["{{base_url}}"], "path": ["admin","categories","1"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Admin Services (Catalog)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/services?subcategoryId=1",
+              "host": ["{{base_url}}"],
+              "path": ["admin","services"],
+              "query": [{ "key": "subcategoryId", "value": "1" }]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Admin Service (Catalog)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/services", "host": ["{{base_url}}"], "path": ["admin","services"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subcategoryId\": 1,\n  \"nameAr\": \"تنظيف المطبخ الشامل\",\n  \"nameEn\": \"Full Kitchen Cleaning\",\n  \"description\": \"تنظيف شامل للمطبخ بما في ذلك الأجهزة والأسطح\",\n  \"status\": \"active\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Faults (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/faults?serviceItemId=1",
+              "host": ["{{base_url}}"],
+              "path": ["admin","faults"],
+              "query": [{ "key": "serviceItemId", "value": "1" }]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/payments?status=paid&from=2025-01-01&to=2025-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["admin","payments"],
+              "query": [
+                { "key": "status", "value": "paid",       "description": "paid | pending | failed" },
+                { "key": "from",   "value": "2025-01-01", "description": "ISO date" },
+                { "key": "to",     "value": "2025-12-31", "description": "ISO date" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"rows\": [\n      {\n        \"id\": \"TX-5\",\n        \"invoiceId\": \"STC-1717000000-ABCD1234\",\n        \"type\": \"subscription\",\n        \"providerName\": \"شركة النظافة المثالية\",\n        \"amount\": \"199.00\",\n        \"commissionAmount\": \"0\",\n        \"status\": \"paid\",\n        \"paidAt\": \"2025-06-01T11:00:00.000Z\"\n      }\n    ],\n    \"totals\": {\n      \"paid\": 88,\n      \"paidAmount\": 17512.00,\n      \"commissionTotal\": 1751.20\n    }\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Export Payments CSV (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/payments/export?status=paid",
+              "host": ["{{base_url}}"],
+              "path": ["admin","payments","export"],
+              "query": [
+                { "key": "status", "value": "paid" },
+                { "key": "from",   "value": "", "description": "Optional date filter" },
+                { "key": "to",     "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Subscriptions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/admin/subscriptions?status=active",
+              "host": ["{{base_url}}"],
+              "path": ["admin","subscriptions"],
+              "query": [{ "key": "status", "value": "active", "description": "active | expired | cancelled" }]
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Regions (Admin, All)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/regions", "host": ["{{base_url}}"], "path": ["admin","regions"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Region (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/regions", "host": ["{{base_url}}"], "path": ["admin","regions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"مكة المكرمة\",\n  \"nameEn\": \"Makkah\",\n  \"order\": 2\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Toggle Region (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/regions/1/toggle", "host": ["{{base_url}}"], "path": ["admin","regions","1","toggle"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create City (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/cities", "host": ["{{base_url}}"], "path": ["admin","cities"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"regionId\": 1,\n  \"nameAr\": \"الخرج\",\n  \"nameEn\": \"Al Kharj\"\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "List Staff (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin","staff"] }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Create Staff Member (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin","staff"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"سارة عبدالله\",\n  \"email\": \"sara@dalel.sa\",\n  \"password\": \"staffpass123\",\n  \"role\": \"moderator\",\n  \"permissions\": {\n    \"providers\": true,\n    \"users\": true,\n    \"payments\": false,\n    \"settings\": false\n  }\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": {\n    \"id\": 3,\n    \"name\": \"سارة عبدالله\",\n    \"email\": \"sara@dalel.sa\",\n    \"role\": \"moderator\",\n    \"status\": \"active\"\n  }\n}"
+            }
+          ]
+        },
+
+        {
+          "name": "Update Staff Member (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff/3", "host": ["{{base_url}}"], "path": ["admin","staff","3"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\",\n  \"permissions\": {\n    \"providers\": true,\n    \"users\": true,\n    \"payments\": true,\n    \"settings\": false\n  }\n}"
+            }
+          },
+          "response": []
+        },
+
+        {
+          "name": "Delete Staff Member (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/staff/3", "host": ["{{base_url}}"], "path": ["admin","staff","3"] }
+          },
+          "response": []
+        }
+
+      ]
+    }
+
+  ]
+}

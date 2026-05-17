@@ -1,0 +1,181 @@
+I need to extend and complete the system with the following advanced features.
+
+Everything must be fully dynamic and connected to MySQL, Admin Dashboard, and Frontend.
+
+---
+
+========================
+1) PROVIDERS MANAGEMENT (ADMIN)
+========================
+
+- Add new provider manually from admin:
+  - Name
+  - Phone
+  - Email
+  - Profile image
+  - Cover (Hero banner)
+  - Services
+  - Categories & subcategories
+  - Location (map)
+  - Description
+
+- Edit provider:
+  - Allow editing ALL fields:
+    - Images
+    - Services
+    - Prices
+    - Categories
+    - Contact info
+
+- Save changes to database and reflect on frontend instantly
+
+---
+
+========================
+2) ADMIN USERS & ROLES
+========================
+
+- Create admin users (staff accounts)
+
+- Roles system:
+  - Super Admin
+  - Admin
+  - Moderator
+
+- Permissions:
+  - Control what each role can access:
+    - Providers
+    - Users
+    - Orders
+    - Payments
+    - Settings
+
+---
+
+========================
+3) ADMIN SETTINGS
+========================
+
+- Add settings page:
+  - Change main admin password
+  - General settings (site name, logo, etc.)
+
+---
+
+========================
+4) FRONTEND BRANDING
+========================
+
+- Change website name to:
+  “دليل بلس”
+
+- Add logo text dynamically from admin
+
+---
+
+========================
+5) NEW FRONTEND PAGES
+========================
+
+Create dynamic pages:
+
+- Categories page
+- About Us page
+- Contact Us page
+
+All must be editable from admin dashboard
+
+---
+
+========================
+6) HERO SECTION (IMPORTANT)
+========================
+
+- Add advanced search field including:
+  - Keyword (service / provider name)
+  - Category selector (name it: “التصنيف”)
+  - Location
+
+- Add button: “الأقرب لي”
+
+FUNCTION:
+
+- When user clicks “Near Me”:
+  - Detect user location (GPS)
+  - Show providers on map
+  - Sort by nearest
+
+- Add map view:
+  - Display providers as markers
+  - Click marker → open provider profile page
+
+---
+
+========================
+7) CATEGORIES DISPLAY (LIKE HARAJ)
+========================
+
+- Show categories with smaller icons
+
+- When clicking a category:
+  - Show its subcategories below dynamically
+
+- Must behave similar to Haraj UX
+
+---
+
+========================
+8) CTA SECTION
+========================
+
+Text:
+“ندعم المشاريع المنزلية ونضمن حقوقك”
+
+Button:
+“انضم الينا الان”
+
+- Link button to:
+  Service Provider Registration page
+
+---
+
+========================
+9) FOOTER ENHANCEMENTS
+========================
+
+- Add FAQ page:
+  - Dynamic content
+  - Editable from admin
+
+- Add links:
+  - About Us
+  - Contact Us
+  - FAQ
+
+---
+
+========================
+10) GENERAL REQUIREMENTS
+========================
+
+- All features must be:
+  - Fully dynamic
+  - Connected to MySQL
+  - Synced with Admin and Frontend
+
+- All buttons must work:
+  - Add / Edit / Delete
+
+- No static data
+
+---
+
+FINAL REQUIREMENT:
+
+Deliver a complete, production-ready system where:
+- Admin controls everything
+- Providers can be fully managed
+- Frontend reflects all changes instantly
+- Location-based search and map are working
+
+Do not leave anything incomplete.

@@ -1,0 +1,254 @@
+I want to build a FULLY DYNAMIC services marketplace platform connected to a MySQL database.
+
+The system must include:
+
+1) Frontend Website
+2) User Dashboard (for normal users)
+3) Service Provider Dashboard
+4) Admin Dashboard (full control)
+5) Authentication system (login/register)
+6) Subscription & commission system
+
+---
+
+MAIN RULE (VERY IMPORTANT):
+
+- All data must come from MySQL database
+- Any change made from:
+  - Admin
+  - User
+  - Service Provider
+→ Must reflect instantly across the entire system
+
+---
+
+AUTHENTICATION SYSTEM:
+
+- Login باستخدام:
+  - Username OR Email OR Phone
+- Register:
+  - Choose:
+    - Normal User
+    - Service Provider
+
+---
+
+USER DASHBOARD:
+
+Create a full dashboard for normal users including:
+
+1) Profile Page:
+- Edit:
+  - Name
+  - Email
+  - Phone
+  - Password
+
+2) My Activity:
+- الخدمات اللي تواصل عليها
+- الطلبات (Requests / Leads)
+
+3) Favorites:
+- حفظ مقدمي الخدمات
+
+4) Reviews:
+- التقييمات اللي كتبها
+
+---
+
+SERVICE PROVIDER DASHBOARD:
+
+Create a powerful dashboard for providers:
+
+1) Profile Management:
+- تعديل:
+  - الاسم
+  - الوصف
+  - الصور
+  - البانر (Hero section)
+  - رقم الهاتف
+  - الموقع (Google Map)
+
+---
+
+2) Services Management:
+- Add / Edit / Delete services
+- لكل خدمة:
+  - Title
+  - Description
+  - Price
+- اختيار القسم والقسم الفرعي
+
+---
+
+3) Subscription & Packages:
+
+- عرض الباقة الحالية:
+  - اسم الباقة
+  - السعر
+  - تاريخ البداية
+  - تاريخ الانتهاء
+
+- حالة الباقة:
+  - Active / Expired
+
+- Buttons:
+  - “تجديد الآن”
+  - “ترقية الباقة”
+
+---
+
+4) Payments:
+
+- عرض المدفوعات
+- تاريخ الاشتراك
+- الفواتير
+
+---
+
+5) Requests / Leads:
+
+- كل العملاء اللي تواصلوا مع مقدم الخدمة
+- حالة الطلب
+
+---
+
+6) Analytics (optional but strong):
+- عدد المشاهدات
+- عدد الطلبات
+- عدد التقييمات
+
+---
+
+ADMIN DASHBOARD (FULL CONTROL):
+
+Admin can control EVERYTHING:
+
+1) Providers:
+- View all providers (same frontend data)
+- Approve / Reject
+- Edit all details
+- Delete / Suspend
+
+---
+
+2) Users:
+- Manage users
+
+---
+
+3) Categories:
+- Add / Edit / Delete
+- Main + Subcategories
+
+---
+
+4) Services:
+- Moderate all services
+- Edit / Delete
+- Mark as Featured
+
+---
+
+5) Packages:
+- Create / Edit / Delete packages
+- Control:
+  - Price
+  - Duration
+  - Features
+
+---
+
+6) Commission System:
+- Set:
+  - Percentage %
+  - Fixed fee
+- Per:
+  - Platform
+  - Category
+  - Provider
+
+---
+
+7) Content Management:
+- Homepage content
+- About Us page
+- Categories page
+
+---
+
+DATABASE STRUCTURE (MySQL):
+
+Tables must include:
+
+- users
+- providers
+- services
+- categories
+- subcategories
+- provider_services
+- subscriptions
+- packages
+- payments
+- requests (leads)
+- reviews
+- favorites
+
+Use proper relationships (foreign keys)
+
+---
+
+FRONTEND PAGES:
+
+- Homepage (dynamic)
+- Search results page
+- Provider details page
+- Categories page
+- About Us page
+- Login / Register
+
+---
+
+IMPORTANT UX REQUIREMENTS:
+
+- All forms must work (Next buttons active)
+- Real CRUD operations
+- Live updates after any change
+- Validation on all inputs
+
+---
+
+TECH STACK:
+
+- Backend: Laravel (recommended)
+- Database: MySQL
+- Frontend: Blade OR React / Next.js
+
+---
+
+PERFORMANCE:
+
+- Optimize queries
+- Use pagination
+- Lazy loading images
+
+---
+
+SECURITY:
+
+- Role-based system:
+  - Admin
+  - User
+  - Provider
+
+---
+
+FINAL OUTPUT:
+
+- Full system architecture
+- Database schema
+- API endpoints
+- Admin dashboard
+- User dashboard
+- Provider dashboard
+- Fully dynamic system ready for production

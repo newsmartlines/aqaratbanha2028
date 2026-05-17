@@ -1,0 +1,145 @@
+Yes, proceed and implement ALL requested features in one complete build.
+
+Do NOT stop at individual features.
+Do NOT ask for confirmation after each step.
+
+I need a FULLY CONNECTED system where:
+Frontend + Backend + Admin Dashboard + Database are all integrated and working together.
+
+---
+
+CORE REQUIREMENT (CRITICAL):
+
+- Connect the frontend to backend APIs
+- Connect backend to MySQL database
+- All data must be dynamic (NO static or hardcoded data)
+- Any change from Admin / Provider / User must reflect instantly on frontend
+
+---
+
+INCLUDE EVERYTHING IN ONE DELIVERY:
+
+1) FRONTEND (USER-FACING WEBSITE):
+- Homepage
+- Search results page
+- Provider details page
+- Categories page
+- About Us page
+- Login / Register pages
+
+---
+
+2) USER DASHBOARD (CUSTOMERS):
+
+Create a complete user-facing dashboard:
+
+- Profile:
+  - Edit name, email, phone, password
+
+- Favorites:
+  - Save / remove providers
+
+- Requests:
+  - Track all requests sent to providers
+  - Show status
+
+- Reviews:
+  - Manage submitted reviews
+
+All actions must be connected to backend and database.
+
+---
+
+3) SERVICE PROVIDER DASHBOARD:
+
+- My Services (Add / Edit / Delete services)
+- Profile management (banner, images, contact, location)
+- Subscription:
+  - Show plan
+  - Expiry date
+  - Renew / Upgrade
+- Requests / Leads
+- Payments & invoices
+
+All fully dynamic and connected to backend.
+
+---
+
+4) ADMIN DASHBOARD (FULL CONTROL):
+
+- Manage Providers (Approve / Reject / Edit)
+- Manage Users
+- Manage Services
+- Manage Categories + Subcategories
+- Manage Packages
+- Manage Payments
+- Manage Commission system
+- Control homepage content
+
+All actions must update database and reflect on frontend immediately.
+
+---
+
+5) DATABASE (MySQL):
+
+- Fully relational schema
+- Tables:
+  users, providers, services, categories, subcategories,
+  subscriptions, packages, payments, requests, reviews, favorites
+
+- Proper foreign keys and relationships
+
+---
+
+6) API LAYER:
+
+- Build REST API endpoints for:
+  - Auth
+  - Users
+  - Providers
+  - Services
+  - Categories
+  - Requests
+  - Payments
+
+- Frontend must consume these APIs
+
+---
+
+7) FRONTEND ↔ BACKEND CONNECTION:
+
+- Use API calls (Axios / Fetch)
+- Handle:
+  - Loading states
+  - Errors
+  - Success messages
+
+---
+
+8) FUNCTIONALITY (NO PLACEHOLDERS):
+
+- All buttons must work:
+  - Add / Edit / Delete
+  - Next
+  - Submit
+  - Approve / Reject
+
+- Forms must validate inputs
+
+---
+
+9) REAL-TIME BEHAVIOR:
+
+- After any update → frontend reflects new data immediately
+- Use efficient queries and caching if needed
+
+---
+
+10) FINAL REQUIREMENT:
+
+Deliver a COMPLETE WORKING SYSTEM:
+- Frontend + Backend + Admin + Dashboards + Database
+- Fully integrated
+- Production-ready structure
+- No missing features
+- No static demo data

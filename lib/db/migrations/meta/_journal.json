@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1776195938862,
+      "tag": "0000_tan_the_liberteens",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776196000000,
+      "tag": "0001_support_tickets",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776196100000,
+      "tag": "0002_support_ticket_admin_reply",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776196200000,
+      "tag": "0003_user_location",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,479 @@
+import { useState, useEffect } from "react";
+import { useLocation, useParams, Link } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
+import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import {
+  BedDouble, Bath, Maximize2, Building2, ArrowLeft, ArrowRight,
+  MapPin, Phone, MessageCircle, Share2, Heart, CheckCircle2,
+  Star, ChevronLeft, ChevronRight, Play, X, Calendar,
+  Layers, Car, Home, TrendingUp, Eye, Clock,
+} from "lucide-react";
+import { PROPERTIES } from "./home";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const DEFAULT_IMG = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=85";
+
+export default function PropertyDetail() {
+  const params = useParams<{ id: string }>();
+  const [, setLocation] = useLocation();
+  const property = PROPERTIES.find((p) => p.id === Number(params.id));
+
+  const [activeImg, setActiveImg] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [params.id]);
+
+  if (!property) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
+        <Building2 className="w-16 h-16 text-muted-foreground/30" />
+        <p className="text-xl font-bold text-muted-foreground">العقار غير موجود</p>
+        <Button onClick={() => setLocation("/")} className="rounded-full">العودة للرئيسية</Button>
+      </div>
+    );
+  }
+
+  const gallery = property.gallery ?? [property.img];
+  const similar = PROPERTIES.filter((p) => p.id !== property.id && (p.kind === property.kind || p.type === property.type)).slice(0, 3);
+
+  const handleShare = () => {
+    navigator.clipboard?.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const prevImg = () => setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
+  const nextImg = () => setActiveImg((i) => (i + 1) % gallery.length);
+
+  return (
+    <div className="min-h-screen bg-gray-50" dir="rtl">
+      <Header />
+
+      {/* ── Breadcrumb ── */}
+      <div className="bg-white border-b border-border sticky top-0 z-30">
+        <div className="container mx-auto px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto">
+          <Link href="/" className="hover:text-primary transition-colors shrink-0">الرئيسية</Link>
+          <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+          <span className="hover:text-primary transition-colors cursor-pointer shrink-0" onClick={() => setLocation("/")}>العقارات</span>
+          <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+          <span className="text-gray-900 font-medium truncate">{property.title}</span>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* ── Top action bar ── */}
+        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <Badge className={`rounded-full text-xs font-bold px-3 py-1 ${property.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
+                {property.type}
+              </Badge>
+              <Badge variant="outline" className="rounded-full text-xs">{property.kind}</Badge>
+              {property.featured && (
+                <Badge className="rounded-full text-xs bg-amber-400 text-amber-900 border-none">⭐ مميز</Badge>
+              )}
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">{property.title}</h1>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-sm mt-2">
+              <MapPin className="w-4 h-4 text-primary shrink-0" />
+              <span>{property.address}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setLiked(!liked)}
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${liked ? "bg-rose-50 border-rose-300 text-rose-500" : "bg-white border-border text-muted-foreground hover:border-rose-300 hover:text-rose-400"}`}
+            >
+              <Heart className={`w-4 h-4 ${liked ? "fill-rose-500" : ""}`} />
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-10 h-10 rounded-full border border-border bg-white text-muted-foreground hover:text-primary hover:border-primary/30 flex items-center justify-center transition-all relative"
+            >
+              <Share2 className="w-4 h-4" />
+              {copied && (
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-full px-2 py-1 whitespace-nowrap">
+                  تم النسخ!
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* ── LEFT COLUMN: Gallery + Details ── */}
+          <div className="lg:col-span-2 space-y-8">
+
+            {/* ── Main Image Gallery ── */}
+            <div className="rounded-3xl overflow-hidden bg-white shadow-sm border border-border">
+              <div className="relative aspect-[16/9] overflow-hidden group">
+                <img
+                  src={gallery[activeImg]}
+                  alt={property.title}
+                  className="w-full h-full object-cover cursor-zoom-in transition-transform duration-500 group-hover:scale-105"
+                  onClick={() => { setLightboxIdx(activeImg); setLightbox(true); }}
+                  onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+
+                {/* Navigation arrows */}
+                {gallery.length > 1 && (
+                  <>
+                    <button onClick={prevImg} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 flex items-center justify-center hover:bg-white transition-all shadow-md">
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                    <button onClick={nextImg} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 flex items-center justify-center hover:bg-white transition-all shadow-md">
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+
+                {/* Counter */}
+                <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium">
+                  {activeImg + 1} / {gallery.length}
+                </div>
+
+                {/* Video play button */}
+                <button
+                  onClick={() => setShowVideo(true)}
+                  className="absolute bottom-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium hover:bg-primary transition-all"
+                >
+                  <Play className="w-3.5 h-3.5 fill-white" />
+                  مشاهدة الفيديو
+                </button>
+              </div>
+
+              {/* Thumbnails */}
+              {gallery.length > 1 && (
+                <div className="flex gap-2 p-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                  {gallery.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImg(i)}
+                      className={`shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 transition-all ${i === activeImg ? "border-primary shadow-md" : "border-transparent opacity-60 hover:opacity-90"}`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Quick Specs ── */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">مواصفات العقار</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {property.beds > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <BedDouble className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.beds}</span>
+                    <span className="text-xs text-muted-foreground">غرف النوم</span>
+                  </div>
+                )}
+                {property.baths > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Bath className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.baths}</span>
+                    <span className="text-xs text-muted-foreground">دورات المياه</span>
+                  </div>
+                )}
+                <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                  <Maximize2 className="w-6 h-6 text-primary" />
+                  <span className="text-xl font-extrabold text-gray-900">{property.area}</span>
+                  <span className="text-xs text-muted-foreground">م² المساحة</span>
+                </div>
+                {property.floors > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Layers className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.floors}</span>
+                    <span className="text-xs text-muted-foreground">الطوابق</span>
+                  </div>
+                )}
+                {property.garage > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Car className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.garage}</span>
+                    <span className="text-xs text-muted-foreground">مواقف السيارات</span>
+                  </div>
+                )}
+                {property.year > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Calendar className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.year}</span>
+                    <span className="text-xs text-muted-foreground">سنة البناء</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Description ── */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">وصف العقار</h2>
+              <p className="text-gray-600 leading-relaxed text-base">{property.description}</p>
+            </div>
+
+            {/* ── Amenities ── */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">المرافق والمزايا</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {property.amenities.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>{a}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Video Section ── */}
+            <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-primary fill-primary" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">جولة افتراضية بالفيديو</h2>
+              </div>
+              <div className="relative aspect-video bg-gray-900">
+                <iframe
+                  src={`https://www.youtube.com/embed/${property.videoId}?autoplay=0&rel=0`}
+                  title="جولة العقار"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+
+            {/* ── Map Section ── */}
+            <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">الموقع على الخريطة</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
+                </div>
+              </div>
+              <div className="h-72 md:h-96">
+                <MapContainer
+                  center={[property.lat, property.lng]}
+                  zoom={14}
+                  className="h-full w-full"
+                  zoomControl={true}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  />
+                  <Marker position={[property.lat, property.lng]}>
+                    <Popup>
+                      <div className="text-right min-w-[160px] font-sans" dir="rtl">
+                        <p className="font-bold text-sm mb-1">{property.title}</p>
+                        <p className="text-xs text-gray-500">{property.location}</p>
+                        <p className="text-xs font-bold text-primary mt-1">{property.price} ر.س</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ── RIGHT COLUMN: Price Card + Agent ── */}
+          <div className="space-y-6">
+
+            {/* Price Card */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm sticky top-20">
+              <div className="mb-6">
+                <p className="text-xs text-muted-foreground mb-1">السعر</p>
+                <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">ريال سعودي</p>
+                {property.area > 0 && (
+                  <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
+                    ≈ {Math.round(property.priceNum / property.area).toLocaleString()} ر.س / م²
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3 mb-6">
+                <div className="flex items-center gap-1 text-amber-500">
+                  {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
+                </div>
+                <span className="text-sm text-muted-foreground">(12 تقييم)</span>
+              </div>
+
+              <div className="space-y-2 mb-6 text-sm">
+                {[
+                  { icon: Home, label: "نوع العقار", value: property.kind },
+                  { icon: MapPin, label: "الموقع", value: property.location },
+                  { icon: TrendingUp, label: "الحالة", value: property.type },
+                  { icon: Eye, label: "المشاهدات", value: "١,٢٤٧ مشاهدة" },
+                  { icon: Clock, label: "تاريخ النشر", value: "منذ ٣ أيام" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
+                    <item.icon className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-semibold text-gray-900 mr-auto truncate">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
+                <Phone className="w-4 h-4 ml-2" />
+                اتصل بالوكيل
+              </Button>
+              <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50">
+                <MessageCircle className="w-4 h-4 ml-2" />
+                واتساب
+              </Button>
+            </div>
+
+            {/* Agent Card */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wide">الوكيل العقاري</h3>
+              <div className="flex items-center gap-4 mb-5">
+                <img
+                  src={property.agentAvatar}
+                  alt={property.agentName}
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-primary/20 shadow"
+                  onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                />
+                <div>
+                  <p className="font-bold text-gray-900 text-base">{property.agentName}</p>
+                  <p className="text-sm text-muted-foreground">{property.agentTitle}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-xs text-emerald-600 font-medium">وكيل موثّق</span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-5 text-center">
+                {[{ label: "عقار", value: "34" }, { label: "صفقة", value: "120+" }, { label: "سنة خبرة", value: "8" }].map((s, i) => (
+                  <div key={i} className="bg-gray-50 rounded-2xl p-2 border border-border">
+                    <p className="font-extrabold text-gray-900">{s.value}</p>
+                    <p className="text-xs text-muted-foreground">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+              <a href={`tel:${property.agentPhone}`} className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary transition-colors">
+                <Phone className="w-4 h-4 text-primary" />
+                {property.agentPhone}
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Similar Properties ── */}
+        {similar.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-extrabold text-gray-900">عقارات مشابهة</h2>
+              <button onClick={() => setLocation("/")} className="text-sm text-primary font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                عرض الكل <ArrowLeft className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similar.map((p, idx) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white rounded-3xl border border-border overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all cursor-pointer group"
+                  onClick={() => setLocation(`/property/${p.id}`)}
+                >
+                  <div className="relative h-44 overflow-hidden">
+                    <img src={p.img} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{p.type}</span>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-primary font-extrabold text-lg">{p.price} <span className="text-xs text-muted-foreground font-normal">ر.س</span></p>
+                    <h3 className="font-bold text-gray-900 mt-1 mb-1 truncate group-hover:text-primary transition-colors">{p.title}</h3>
+                    <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
+                      <MapPin className="w-3 h-3 text-primary" />
+                      {p.location}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      {p.beds > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{p.beds}</span>}
+                      {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{p.baths}</span>}
+                      <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5" />{p.area} م²</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Lightbox ── */}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+            onClick={() => setLightbox(false)}
+          >
+            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all">
+              <X className="w-5 h-5" />
+            </button>
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all"
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => (i - 1 + gallery.length) % gallery.length); }}
+            >
+              <ArrowRight className="w-6 h-6" />
+            </button>
+            <motion.img
+              key={lightboxIdx}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              src={gallery[lightboxIdx]}
+              alt=""
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+            />
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all"
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => (i + 1) % gallery.length); }}
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {gallery.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setLightboxIdx(i); }}
+                  className={`w-2 h-2 rounded-full transition-all ${i === lightboxIdx ? "bg-white w-6" : "bg-white/40"}`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <RealEstateFooter />
+    </div>
+  );
+}

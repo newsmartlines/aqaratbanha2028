@@ -1,0 +1,189 @@
+The system is still not fully dynamic and many admin dashboard features are not working properly.
+
+I need you to FIX, COMPLETE, and CONNECT all admin functionalities with the database and frontend.
+
+---
+
+MAIN GOAL:
+
+Make the Admin Dashboard fully functional with real CRUD operations and full synchronization with:
+- Database (MySQL)
+- Frontend
+- Provider dashboard
+- User dashboard
+
+---
+
+1) CATEGORIES & SUBCATEGORIES (VERY IMPORTANT):
+
+- Enable full control:
+  - Add category
+  - Edit category
+  - Delete category
+
+- Add support for SUBCATEGORIES:
+  - Create subcategories under each category
+  - Edit / Delete subcategories
+
+- Each category must include:
+  - Title
+  - Description
+  - Image / Icon
+
+- Changes must reflect instantly on:
+  - Homepage
+  - Filters
+  - Frontend listings
+
+---
+
+2) ORDERS / REQUESTS:
+
+- When clicking on an order:
+  - Show FULL DETAILS page:
+    - User info
+    - Provider info
+    - Service details
+    - Date
+    - Status
+
+- Add:
+  - Change status (Pending / Completed / Cancelled)
+  - Notes
+  - Internal tracking
+
+- Save all changes in database
+
+---
+
+3) USERS MANAGEMENT:
+
+- Enable Edit button:
+  - When clicked → open full user details
+  - Allow editing:
+    - Name
+    - Email
+    - Phone
+
+- Enable Delete user
+
+- Ensure changes reflect everywhere
+
+---
+
+4) PROVIDERS MANAGEMENT:
+
+- When clicking provider:
+  - Show full profile:
+    - Services
+    - Contact
+    - Subscription
+    - Status
+
+- Enable actions:
+  - Approve
+  - Reject
+  - Suspend
+
+- Ensure:
+  - Status updates in database
+  - Reflected on frontend immediately
+
+---
+
+5) COMMISSION SYSTEM (DYNAMIC):
+
+- Make commission fully dynamic:
+
+  - Set global commission (% or fixed)
+  - Set commission per category
+  - Set custom commission per provider
+
+- Save in database
+- Apply commission on:
+  - Orders / Leads
+  - Subscriptions
+
+---
+
+6) NOTIFICATIONS SYSTEM:
+
+- Fix notifications (currently not working)
+
+- Add:
+  - Admin notifications
+  - Provider notifications
+  - User notifications
+
+- Trigger notifications when:
+  - New provider registers
+  - New order created
+  - Payment completed
+  - Provider approved/rejected
+
+- Store in database and show in UI
+
+---
+
+7) FIX ALL BUTTONS (CRITICAL):
+
+Ensure ALL buttons are functional:
+
+- Add
+- Edit
+- Delete
+- Approve
+- Reject
+- Suspend
+- View details
+
+Each must:
+- Call backend API
+- Update database
+- Reflect instantly in UI
+
+---
+
+8) REMOVE STATIC DATA:
+
+- Remove all hardcoded/mock data
+- Use real data from MySQL only
+
+---
+
+9) API & BACKEND FIX:
+
+- Verify all API endpoints:
+  - Categories
+  - Subcategories
+  - Users
+  - Providers
+  - Orders
+  - Commission
+  - Notifications
+
+- Fix any broken routes
+
+---
+
+10) REAL-TIME SYNC:
+
+- After any update:
+  - Refresh data automatically OR update UI instantly
+
+---
+
+FINAL REQUIREMENT:
+
+Deliver a fully working ADMIN PANEL where:
+
+- Everything is dynamic
+- All actions are connected to database
+- All changes reflect across:
+  - Admin dashboard
+  - Frontend
+  - Provider dashboard
+
+This must behave like a real production system, not a demo.
+
+Do not leave anything incomplete.

@@ -1,0 +1,162 @@
+## 🔥 Critical Data Isolation & Dashboard Fix Prompt
+
+Fix all issues related to **data integrity, user isolation, and dashboard accuracy** for Service Providers.
+Each user must see **ONLY their own data** across all dashboard sections.
+
+---
+
+# ❌ Current Issues (Must Be Fixed)
+
+* Subscription data is incorrect after registration
+* Payments & renewal records show **data from other users**
+* Added services are **not दिखाई in provider account**
+* Payments page shows **unrelated data**
+* Settings page shows **wrong user information**
+* Uploaded profile image is **not displayed**
+* Dashboard statistics (views, orders, etc.) show **fake or incorrect data** immediately after registration
+
+---
+
+# ✅ Required Fixes
+
+## 🔐 1. Data Isolation (VERY IMPORTANT)
+
+* Ensure all queries are filtered by:
+
+  * `user_id` OR `provider_id`
+* Every logged-in provider must see:
+
+  * Only their own:
+
+    * Services
+    * Payments
+    * Orders
+    * Settings
+    * Statistics
+
+### Example:
+
+```sql
+SELECT * FROM services WHERE provider_id = AUTH_USER_ID;
+```
+
+---
+
+## 👤 2. Settings Page Fix
+
+* Display ONLY:
+
+  * Name
+  * Email
+  * Phone
+  * Profile Image
+  * Services added by this provider
+
+* Fix:
+
+  * No shared or cached data from other users
+  * Ensure correct binding between frontend and backend
+
+---
+
+## 🖼️ 3. Profile Image Issue
+
+* Fix image upload:
+
+  * Ensure image is saved correctly in database (path/url)
+  * Ensure image loads correctly in frontend
+  * Validate storage path and permissions
+
+---
+
+## 🛠️ 4. Services Visibility
+
+* After adding a service:
+
+  * It must appear immediately in provider dashboard
+* Ensure:
+
+  * Service is saved with correct `provider_id`
+  * Proper API response and UI refresh
+
+---
+
+## 💳 5. Payments & Subscription Fix
+
+* Payments tab:
+
+  * Show ONLY provider’s payments
+* Subscription:
+
+  * Reflect the actual selected plan
+* Renewal records:
+
+  * Must match logged-in provider only
+
+---
+
+## 📊 6. Dashboard Statistics Fix
+
+* After new registration:
+
+  * Show:
+
+    * 0 Orders
+    * 0 Views
+    * 0 Revenue
+
+* Do NOT show:
+
+  * Random or global data
+
+* All stats must be:
+
+```sql
+WHERE provider_id = AUTH_USER_ID
+```
+
+---
+
+## 📦 7. Orders Data
+
+* Show ONLY orders related to this provider
+* No shared/global orders
+
+---
+
+## ⚙️ 8. Backend Fixes
+
+* Fix all APIs to:
+
+  * Accept authenticated user ID
+  * Filter results properly
+* Remove any:
+
+  * Hardcoded data
+  * Global queries without filters
+  * Cache issues (clear or scope cache per user)
+
+---
+
+## 🔄 9. Session & Authentication
+
+* Ensure:
+
+  * Each session is isolated
+  * No session leakage between users
+* Validate JWT or session correctly per request
+
+---
+
+# 🎯 Expected Result
+
+* كل يوزر يشوف بياناته فقط ✔
+* مفيش أي بيانات متكررة أو غلط ✔
+* الداشبورد يبدأ بـ 0 بيانات ✔
+* كل حاجة مرتبطة بـ user_id صح ✔
+* رفع الصور شغال ✔
+* الخدمات بتظهر فوراً ✔
+
+---
+
+**This is a critical fix. Ensure full data isolation and correct user-based data mapping across the entire system (Frontend + Backend + Database).**

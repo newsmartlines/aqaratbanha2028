@@ -1,0 +1,199 @@
+## 🔥 Provider Dashboard – Subscriptions, Banner Upload & Full System Sync Prompt
+
+Fix and enhance the **Service Provider Dashboard** to ensure all features are fully functional, connected to database, and reflected across **Frontend + Admin + Backend**.
+
+---
+
+# 💳 1. Subscriptions Page Fix
+
+### ❌ Current Issues:
+
+* “Subscribe Now” button not working
+* Provider cannot select or change plan
+* Default (Free Plan) not handled properly
+
+---
+
+### ✅ Required Fix:
+
+* Activate **“Subscribe Now” button**
+
+  * Redirect to **Packages / Plans page**
+
+---
+
+### 📦 Plans Logic:
+
+* Show available plans:
+
+  * Free Plan (default)
+  * Paid Plans
+
+* If provider is already on Free Plan:
+
+  * Allow upgrade to any paid plan
+
+---
+
+### ⚙️ Behavior:
+
+* On selecting a plan:
+
+  * Save in database:
+
+```sql
+user_id
+plan_id
+status (active)
+start_date
+end_date
+```
+
+* Update UI immediately:
+
+  * Show current plan correctly
+  * Show renewal date (if exists)
+
+---
+
+# 🖼️ 2. Settings – Banner Image Upload
+
+### Add New Feature:
+
+* Allow provider to upload **Banner Image**
+
+---
+
+### Requirements:
+
+* File upload (NOT link)
+* Accept:
+
+  * JPG / PNG / WEBP
+* Store in:
+
+  * `/uploads/banners/`
+
+---
+
+### Database:
+
+```sql
+banner_image = 'uploads/banners/provider123.jpg'
+```
+
+---
+
+### Display:
+
+* Show banner in:
+
+  * Provider profile page
+  * Provider dashboard header (optional)
+
+---
+
+# 🔄 3. Full System Synchronization (CRITICAL)
+
+Ensure ALL provider actions are fully synced across:
+
+### ✅ Frontend
+
+### ✅ Backend (API)
+
+### ✅ Database
+
+### ✅ Admin Panel
+
+---
+
+## 🧩 What Must Be Synced:
+
+### 🧑‍🔧 Profile Data
+
+* Name
+* Image
+* Banner
+* Contact info
+
+---
+
+### 🛠️ Services
+
+* Add / Edit / Delete
+* Must:
+
+  * Save in DB
+  * Show in dashboard
+  * Show in admin
+  * Show in frontend (after approval)
+
+---
+
+### 💳 Subscriptions
+
+* Correct plan shown
+* No fake data
+* Reflect real DB data
+
+---
+
+### 📦 Orders
+
+* Only provider’s orders
+* Correct status updates
+
+---
+
+### ⭐ Reviews
+
+* Show correct reviews
+* Allow reply and save properly
+
+---
+
+### ❤️ Favorites (if applicable)
+
+* Reflect correctly per user
+
+---
+
+# 🔐 4. Data Integrity Rules
+
+* ALL queries must include:
+
+```sql
+WHERE provider_id = AUTH_USER_ID
+```
+
+* Prevent:
+
+  * Shared data
+  * Wrong user data
+  * Cached old data
+
+---
+
+# 🧪 5. Validation & Testing Checklist
+
+* Register new provider → appears in admin ✔
+* Add service → يظهر في الداشبورد ✔
+* Approve service → يظهر في الفرونت ✔
+* Upload image/banner → يظهر فوراً ✔
+* Subscribe to plan → يتحدث فوراً ✔
+* Refresh الصفحة → البيانات تظل صحيحة ✔
+
+---
+
+# 🎯 Expected Result
+
+* زر الاشتراك شغال ✔
+* اختيار الباقات متاح ✔
+* رفع صورة البانر شغال ✔
+* كل حاجة مربوطة ببعض (DB + Admin + Frontend) ✔
+* مفيش أي بيانات وهمية أو ضايعة ✔
+* النظام احترافي ومستقر ✔
+
+---
+
+**Ensure the system is fully dynamic, consistent, and production-ready with no broken features.**

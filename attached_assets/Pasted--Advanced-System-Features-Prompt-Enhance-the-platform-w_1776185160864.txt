@@ -1,0 +1,75 @@
+🔥 Advanced System Features Prompt
+
+Enhance the platform with the following features and fixes for Service Provider Registration, User Management, Notifications, and UI Behavior:
+
+🧾 Service Provider Registration (Categories)
+In the Service Provider Registration Form:
+Load and display ALL main categories dynamically from the database
+No hardcoded categories
+Allow selecting one or multiple main categories (if needed)
+Ensure categories are always synced with database updates
+📞 Contact Methods (Multi-Select)
+Add a field called “Contact Methods”
+Allow users/providers to select multiple options, such as:
+Phone Call
+WhatsApp
+Chat
+Email
+Store selections in database (JSON or relational table)
+Display selected contact methods in provider profile
+🔔 Admin Notifications
+When a new registration occurs:
+(Regular User or Service Provider)
+Send notification to Admin Dashboard
+Notification must include:
+User name
+Account type (User / Provider)
+Time of registration
+Display in:
+Notification bell 🔔
+Real-time or refresh-based system
+👤 Users Management (Admin Panel)
+In Users Management page:
+When clicking on any user:
+Open a dedicated profile page (or modal)
+Show full user details:
+Profile Image
+Name
+Email
+Phone
+Role (User / Provider)
+Categories (if provider)
+Service Areas
+Registration date
+UI should be clean and modern (card or profile layout)
+❌ Critical Bug Fix (Login Issue)
+Fix issue:
+After registering as a Service Provider, logging in redirects to Admin Dashboard incorrectly
+Correct behavior:
+User → /user/dashboard
+Provider → /provider/dashboard
+Admin → /admin/dashboard
+Ensure proper role-based authentication (RBAC)
+🖼️ Header / Banner UI (After Login)
+After login:
+Show user/provider profile image + name in the top header (navbar or banner)
+On hover or click:
+Show dropdown menu with:
+Edit Profile
+My Orders
+Favorites
+Logout
+UI should be similar to modern apps (clean dropdown with icons)
+🎯 UX & Technical Requirements
+All data must be dynamic (no hardcoded values)
+Use proper API calls and role validation
+Secure authentication (JWT or session-based)
+Ensure no wrong redirects or role conflicts
+Smooth UI interactions (dropdowns, modals, transitions)
+💡 Expected Result
+Fully dynamic registration system
+Multi-contact options working correctly
+Admin gets notified instantly on new users
+Clean and professional user profile view
+Correct login behavior based on roles
+Modern header with dropdown user menu

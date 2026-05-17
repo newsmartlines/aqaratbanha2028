@@ -1,0 +1,193 @@
+I want to build a full Admin Dashboard system for managing a services marketplace platform (similar to Haraj but for services).
+
+---
+
+MAIN GOAL:
+Create a powerful, scalable, and easy-to-use admin panel to manage:
+- Service providers
+- Users
+- Listings
+- Payments
+- Commission system
+- Platform analytics
+
+---
+
+ACCESS FLOW:
+
+- Add a link in the website footer:
+  - Text: “Admin Dashboard”
+- When clicked:
+  → Redirect to Admin Login Page
+
+---
+
+ADMIN LOGIN PAGE:
+
+- Simple login page
+- Inputs:
+  - Username
+  - Password
+- Button: “Login”
+
+TEMPORARY LOGIC (IMPORTANT):
+- For now, allow login WITHOUT password validation (development mode)
+- Clicking “Login” redirects directly to dashboard
+- Add note in code: “Disable this in production”
+
+---
+
+ADMIN DASHBOARD STRUCTURE:
+
+SIDEBAR MENU:
+- Dashboard (overview)
+- Service Providers
+- Users
+- Listings / Services
+- Categories
+- Subcategories
+- Orders / Requests
+- Payments
+- Commission Settings
+- Subscriptions / Packages
+- Reports & Analytics
+- Settings
+
+---
+
+DASHBOARD (HOME):
+
+- Stats cards:
+  - Total Providers
+  - Active Providers
+  - Total Users
+  - Total Listings
+  - Total Revenue
+  - Pending Approvals
+
+- Charts:
+  - Revenue over time
+  - New providers growth
+  - Most popular categories
+
+---
+
+SERVICE PROVIDERS MANAGEMENT:
+
+- Table view:
+  - Name
+  - Phone
+  - Category
+  - Status (Pending / Approved / Rejected)
+  - Subscription plan
+- Actions:
+  - Approve / Reject
+  - View profile
+  - Edit
+  - Suspend
+
+---
+
+LISTINGS MANAGEMENT:
+
+- View all services added
+- Edit / Delete listings
+- Mark as Featured
+- Moderate content
+
+---
+
+COMMISSION SYSTEM (VERY IMPORTANT):
+
+Create a flexible commission system:
+
+1) Commission Types:
+- Percentage (e.g. 10% per order)
+- Fixed fee (e.g. 5 SAR per request)
+
+2) Commission Scope:
+- Global (applies to all)
+- Per category
+- Per provider (custom commission)
+
+3) Revenue Streams:
+- Subscription plans (monthly/yearly)
+- Commission on each service request
+- Featured listing fees
+
+---
+
+PAYMENT & EARNINGS:
+
+- Track:
+  - Total platform earnings
+  - Provider earnings
+- Show:
+  - Pending payments
+  - Completed payments
+
+---
+
+SUBSCRIPTION SYSTEM:
+
+- Manage packages:
+  - Free
+  - Basic
+  - Premium
+- Control:
+  - Number of listings allowed
+  - Featured visibility
+  - Duration
+
+---
+
+REQUEST / ORDER SYSTEM:
+
+- When user contacts provider → create a “lead” or “request”
+- Admin can track:
+  - Request status
+  - Commission generated
+
+---
+
+REPORTS & ANALYTICS:
+
+- Revenue reports
+- Top providers
+- Top categories
+- Conversion rates
+
+---
+
+SETTINGS:
+
+- Platform commission %
+- Currency
+- Payment methods
+- Email notifications
+
+---
+
+DESIGN STYLE:
+
+- Modern admin dashboard (like SaaS platforms)
+- Sidebar navigation
+- Clean cards
+- Data tables
+- Charts (charts.js or similar)
+
+---
+
+SECURITY NOTE:
+- Add roles system (Admin / Moderator)
+- (Even if basic for now)
+
+---
+
+OUTPUT REQUIRED:
+
+- Full Admin Dashboard UI/UX
+- Database structure suggestion
+- Commission logic explanation
+- API structure (optional)
+- Ready for implementation (Laravel / Node / React)

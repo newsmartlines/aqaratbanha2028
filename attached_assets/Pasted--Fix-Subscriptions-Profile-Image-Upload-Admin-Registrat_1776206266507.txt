@@ -1,0 +1,155 @@
+## 🔥 Fix Subscriptions, Profile Image Upload & Admin Registration Issues
+
+Fix the following **critical issues** related to subscriptions, profile images, and provider registration visibility in the admin panel:
+
+---
+
+# ❌ Current Issues
+
+* Subscriptions page shows **fake / dummy data**
+* Profile image requires a **URL instead of file upload**
+* Newly registered **Service Providers do NOT appear in Admin Panel**
+
+---
+
+# ✅ Required Fixes
+
+## 💳 1. Subscriptions Page (Remove Fake Data)
+
+* Remove any:
+
+  * Hardcoded data
+  * Dummy/demo content
+
+* Display ONLY:
+
+  * Real subscription data مرتبط بالمستخدم الحالي
+
+### Requirements:
+
+* Fetch subscriptions from database:
+
+```sql id="y4q8xj"
+SELECT * FROM subscriptions WHERE user_id = AUTH_USER_ID;
+```
+
+* If no subscription:
+
+  * Show: **“No active subscription”**
+
+---
+
+## 🖼️ 2. Profile Image Upload (File Instead of URL)
+
+* Replace image input field:
+
+  * From: Text input (image URL)
+  * To: **File Upload**
+
+### Requirements:
+
+* Allow upload:
+
+  * JPG / PNG / WEBP
+* Store image:
+
+  * In server storage (e.g. `/uploads/profile/`)
+* Save image path in database
+
+### Example:
+
+```sql id="w0w8x7"
+profile_image = 'uploads/profile/user123.jpg'
+```
+
+* Display image correctly in:
+
+  * Dashboard
+  * Header
+  * Profile page
+
+---
+
+## 🧑‍💼 3. Provider Registration Not Showing in Admin
+
+### Problem:
+
+* New Service Providers are not visible in Admin Panel
+
+### Fix:
+
+* When user registers as **Service Provider**:
+
+  * Save:
+
+    * role = 'provider'
+    * status = 'pending' (important)
+
+---
+
+### 🛠️ Admin Panel Requirements
+
+* Add section:
+
+  * **“Pending Providers”**
+
+* Show:
+
+  * Name
+  * Email
+  * Phone
+  * Registration date
+
+---
+
+### 🎯 Actions:
+
+* Admin can:
+
+  * ✅ Approve → status = 'active'
+  * ❌ Reject → status = 'rejected'
+
+---
+
+### 🔐 Frontend Behavior
+
+* If provider status = pending:
+
+  * Show message:
+
+    * “Your account is تحت المراجعة”
+
+* If rejected:
+
+  * Show reason (optional)
+
+---
+
+# ⚙️ Technical Notes
+
+* Ensure:
+
+  * Correct insertion into database on registration
+  * No validation errors preventing save
+* Check:
+
+  * API endpoint for registration
+  * Admin query:
+
+```sql id="3bqk3o"
+SELECT * FROM users WHERE role = 'provider';
+```
+
+---
+
+# 🎯 Expected Result
+
+* Subscriptions تعرض بيانات حقيقية فقط ✔
+* رفع صورة البروفايل يتم من الجهاز ✔
+* أي مقدم خدمة جديد يظهر في الأدمن ✔
+* الأدمن يقدر يوافق أو يرفض ✔
+* النظام يبقى منظم وآمن ✔
+
+---
+
+**Fix these issues across Backend + Frontend + Database to ensure accurate and professional system behavior.**

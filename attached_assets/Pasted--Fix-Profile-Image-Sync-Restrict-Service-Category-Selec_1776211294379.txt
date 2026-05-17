@@ -1,0 +1,146 @@
+## 🔥 Fix Profile Image Sync + Restrict Service Category Selection Prompt
+
+Fix the following issues and enforce proper logic for **Service Providers**:
+
+---
+
+# 🖼️ 1. Profile Image Not Updating on Provider Page
+
+### ❌ Problem:
+
+* Provider updates profile image in dashboard
+* Image updates in dashboard only
+* But NOT updated in **frontend provider profile page**
+
+---
+
+### ✅ Required Fix:
+
+* Ensure **same image source (DB field)** is used across:
+
+  * Dashboard
+  * Provider public profile page
+  * Listings
+
+---
+
+### ⚙️ Technical Fix:
+
+* Always fetch image from database:
+
+```sql id="g6m8pq"
+SELECT profile_image FROM users WHERE id = AUTH_USER_ID;
+```
+
+* Ensure:
+
+  * No cached old image (clear cache if exists)
+  * Correct image URL/path is used
+  * Storage path is publicly accessible
+
+---
+
+### 🔄 Sync Requirement:
+
+* After updating image:
+
+  * Reflect immediately in:
+
+    * Dashboard ✔
+    * Frontend ✔
+    * Admin ✔
+
+---
+
+# 🧩 2. Restrict Category Selection (IMPORTANT BUSINESS RULE)
+
+### ❌ Current Issue:
+
+* Provider can select new/different main category when adding service
+
+---
+
+### ✅ Required Behavior:
+
+* Each Service Provider:
+
+  * Can register under **ONLY ONE Main Category**
+  * Cannot change or add another main category later
+
+---
+
+### 🛠️ Fix Logic:
+
+* During registration:
+
+  * Save:
+
+```sql id="w7r7ak"
+main_category_id
+```
+
+---
+
+### 🧾 Add Service Form:
+
+* REMOVE main category selection completely ❌
+* Only allow:
+
+  * Subcategory selection (from provider’s main category)
+
+---
+
+### 🔗 Subcategory Query:
+
+```sql id="y0m7hu"
+SELECT * FROM subcategories 
+WHERE category_id = PROVIDER_MAIN_CATEGORY_ID;
+```
+
+---
+
+### ⚠️ Validation:
+
+* Prevent:
+
+  * Adding service خارج القسم الرئيسي
+* Backend must validate:
+
+```sql id="7k1qf5"
+IF service.category_id != provider.main_category_id → REJECT
+```
+
+---
+
+# 🧑‍💼 3. Admin Panel Sync
+
+* Admin must see:
+
+  * Provider main category
+  * Services only under that category
+
+---
+
+# 🎯 UX Requirements
+
+* Show provider’s main category as:
+
+  * Read-only label (غير قابل للتعديل)
+* Subcategories:
+
+  * Dynamic dropdown based on main category
+* Clean error message if violation happens
+
+---
+
+# ✅ Expected Result
+
+* صورة البروفايل بتتحدث في كل الصفحات ✔
+* مفيش اختلاف بين الداشبورد والفرونت ✔
+* كل مقدم خدمة ليه قسم رئيسي واحد ✔
+* إضافة الخدمات من نفس القسم فقط ✔
+* النظام منظم وبدون أخطاء ✔
+
+---
+
+**Ensure full synchronization between database, API, frontend, and admin panel with strict category control per provider.**

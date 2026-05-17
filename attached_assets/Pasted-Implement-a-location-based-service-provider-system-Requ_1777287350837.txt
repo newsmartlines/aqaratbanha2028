@@ -1,0 +1,68 @@
+Implement a location-based service provider system.
+
+Requirements:
+
+When the user enables location access, detect their current coordinates (latitude & longitude).
+Show the nearest service providers based on distance from the user.
+Add a category filter system (e.g., Food, Cleaning, Repair, etc.):
+If the user selects "Food", show only nearby food service providers.
+Apply a distance filter (5 km radius):
+Only show providers within 5 kilometers of the user.
+If no providers are found within 5 km, display this message:
+"No service providers available within 5 km of your location."
+Ensure distance calculation is accurate using proper geo-location formulas (Haversine formula or equivalent).
+Optimize performance for real-time filtering and map display if applicable.
+
+
+Improve the service providers listing on the homepage (Home Page UI/UX).
+
+Requirements:
+
+Service Provider Card Enhancements:
+Add a phone icon button that allows users to call the provider directly.
+Add a WhatsApp icon button that opens a chat with the provider using their WhatsApp number.
+Ensure both icons are clearly visible and accessible on each card.
+Badges / Labels:
+Add a “Featured” badge for premium or highlighted providers.
+Add a “Verified” badge for verified providers.
+Display these badges clearly on the service provider card (top corner or near name).
+Homepage Display Rules:
+Show providers in a clean, responsive card layout.
+Ensure badges and icons do not overlap UI elements.
+Maintain good spacing and visual hierarchy.
+User Experience:
+Clicking phone icon should trigger direct call (tel link).
+Clicking WhatsApp icon should open WhatsApp chat with prefilled number.
+Ensure icons are mobile-friendly and responsive.
+Consistency:
+Keep UI consistent across all cards in the homepage.
+Ensure smooth hover and click effects for better UX.
+
+Improve the Service Provider profile page and add a full service request + payment flow.
+
+Requirements:
+
+Add "Request Service" Button:
+Add a clear button called "Request Service" on the service provider page.
+When clicked, it should redirect the user to the payment page/checkout flow.
+Payment Flow Integration:
+After clicking the button, create a payment session and redirect the user to the payment gateway.
+Ensure payment is processed securely.
+Wallet / Balance Distribution:
+After successful payment:
+Add the paid amount to the service provider's account balance
+Add a platform commission to the admin account
+Store full transaction details in the database (user, provider, amount, commission, status)
+Payment Validation:
+Do NOT activate the service request unless payment is successful
+Handle failed or canceled payments properly
+UI/UX Requirements:
+Button should be clearly visible on provider page
+Show loading state while redirecting to payment
+Show success/failure message after payment
+System Consistency:
+Ensure balances are updated in real time
+Ensure transaction logs are stored for admin dashboard
+Security:
+Use secure API handling and environment variables
+Prevent direct access to service request without payment

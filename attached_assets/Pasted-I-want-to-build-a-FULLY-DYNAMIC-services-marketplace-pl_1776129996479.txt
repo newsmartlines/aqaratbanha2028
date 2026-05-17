@@ -1,0 +1,164 @@
+I want to build a FULLY DYNAMIC services marketplace platform connected to a MySQL database.
+
+The platform must include:
+- Frontend (user-facing website)
+- Admin Dashboard (full control panel)
+- Database (MySQL)
+
+MAIN GOAL:
+Everything displayed on the frontend must be fully controlled dynamically from the admin dashboard.
+
+---
+
+CORE REQUIREMENT (VERY IMPORTANT):
+
+- Any data shown on the frontend MUST come from database (MySQL)
+- Admin must be able to:
+  - Add
+  - Edit
+  - Delete
+  - Approve
+  - Reject
+- Changes should reflect instantly on the frontend
+
+---
+
+ADMIN DASHBOARD (FULL CONTROL):
+
+Enable ALL buttons and actions to be functional:
+
+1) SERVICE PROVIDERS:
+- View all providers (same data shown in frontend)
+- Edit provider info
+- Approve / Reject provider
+- Delete / Suspend provider
+- Modify:
+  - Name
+  - Services
+  - Prices
+  - Location
+  - Images
+
+---
+
+2) CATEGORIES & SUBCATEGORIES:
+
+- Create main categories
+- Create subcategories under each category
+- Edit:
+  - Title
+  - Description
+  - Icon / Image
+- Delete categories
+- Show categories dynamically on homepage and filters
+
+---
+
+3) SERVICES / LISTINGS:
+
+- View all services added by providers
+- Edit / Delete / Approve services
+- Mark as Featured
+
+---
+
+4) PACKAGES & PRICING:
+
+- Create packages:
+  - Free
+  - Basic
+  - Premium
+- Control:
+  - Price
+  - Duration
+  - Features (number of listings, featured, etc.)
+- Edit or delete packages anytime
+
+---
+
+5) HOMEPAGE CONTROL:
+
+Admin can control:
+- Hero section (title, subtitle, background image)
+- Categories section
+- Featured providers
+- Text content
+
+---
+
+6) USERS:
+
+- Manage normal users
+- Edit / delete accounts
+
+---
+
+DATABASE (MySQL):
+
+Design relational database including:
+
+- users
+- providers
+- services
+- categories
+- subcategories
+- provider_services
+- packages
+- subscriptions
+- reviews
+- locations
+
+All relations must be properly linked (foreign keys).
+
+---
+
+FRONTEND REQUIREMENTS:
+
+- Homepage (dynamic)
+- Categories page (dynamic)
+- About Us page (editable from admin)
+
+---
+
+CATEGORIES PAGE:
+
+- Show all categories + subcategories
+- Grid layout with icons
+- Click category → show related services
+
+---
+
+ABOUT US PAGE:
+
+- Fully editable from admin dashboard
+- Admin can change:
+  - Title
+  - Content
+  - Images
+
+---
+
+FUNCTIONALITY:
+
+- When admin edits anything → instantly reflected on frontend
+- “Next” buttons in forms must be fully functional
+- All CRUD operations must work properly
+
+---
+
+TECH STACK:
+
+- Backend: Laravel (preferred) or Node.js
+- Database: MySQL
+- Frontend: React / Next.js OR Blade (Laravel)
+
+---
+
+OUTPUT REQUIRED:
+
+- Full system architecture
+- Database schema (tables + relations)
+- API endpoints
+- Admin panel structure
+- Frontend pages structure
+- Fully working dynamic logic

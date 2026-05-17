@@ -1,0 +1,123 @@
+I want to design a modern homepage for a services marketplace platform focused on “home-based service providers and productive families” (like Haraj style listing).
+
+Reference websites:
+- https://haraj.com.sa/ (for listing style and UX behavior)
+- https://dalel.sa/home/list (old version to redesign completely)
+
+---
+
+MAIN IDEA:
+Create a clean, modern, and fast marketplace homepage where users can browse service providers easily, similar to Haraj, but with a more premium UI and better user experience.
+
+---
+
+HERO SECTION:
+- Simple and clean (NOT heavy like corporate sites)
+- Large search bar in center:
+  - Search input (e.g. “Search for service…”)
+  - Dropdown for category
+  - Location selector (region / city)
+  - Button: "Search"
+- Add a secondary button: “كن مقدم خدمة” (Become a Service Provider)
+  - Highlighted with a different color (CTA)
+
+---
+
+CATEGORIES SECTION:
+- Display main and sub categories as ICON GRID
+- Each category includes:
+  - Icon (modern line or filled style)
+  - Category name
+- Grid layout (4–6 columns desktop, responsive on mobile)
+- Add hover animation (scale or shadow)
+- Examples:
+  - Food & Catering
+  - Handmade Products
+  - Home Services
+  - Delivery
+  - Events
+  - Beauty & Care
+
+---
+
+LISTINGS SECTION (IMPORTANT – LIKE HARAJ):
+- Display service providers in card/grid format
+- Each card includes:
+  - Image
+  - Service title
+  - Short description
+  - Location
+  - Price (optional)
+  - “Featured” badge if applicable
+- Layout:
+  - 2–4 columns grid (desktop)
+  - Clean spacing
+- Add sorting/filter bar above:
+  - Filter by:
+    - Region
+    - Nearest to me
+    - Category
+    - Price (optional)
+  - Sorting:
+    - Newest
+    - Nearest
+    - Most popular
+
+---
+
+FILTER SYSTEM:
+- Sticky filter bar (top or side)
+- Include:
+  - Location dropdown (Region / City)
+  - “Near me” toggle (GPS-based)
+  - Category filter
+- Mobile: collapsible filter panel
+
+---
+
+FEATURED SERVICES:
+- Horizontal slider for featured providers
+- Smooth scroll or arrows
+- Highlight premium listings
+
+---
+
+TRUST SECTION:
+- Why choose the platform:
+  - Verified providers
+  - Easy communication
+  - Secure experience
+
+---
+
+DESIGN STYLE:
+- Clean, minimal, marketplace-focused
+- Inspired by Haraj simplicity but more modern
+- Soft colors + white background
+- Rounded cards
+- Subtle shadows
+- Smooth micro-interactions
+
+---
+
+UX DETAILS:
+- Fast loading
+- Mobile-first design
+- Sticky header
+- Easy navigation
+
+---
+
+FOOTER:
+- Links (About, Contact, Terms)
+- Social icons
+- App download buttons (optional)
+
+---
+
+OUTPUT REQUIRED:
+- Full homepage UI/UX layout
+- Section-by-section structure
+- Design system (colors, typography, spacing)
+- Interaction and animation behavior
+- Ready for implementation in React / Next.js or WordPress

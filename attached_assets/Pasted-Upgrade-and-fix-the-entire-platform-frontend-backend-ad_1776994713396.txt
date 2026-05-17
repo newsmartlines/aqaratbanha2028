@@ -1,0 +1,75 @@
+Upgrade and fix the entire platform (frontend + backend + admin panel) to be fully production-ready, using real data only, with improved UX and complete feature functionality.
+
+🧩 Admin Panel Enhancements:
+Add ability to:
+Create City and assign it to a Region
+Toggle city visibility (show/hide)
+Create District (Neighborhood) and assign it to a City
+Add Chatbot Control Panel:
+Enable / Disable chatbot
+Control behavior and responses
+Add Web Pages Manager:
+Manage (Contact Us – About Us – FAQ)
+Editable phone, WhatsApp, and email (auto-reflect in Help page)
+Add User Orders Tab:
+Table showing all service requests (user, provider, date, status)
+💬 Chatbot System:
+Build a smart AI chatbot connected to the platform database
+Capable of:
+Recommending service providers based on category and location
+Returning real results from the database
+Should behave like a top-tier chatbot (context-aware + smart suggestions)
+Fully controllable from admin (show/hide + settings)
+📱 Frontend Fixes & Features:
+📞 Provider Page:
+Fix WhatsApp button → open direct chat with provider number (not WhatsApp website)
+📍 Nearby Feature:
+On clicking "Nearby":
+Open Google Maps
+Show providers within 50 km radius
+Map markers:
+On click → show:
+Provider name
+Profile image
+On click again → navigate to provider profile
+Add Category Tabs above the map (Food, Services, etc.) to filter results
+🔎 Search Page:
+Rename "Near Me" → "Closest to Me"
+Show map with 50 km logic
+Display all real providers from database (fix incorrect count issue)
+"Browse All Services" button → opens search page directly
+Move "Verified filter":
+To top
+As a Toggle Switch
+⭐ Ratings System:
+Remove all fake ratings
+Display real rating (stars count)
+Allow users to submit real ratings
+Save ratings under "My Reviews"
+👤 Provider Profile:
+Fix profile images (show fully, not cropped incorrectly)
+Improve "Verified" badge visibility
+Add Dynamic Working Hours:
+Provider sets availability (days + time)
+Display on profile
+💬 Messages:
+Fix messaging system:
+Sent messages must appear in "My Conversations"
+🧾 Orders System:
+"Request Service" button:
+Creates real order
+Visible in:
+User dashboard (My Orders)
+Provider dashboard (Requests)
+Admin panel (User Orders table)
+🧠 Data Integrity:
+Remove all fake/mock data across the platform
+Ensure all pages use real database data only
+🎯 Hero Section:
+Statistics must be real (fetched from database)
+📂 Navbar:
+Replace "Categories" with "Search"
+Link directly to search page
+🚀 Goal:
+
+Build a fully dynamic, scalable, real-data-driven platform with a professional UX comparable to top global service platforms.
