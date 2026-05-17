@@ -405,11 +405,7 @@ export default function RealEstateOnboarding() {
             : parseFloat(p.price) > 150
         );
         if (matchPkg) {
-          await refetchAuth();
-          try { localStorage.removeItem(DRAFT_KEY); } catch {}
-          toast.success("تم حفظ بياناتك. أكمل الدفع لتفعيل الباقة.");
-          setLocation(`/dashboard/checkout?packageId=${matchPkg.id}&from=onboarding`);
-          return;
+          await api.subscriptions.subscribe(providerId, matchPkg.id);
         }
       }
 

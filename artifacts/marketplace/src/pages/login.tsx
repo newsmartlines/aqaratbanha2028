@@ -348,6 +348,25 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                 </Alert>
               )}
 
+              {/* Google Login */}
+              {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+                <div className="mb-6">
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={(res) => { if (res.credential) handleGoogleLogin(res.credential); }}
+                      onError={() => setError("فشل تسجيل الدخول بجوجل")}
+                      width="100%"
+                      text="signin_with"
+                      shape="rectangular"
+                      locale="ar"
+                    />
+                  </div>
+                  <div className="mt-4 flex items-center gap-4 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+                    <span className="text-muted-foreground text-xs">أو بالبريد الإلكتروني</span>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleLoginSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">البريد الإلكتروني</Label>
@@ -568,6 +587,25 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                       {loading ? <><Loader2 className="h-5 w-5 animate-spin ml-2" />جاري الإنشاء...</> : "إنشاء الحساب"}
                     </Button>
                   </form>
+
+                  {/* Google Register */}
+                  {import.meta.env.VITE_GOOGLE_CLIENT_ID && accountType === "user" && (
+                    <div className="mt-4">
+                      <div className="flex items-center gap-4 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border mb-4">
+                        <span className="text-muted-foreground text-xs">أو سجل بجوجل</span>
+                      </div>
+                      <div className="flex justify-center">
+                        <GoogleLogin
+                          onSuccess={(res) => { if (res.credential) handleGoogleLogin(res.credential); }}
+                          onError={() => setError("فشل التسجيل بجوجل")}
+                          width="100%"
+                          text="signup_with"
+                          shape="rectangular"
+                          locale="ar"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

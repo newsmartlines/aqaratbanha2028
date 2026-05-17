@@ -74,10 +74,6 @@ export default function ProviderSubscription() {
       });
       return;
     }
-    if (parseFloat(String(pkg.price)) > 0) {
-      setLocation(`/dashboard/checkout?packageId=${pkg.id}`);
-      return;
-    }
     setSelectedPackage(pkg);
     setConfirmOpen(true);
   };

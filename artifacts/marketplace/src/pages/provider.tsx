@@ -11,7 +11,7 @@ import {
   MapPin, Star, Phone, MessageCircle, Share2,
   Heart, ShieldCheck, Clock, CheckCircle2, Calendar, X, Crown,
   ArrowUpCircle, Loader2, Send, Copy, Check, ChevronDown, ChevronUp,
-  Briefcase, Plus, CreditCard, Gift, ArrowLeft,
+  Briefcase, Plus, Gift,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { api, type ProviderDetail, type Provider, type Review, mediaUrl } from "@/lib/api";
@@ -187,15 +187,6 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
     },
   });
 
-  /* ─── Redirect to paid checkout flow ─── */
-  const goToPaidCheckout = () => {
-    const params = new URLSearchParams();
-    params.set("kind", "request");
-    params.set("providerId", String(providerId));
-    if (requestModal.serviceId != null) params.set("serviceId", String(requestModal.serviceId));
-    if (requestModal.price && requestModal.price > 0) params.set("amount", String(requestModal.price));
-    setLocation(`/dashboard/checkout?${params.toString()}`);
-  };
 
   /* ─── Loading / not found ─── */
   if (!Number.isFinite(providerId) || providerId < 1) {
@@ -650,7 +641,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
 
                     <div className="mt-4 pt-4 border-t border-border/40 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                       <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
-                      دفع آمن عبر STC Pay — لا يتم تأكيد الطلب إلا بعد نجاح الدفع
+                      تواصل مع مقدم الخدمة مباشرة لتنسيق التفاصيل
                     </div>
                   </CardContent>
                 </Card>
@@ -771,10 +762,10 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
           ) : (
             <div className="space-y-4 pt-2">
               <p className="text-sm text-muted-foreground">
-                يمكنك إرسال طلب عادي مجاناً، أو تأكيد الطلب بدفع مسبق عبر STC Pay لأولوية أعلى.
+                أرسل طلبك لمقدم الخدمة وسيتواصل معك مباشرة.
               </p>
 
-              {/* Normal (Free) Request */}
+              {/* Request */}
               <Card className="border-2 border-emerald-200 hover:border-emerald-400 transition-colors">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
@@ -783,7 +774,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold">طلب عادي</h3>
+                        <h3 className="font-bold">إرسال طلب</h3>
                         <Badge className="bg-emerald-600 hover:bg-emerald-600">مجاني</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -811,41 +802,9 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                     ) : (
                       <>
                         <Send className="ml-2 h-4 w-4" />
-                        إرسال طلب عادي
+                        إرسال الطلب
                       </>
                     )}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Paid Request */}
-              <Card className="border-2 border-amber-200 hover:border-amber-400 transition-colors">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-amber-100 p-2 shrink-0">
-                      <CreditCard className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold">طلب مدفوع</h3>
-                        <Badge className="bg-amber-500 hover:bg-amber-500">أولوية</Badge>
-                        {requestModal.price ? (
-                          <Badge variant="outline" className="border-amber-300 text-amber-700">
-                            {requestModal.price} ر.س
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        دفع مسبق عبر STC Pay، ويتم تأكيد وتفعيل الطلب فور نجاح الدفع.
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-white"
-                    onClick={goToPaidCheckout}
-                  >
-                    <ArrowLeft className="ml-2 h-4 w-4" />
-                    المتابعة إلى الدفع
                   </Button>
                 </CardContent>
               </Card>

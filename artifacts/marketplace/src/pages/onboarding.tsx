@@ -225,20 +225,16 @@ export default function Onboarding() {
         });
       }
 
-      // 4. Paid plan? Redirect to mock checkout instead of auto-subscribing.
+      // 4. Paid plan? Directly subscribe.
       if (plan !== "free") {
         const packages = await api.packages.list();
-        // Match by approximate price bracket: bronze ≤ 150 SAR, premium > 150
         const matchPkg = packages.find(p =>
           plan === "bronze"
             ? parseFloat(p.price) > 0 && parseFloat(p.price) <= 150
             : parseFloat(p.price) > 150
         );
         if (matchPkg) {
-          await refetchAuth();
-          toastHot.success("تم حفظ بياناتك. أكمل الدفع لتفعيل الباقة.");
-          setLocation(`/dashboard/checkout?packageId=${matchPkg.id}&from=onboarding`);
-          return;
+          await api.subscriptions.subscribe(providerId, matchPkg.id);
         }
       }
 

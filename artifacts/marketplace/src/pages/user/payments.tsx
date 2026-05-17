@@ -97,7 +97,7 @@ export default function UserPayments() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">مدفوعاتي</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              سجل كامل لجميع عمليات الدفع التي قمت بها عبر STC Pay
+              سجل كامل لجميع عمليات الدفع التي قمت بها
             </p>
           </div>
           <Button variant="outline" asChild>
@@ -183,7 +183,7 @@ export default function UserPayments() {
                 <CreditCard className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
                 <p className="text-base font-medium">لا توجد مدفوعات بعد</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  ستظهر هنا جميع المعاملات التي تتم عبر STC Pay
+                  ستظهر هنا جميع معاملاتك المالية
                 </p>
               </div>
             ) : (
@@ -300,7 +300,7 @@ export default function UserPayments() {
 
         <p className="text-xs text-center text-muted-foreground">
           <Filter className="inline h-3 w-3 ml-1" />
-          المدفوعات معالجة عبر STC Pay وتُحدّث تلقائياً عند نجاح أو فشل العملية.
+          يتم تحديث المدفوعات تلقائياً عند نجاح أو فشل العملية.
         </p>
       </div>
     </UserLayout>
