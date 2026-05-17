@@ -860,4 +860,5 @@ export const api = {
         headers: userId ? { "x-user-id": String(userId) } : undefined,
       }),
   },
+  fetchJson,
 };

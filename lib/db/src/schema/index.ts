@@ -24,3 +24,4 @@ export * from "./supportTickets";
 export * from "./sessions";
 export * from "./resetTokens";
 export * from "./properties";
+export * from "./emailTemplates";

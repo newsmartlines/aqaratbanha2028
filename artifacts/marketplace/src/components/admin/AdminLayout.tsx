@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ChevronLeft,
   CheckCheck,
+  Mail,
   UserCog,
   ShieldCheck,
   MapPin,
@@ -186,6 +187,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Percent,         label: t("commission"),      href: "/admin/commission",       perm: "commission" },
     { icon: Package,         label: t("subscriptions"),   href: "/admin/subscriptions",    perm: "subscriptions" },
     { icon: BarChart3,       label: t("reports"),         href: "/admin/reports",          perm: "reports" },
+    { icon: Mail,            label: "البريد الإلكتروني", href: "/admin/email-templates",  perm: "settings" },
     { icon: Settings,        label: t("settings"),        href: "/admin/settings",         perm: "settings" },
   ];
 

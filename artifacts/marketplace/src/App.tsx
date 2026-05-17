@@ -54,6 +54,7 @@ import AdminProviderEdit from "@/pages/admin/provider-edit";
 import AdminProperties from "@/pages/admin/properties";
 import AdminWatermark from "@/pages/admin/watermark";
 import AdminSeo from "@/pages/admin/seo";
+import AdminEmailTemplates from "@/pages/admin/email-templates";
 import PropertyDetail from "@/pages/property-detail";
 import PropertiesPage from "@/pages/properties";
 import CategoriesPage from "@/pages/categories";
@@ -303,6 +304,9 @@ function Router() {
       </Route>
       <Route path="/admin/real-estate-categories">
         {() => <AdminProtectedRoute component={AdminRealEstateCategories} />}
+      </Route>
+      <Route path="/admin/email-templates">
+        {() => <AdminProtectedRoute component={AdminEmailTemplates} />}
       </Route>
 
       <Route component={NotFound} />
