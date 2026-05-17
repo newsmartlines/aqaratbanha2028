@@ -581,11 +581,11 @@ export default function AdminProviders() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{tc("phone")}</Label>
-                <Input dir="ltr" value={providerForm.phone} onChange={e => setProviderForm(f => ({ ...f, phone: e.target.value }))} placeholder="+966..." />
+                <Input dir="ltr" value={providerForm.phone} onChange={e => setProviderForm(f => ({ ...f, phone: e.target.value }))} placeholder="+20..." />
               </div>
               <div className="space-y-1.5">
                 <Label>{t("whatsapp")}</Label>
-                <Input dir="ltr" value={providerForm.whatsapp} onChange={e => setProviderForm(f => ({ ...f, whatsapp: e.target.value }))} placeholder="+966..." />
+                <Input dir="ltr" value={providerForm.whatsapp} onChange={e => setProviderForm(f => ({ ...f, whatsapp: e.target.value }))} placeholder="+20..." />
               </div>
             </div>
             {providerModal === "add" && (

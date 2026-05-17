@@ -578,14 +578,14 @@ export default function AdminProviderEdit() {
                       <Label>{tc("phone")}</Label>
                       <div className="relative">
                         <Phone className="absolute start-3 top-2.5 w-4 h-4 text-slate-400" />
-                        <Input dir="ltr" className="ps-9" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." />
+                        <Input dir="ltr" className="ps-9" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+20..." />
                       </div>
                     </div>
                     <div className="space-y-1.5">
                       <Label>{t("whatsapp")}</Label>
                       <div className="relative">
                         <Globe className="absolute start-3 top-2.5 w-4 h-4 text-slate-400" />
-                        <Input dir="ltr" className="ps-9" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+966..." />
+                        <Input dir="ltr" className="ps-9" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+20..." />
                       </div>
                     </div>
                   </div>

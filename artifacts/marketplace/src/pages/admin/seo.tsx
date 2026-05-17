@@ -36,18 +36,18 @@ const TRAFFIC_DATA = [
   { day: "الجمعة",  visits: 2100 },
 ];
 const KEYWORDS_DATA = [
-  { kw: "عقارات الرياض",     pos: 3,  vol: 12400, change: "up" },
-  { kw: "شقق للإيجار جدة",  pos: 7,  vol: 8900,  change: "up" },
+  { kw: "عقارات القاهرة",     pos: 3,  vol: 12400, change: "up" },
+  { kw: "شقق للإيجار الإسكندرية",  pos: 7,  vol: 8900,  change: "up" },
   { kw: "فيلا للبيع الدمام", pos: 12, vol: 5300,  change: "down" },
   { kw: "أراضي مكة",        pos: 18, vol: 3200,  change: "same" },
   { kw: "مكاتب تجارية",     pos: 5,  vol: 4100,  change: "up" },
 ];
 const PROPERTIES_SEO = [
-  { id: 1, title: "فيلا فاخرة — حي النرجس",  score: 92, city: "الرياض",  issues: 0,  indexed: true  },
-  { id: 2, title: "شقة 3 غرف — حي الزهراء",  score: 71, city: "جدة",     issues: 2,  indexed: true  },
-  { id: 3, title: "مكتب للإيجار — العليا",   score: 45, city: "الرياض",  issues: 4,  indexed: false },
+  { id: 1, title: "فيلا فاخرة — حي النرجس",  score: 92, city: "القاهرة",  issues: 0,  indexed: true  },
+  { id: 2, title: "شقة 3 غرف — حي الزهراء",  score: 71, city: "الإسكندرية",     issues: 2,  indexed: true  },
+  { id: 3, title: "مكتب للإيجار — العليا",   score: 45, city: "القاهرة",  issues: 4,  indexed: false },
   { id: 4, title: "أرض 500م — طريق الملك",   score: 38, city: "الدمام",  issues: 5,  indexed: true  },
-  { id: 5, title: "دوبلكس — حي السلام",      score: 88, city: "جدة",     issues: 1,  indexed: true  },
+  { id: 5, title: "دوبلكس — حي السلام",      score: 88, city: "الإسكندرية",     issues: 1,  indexed: true  },
   { id: 6, title: "شقة استوديو — وسط البلد", score: 29, city: "مكة",     issues: 6,  indexed: false },
 ];
 const BROKEN_LINKS = [
@@ -133,8 +133,8 @@ export default function AdminSeo() {
   const [tab, setTab] = useState("dashboard");
 
   /* General SEO state */
-  const [siteTitle,    setSiteTitle]    = useState("دليل بلس العقارات | أفضل عقارات المملكة");
-  const [siteDesc,     setSiteDesc]     = useState("منصة دليل بلس لبيع وشراء وإيجار العقارات في جميع مدن المملكة العربية السعودية.");
+  const [siteTitle,    setSiteTitle]    = useState("دليل بلس العقارات | أفضل عقارات مصر");
+  const [siteDesc,     setSiteDesc]     = useState("منصة دليل بلس لبيع وشراء وإيجار العقارات في جميع مدن جمهورية مصر العربية.");
   const [canonical,    setCanonical]    = useState("https://daleel.sa");
   const [indexAll,     setIndexAll]     = useState(true);
   const [ogTitle,      setOgTitle]      = useState("دليل بلس العقارات");
@@ -175,8 +175,8 @@ export default function AdminSeo() {
     setTimeout(() => {
       setAiResult({
         title:    `${aiInput} | دليل بلس العقارات`,
-        desc:     `اكتشف أفضل ${aiInput} في المملكة العربية السعودية مع دليل بلس. أسعار تنافسية، موقع متميز، ومزايا حصرية لا تفوّت. تواصل معنا الآن.`,
-        keywords: `${aiInput}، عقارات السعودية، دليل بلس، بيع وشراء، إيجار`,
+        desc:     `اكتشف أفضل ${aiInput} في جمهورية مصر العربية مع دليل بلس. أسعار تنافسية، موقع متميز، ومزايا حصرية لا تفوّت. تواصل معنا الآن.`,
+        keywords: `${aiInput}، عقارات مصر، دليل بلس، بيع وشراء، إيجار`,
       });
       setAiLoading(false);
     }, 1800);
@@ -197,14 +197,14 @@ export default function AdminSeo() {
         description: "فيلا فاخرة 5 غرف واسعة مع مسبح",
         url: "https://daleel.sa/property/1",
         price: "2,500,000", priceCurrency: "EGP",
-        address: { "@type": "PostalAddress", addressLocality: "الرياض", addressCountry: "SA" },
+        address: { "@type": "PostalAddress", addressLocality: "القاهرة", addressCountry: "SA" },
         numberOfRooms: 5, floorSize: { "@type": "QuantitativeValue", value: 450, unitCode: "MTK" },
       },
       organization: {
         "@context": "https://schema.org", "@type": "Organization",
         name: "دليل بلس", url: "https://daleel.sa",
         logo: "https://daleel.sa/logo.png",
-        contactPoint: { "@type": "ContactPoint", telephone: "+966-xx-xxx-xxxx", contactType: "customer service" },
+        contactPoint: { "@type": "ContactPoint", telephone: "+20-xx-xxx-xxxx", contactType: "customer service" },
       },
       breadcrumb: {
         "@context": "https://schema.org", "@type": "BreadcrumbList",
@@ -621,7 +621,7 @@ export default function AdminSeo() {
                     </div>
                     <div>
                       <Label className="text-sm font-semibold mb-1.5 block">Focus Keywords</Label>
-                      <Input value={editKeywords} onChange={e => setEditKeywords(e.target.value)} placeholder="مثال: فيلا الرياض، عقار للبيع" />
+                      <Input value={editKeywords} onChange={e => setEditKeywords(e.target.value)} placeholder="مثال: فيلا القاهرة، عقار للبيع" />
                     </div>
                     {/* SERP Preview */}
                     <div>
@@ -957,7 +957,7 @@ export default function AdminSeo() {
                       value={aiInput}
                       onChange={e => setAiInput(e.target.value)}
                       rows={5}
-                      placeholder="مثال: فيلا 5 غرف بحي النرجس بالرياض للبيع بسعر 2.5 مليون، مسبح خاص، مصعد، حديقة واسعة..."
+                      placeholder="مثال: فيلا 5 غرف بحي النرجس بالقاهرة للبيع بسعر 2.5 مليون، مسبح خاص، مصعد، حديقة واسعة..."
                     />
                   </div>
                   <Button

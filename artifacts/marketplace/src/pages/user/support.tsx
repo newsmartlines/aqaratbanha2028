@@ -24,8 +24,8 @@ export default function UserSupport() {
   });
 
   const s = settings as any;
-  const contactPhone = s?.contactPhone ?? "+966500000000";
-  const whatsappNumber = (s?.contactPhone ?? "+966500000000").replace(/\D/g, "");
+  const contactPhone = s?.contactPhone ?? "+201000000000";
+  const whatsappNumber = (s?.contactPhone ?? "+201000000000").replace(/\D/g, "");
   const contactEmail = s?.contactEmail ?? "support@dalelplus.com";
 
   const handleSubmit = async (e: React.FormEvent) => {

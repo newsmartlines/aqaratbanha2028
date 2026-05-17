@@ -66,8 +66,8 @@ const DEFAULT_IMG = "https://images.unsplash.com/photo-1519389950473-47ba0277781
 
 const CITIES = [
   { value: "all", label: "كل المدن" },
-  { value: "الرياض", label: "الرياض" },
-  { value: "جدة", label: "جدة" },
+  { value: "القاهرة", label: "القاهرة" },
+  { value: "الإسكندرية", label: "الإسكندرية" },
   { value: "الدمام", label: "الدمام" },
   { value: "مكة المكرمة", label: "مكة المكرمة" },
   { value: "المدينة المنورة", label: "المدينة المنورة" },
@@ -76,8 +76,8 @@ const CITIES = [
 ];
 
 const CITY_COORDS: Record<string, [number, number]> = {
-  "الرياض": [24.7136, 46.6753],
-  "جدة": [21.3891, 39.8579],
+  "القاهرة": [24.7136, 46.6753],
+  "الإسكندرية": [21.3891, 39.8579],
   "الدمام": [26.3927, 49.9777],
   "الطائف": [21.2703, 40.4158],
   "الخبر": [26.2172, 50.1971],
@@ -113,8 +113,8 @@ export const PROPERTIES = [
   {
     id: 1,
     title: "فيلا فاخرة مع مسبح",
-    location: "حي النرجس، الرياض",
-    address: "شارع الأمير سلمان، حي النرجس، الرياض 13315",
+    location: "حي النرجس، القاهرة",
+    address: "شارع الأمير سلمان، حي النرجس، القاهرة 13315",
     price: "٢,٨٠٠,٠٠٠",
     priceNum: 2800000,
     type: "للبيع",
@@ -132,18 +132,18 @@ export const PROPERTIES = [
       "https://images.unsplash.com/photo-1584738766473-61c083514bf4?auto=format&fit=crop&w=1200&q=85",
     ],
     videoId: "dQw4w9WgXcQ",
-    description: "فيلا فاخرة مع مسبح خارجي وحديقة واسعة في أرقى أحياء الرياض. تتميز بتصميم معماري حديث، تشطيبات فاخرة، ومطبخ مجهز بالكامل. تضم غرف نوم فسيحة، صالة كبيرة، وغرفة سينما خاصة.",
+    description: "فيلا فاخرة مع مسبح خارجي وحديقة واسعة في أرقى أحياء القاهرة. تتميز بتصميم معماري حديث، تشطيبات فاخرة، ومطبخ مجهز بالكامل. تضم غرف نوم فسيحة، صالة كبيرة، وغرفة سينما خاصة.",
     amenities: ["مسبح خاص", "حديقة", "غرفة سينما", "جراج مغطى", "نظام أمني", "مولد كهربائي", "مطبخ غربي", "تكييف مركزي"],
     agentName: "أحمد العمري",
-    agentPhone: "+966 50 123 4567",
+    agentPhone: "+20 50 123 4567",
     agentAvatar: "https://i.pravatar.cc/80?img=12",
     agentTitle: "مستشار عقاري أول",
   },
   {
     id: 2,
     title: "شقة حديثة بإطلالة بانورامية",
-    location: "كورنيش جدة، جدة",
-    address: "طريق الكورنيش، برج المرجان، الطابق 18، جدة 23525",
+    location: "كورنيش الإسكندرية، الإسكندرية",
+    address: "طريق الكورنيش، برج المرجان، الطابق 18، الإسكندرية 23525",
     price: "٨٥٠,٠٠٠",
     priceNum: 850000,
     type: "للبيع",
@@ -160,18 +160,18 @@ export const PROPERTIES = [
       "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1200&q=85",
     ],
     videoId: "dQw4w9WgXcQ",
-    description: "شقة راقية في برج المرجان على كورنيش جدة مع إطلالة بانورامية على البحر الأحمر. تصميم عصري بتشطيبات عالية الجودة، بالكوني فسيح، وموقع استراتيجي قريب من أهم المراكز التجارية.",
+    description: "شقة راقية في برج المرجان على كورنيش الإسكندرية مع إطلالة بانورامية على البحر الأحمر. تصميم عصري بتشطيبات عالية الجودة، بالكوني فسيح، وموقع استراتيجي قريب من أهم المراكز التجارية.",
     amenities: ["إطلالة بحرية", "بالكوني", "مسبح مشترك", "صالة رياضية", "حارس أمن", "مصعد", "موقف سيارات", "تكييف مركزي"],
     agentName: "سارة الحربي",
-    agentPhone: "+966 55 234 5678",
+    agentPhone: "+20 55 234 5678",
     agentAvatar: "https://i.pravatar.cc/80?img=5",
     agentTitle: "وكيلة عقارية معتمدة",
   },
   {
     id: 3,
     title: "مكتب تجاري راقٍ في برج مميز",
-    location: "طريق الملك فهد، الرياض",
-    address: "برج المملكة، الطابق 32، طريق الملك فهد، الرياض 12211",
+    location: "طريق الملك فهد، القاهرة",
+    address: "برج مصر، الطابق 32، طريق الملك فهد، القاهرة 12211",
     price: "٤٥,٠٠٠ / سنة",
     priceNum: 45000,
     type: "للإيجار",
@@ -187,10 +187,10 @@ export const PROPERTIES = [
       "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=1200&q=85",
     ],
     videoId: "dQw4w9WgXcQ",
-    description: "مكتب تجاري فاخر في أحد أبرز أبراج الرياض على طريق الملك فهد. مؤهل بالكامل بأنظمة الاتصالات الحديثة، غرف اجتماعات مجهزة، واستقبال احترافي. مثالي للشركات الكبرى والقنصليات.",
+    description: "مكتب تجاري فاخر في أحد أبرز أبراج القاهرة على طريق الملك فهد. مؤهل بالكامل بأنظمة الاتصالات الحديثة، غرف اجتماعات مجهزة، واستقبال احترافي. مثالي للشركات الكبرى والقنصليات.",
     amenities: ["غرف اجتماعات", "استقبال", "إنترنت عالي السرعة", "كافيتيريا", "أمن على مدار الساعة", "موقف سيارات مميز", "تكييف مركزي"],
     agentName: "محمد الدوسري",
-    agentPhone: "+966 56 345 6789",
+    agentPhone: "+20 56 345 6789",
     agentAvatar: "https://i.pravatar.cc/80?img=8",
     agentTitle: "مستشار عقارات تجارية",
   },
@@ -217,15 +217,15 @@ export const PROPERTIES = [
     description: "دوبلكس عصري بتصميم أنيق وموقع مميز على الواجهة البحرية بالدمام. طابقان متكاملان، مطبخ مفتوح، وتراس خاص مطل على البحر. مبنى حديث البناء بتشطيبات ممتازة.",
     amenities: ["تراس خاص", "إطلالة بحرية", "مطبخ مفتوح", "مسبح مشترك", "صالة رياضية", "حارس أمن", "موقف سيارات"],
     agentName: "نورة السعيد",
-    agentPhone: "+966 54 456 7890",
+    agentPhone: "+20 54 456 7890",
     agentAvatar: "https://i.pravatar.cc/80?img=9",
     agentTitle: "مستشارة عقارية",
   },
   {
     id: 5,
     title: "شقة مؤثثة بالكامل للإيجار",
-    location: "حي الملز، الرياض",
-    address: "شارع الأمير عبدالعزيز بن مساعد، حي الملز، الرياض 12836",
+    location: "حي الملز، القاهرة",
+    address: "شارع الأمير عبدالعزيز بن مساعد، حي الملز، القاهرة 12836",
     price: "٢٨,٠٠٠ / سنة",
     priceNum: 28000,
     type: "للإيجار",
@@ -244,15 +244,15 @@ export const PROPERTIES = [
     description: "شقة مؤثثة بالكامل بأثاث عصري عالي الجودة، جاهزة للسكن الفوري. موقع مركزي مميز قريب من الخدمات والمرافق، مناسبة للعزاب أو الأزواج الجدد.",
     amenities: ["مؤثثة بالكامل", "إنترنت", "غسالة", "مكيفات", "حراسة", "موقف سيارات"],
     agentName: "خالد الزهراني",
-    agentPhone: "+966 58 567 8901",
+    agentPhone: "+20 58 567 8901",
     agentAvatar: "https://i.pravatar.cc/80?img=15",
     agentTitle: "وكيل عقاري",
   },
   {
     id: 6,
     title: "أرض تجارية في حي الأعمال",
-    location: "حي العليا، الرياض",
-    address: "طريق العليا العام، حي العليا، الرياض 12211",
+    location: "حي العليا، القاهرة",
+    address: "طريق العليا العام، حي العليا، القاهرة 12211",
     price: "٥,٥٠٠,٠٠٠",
     priceNum: 5500000,
     type: "للبيع",
@@ -267,10 +267,10 @@ export const PROPERTIES = [
       "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
     ],
     videoId: "dQw4w9WgXcQ",
-    description: "أرض تجارية مميزة في قلب حي العليا بالرياض، منطقة الأعمال الأولى في المملكة. مساحة شاسعة بإطلالة على الشارع الرئيسي، مرخصة للبناء التجاري والسكني. فرصة استثمارية لا تُعوض.",
+    description: "أرض تجارية مميزة في قلب حي العليا بالقاهرة، منطقة الأعمال الأولى في مصر. مساحة شاسعة بإطلالة على الشارع الرئيسي، مرخصة للبناء التجاري والسكني. فرصة استثمارية لا تُعوض.",
     amenities: ["واجهة على الشارع الرئيسي", "ترخيص تجاري", "قريبة من الخدمات", "منطقة نمو عالي"],
     agentName: "فيصل القحطاني",
-    agentPhone: "+966 50 678 9012",
+    agentPhone: "+20 50 678 9012",
     agentAvatar: "https://i.pravatar.cc/80?img=11",
     agentTitle: "مستشار استثمار عقاري",
   },
@@ -297,15 +297,15 @@ export const PROPERTIES = [
     description: "شقة فندقية فاخرة بإطلالة مباشرة على الكعبة المشرفة، مجهزة بالكامل بأحدث التجهيزات، مثالية للاستثمار أو السكن خلال فترات الحج والعمرة.",
     amenities: ["إطلالة على الحرم", "مؤثثة بالكامل", "مسبح", "صالة رياضية", "خدمة الغرف", "موقف سيارات"],
     agentName: "عبدالله المالكي",
-    agentPhone: "+966 56 111 2233",
+    agentPhone: "+20 56 111 2233",
     agentAvatar: "https://i.pravatar.cc/80?img=20",
     agentTitle: "وكيل عقاري معتمد",
   },
   {
     id: 8,
-    title: "فيلا بحرية في شمال جدة",
-    location: "حي الشاطئ، جدة",
-    address: "طريق الأمير نايف، حي الشاطئ، جدة 23514",
+    title: "فيلا بحرية في شمال الإسكندرية",
+    location: "حي الشاطئ، الإسكندرية",
+    address: "طريق الأمير نايف، حي الشاطئ، الإسكندرية 23514",
     price: "٤,٢٠٠,٠٠٠",
     priceNum: 4200000,
     type: "للبيع",
@@ -322,10 +322,10 @@ export const PROPERTIES = [
       "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
     ],
     videoId: "dQw4w9WgXcQ",
-    description: "فيلا فاخرة بإطلالة مباشرة على البحر الأحمر في أرقى أحياء جدة. تصميم هندسي استثنائي، حديقة استوائية، وشاطئ خاص خلف الفيلا مباشرة.",
+    description: "فيلا فاخرة بإطلالة مباشرة على البحر الأحمر في أرقى أحياء الإسكندرية. تصميم هندسي استثنائي، حديقة استوائية، وشاطئ خاص خلف الفيلا مباشرة.",
     amenities: ["شاطئ خاص", "مسبح لا نهاية", "حديقة استوائية", "غرفة سينما", "جناح للضيوف", "تكييف مركزي", "أمن 24 ساعة"],
     agentName: "ريم القرشي",
-    agentPhone: "+966 55 321 8800",
+    agentPhone: "+20 55 321 8800",
     agentAvatar: "https://i.pravatar.cc/80?img=25",
     agentTitle: "مستشارة عقارية فاخرة",
   },
@@ -352,7 +352,7 @@ export const PROPERTIES = [
     description: "شقة عصرية في الخبر الشمالية بالقرب من المجمعات التجارية الكبرى، تصميم مفتوح، تشطيبات حديثة، وموقع استراتيجي مميز قريب من أرامكو.",
     amenities: ["تكييف مركزي", "موقف مغطى", "حراسة", "مصعد", "إنترنت ألياف", "صالة رياضية مشتركة"],
     agentName: "وليد البكر",
-    agentPhone: "+966 50 444 5566",
+    agentPhone: "+20 50 444 5566",
     agentAvatar: "https://i.pravatar.cc/80?img=30",
     agentTitle: "وكيل عقاري",
   },
@@ -379,7 +379,7 @@ export const PROPERTIES = [
     description: "دوبلكس راقٍ بالقرب من المسجد النبوي الشريف، موقع متميز يجمع بين القيمة الدينية والاستثمارية، تشطيبات فاخرة وتصميم عصري أنيق.",
     amenities: ["قريب من الحرم", "روف خاص", "مطبخ أمريكي", "غرفة خادمة", "تكييف مركزي", "موقف خاص"],
     agentName: "هاني العنزي",
-    agentPhone: "+966 54 777 8899",
+    agentPhone: "+20 54 777 8899",
     agentAvatar: "https://i.pravatar.cc/80?img=35",
     agentTitle: "مستشار عقاري",
   },
@@ -406,15 +406,15 @@ export const PROPERTIES = [
     description: "فيلا استثمارية ذات موقع متميز في حي الراشدية، تصميم كلاسيكي فاخر مع حديقة خلفية وخدمات متكاملة، مناسبة للسكن أو التأجير بعائد مرتفع.",
     amenities: ["حديقة خلفية", "جلسة خارجية", "مستودع", "غرفة خادمة", "نظام إنذار", "موقف مغطى"],
     agentName: "سعود المطيري",
-    agentPhone: "+966 56 888 9900",
+    agentPhone: "+20 56 888 9900",
     agentAvatar: "https://i.pravatar.cc/80?img=40",
     agentTitle: "وكيل عقاري معتمد",
   },
   {
     id: 12,
     title: "شقة سمارت هوم في حي الياسمين",
-    location: "حي الياسمين، الرياض",
-    address: "طريق أنس بن مالك، حي الياسمين، الرياض 13322",
+    location: "حي الياسمين، القاهرة",
+    address: "طريق أنس بن مالك، حي الياسمين، القاهرة 13322",
     price: "٥٥,٠٠٠ / سنة",
     priceNum: 55000,
     type: "للإيجار",
@@ -433,15 +433,15 @@ export const PROPERTIES = [
     description: "شقة ذكية بتقنية سمارت هوم كاملة في أحدث مجمعات حي الياسمين، التحكم بكل شيء من هاتفك: الإضاءة، التكييف، الأمن، والستائر الأوتوماتيكية.",
     amenities: ["سمارت هوم", "تكييف مركزي ذكي", "ستائر أوتوماتيكية", "كاميرات ذكية", "جاكوزي", "مسبح مشترك", "صالة رياضية"],
     agentName: "لمى الشمري",
-    agentPhone: "+966 55 000 1122",
+    agentPhone: "+20 55 000 1122",
     agentAvatar: "https://i.pravatar.cc/80?img=45",
     agentTitle: "مستشارة عقارية",
   },
   {
     id: 13,
     title: "مكتب طابقي في برج الفيصلية",
-    location: "حي العليا، الرياض",
-    address: "برج الفيصلية، الطابق 15، طريق الملك فهد، الرياض 12212",
+    location: "حي العليا، القاهرة",
+    address: "برج الفيصلية، الطابق 15، طريق الملك فهد، القاهرة 12212",
     price: "٩٥,٠٠٠ / سنة",
     priceNum: 95000,
     type: "للإيجار",
@@ -457,18 +457,18 @@ export const PROPERTIES = [
       "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=1200&q=85",
     ],
     videoId: "dQw4w9WgXcQ",
-    description: "مكتب طابقي كامل في برج الفيصلية الأيقوني بالرياض، طابق 15 مع إطلالة 360 درجة على العاصمة، مجهز بالكامل بأحدث التقنيات والبنية التحتية التكنولوجية.",
+    description: "مكتب طابقي كامل في برج الفيصلية الأيقوني بالقاهرة، طابق 15 مع إطلالة 360 درجة على العاصمة، مجهز بالكامل بأحدث التقنيات والبنية التحتية التكنولوجية.",
     amenities: ["إطلالة 360 درجة", "غرف اجتماعات زجاجية", "استقبال", "مطبخ", "خزائن آمنة", "أمن 24 ساعة", "موقف VIP"],
     agentName: "طارق العسيري",
-    agentPhone: "+966 50 222 3344",
+    agentPhone: "+20 50 222 3344",
     agentAvatar: "https://i.pravatar.cc/80?img=50",
     agentTitle: "مستشار عقارات تجارية",
   },
   {
     id: 14,
     title: "أرض سكنية في حي طويق",
-    location: "حي طويق، الرياض",
-    address: "شارع الأمير سلطان بن سلمان، حي طويق، الرياض 14741",
+    location: "حي طويق، القاهرة",
+    address: "شارع الأمير سلطان بن سلمان، حي طويق، القاهرة 14741",
     price: "١,٨٠٠,٠٠٠",
     priceNum: 1800000,
     type: "للبيع",
@@ -486,7 +486,7 @@ export const PROPERTIES = [
     description: "أرض سكنية في حي طويق الهادئ، شارع مرصوف بعرض 15 متر، مناسبة لبناء فيلا أو عمارة سكنية صغيرة، قريبة من جميع الخدمات.",
     amenities: ["شارع مرصوف", "مرخصة للبناء السكني", "قريبة من المدارس", "هادئة وآمنة"],
     agentName: "نبيل الغامدي",
-    agentPhone: "+966 58 333 4455",
+    agentPhone: "+20 58 333 4455",
     agentAvatar: "https://i.pravatar.cc/80?img=55",
     agentTitle: "وكيل عقاري",
   },
@@ -1010,7 +1010,7 @@ export default function Home() {
                         <h3 className="font-bold text-sm truncate mb-0.5">{provider.userName}</h3>
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1">
                           <MapPin className="w-3 h-3" />
-                          {provider.city ?? "السعودية"}
+                          {provider.city ?? "مصر"}
                         </div>
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1">
@@ -1150,7 +1150,7 @@ export default function Home() {
                             <h3 className="font-bold text-sm leading-tight truncate">{provider.userName}</h3>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                               <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{provider.city ?? "السعودية"}</span>
+                              <span className="truncate">{provider.city ?? "مصر"}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-0.5 shrink-0 bg-secondary/80 px-1.5 py-0.5 rounded text-xs">
@@ -1217,7 +1217,7 @@ export default function Home() {
                 </div>
                 <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
                   اكتشف أفضل العقارات
-                  <span className="block text-primary">في المملكة</span>
+                  <span className="block text-primary">في مصر</span>
                 </h2>
                 <p className="text-muted-foreground mt-3 text-base max-w-md">شقق وفلل ومكاتب تجارية بأسعار تنافسية في أفضل المواقع</p>
               </div>
@@ -1434,7 +1434,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
               <div className="md:col-span-2">
                 <h3 className="text-2xl font-extrabold text-white mb-3">{siteName}</h3>
-                <p className="text-slate-400 leading-relaxed max-w-sm">المنصة الأولى للخدمات المنزلية والمحلية في المملكة العربية السعودية.</p>
+                <p className="text-slate-400 leading-relaxed max-w-sm">المنصة الأولى للخدمات المنزلية والمحلية في جمهورية مصر العربية.</p>
                 <div className="flex gap-3 mt-5">
                   {["twitter", "instagram", "whatsapp"].map(s => (
                     <div key={s} className="w-10 h-10 rounded-full bg-white/10 hover:bg-primary/80 flex items-center justify-center cursor-pointer transition-colors">
@@ -1456,7 +1456,7 @@ export default function Home() {
                 <ul className="space-y-2 text-slate-400 text-sm">
                   <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" />info@dalilsmartlines.com</li>
                   <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" />920XXXXXX</li>
-                  <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />الرياض، المملكة العربية السعودية</li>
+                  <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />القاهرة، جمهورية مصر العربية</li>
                 </ul>
               </div>
             </div>

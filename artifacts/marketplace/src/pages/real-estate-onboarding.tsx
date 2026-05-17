@@ -892,7 +892,7 @@ export default function RealEstateOnboarding() {
           {draft.contactMethods.includes("whatsapp") && (
             <div className="animate-in fade-in slide-in-from-top-2">
               <Label>رقم الواتساب</Label>
-              <Input value={draft.whatsapp} onChange={e => updateDraft({ whatsapp: e.target.value.replace(/\D/g, "") })} className="h-11 mt-1" dir="ltr" placeholder="+966xxxxxxxxx" inputMode="numeric" />
+              <Input value={draft.whatsapp} onChange={e => updateDraft({ whatsapp: e.target.value.replace(/\D/g, "") })} className="h-11 mt-1" dir="ltr" placeholder="+20...xxxxxx" inputMode="numeric" />
             </div>
           )}
         </CardContent>

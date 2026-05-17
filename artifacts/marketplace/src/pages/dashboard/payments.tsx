@@ -56,7 +56,7 @@ function InvoiceModal({ invoice, open, onClose }: { invoice: FakeInvoice | null;
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-2xl font-black">سمارت لاينز للنظم المتطورة</h2>
-                  <p className="text-primary-foreground/70 text-sm mt-1">منصة الخدمات السعودية</p>
+                  <p className="text-primary-foreground/70 text-sm mt-1">منصة الخدمات مصر</p>
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-bold text-primary-foreground/80">فاتورة رقم</p>

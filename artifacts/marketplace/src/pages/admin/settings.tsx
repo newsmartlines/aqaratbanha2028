@@ -336,7 +336,7 @@ export default function AdminSettings() {
               </div>
               <div className="space-y-1.5">
                 <Label>واتساب</Label>
-                <Input dir="ltr" value={form.contactWhatsapp ?? ""} onChange={e => setForm(f => ({ ...f, contactWhatsapp: e.target.value }))} placeholder="+966500000000" />
+                <Input dir="ltr" value={form.contactWhatsapp ?? ""} onChange={e => setForm(f => ({ ...f, contactWhatsapp: e.target.value }))} placeholder="+201000000000" />
               </div>
               <div className="space-y-1.5">
                 <Label>{t("addressAr")}</Label>

@@ -598,7 +598,7 @@ export default function Onboarding() {
             {selectedContactMethods.includes("whatsapp") && (
               <div className="pt-4 animate-in fade-in slide-in-from-top-2">
                 <Label>رقم الواتساب</Label>
-                <Input value={contact.whatsapp} onChange={e => setContact({...contact, whatsapp: e.target.value.replace(/\D/g, "")})} className="mt-2 h-11" dir="ltr" placeholder="+966xxxxxxxxx" inputMode="numeric" />
+                <Input value={contact.whatsapp} onChange={e => setContact({...contact, whatsapp: e.target.value.replace(/\D/g, "")})} className="mt-2 h-11" dir="ltr" placeholder="+20...xxxxxx" inputMode="numeric" />
               </div>
             )}
           </CardContent>

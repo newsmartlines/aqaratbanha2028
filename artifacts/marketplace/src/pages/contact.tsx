@@ -68,7 +68,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-muted-foreground mb-0.5">رقم الهاتف</p>
-                  <p className="font-medium" dir="ltr">{settings?.contactPhone ?? "+966 500 000 000"}</p>
+                  <p className="font-medium" dir="ltr">{settings?.contactPhone ?? "+20 500 000 000"}</p>
                 </div>
               </div>
 
@@ -95,7 +95,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-muted-foreground mb-0.5">العنوان</p>
-                  <p className="font-medium">{settings?.contactAddress ?? "الرياض، المملكة العربية السعودية"}</p>
+                  <p className="font-medium">{settings?.contactAddress ?? "القاهرة، جمهورية مصر العربية"}</p>
                 </div>
               </div>
             </div>

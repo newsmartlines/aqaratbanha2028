@@ -69,8 +69,8 @@ export default function CategoriesPage() {
               return (
                 <div key={cat.id} className="border border-border/60 rounded-2xl overflow-hidden bg-card shadow-sm hover:shadow-md transition-shadow">
                   {/* Category Row — Haraj style */}
-                  <button
-                    className="w-full flex items-center gap-4 p-4 md:p-5 text-right transition-colors hover:bg-secondary/30"
+                  <div
+                    className="w-full flex items-center gap-4 p-4 md:p-5 text-right transition-colors hover:bg-secondary/30 cursor-pointer"
                     onClick={() => toggleExpand(cat.id)}
                   >
                     {/* Icon */}
@@ -103,7 +103,7 @@ export default function CategoriesPage() {
                           : <ChevronDown className="w-5 h-5 text-muted-foreground" />
                       ) : null}
                     </div>
-                  </button>
+                  </div>
 
                   {/* Subcategories Panel — expands below like Haraj */}
                   {isOpen && subs.length > 0 && (

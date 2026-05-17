@@ -42,8 +42,8 @@ const userLocationIcon = new L.Icon({
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80";
 
 const CITY_COORDS: Record<string, [number, number]> = {
-  "الرياض": [24.7136, 46.6753],
-  "جدة": [21.3891, 39.8579],
+  "القاهرة": [24.7136, 46.6753],
+  "الإسكندرية": [21.3891, 39.8579],
   "الدمام": [26.3927, 49.9777],
   "الطائف": [21.2703, 40.4158],
   "الخبر": [26.2172, 50.1971],
@@ -613,7 +613,7 @@ export default function SearchPage() {
                               <p className="font-bold text-sm mb-1">{p.userName}</p>
                               <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
                                 <MapPin className="w-3 h-3" />
-                                {p.city ?? "السعودية"}
+                                {p.city ?? "مصر"}
                                 {p.district ? ` — ${p.district}` : ""}
                               </div>
                               <div className="flex items-center gap-1 text-xs mb-2">

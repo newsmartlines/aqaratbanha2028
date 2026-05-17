@@ -12,7 +12,7 @@ import {
   Plus, Search, RefreshCw, Eye, Copy, Trash2, Pencil, RotateCcw, Download, Upload, Sparkles,
   Mail, MessageSquare, Phone, Bell, Zap, Layers, Send, Code2, Monitor, Smartphone,
   CheckCircle2, XCircle, Clock, AlertCircle, ChevronRight, X, Save, Files, Loader2,
-  Info, ToggleLeft, Hash, Shield, ShoppingCart, CreditCard, Package, Settings, Globe
+  Info, ToggleLeft, Hash, Shield, ShoppingCart, CreditCard, Package, Settings, Globe, Home
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
@@ -104,7 +104,7 @@ const DEMO_VARS: Record<string, string> = {
   actionText: "عرض التفاصيل",
   loginTime: new Date().toLocaleString("ar"),
   loginDevice: "Chrome / macOS",
-  loginLocation: "الرياض، المملكة العربية السعودية",
+  loginLocation: "القاهرة، جمهورية مصر العربية",
   changeTime: new Date().toLocaleString("ar"),
   rejectReason: "الرجاء إضافة تفاصيل أكثر عن الخدمة.",
   reviewTime: "24 ساعة",
@@ -573,6 +573,17 @@ export default function AdminMessages() {
                   })
                 )}
               </div>
+            </div>
+
+            {/* ── Back to site link ── */}
+            <div className="p-3 border-t border-slate-200 bg-white shrink-0">
+              <a
+                href="/"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-teal-700 hover:bg-teal-50 transition-colors group"
+              >
+                <Home className="w-3.5 h-3.5 shrink-0 text-teal-500 group-hover:text-teal-700" />
+                <span>العودة إلى سمارت لاينز للنظم المتطورة</span>
+              </a>
             </div>
           </div>
 

@@ -410,7 +410,7 @@ export default function AdminUsers() {
             </div>
             <div className="space-y-1">
               <Label>{t("phoneNo")}</Label>
-              <Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="+966..." dir="ltr" />
+              <Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="+20..." dir="ltr" />
             </div>
           </div>
           <DialogFooter>

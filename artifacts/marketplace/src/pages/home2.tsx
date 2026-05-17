@@ -25,8 +25,8 @@ const KINDS_OPTS = [
 
 const REGIONS_OPTS = [
   { value: "", label: "المنطقة" },
-  { value: "الرياض", label: "الرياض" },
-  { value: "جدة", label: "جدة" },
+  { value: "القاهرة", label: "القاهرة" },
+  { value: "الإسكندرية", label: "الإسكندرية" },
   { value: "الدمام", label: "الدمام" },
   { value: "مكة المكرمة", label: "مكة المكرمة" },
   { value: "المدينة المنورة", label: "المدينة المنورة" },
@@ -43,8 +43,8 @@ const PRICE_OPTS = [
 ];
 
 const REGIONS = [
-  { name: "الرياض",         count: 312, img: "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=600&q=70" },
-  { name: "جدة",            count: 218, img: "https://images.unsplash.com/photo-1590183500001-3fee27e2d5f2?auto=format&fit=crop&w=600&q=70" },
+  { name: "القاهرة",         count: 312, img: "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=600&q=70" },
+  { name: "الإسكندرية",            count: 218, img: "https://images.unsplash.com/photo-1590183500001-3fee27e2d5f2?auto=format&fit=crop&w=600&q=70" },
   { name: "الدمام",         count: 134, img: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=600&q=70" },
   { name: "مكة المكرمة",   count:  97, img: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=600&q=70" },
   { name: "المدينة المنورة",count:  76, img: "https://images.unsplash.com/photo-1575783970733-1aaedde1db74?auto=format&fit=crop&w=600&q=70" },
@@ -200,7 +200,7 @@ export default function Home2() {
         <div className="relative z-10 container mx-auto px-4 text-center text-white py-20">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <span className="inline-block text-xs font-bold tracking-widest uppercase text-primary bg-primary/15 border border-primary/30 rounded-full px-4 py-1.5 mb-5 backdrop-blur-sm">
-              منصة العقارات الأولى في المملكة
+              منصة العقارات الأولى في مصر
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 drop-shadow-lg">
               اعثر على عقارك المثالي
@@ -208,7 +208,7 @@ export default function Home2() {
               <span className="text-primary"> في كل مكان</span>
             </h1>
             <p className="text-white/80 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-              آلاف العقارات للبيع والإيجار في جميع مدن المملكة — فيلل، شقق، مكاتب وأراضي.
+              آلاف العقارات للبيع والإيجار في جميع مدن مصر — فيلل، شقق، مكاتب وأراضي.
             </p>
           </motion.div>
 
@@ -490,7 +490,7 @@ export default function Home2() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-extrabold mb-2">لماذا دليل بلس العقارات؟</h2>
-            <p className="text-white/70">المنصة الأكثر ثقةً لبيع وشراء وإيجار العقارات في المملكة</p>
+            <p className="text-white/70">المنصة الأكثر ثقةً لبيع وشراء وإيجار العقارات في مصر</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[

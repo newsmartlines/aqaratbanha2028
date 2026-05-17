@@ -211,7 +211,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div className="flex h-full flex-col bg-slate-900 text-white">
+    <div className="flex flex-col bg-slate-900 text-white min-h-full">
       <div className="flex h-14 shrink-0 items-center px-5 border-b border-white/10 lg:hidden">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-teal-500 flex items-center justify-center text-white font-bold text-lg">✦</div>
@@ -219,23 +219,23 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <div className="px-4 py-4 border-b border-white/10">
+      <div className="px-4 py-2.5 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 shrink-0 bg-teal-600 flex items-center justify-center text-white font-bold text-lg">
+          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/20 shrink-0 bg-teal-600 flex items-center justify-center text-white font-bold text-base">
             {user?.avatar
               ? <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" />
               : (user?.name?.[0]?.toUpperCase() ?? "A")}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">{user?.name ?? t("brandShort")}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{t("superAdmin")}</p>
+            <p className="text-xs text-slate-400">{t("superAdmin")}</p>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5 hide-scrollbar">
-        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">{t("menu")}</p>
-        <nav className="space-y-0.5">
+      <div className="py-2 px-3">
+        <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">{t("menu")}</p>
+        <nav className="space-y-0">
           {menuItems.map((item) => {
             const isActive = location === item.href || location.startsWith(item.href + "/");
             const n = pendingForHref(item.href, sidebarCounts);
@@ -243,19 +243,19 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <Link key={item.href} href={item.href}>
                 <span
                   onClick={onNavigate}
-                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors ${
+                  className={`group flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
                     isActive
                       ? "bg-teal-600/20 text-teal-300"
                       : "text-slate-400 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   <item.icon
-                    size={17}
+                    size={15}
                     className={`shrink-0 ${isActive ? "text-teal-400" : "text-slate-500 group-hover:text-white"}`}
                   />
-                  <span className="flex-1 min-w-0 truncate">{item.label}</span>
+                  <span className="flex-1 min-w-0 truncate text-xs">{item.label}</span>
                   {n > 0 && (
-                    <span className="shrink-0 min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-500 text-slate-900 text-[10px] font-bold flex items-center justify-center">
+                    <span className="shrink-0 min-w-[1.25rem] h-4 px-1 rounded-full bg-amber-500 text-slate-900 text-[9px] font-bold flex items-center justify-center">
                       {n > 99 ? "99+" : n}
                     </span>
                   )}
@@ -354,7 +354,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
           </div>
         </main>
 
-        <aside className={`hidden lg:flex flex-col fixed top-14 ${sideClass} bottom-0 ${SIDEBAR_W} z-40`}>
+        <aside className={`hidden lg:block fixed top-14 ${sideClass} bottom-0 ${SIDEBAR_W} z-40 overflow-y-auto`}>
           <SidebarContent />
         </aside>
       </div>

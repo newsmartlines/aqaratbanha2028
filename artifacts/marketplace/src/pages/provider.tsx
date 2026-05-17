@@ -395,7 +395,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                     </div>
                     <div>
                       <p className="font-bold text-sm">نطاق الخدمة</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{provider.city ?? "المملكة"} وما حولها</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{provider.city ?? "مصر"} وما حولها</p>
                     </div>
                   </div>
                 </div>
@@ -599,7 +599,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                           )}
                           {enabled.phone && (showPhone ? (
                             <div className="flex items-center justify-center p-3 bg-secondary/50 rounded-xl border border-border/50 animate-in fade-in duration-300">
-                              <span className="font-bold text-lg tracking-wider" dir="ltr">{provider.phone ?? "+966 50 000 0000"}</span>
+                              <span className="font-bold text-lg tracking-wider" dir="ltr">{provider.phone ?? "+20 50 000 0000"}</span>
                             </div>
                           ) : (
                             <Button

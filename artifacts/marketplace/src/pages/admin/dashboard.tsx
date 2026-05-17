@@ -17,7 +17,7 @@ const dict = {
   totalRevenue: { ar: "إجمالي الإيرادات", en: "Total Revenue" },
   pendingApprovals: { ar: "بانتظار الموافقة", en: "Pending Approvals" },
   revenueOverTime: { ar: "الإيرادات عبر الوقت", en: "Revenue Over Time" },
-  revenueDesc: { ar: "نمو الإيرادات الشهرية بالجنيه السعودي", en: "Monthly revenue growth in EGP" },
+  revenueDesc: { ar: "نمو الإيرادات الشهرية بالجنيه المصري", en: "Monthly revenue growth in EGP" },
   topCategories: { ar: "أبرز التصنيفات", en: "Top Categories" },
   topCategoriesDesc: { ar: "توزيع الخدمات النشطة", en: "Distribution of active listings" },
   newProvidersMonth: { ar: "مقدمو خدمة جدد شهرياً", en: "New Providers per Month" },

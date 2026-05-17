@@ -10,7 +10,7 @@ export default function AboutPage() {
   });
 
   const siteName = settings?.siteName ?? "سمارت لاينز للنظم المتطورة";
-  const aboutContent = settings?.aboutContent ?? "نحن منصة سمارت لاينز للنظم المتطورة، الوجهة الأولى للخدمات المنزلية والمحلية في المملكة العربية السعودية.";
+  const aboutContent = settings?.aboutContent ?? "نحن منصة سمارت لاينز للنظم المتطورة، الوجهة الأولى للخدمات المنزلية والمحلية في جمهورية مصر العربية.";
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -21,7 +21,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold mb-4">من نحن</h1>
           <p className="text-primary-foreground/80 text-xl max-w-2xl mx-auto">
-            نعرّفك على {siteName} — المنصة التي تُغيّر طريقة الحصول على الخدمات في السعودية
+            نعرّفك على {siteName} — المنصة التي تُغيّر طريقة الحصول على الخدمات في مصر
           </p>
         </div>
       </div>

@@ -21,7 +21,7 @@ export function RealEstateFooter() {
               </div>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
-              منصتك الموثوقة للعثور على أفضل العقارات في جميع أنحاء المملكة العربية السعودية — بيعاً وإيجاراً واستثماراً.
+              منصتك الموثوقة للعثور على أفضل العقارات في جميع أنحاء جمهورية مصر العربية — بيعاً وإيجاراً واستثماراً.
             </p>
             <div className="flex items-center gap-3">
               {[
@@ -88,11 +88,11 @@ export function RealEstateFooter() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <span className="text-sm text-gray-400">طريق الملك فهد، حي العليا، الرياض 12244</span>
+                <span className="text-sm text-gray-400">طريق الملك فهد، حي العليا، القاهرة 12244</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm text-gray-400" dir="ltr">+966 11 234 5678</span>
+                <span className="text-sm text-gray-400" dir="ltr">+20 11 234 5678</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
