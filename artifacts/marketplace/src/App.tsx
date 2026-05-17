@@ -29,6 +29,7 @@ import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminSettings from "@/pages/admin/settings";
 import AdminUsers from "@/pages/admin/users";
 import AdminCategories from "@/pages/admin/categories";
+import AdminRealEstateCategories from "@/pages/admin/real-estate-categories";
 import AdminOrders from "@/pages/admin/orders";
 import AdminLocations from "@/pages/admin/locations";
 import ProviderDashboard from "@/pages/dashboard/index";

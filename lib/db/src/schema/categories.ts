@@ -11,6 +11,7 @@ export const categoriesTable = pgTable("categories", {
   description: text("description"),
   image: text("image"),
   status: text("status").notNull().default("active"),
+  type: text("type").notNull().default("service"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

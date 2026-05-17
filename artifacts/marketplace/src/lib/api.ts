@@ -582,6 +582,7 @@ export const api = {
 
   categories: {
     list: async () => ensureArray<Category>(await fetchJson(`/categories`)),
+    listByType: async (type: string) => ensureArray<Category>(await fetchJson(`/categories?type=${encodeURIComponent(type)}`)),
     get: (id: number) => fetchJson<Category>(`/categories/${id}`),
     create: (data: unknown) => fetchJson<Category>(`/categories`, { method: "POST", body: JSON.stringify(data) }),
     update: (id: number, data: unknown) => fetchJson<Category>(`/categories/${id}`, { method: "PUT", body: JSON.stringify(data) }),

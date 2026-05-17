@@ -178,6 +178,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Stamp,           label: "الصورة المائية",    href: "/admin/watermark",         perm: null },
     { icon: Search,          label: "إدارة السيو",       href: "/admin/seo",               perm: null },
     { icon: Tags,            label: t("categories"),      href: "/admin/categories",       perm: "categories" },
+    { icon: Building2,       label: "التصنيفات العقارية", href: "/admin/real-estate-categories", perm: "categories" },
     { icon: MapPin,          label: t("locations"),       href: "/admin/locations",        perm: "locations" },
     { icon: ShoppingCart,    label: t("orders"),          href: "/admin/orders",           perm: "orders" },
     { icon: Ticket,          label: t("supportTickets"),  href: "/admin/support-tickets",  perm: "support" },

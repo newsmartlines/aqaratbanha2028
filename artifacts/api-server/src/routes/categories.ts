@@ -5,9 +5,13 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-router.get("/categories", async (_req, res) => {
+router.get("/categories", async (req, res) => {
   try {
-    const categories = await db.select().from(categoriesTable).orderBy(categoriesTable.id);
+    const { type } = req.query as { type?: string };
+    const query = db.select().from(categoriesTable);
+    const categories = type
+      ? await query.where(eq(categoriesTable.type, type)).orderBy(categoriesTable.id)
+      : await query.orderBy(categoriesTable.id);
     res.json({ success: true, data: categories });
   } catch {
     res.status(500).json({ success: false, error: "Failed to fetch categories" });
@@ -27,9 +31,9 @@ router.get("/categories/:id", async (req, res) => {
 
 router.post("/categories", async (req, res) => {
   try {
-    const { nameAr, nameEn, icon, slug, description, image } = req.body;
+    const { nameAr, nameEn, icon, slug, description, image, type } = req.body;
     if (!nameAr || !nameEn || !slug) return res.status(400).json({ success: false, error: "nameAr, nameEn, slug required" });
-    const [cat] = await db.insert(categoriesTable).values({ nameAr, nameEn, icon: icon ?? "Grid", slug, description, image }).returning();
+    const [cat] = await db.insert(categoriesTable).values({ nameAr, nameEn, icon: icon ?? "Grid", slug, description, image, type: type ?? "service" }).returning();
     res.json({ success: true, data: cat });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to create category";
@@ -40,8 +44,10 @@ router.post("/categories", async (req, res) => {
 router.put("/categories/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { nameAr, nameEn, icon, slug, description, image } = req.body;
-    const [updated] = await db.update(categoriesTable).set({ nameAr, nameEn, icon, slug, description, image }).where(eq(categoriesTable.id, id)).returning();
+    const { nameAr, nameEn, icon, slug, description, image, type } = req.body;
+    const updateData: Record<string, unknown> = { nameAr, nameEn, icon, slug, description, image };
+    if (type !== undefined) updateData.type = type;
+    const [updated] = await db.update(categoriesTable).set(updateData).where(eq(categoriesTable.id, id)).returning();
     if (!updated) return res.status(404).json({ success: false, error: "Not found" });
     res.json({ success: true, data: updated });
   } catch (err: unknown) {
