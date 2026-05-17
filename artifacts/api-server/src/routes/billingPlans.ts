@@ -17,11 +17,23 @@ router.get("/admin/billing/plans", async (_req, res) => {
   } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
 });
 
+function sanitizePlanBody(raw: any) {
+  const body = { ...raw };
+  if (typeof body.limits === "object") body.limits = JSON.stringify(body.limits);
+  if (typeof body.features === "object") body.features = JSON.stringify(body.features);
+  // Convert empty strings to null for numeric / optional fields
+  const numericNullable = ["yearlyPrice", "yearly_price", "trialDays", "trial_days", "minAmount", "min_amount"];
+  for (const field of numericNullable) {
+    if (body[field] === "" || body[field] === undefined) body[field] = null;
+  }
+  // Remove any non-schema keys that might have leaked in
+  delete body.description; // not in insert (has a default)
+  return body;
+}
+
 router.post("/admin/billing/plans", async (req, res) => {
   try {
-    const body = { ...req.body };
-    if (typeof body.limits === "object") body.limits = JSON.stringify(body.limits);
-    if (typeof body.features === "object") body.features = JSON.stringify(body.features);
+    const body = sanitizePlanBody(req.body);
     const [plan] = await db.insert(billingPlansTable).values(body).returning();
     res.json({ success: true, data: plan });
   } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
@@ -29,9 +41,7 @@ router.post("/admin/billing/plans", async (req, res) => {
 
 router.put("/admin/billing/plans/:id", async (req, res) => {
   try {
-    const body = { ...req.body, updatedAt: new Date() };
-    if (typeof body.limits === "object") body.limits = JSON.stringify(body.limits);
-    if (typeof body.features === "object") body.features = JSON.stringify(body.features);
+    const body = { ...sanitizePlanBody(req.body), updatedAt: new Date() };
     const [plan] = await db.update(billingPlansTable).set(body).where(eq(billingPlansTable.id, Number(req.params.id))).returning();
     res.json({ success: true, data: plan });
   } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }

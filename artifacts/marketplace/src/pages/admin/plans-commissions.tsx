@@ -50,7 +50,13 @@ type Features = { homepageDisplay: boolean; topSearch: boolean; verifiedBadge: b
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const USER_TYPES: Record<string, string> = { all: "الكل", user: "مستخدم عادي", broker: "سمسار", company: "شركة عقارية", developer: "مطور عقاري", vip: "VIP" };
+const USER_TYPES: Record<string, string> = {
+  all: "الكل (أفراد + شركات + مزودو الخدمات)",
+  provider: "مزودو الخدمات",
+  user: "أفراد / مستخدمون عاديون",
+  company: "شركات",
+  vip: "VIP / بريميوم",
+};
 const DURATION_TYPES: Record<string, string> = { monthly: "شهري", quarterly: "ربع سنوي", yearly: "سنوي", lifetime: "مدى الحياة" };
 const APPLIES_TO: Record<string, string> = { all: "الكل", sale: "بيع", rent: "إيجار", featured: "إعلان مميز", renewal: "تجديد", paid_ads: "إعلانات مدفوعة" };
 const LIMIT_LABELS: Record<keyof Limits, string> = { properties: "العقارات", photos: "الصور", videos: "الفيديوهات", featuredAds: "إعلانات مميزة", pinnedAds: "إعلانات مثبتة", messages: "الرسائل", leads: "الطلبات" };
@@ -188,6 +194,10 @@ export default function PlansCommissions() {
   const submitPlan = () => {
     const d = { ...planModal.data };
     if (!d.name) { toast.error("أدخل اسم الباقة"); return; }
+    // Convert empty strings to null for numeric nullable fields
+    if (d.yearlyPrice === "" || d.yearlyPrice === undefined) d.yearlyPrice = null;
+    if (d.trialDays === "" || d.trialDays === undefined) d.trialDays = 0;
+    if (d.price === "" || d.price === undefined) d.price = "0";
     if (planModal.mode === "add") createPlan.mutate(d);
     else updatePlan.mutate({ id: (planModal.data as BillingPlan).id, d });
   };
