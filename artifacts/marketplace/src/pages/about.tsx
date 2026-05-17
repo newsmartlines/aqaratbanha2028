@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { api } from "@/lib/api";
 import { CheckCircle2, Users, Star, Shield, Loader2 } from "lucide-react";
+import { useInterpolate } from "@/lib/use-interpolate";
 
 export default function AboutPage() {
   const { data: settings, isLoading } = useQuery({

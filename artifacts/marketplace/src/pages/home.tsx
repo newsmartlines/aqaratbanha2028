@@ -570,11 +570,16 @@ export default function Home() {
   });
 
   const siteName = (settings as SiteSettings | undefined)?.siteName ?? "سمارت لاينز للنظم المتطورة";
-  const ctaText = (settings as SiteSettings | undefined)?.ctaText ?? "ندعم المشاريع المنزلية ونضمن حقوقك";
-  const ctaButtonText = (settings as SiteSettings | undefined)?.ctaButtonText ?? "انضم إلينا الآن";
+  const _ctaText = (settings as SiteSettings | undefined)?.ctaText ?? "ندعم المشاريع المنزلية ونضمن حقوقك";
+  const _ctaButtonText = (settings as SiteSettings | undefined)?.ctaButtonText ?? "انضم إلينا الآن";
   const heroImage = (settings as SiteSettings | undefined)?.heroImage ?? "";
-  const heroTitle = (settings as SiteSettings | undefined)?.heroTitle ?? "";
-  const heroSubtitle = (settings as SiteSettings | undefined)?.heroSubtitle ?? "";
+  const _heroTitle = (settings as SiteSettings | undefined)?.heroTitle ?? "";
+  const _heroSubtitle = (settings as SiteSettings | undefined)?.heroSubtitle ?? "";
+  const ip = useInterpolate();
+  const heroTitle = ip(_heroTitle);
+  const heroSubtitle = ip(_heroSubtitle);
+  const ctaText = ip(_ctaText);
+  const ctaButtonText = ip(_ctaButtonText);
 
   const getSubs = (catId: number) => ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === catId);
 

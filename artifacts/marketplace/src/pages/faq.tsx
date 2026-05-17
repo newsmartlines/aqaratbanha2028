@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { api } from "@/lib/api";
 import { ChevronDown, ChevronUp, HelpCircle, Loader2 } from "lucide-react";
+import { useInterpolate } from "@/lib/use-interpolate";
 
 interface FaqItem { q: string; a: string }
 
