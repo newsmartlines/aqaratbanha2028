@@ -40,7 +40,7 @@ const STATUS_LABELS: Record<StatusKey, string> = {
 
 function formatDate(iso: string) {
   try {
-    return new Date(iso).toLocaleDateString("ar-SA", {
+    return new Date(iso).toLocaleDateString("ar-EG", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -338,7 +338,7 @@ export default function UserRequests() {
                 {detailsReq.servicePrice && (
                   <div className="space-y-1">
                     <p className="text-muted-foreground text-xs">السعر</p>
-                    <p className="font-bold text-teal-600">{detailsReq.servicePrice} ريال</p>
+                    <p className="font-bold text-teal-600">{detailsReq.servicePrice} جنيه</p>
                   </div>
                 )}
               </div>
@@ -412,7 +412,7 @@ export default function UserRequests() {
                   <div className="flex justify-between py-3 mt-1 bg-secondary/50 rounded-lg px-3">
                     <span className="font-bold">الإجمالي</span>
                     <span className="font-bold text-teal-600 text-base">
-                      {invoiceReq.servicePrice ? `${invoiceReq.servicePrice} ريال` : "حسب الاتفاق"}
+                      {invoiceReq.servicePrice ? `${invoiceReq.servicePrice} جنيه` : "حسب الاتفاق"}
                     </span>
                   </div>
                 </div>

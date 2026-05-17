@@ -8,8 +8,8 @@ import { api } from "@/lib/api";
 
 const dict = {
   pageTitle: { ar: "الاشتراكات", en: "Subscriptions" },
-  activePremium: { ar: "اشتراكات بسعر أعلى (≥200 ر.س)", en: "Premium-tier Subscriptions (≥200 SAR)" },
-  activeBronze: { ar: "اشتراكات أساسية (<200 ر.س)", en: "Standard Subscriptions (<200 SAR)" },
+  activePremium: { ar: "اشتراكات بسعر أعلى (≥200 ج.م)", en: "Premium-tier Subscriptions (≥200 EGP)" },
+  activeBronze: { ar: "اشتراكات أساسية (<200 ج.م)", en: "Standard Subscriptions (<200 EGP)" },
   monthlyRecurring: { ar: "الإيراد المتكرر شهرياً", en: "Monthly Recurring Revenue" },
   activeSubs: { ar: "جميع الاشتراكات", en: "All Subscriptions" },
   provider: { ar: "مقدم الخدمة", en: "Provider" },
@@ -18,7 +18,7 @@ const dict = {
   startDate: { ar: "تاريخ البداية", en: "Start Date" },
   endDate: { ar: "تاريخ الانتهاء", en: "End Date" },
   amount: { ar: "المبلغ", en: "Amount" },
-  sar: { ar: "ر.س", en: "SAR" },
+  sar: { ar: "ج.م", en: "EGP" },
   active: { ar: "نشط", en: "Active" },
   expired: { ar: "منتهٍ", en: "Expired" },
   cancelled: { ar: "ملغى", en: "Cancelled" },
@@ -30,7 +30,7 @@ const dict = {
 
 function formatDate(iso: string, lang: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", {
+  return d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",

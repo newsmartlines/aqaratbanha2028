@@ -501,7 +501,7 @@ export default function AdminProperties() {
                 </div>
                 <div className="bg-slate-50 rounded-xl p-3">
                   <p className="text-xs text-slate-500 mb-0.5">السعر</p>
-                  <p className="font-bold text-teal-700">{viewProp.price} ر.س</p>
+                  <p className="font-bold text-teal-700">{viewProp.price} ج.م</p>
                 </div>
                 <div className="bg-slate-50 rounded-xl p-3">
                   <p className="text-xs text-slate-500 mb-0.5">المساحة</p>

@@ -497,7 +497,7 @@ export default function Onboarding() {
                         className="h-11 pr-12" 
                         dir="ltr"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">ر.س</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">ج.م</span>
                     </div>
                   </div>
                 </div>
@@ -666,7 +666,7 @@ export default function Onboarding() {
               <h3 className="font-bold text-xl mb-2 text-primary">برونزي</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-black text-primary">٩٩</span>
-                <span className="text-muted-foreground font-medium">ر.س / شهر</span>
+                <span className="text-muted-foreground font-medium">ج.م / شهر</span>
               </div>
             </div>
             <ul className="space-y-3 mb-8 flex-1 text-sm font-medium">
@@ -691,7 +691,7 @@ export default function Onboarding() {
               <h3 className="font-bold text-xl mb-2">بريميوم</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-black">٢٤٩</span>
-                <span className="text-muted-foreground text-sm">ر.س / شهر</span>
+                <span className="text-muted-foreground text-sm">ج.م / شهر</span>
               </div>
             </div>
             <ul className="space-y-3 mb-8 flex-1 text-sm">
@@ -716,8 +716,8 @@ export default function Onboarding() {
       plan === "free"
         ? "مجاني"
         : plan === "bronze"
-        ? "برونزي — ٩٩ ر.س / شهر"
-        : "بريميوم — ٢٤٩ ر.س / شهر";
+        ? "برونزي — ٩٩ ج.م / شهر"
+        : "بريميوم — ٢٤٩ ج.م / شهر";
     const contactMethodLabels = selectedContactMethods
       .map(id => CONTACT_METHODS.find(m => m.id === id)?.label)
       .filter(Boolean) as string[];
@@ -844,7 +844,7 @@ export default function Onboarding() {
                       <span className="font-bold text-sm">{s.title}</span>
                       {s.price && (
                         <span className="text-primary font-bold text-sm shrink-0">
-                          {s.price} ر.س
+                          {s.price} ج.م
                         </span>
                       )}
                     </div>

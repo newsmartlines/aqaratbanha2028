@@ -67,7 +67,7 @@ const defaultFeatures: Features = { homepageDisplay: false, topSearch: false, ve
 
 const defaultPlan = {
   name: "", nameAr: "", descriptionAr: "", price: "99", yearlyPrice: "",
-  currency: "SAR", durationDays: 30, durationType: "monthly", userType: "all",
+  currency: "EGP", durationDays: 30, durationType: "monthly", userType: "all",
   status: "active", isRecommended: false, isMostPopular: false,
   trialDays: 0, sortOrder: 0, color: "#0d9488", commissionPercent: "10",
   limits: { ...defaultLimits }, features: { ...defaultFeatures },
@@ -263,7 +263,7 @@ export default function PlansCommissions() {
         {/* Stats cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "إجمالي الإيرادات", value: `${Number(dashboard?.totalRevenue ?? 0).toLocaleString("ar")} ر.س`, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+            { label: "إجمالي الإيرادات", value: `${Number(dashboard?.totalRevenue ?? 0).toLocaleString("ar")} ج.م`, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
             { label: "إجمالي الاشتراكات", value: (dashboard?.subscriptionsCount ?? 0).toLocaleString("ar"), icon: Users, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
             { label: "الباقات النشطة", value: (dashboard?.activePlans ?? plans.filter(p => p.status === "active").length).toString(), icon: Package, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100" },
             { label: "قواعد العمولة", value: commissions.filter(c => c.isActive).length.toString(), icon: Percent, color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100" },
@@ -462,7 +462,7 @@ export default function PlansCommissions() {
                                 {rule.isPercentage ? "نسبة %" : "مبلغ ثابت"}
                               </Badge>
                             </TableCell>
-                            <TableCell className="font-bold text-slate-800">{rule.value}{rule.isPercentage ? "%" : " ر.س"}</TableCell>
+                            <TableCell className="font-bold text-slate-800">{rule.value}{rule.isPercentage ? "%" : " ج.م"}</TableCell>
                             <TableCell className="text-sm text-slate-600">{APPLIES_TO[rule.appliesTo] ?? rule.appliesTo}</TableCell>
                             <TableCell className="text-sm text-slate-600">{USER_TYPES[rule.userType] ?? rule.userType}</TableCell>
                             <TableCell className="text-sm text-center">{rule.priority}</TableCell>
@@ -538,7 +538,7 @@ export default function PlansCommissions() {
                               </TableCell>
                               <TableCell className="text-sm">{c.name}</TableCell>
                               <TableCell>
-                                <span className="font-bold text-pink-600">{c.discountValue}{c.discountType === "percentage" ? "%" : " ر.س"}</span>
+                                <span className="font-bold text-pink-600">{c.discountValue}{c.discountType === "percentage" ? "%" : " ج.م"}</span>
                               </TableCell>
                               <TableCell>
                                 <span className="text-sm text-slate-600">{c.usedCount}{c.maxUses ? ` / ${c.maxUses}` : " / ∞"}</span>
@@ -591,7 +591,7 @@ export default function PlansCommissions() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                         <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip formatter={(v: number) => [`${v.toLocaleString("ar")} ر.س`, "الإيرادات"]} />
+                        <Tooltip formatter={(v: number) => [`${v.toLocaleString("ar")} ج.م`, "الإيرادات"]} />
                         <Line type="monotone" dataKey="revenue" stroke="#7c3aed" strokeWidth={2.5} dot={{ r: 4, fill: "#7c3aed" }} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -657,8 +657,8 @@ export default function PlansCommissions() {
                   <CardContent className="space-y-3">
                     {[
                       { label: "الباقة الأكثر شيوعاً", value: plans.find(p => p.isMostPopular)?.nameAr ?? "—" },
-                      { label: "متوسط الاشتراك", value: plans.length > 0 ? `${(plans.reduce((s, p) => s + Number(p.price), 0) / plans.length).toFixed(0)} ر.س` : "—" },
-                      { label: "أعلى عمولة", value: commissions.length > 0 ? `${Math.max(...commissions.map(c => Number(c.value)))}${commissions[0]?.isPercentage ? "%" : " ر.س"}` : "—" },
+                      { label: "متوسط الاشتراك", value: plans.length > 0 ? `${(plans.reduce((s, p) => s + Number(p.price), 0) / plans.length).toFixed(0)} ج.م` : "—" },
+                      { label: "أعلى عمولة", value: commissions.length > 0 ? `${Math.max(...commissions.map(c => Number(c.value)))}${commissions[0]?.isPercentage ? "%" : " ج.م"}` : "—" },
                       { label: "الكوبونات النشطة", value: coupons.filter(c => c.isActive).length.toString() },
                     ].map(item => (
                       <div key={item.label} className="flex justify-between text-sm">
@@ -722,7 +722,7 @@ export default function PlansCommissions() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>العملة</Label>
-                  <Input dir="ltr" placeholder="SAR" value={planModal.data.currency ?? "SAR"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, currency: e.target.value } }))} />
+                  <Input dir="ltr" placeholder="EGP" value={planModal.data.currency ?? "EGP"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, currency: e.target.value } }))} />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -856,7 +856,7 @@ export default function PlansCommissions() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label>القيمة {commModal.data.isPercentage ? "(%)" : "(ر.س)"}</Label>
+                <Label>القيمة {commModal.data.isPercentage ? "(%)" : "(ج.م)"}</Label>
                 <Input type="number" value={commModal.data.value ?? ""} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, value: e.target.value } }))} />
               </div>
             </div>

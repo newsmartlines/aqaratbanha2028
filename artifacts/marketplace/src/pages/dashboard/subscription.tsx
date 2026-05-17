@@ -151,10 +151,10 @@ export default function ProviderSubscription() {
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground space-y-1">
-                        <p>تاريخ البدء: <strong className="text-foreground">{new Date(sub.startDate).toLocaleDateString("ar-SA")}</strong></p>
-                        <p>تاريخ الانتهاء: <strong className="text-foreground">{new Date(sub.endDate).toLocaleDateString("ar-SA")}</strong></p>
+                        <p>تاريخ البدء: <strong className="text-foreground">{new Date(sub.startDate).toLocaleDateString("ar-EG")}</strong></p>
+                        <p>تاريخ الانتهاء: <strong className="text-foreground">{new Date(sub.endDate).toLocaleDateString("ar-EG")}</strong></p>
                         {sub.packagePrice && (
-                          <p>سعر الباقة: <strong className="text-primary">{sub.packagePrice} ر.س / شهر</strong></p>
+                          <p>سعر الباقة: <strong className="text-primary">{sub.packagePrice} ج.م / شهر</strong></p>
                         )}
                       </div>
                     </div>
@@ -264,7 +264,7 @@ export default function ProviderSubscription() {
                           </CardTitle>
                           <p className="text-3xl font-black mt-2">
                             {isFree ? "مجاني" : `${pkg.price}`}
-                            {!isFree && <span className="text-base font-normal text-muted-foreground"> ر.س/{pkg.durationDays === 30 ? "شهر" : `${pkg.durationDays} يوم`}</span>}
+                            {!isFree && <span className="text-base font-normal text-muted-foreground"> ج.م/{pkg.durationDays === 30 ? "شهر" : `${pkg.durationDays} يوم`}</span>}
                           </p>
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col">
@@ -360,10 +360,10 @@ export default function ProviderSubscription() {
                         <tr className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                           <td className="px-4 py-4 font-medium">SUB-{sub.id}</td>
                           <td className="px-4 py-4">{sub.packageNameAr ?? "—"}</td>
-                          <td className="px-4 py-4 text-muted-foreground">{new Date(sub.startDate).toLocaleDateString("ar-SA")}</td>
-                          <td className="px-4 py-4 text-muted-foreground">{new Date(sub.endDate).toLocaleDateString("ar-SA")}</td>
+                          <td className="px-4 py-4 text-muted-foreground">{new Date(sub.startDate).toLocaleDateString("ar-EG")}</td>
+                          <td className="px-4 py-4 text-muted-foreground">{new Date(sub.endDate).toLocaleDateString("ar-EG")}</td>
                           <td className="px-4 py-4 font-bold">
-                            {sub.packagePrice && parseFloat(sub.packagePrice) > 0 ? `${sub.packagePrice} ر.س` : "مجاني"}
+                            {sub.packagePrice && parseFloat(sub.packagePrice) > 0 ? `${sub.packagePrice} ج.م` : "مجاني"}
                           </td>
                           <td className="px-4 py-4">
                             <Badge variant="outline" className={sub.isActive
@@ -427,7 +427,7 @@ export default function ProviderSubscription() {
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-semibold">الإجمالي</span>
                     <span className="text-lg font-black text-primary">
-                      {parseFloat(selectedPackage.price) === 0 ? "مجاني" : `${selectedPackage.price} ر.س`}
+                      {parseFloat(selectedPackage.price) === 0 ? "مجاني" : `${selectedPackage.price} ج.م`}
                     </span>
                   </div>
                 </div>

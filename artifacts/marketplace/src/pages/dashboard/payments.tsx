@@ -19,12 +19,12 @@ const INCOMING_STATUS_CFG: Record<string, { label: string; cls: string; icon: Re
 function fmtMoney(v: string | number | null | undefined): string {
   const n = typeof v === "number" ? v : parseFloat(String(v ?? "0"));
   if (!Number.isFinite(n)) return "0.00";
-  return n.toLocaleString("ar-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function fmtDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleString("ar-SA", {
+    return new Date(iso).toLocaleString("ar-EG", {
       year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
     });
   } catch { return iso; }
@@ -92,13 +92,13 @@ function InvoiceModal({ invoice, open, onClose }: { invoice: FakeInvoice | null;
                         {invoice.type}
                         {invoice.packageName && <span className="text-muted-foreground text-xs block">{invoice.packageName}</span>}
                       </td>
-                      <td className="px-4 py-3 text-left font-bold">{invoice.amount} ر.س</td>
+                      <td className="px-4 py-3 text-left font-bold">{invoice.amount} ج.م</td>
                     </tr>
                   </tbody>
                   <tfoot className="bg-secondary/30 border-t">
                     <tr>
                       <td className="px-4 py-3 font-bold">الإجمالي</td>
-                      <td className="px-4 py-3 text-left font-black text-primary">{invoice.amount} ر.س</td>
+                      <td className="px-4 py-3 text-left font-black text-primary">{invoice.amount} ج.م</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -185,7 +185,7 @@ export default function ProviderPayments() {
         {
           id: `INV-${sub.id}`,
           type: "اشتراك في المنصة",
-          date: new Date(sub.startDate).toLocaleDateString("ar-SA"),
+          date: new Date(sub.startDate).toLocaleDateString("ar-EG"),
           amount: sub.packagePrice ?? "—",
           status: sub.isActive ? "مدفوع" : "منتهي",
           packageName: sub.packageNameAr ?? undefined,
@@ -218,7 +218,7 @@ export default function ProviderPayments() {
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">إجمالي المدفوعات</p>
                       <p className="text-3xl font-bold text-primary mt-2">
-                        {totalPaid.toLocaleString("ar-SA")} <span className="text-lg font-normal">ر.س</span>
+                        {totalPaid.toLocaleString("ar-EG")} <span className="text-lg font-normal">ج.م</span>
                       </p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -233,7 +233,7 @@ export default function ProviderPayments() {
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">الرصيد المعلق</p>
                       <p className="text-3xl font-bold text-amber-600 mt-2">
-                        {totalPending.toLocaleString("ar-SA")} <span className="text-lg font-normal">ر.س</span>
+                        {totalPending.toLocaleString("ar-EG")} <span className="text-lg font-normal">ج.م</span>
                       </p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
@@ -276,15 +276,15 @@ export default function ProviderPayments() {
                     </div>
                     <div>
                       <p className="text-muted-foreground mb-1">تاريخ البداية</p>
-                      <p className="font-bold">{new Date(sub.startDate).toLocaleDateString("ar-SA")}</p>
+                      <p className="font-bold">{new Date(sub.startDate).toLocaleDateString("ar-EG")}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground mb-1">تاريخ الانتهاء</p>
-                      <p className="font-bold">{new Date(sub.endDate).toLocaleDateString("ar-SA")}</p>
+                      <p className="font-bold">{new Date(sub.endDate).toLocaleDateString("ar-EG")}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground mb-1">المبلغ</p>
-                      <p className="font-bold text-primary">{sub.packagePrice ?? "—"} ر.س</p>
+                      <p className="font-bold text-primary">{sub.packagePrice ?? "—"} ج.م</p>
                     </div>
                   </div>
                 </CardContent>
@@ -325,7 +325,7 @@ export default function ProviderPayments() {
                               {row.packageName && <span className="text-xs text-muted-foreground block">{row.packageName}</span>}
                             </td>
                             <td className="px-4 py-4 text-muted-foreground">{row.date}</td>
-                            <td className="px-4 py-4 font-bold">{row.amount} ر.س</td>
+                            <td className="px-4 py-4 font-bold">{row.amount} ج.م</td>
                             <td className="px-4 py-4">
                               <Badge variant="outline" className={getStatusColor(row.status)}>
                                 {row.status}

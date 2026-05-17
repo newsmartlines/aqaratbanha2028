@@ -124,7 +124,7 @@ async function activateServiceRequest(opts: {
         userId: providerRow.userId,
         type: "success",
         title: "طلب خدمة جديد مدفوع",
-        message: `لديك طلب خدمة جديد بقيمة ${providerNet.toFixed(2)} ر.س (بعد العمولة) — رقم الطلب #${reqRow.id}`,
+        message: `لديك طلب خدمة جديد بقيمة ${providerNet.toFixed(2)} ج.م (بعد العمولة) — رقم الطلب #${reqRow.id}`,
         link: "/dashboard/requests",
       });
     }
@@ -132,7 +132,7 @@ async function activateServiceRequest(opts: {
       userId: null,
       type: "payment",
       title: "دفعة طلب خدمة جديدة",
-      message: `تم استلام دفعة بقيمة ${amount.toFixed(2)} ر.س من عميل (عمولة ${commission.toFixed(2)} ر.س) للمزود ${providerRow?.name ?? "—"}`,
+      message: `تم استلام دفعة بقيمة ${amount.toFixed(2)} ج.م من عميل (عمولة ${commission.toFixed(2)} ج.م) للمزود ${providerRow?.name ?? "—"}`,
       link: "/admin/payments",
     });
     if (tx.userId) {
@@ -194,7 +194,7 @@ async function activateSubscription(opts: {
       userId: null,
       type: "payment",
       title: "دفعة جديدة عبر STC Pay",
-      message: `تم استلام دفعة بقيمة ${amount.toFixed(2)} ر.س من ${providerName} لباقة ${pkg.nameAr}`,
+      message: `تم استلام دفعة بقيمة ${amount.toFixed(2)} ج.م من ${providerName} لباقة ${pkg.nameAr}`,
       link: "/admin/payments",
     });
   } catch (err) {
@@ -207,7 +207,7 @@ async function activateSubscription(opts: {
         userId: ownerUserId,
         type: "success",
         title: "تم استلام دفعتك",
-        message: `تم استلام دفعتك بقيمة ${amount.toFixed(2)} ر.س لباقة ${pkg.nameAr}`,
+        message: `تم استلام دفعتك بقيمة ${amount.toFixed(2)} ج.م لباقة ${pkg.nameAr}`,
         link: "/dashboard/payments",
       });
       await db.insert(notificationsTable).values({
@@ -268,7 +268,7 @@ router.post("/stcpay/create-session", async (req, res) => {
         providerId,
         packageId,
         amount: amount.toFixed(2),
-        currency: "SAR",
+        currency: "EGP",
         gateway: "stcpay",
         status: "pending",
         fromOnboarding: fromOnboarding ? 1 : 0,
@@ -284,7 +284,7 @@ router.post("/stcpay/create-session", async (req, res) => {
       gw = await createPaymentSession({
         refId,
         amount,
-        currency: "SAR",
+        currency: "EGP",
         description: `اشتراك باقة ${pkg.nameAr}`,
         returnUrl,
         callbackUrl,
@@ -319,7 +319,7 @@ router.post("/stcpay/create-session", async (req, res) => {
         refId,
         redirectUrl: gw.redirectUrl,
         amount,
-        currency: "SAR",
+        currency: "EGP",
         mode: getStcPayMode(),
       },
     });
@@ -576,7 +576,7 @@ router.post("/stcpay/create-request-session", async (req, res) => {
         userId: session.userId ?? null,
         serviceId,
         amount: resolvedAmount.toFixed(2),
-        currency: "SAR",
+        currency: "EGP",
         gateway: "stcpay",
         status: "pending",
         fromOnboarding: 0,
@@ -592,7 +592,7 @@ router.post("/stcpay/create-request-session", async (req, res) => {
       gw = await createPaymentSession({
         refId,
         amount: resolvedAmount,
-        currency: "SAR",
+        currency: "EGP",
         description: `طلب خدمة: ${serviceTitle} – ${provider.name ?? ""}`.trim(),
         returnUrl,
         callbackUrl,
@@ -625,7 +625,7 @@ router.post("/stcpay/create-request-session", async (req, res) => {
         refId,
         redirectUrl: gw.redirectUrl,
         amount: resolvedAmount,
-        currency: "SAR",
+        currency: "EGP",
         kind: "service_request",
         mode: getStcPayMode(),
       },
@@ -691,7 +691,7 @@ router.get("/stcpay/_simulator", (req: Request, res: Response) => {
     <div class="body">
       <div class="row"><span class="muted">المرجع</span><span>${refId.replace(/[<>]/g, "")}</span></div>
       <div class="row"><span class="muted">الوصف</span><span>${description.replace(/[<>]/g, "")}</span></div>
-      <div class="row"><span class="muted">الإجمالي</span><span>${amount.replace(/[<>]/g, "")} ر.س</span></div>
+      <div class="row"><span class="muted">الإجمالي</span><span>${amount.replace(/[<>]/g, "")} ج.م</span></div>
       <form method="GET" action="/api/stcpay/return">
         <input type="hidden" name="refId" value="${refId.replace(/"/g, "&quot;")}" />
         <div class="btns">
@@ -732,7 +732,7 @@ router.get("/wallet/me", async (req, res) => {
       success: true,
       data: {
         balance: bal?.balance ?? "0.00",
-        currency: "SAR",
+        currency: "EGP",
         transactions: txns,
       },
     });
@@ -763,7 +763,7 @@ router.get("/admin/wallet", async (req, res) => {
       .limit(50);
     res.json({
       success: true,
-      data: { totalCommission: total, currency: "SAR", transactions: txns },
+      data: { totalCommission: total, currency: "EGP", transactions: txns },
     });
   } catch (err) {
     console.error("admin/wallet error", err);

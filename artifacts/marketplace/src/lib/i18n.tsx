@@ -43,7 +43,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [lang, dir]);
 
   const value = useMemo<Ctx>(() => {
-    const locale = lang === "ar" ? "ar-SA" : "en-US";
+    const locale = lang === "ar" ? "ar-EG" : "en-US";
     const formatNumber = (n: number | string, opts?: Intl.NumberFormatOptions) => {
       const num = typeof n === "string" ? Number(n) : n;
       if (!Number.isFinite(num)) return String(n);
@@ -60,7 +60,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         const num = typeof n === "string" ? Number(n) : n;
         if (!Number.isFinite(num)) return String(n);
         const formatted = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(num);
-        return lang === "ar" ? `${formatted} ر.س` : `${formatted} SAR`;
+        return lang === "ar" ? `${formatted} ج.م` : `${formatted} EGP`;
       },
       formatDate: (d, opts) =>
         new Intl.DateTimeFormat(locale, opts ?? { year: "numeric", month: "short", day: "numeric" }).format(new Date(d)),

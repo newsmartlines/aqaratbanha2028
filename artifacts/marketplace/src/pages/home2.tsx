@@ -35,11 +35,11 @@ const REGIONS_OPTS = [
 
 const PRICE_OPTS = [
   { value: "", label: "السعر" },
-  { value: "0-500000", label: "أقل من 500,000 ر.س" },
-  { value: "500000-1000000", label: "500,000 – 1,000,000 ر.س" },
-  { value: "1000000-2000000", label: "1,000,000 – 2,000,000 ر.س" },
-  { value: "2000000-5000000", label: "2,000,000 – 5,000,000 ر.س" },
-  { value: "5000000-999999999", label: "أكثر من 5,000,000 ر.س" },
+  { value: "0-500000", label: "أقل من 500,000 ج.م" },
+  { value: "500000-1000000", label: "500,000 – 1,000,000 ج.م" },
+  { value: "1000000-2000000", label: "1,000,000 – 2,000,000 ج.م" },
+  { value: "2000000-5000000", label: "2,000,000 – 5,000,000 ج.م" },
+  { value: "5000000-999999999", label: "أكثر من 5,000,000 ج.م" },
 ];
 
 const REGIONS = [
@@ -109,7 +109,7 @@ function PropCard({ p, liked, onLike, onClick }: {
         <div className="flex items-start justify-between mb-1.5">
           <div>
             <p className="text-primary font-extrabold text-lg leading-none">{p.price}</p>
-            <p className="text-gray-400 text-xs mt-0.5">ريال سعودي</p>
+            <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
           </div>
           <div className="flex items-center gap-1">
             <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />

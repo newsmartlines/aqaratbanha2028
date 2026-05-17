@@ -163,7 +163,7 @@ router.post("/auth/register", authLimiter, async (req, res) => {
       userId: null as any,
       type: "info",
       title: `تسجيل جديد: ${name}`,
-      message: `نوع الحساب: ${roleLabel} — ${new Date().toLocaleString("ar-SA")}`,
+      message: `نوع الحساب: ${roleLabel} — ${new Date().toLocaleString("ar-EG")}`,
       link: "/admin/users",
     }).catch(() => {});
 
@@ -439,7 +439,7 @@ router.post("/auth/google", async (req, res) => {
         userId: null as any,
         type: "info",
         title: `تسجيل جديد عبر جوجل: ${name ?? email}`,
-        message: `حساب جوجل — ${new Date().toLocaleString("ar-SA")}`,
+        message: `حساب جوجل — ${new Date().toLocaleString("ar-EG")}`,
         link: "/admin/users",
       }).catch(() => {});
     } else if (!(user as any).googleId) {

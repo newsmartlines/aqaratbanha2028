@@ -10,7 +10,7 @@ const dict = {
   topProviders: { ar: "أعلى 5 مقدمي خدمة (حسب الأرباح)", en: "Top 5 Providers (By Earnings)" },
   topCats: { ar: "أبرز التصنيفات (حسب عدد الخدمات)", en: "Top Categories (By Listings)" },
   week: { ar: "أسبوع", en: "Week" },
-  sar: { ar: "ر.س", en: "SAR" },
+  sar: { ar: "ج.م", en: "EGP" },
   listings: { ar: "خدمة", en: "listings" },
   n1: { ar: "أحمد عبدالله", en: "Ahmed Abdullah" },
   n2: { ar: "سارة خالد", en: "Sara Khalid" },

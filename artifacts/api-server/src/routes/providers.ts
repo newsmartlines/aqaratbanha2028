@@ -535,7 +535,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
           userId: null,
           type: "payment",
           title: "دفعة جديدة",
-          message: `تم استلام دفعة بقيمة ${requestedPrice.toFixed(2)} ر.س من ${providerName} لباقة ${pkg.nameAr}`,
+          message: `تم استلام دفعة بقيمة ${requestedPrice.toFixed(2)} ج.م من ${providerName} لباقة ${pkg.nameAr}`,
           link: "/admin/payments",
         });
       } catch (notifyErr) {
@@ -549,7 +549,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
             userId: ownerUserId,
             type: "success",
             title: "تم استلام دفعتك",
-            message: `تم استلام دفعتك بقيمة ${requestedPrice.toFixed(2)} ر.س لباقة ${pkg.nameAr}`,
+            message: `تم استلام دفعتك بقيمة ${requestedPrice.toFixed(2)} ج.م لباقة ${pkg.nameAr}`,
             link: "/dashboard/payments",
           });
         } catch (e) {

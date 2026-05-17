@@ -674,7 +674,7 @@ export default function RealEstateOnboarding() {
           <Label>السعر *</Label>
           <div className="relative mt-1">
             <Input value={draft.propPrice} onChange={e => updateDraft({ propPrice: e.target.value.replace(/[^\d.]/g, "") })} className={`h-12 pr-14 ${errors.propPrice ? "border-destructive" : ""}`} placeholder="0" dir="ltr" inputMode="decimal" />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">ر.س</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">ج.م</span>
           </div>
           {errors.propPrice && <p className="text-xs text-destructive mt-1">{errors.propPrice}</p>}
         </div>
@@ -902,8 +902,8 @@ export default function RealEstateOnboarding() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { id: "free", label: "مجاني", price: "مجاناً", features: ["ملف أساسي", "عقار واحد", "ظهور في البحث"], featured: false },
-            { id: "bronze", label: "برونزي", price: "٩٩ ر.س/شهر", features: ["حتى 10 عقارات", "ظهور مميز", "شارة موثق"], featured: true },
-            { id: "premium", label: "بريميوم", price: "٢٤٩ ر.س/شهر", features: ["عقارات غير محدودة", "أولوية البحث", "دعم مخصص"], featured: false },
+            { id: "bronze", label: "برونزي", price: "٩٩ ج.م/شهر", features: ["حتى 10 عقارات", "ظهور مميز", "شارة موثق"], featured: true },
+            { id: "premium", label: "بريميوم", price: "٢٤٩ ج.م/شهر", features: ["عقارات غير محدودة", "أولوية البحث", "دعم مخصص"], featured: false },
           ].map(p => {
             const sel = draft.plan === p.id;
             return (
@@ -932,7 +932,7 @@ export default function RealEstateOnboarding() {
     const mainCat = MAIN_CATEGORIES.find(c => c.id === draft.mainCategory);
     const listType = LISTING_TYPES.find(l => l.id === draft.listingType);
     const regionName = (regionsList as Region[]).find(r => r.id === draft.locRegionId)?.nameAr;
-    const planLabel = { free: "مجاني", bronze: "برونزي — ٩٩ ر.س/شهر", premium: "بريميوم — ٢٤٩ ر.س/شهر" }[draft.plan] ?? "";
+    const planLabel = { free: "مجاني", bronze: "برونزي — ٩٩ ج.م/شهر", premium: "بريميوم — ٢٤٩ ج.م/شهر" }[draft.plan] ?? "";
 
     const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
       <div className="grid grid-cols-3 gap-2 py-2 text-sm border-b border-border/30 last:border-0">
@@ -985,7 +985,7 @@ export default function RealEstateOnboarding() {
           <Row label="العنوان" value={draft.propTitle} />
         </Section>
         <Section title="التفاصيل" onEdit={() => setStep(5)}>
-          <Row label="السعر" value={draft.propPrice ? `${draft.propPrice} ر.س` : ""} />
+          <Row label="السعر" value={draft.propPrice ? `${draft.propPrice} ج.م` : ""} />
           <Row label="المساحة" value={draft.propArea ? `${draft.propArea} م²` : ""} />
           {draft.propRooms && <Row label="الغرف" value={draft.propRooms} />}
           {draft.propBathrooms && <Row label="الحمامات" value={draft.propBathrooms} />}

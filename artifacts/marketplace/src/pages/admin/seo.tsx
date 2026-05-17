@@ -196,7 +196,7 @@ export default function AdminSeo() {
         name: "فيلا فاخرة — حي النرجس",
         description: "فيلا فاخرة 5 غرف واسعة مع مسبح",
         url: "https://daleel.sa/property/1",
-        price: "2,500,000", priceCurrency: "SAR",
+        price: "2,500,000", priceCurrency: "EGP",
         address: { "@type": "PostalAddress", addressLocality: "الرياض", addressCountry: "SA" },
         numberOfRooms: 5, floorSize: { "@type": "QuantitativeValue", value: 450, unitCode: "MTK" },
       },

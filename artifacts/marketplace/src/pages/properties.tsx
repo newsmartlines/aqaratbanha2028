@@ -265,7 +265,7 @@ export default function PropertiesPage() {
               </FilterSection>
 
               {/* Price Range */}
-              <FilterSection title="نطاق السعر (ريال)">
+              <FilterSection title="نطاق السعر (جنيه)">
                 <div className="flex flex-col gap-2">
                   {PRICE_RANGES.map((r, i) => (
                     <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
@@ -436,7 +436,7 @@ export default function PropertiesPage() {
                               <div className="flex items-start justify-between mb-1.5">
                                 <div>
                                   <p className="text-primary font-extrabold text-lg leading-none">{p.price}</p>
-                                  <p className="text-gray-400 text-xs mt-0.5">ريال سعودي</p>
+                                  <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -540,7 +540,7 @@ export default function PropertiesPage() {
                             <Popup>
                               <div className="text-right min-w-[180px]" dir="rtl" onClick={() => setLocation(`/property/${p.id}`)}>
                                 <img src={p.img} alt={p.title} className="w-full h-20 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
-                                <p className="font-extrabold text-primary text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ر.س</span></p>
+                                <p className="font-extrabold text-primary text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
                                 <p className="font-bold text-gray-900 text-xs mb-0.5">{p.title}</p>
                                 <p className="text-xs text-gray-500">{p.location}</p>
                                 <p className="text-xs text-primary font-semibold mt-1.5 cursor-pointer">عرض التفاصيل ←</p>

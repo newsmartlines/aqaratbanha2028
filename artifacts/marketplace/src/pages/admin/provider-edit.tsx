@@ -103,7 +103,7 @@ const dict = {
   showVerifiedBadge: { ar: "إظهار شارة التوثيق", en: "Show verified badge" },
   showInFeatured: { ar: "عرض في القسم المميز", en: "Show in featured section" },
   subscription: { ar: "الاشتراك", en: "Subscription" },
-  sarPerMo: { ar: "ر.س / شهر", en: "SAR / mo" },
+  sarPerMo: { ar: "ج.م / شهر", en: "EGP / mo" },
   // areas card
   serviceAreas: { ar: "مناطق الخدمة", en: "Service Areas" },
   serviceAreasDesc: { ar: "اختر المناطق/المدن التي يخدمها هذا المقدم", en: "Select regions/cities where this provider operates" },
@@ -142,7 +142,7 @@ const dict = {
   addFirst: { ar: "أضف الخدمة الأولى لهذا المقدم", en: "Add the first service for this provider" },
   active: { ar: "نشطة", en: "active" },
   inactive: { ar: "غير نشطة", en: "inactive" },
-  sar: { ar: "ر.س", en: "SAR" },
+  sar: { ar: "ج.م", en: "EGP" },
   // service modal
   addNewService: { ar: "إضافة خدمة جديدة", en: "Add New Service" },
   editService: { ar: "تعديل الخدمة", en: "Edit Service" },
@@ -150,7 +150,7 @@ const dict = {
   serviceTitlePh: { ar: "مثال: كيك أعراس، صيانة مكيفات...", en: "e.g. Wedding Cake, AC Repair..." },
   desc: { ar: "الوصف", en: "Description" },
   descPh: { ar: "وصف الخدمة...", en: "Service description..." },
-  priceSar: { ar: "السعر (ر.س)", en: "Price (SAR)" },
+  priceSar: { ar: "السعر (ج.م)", en: "Price (EGP)" },
   status: { ar: "الحالة", en: "Status" },
   activeOpt: { ar: "نشطة", en: "Active" },
   inactiveOpt: { ar: "غير نشطة", en: "Inactive" },

@@ -447,7 +447,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                               </div>
                               <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
                                 {service.price && (
-                                  <span className="font-bold text-lg text-primary">تبدأ من {service.price} ر.س</span>
+                                  <span className="font-bold text-lg text-primary">تبدأ من {service.price} ج.م</span>
                                 )}
                                 <Button
                                   size="sm"
@@ -506,7 +506,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                               <p className="font-bold text-sm">{review.userName ?? "عميل"}</p>
                               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <Calendar className="w-3 h-3" />
-                                {new Date(review.createdAt).toLocaleDateString("ar-SA")}
+                                {new Date(review.createdAt).toLocaleDateString("ar-EG")}
                               </div>
                             </div>
                             <div className="flex mb-2">

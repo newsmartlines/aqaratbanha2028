@@ -802,7 +802,7 @@ export default function Home() {
                       <div className="min-w-0">
                         <p className="text-lg font-black leading-none">
                           {stat.value !== undefined
-                            ? stat.value.toLocaleString("ar-SA")
+                            ? stat.value.toLocaleString("ar-EG")
                             : <span className="text-sm animate-pulse">...</span>}
                           {stat.value !== undefined && <span className="text-xs font-semibold mr-0.5">+</span>}
                         </p>
@@ -1307,7 +1307,7 @@ export default function Home() {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <p className="text-primary font-extrabold text-xl leading-none">{property.price}</p>
-                          <p className="text-muted-foreground text-xs mt-0.5">ريال سعودي</p>
+                          <p className="text-muted-foreground text-xs mt-0.5">جنيه مصري</p>
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />

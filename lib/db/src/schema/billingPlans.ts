@@ -8,7 +8,7 @@ export const billingPlansTable = pgTable("billing_plans", {
   descriptionAr: text("description_ar"),
   price: numeric("price", { precision: 10, scale: 2 }).notNull().default("0"),
   yearlyPrice: numeric("yearly_price", { precision: 10, scale: 2 }),
-  currency: text("currency").notNull().default("SAR"),
+  currency: text("currency").notNull().default("EGP"),
   durationDays: integer("duration_days").notNull().default(30),
   durationType: text("duration_type").notNull().default("monthly"),
   userType: text("user_type").notNull().default("all"),

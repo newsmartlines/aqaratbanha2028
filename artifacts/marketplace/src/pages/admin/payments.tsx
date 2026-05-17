@@ -23,7 +23,7 @@ const dict = {
   amount: { ar: "المبلغ", en: "Amount" },
   date: { ar: "التاريخ", en: "Date" },
   trxId: { ar: "رقم المعاملة", en: "Transaction ID" },
-  sar: { ar: "ر.س", en: "SAR" },
+  sar: { ar: "ج.م", en: "EGP" },
   subscription: { ar: "اشتراك", en: "Subscription" },
   commission: { ar: "عمولة", en: "Commission" },
   featured: { ar: "خدمة مميزة", en: "Featured" },
@@ -62,7 +62,7 @@ const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
 
 function formatDate(iso: string, lang: string) {
   const d = new Date(iso);
-  return d.toLocaleString(lang === "ar" ? "ar-SA" : "en-US", {
+  return d.toLocaleString(lang === "ar" ? "ar-EG" : "en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",

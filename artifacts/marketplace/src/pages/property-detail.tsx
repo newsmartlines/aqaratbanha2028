@@ -286,7 +286,7 @@ export default function PropertyDetail() {
                       <div className="text-right min-w-[160px] font-sans" dir="rtl">
                         <p className="font-bold text-sm mb-1">{property.title}</p>
                         <p className="text-xs text-gray-500">{property.location}</p>
-                        <p className="text-xs font-bold text-primary mt-1">{property.price} ر.س</p>
+                        <p className="text-xs font-bold text-primary mt-1">{property.price} ج.م</p>
                       </div>
                     </Popup>
                   </Marker>
@@ -304,10 +304,10 @@ export default function PropertyDetail() {
               <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-1">السعر</p>
                 <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">ريال سعودي</p>
+                <p className="text-sm text-muted-foreground mt-0.5">جنيه مصري</p>
                 {property.area > 0 && (
                   <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
-                    ≈ {Math.round(property.priceNum / property.area).toLocaleString()} ر.س / م²
+                    ≈ {Math.round(property.priceNum / property.area).toLocaleString()} ج.م / م²
                   </p>
                 )}
               </div>
@@ -406,7 +406,7 @@ export default function PropertyDetail() {
                     <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{p.type}</span>
                   </div>
                   <div className="p-4">
-                    <p className="text-primary font-extrabold text-lg">{p.price} <span className="text-xs text-muted-foreground font-normal">ر.س</span></p>
+                    <p className="text-primary font-extrabold text-lg">{p.price} <span className="text-xs text-muted-foreground font-normal">ج.م</span></p>
                     <h3 className="font-bold text-gray-900 mt-1 mb-1 truncate group-hover:text-primary transition-colors">{p.title}</h3>
                     <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
                       <MapPin className="w-3 h-3 text-primary" />

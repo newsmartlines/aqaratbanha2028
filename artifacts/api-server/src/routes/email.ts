@@ -174,7 +174,7 @@ const DEFAULT_TEMPLATES = [
             <tr><td style="padding:8px 0;color:#64748b;font-size:14px;border-bottom:1px solid #e2e8f0;">الخدمة</td><td style="padding:8px 0;color:#0f172a;font-weight:600;text-align:left;border-bottom:1px solid #e2e8f0;">{{serviceName}}</td></tr>
             <tr><td style="padding:8px 0;color:#64748b;font-size:14px;border-bottom:1px solid #e2e8f0;">مقدم الخدمة</td><td style="padding:8px 0;color:#0f172a;font-weight:600;text-align:left;border-bottom:1px solid #e2e8f0;">{{providerName}}</td></tr>
             <tr><td style="padding:8px 0;color:#64748b;font-size:14px;border-bottom:1px solid #e2e8f0;">التاريخ</td><td style="padding:8px 0;color:#0f172a;font-weight:600;text-align:left;border-bottom:1px solid #e2e8f0;">{{orderDate}}</td></tr>
-            <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">المبلغ</td><td style="padding:8px 0;color:#0d9488;font-weight:700;font-size:16px;text-align:left;">{{amount}} ر.س</td></tr>
+            <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">المبلغ</td><td style="padding:8px 0;color:#0d9488;font-weight:700;font-size:16px;text-align:left;">{{amount}} ج.م</td></tr>
           </table>
         </td></tr>
       </table>
@@ -202,7 +202,7 @@ const DEFAULT_TEMPLATES = [
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#f0fdf9,#dcfce7);border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
         <tr><td style="padding:24px 28px;text-align:center;">
           <p style="margin:0 0 6px;color:#166534;font-size:22px;font-weight:800;">{{planName}}</p>
-          <p style="margin:0 0 16px;color:#16a34a;font-size:28px;font-weight:900;">{{price}} ر.س</p>
+          <p style="margin:0 0 16px;color:#16a34a;font-size:28px;font-weight:900;">{{price}} ج.م</p>
           <p style="margin:0;color:#166534;font-size:13px;">من {{startDate}} حتى {{endDate}}</p>
         </td></tr>
       </table>
@@ -447,13 +447,13 @@ const DEFAULT_TEMPLATES = [
     category: "payment",
     channels: '["email","in_app"]',
     variables: JSON.stringify(["siteName","siteUrl","userName","amount","failReason","retryUrl","contactEmail","year"]),
-    plainBody: "مرحباً {{userName}}، فشلت معالجة دفعتك بمبلغ {{amount}} ر.س. السبب: {{failReason}}. أعد المحاولة: {{retryUrl}}",
+    plainBody: "مرحباً {{userName}}، فشلت معالجة دفعتك بمبلغ {{amount}} ج.م. السبب: {{failReason}}. أعد المحاولة: {{retryUrl}}",
     htmlBody: BASE_HTML(`
       <div style="text-align:center;margin-bottom:28px;">
         <div style="display:inline-block;background:#fee2e2;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">❌</div>
       </div>
       <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">فشل معالجة الدفعة</h2>
-      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، لم نتمكن من معالجة دفعتك بمبلغ <strong style="color:#ef4444;">{{amount}} ر.س</strong>.</p>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، لم نتمكن من معالجة دفعتك بمبلغ <strong style="color:#ef4444;">{{amount}} ج.م</strong>.</p>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef2f2;border-radius:14px;border:1px solid #fecaca;margin-bottom:24px;">
         <tr><td style="padding:20px 24px;">
           <p style="margin:0 0 8px;color:#991b1b;font-weight:700;font-size:14px;">سبب الفشل:</p>
@@ -474,7 +474,7 @@ const DEFAULT_TEMPLATES = [
     category: "payment",
     channels: '["email","whatsapp"]',
     variables: JSON.stringify(["siteName","siteUrl","userName","amount","transactionId","paymentDate","contactEmail","year"]),
-    plainBody: "مرحباً {{userName}}، تم استلام دفعتك {{amount}} ر.س بنجاح. رقم المعاملة: {{transactionId}}",
+    plainBody: "مرحباً {{userName}}، تم استلام دفعتك {{amount}} ج.م بنجاح. رقم المعاملة: {{transactionId}}",
     htmlBody: BASE_HTML(`
       <div style="text-align:center;margin-bottom:28px;">
         <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">💳</div>
@@ -484,7 +484,7 @@ const DEFAULT_TEMPLATES = [
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0fdf4;border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
         <tr><td style="padding:24px 28px;text-align:center;">
           <p style="margin:0 0 4px;color:#166534;font-size:14px;">المبلغ المدفوع</p>
-          <p style="margin:0 0 12px;color:#16a34a;font-size:32px;font-weight:900;">{{amount}} ر.س</p>
+          <p style="margin:0 0 12px;color:#16a34a;font-size:32px;font-weight:900;">{{amount}} ج.م</p>
           <p style="margin:0;color:#166534;font-size:12px;">رقم المعاملة: {{transactionId}} &nbsp;·&nbsp; {{paymentDate}}</p>
         </td></tr>
       </table>

@@ -39,7 +39,7 @@ const KIND_LABEL: Record<string, string> = {
 
 function formatDate(iso: string) {
   try {
-    return new Date(iso).toLocaleString("ar-SA", {
+    return new Date(iso).toLocaleString("ar-EG", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -54,7 +54,7 @@ function formatDate(iso: string) {
 function formatMoney(v: string | number | null | undefined): string {
   const n = typeof v === "number" ? v : parseFloat(String(v ?? "0"));
   if (!Number.isFinite(n)) return "0.00";
-  return n.toLocaleString("ar-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export default function UserPayments() {
@@ -117,7 +117,7 @@ export default function UserPayments() {
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               </div>
               <p className="text-2xl font-bold text-emerald-700 mt-2">
-                {formatMoney(totals.paidAmount)} <span className="text-sm font-normal">ر.س</span>
+                {formatMoney(totals.paidAmount)} <span className="text-sm font-normal">ج.م</span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">{totals.paid} عملية</p>
             </CardContent>
@@ -129,7 +129,7 @@ export default function UserPayments() {
                 <Clock className="h-4 w-4 text-amber-600" />
               </div>
               <p className="text-2xl font-bold text-amber-700 mt-2">
-                {formatMoney(totals.pendingAmount)} <span className="text-sm font-normal">ر.س</span>
+                {formatMoney(totals.pendingAmount)} <span className="text-sm font-normal">ج.م</span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">{totals.pending} عملية</p>
             </CardContent>
@@ -141,7 +141,7 @@ export default function UserPayments() {
                 <XCircle className="h-4 w-4 text-rose-600" />
               </div>
               <p className="text-2xl font-bold text-rose-700 mt-2">
-                {formatMoney(totals.failedAmount)} <span className="text-sm font-normal">ر.س</span>
+                {formatMoney(totals.failedAmount)} <span className="text-sm font-normal">ج.م</span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">{totals.failed} عملية</p>
             </CardContent>
@@ -233,7 +233,7 @@ export default function UserPayments() {
                               {row.serviceTitle ?? "—"}
                             </td>
                             <td className="px-4 py-3 font-bold">
-                              {formatMoney(row.amount)} <span className="text-xs font-normal">ر.س</span>
+                              {formatMoney(row.amount)} <span className="text-xs font-normal">ج.م</span>
                             </td>
                             <td className="px-4 py-3 text-xs text-muted-foreground">
                               {formatDate(row.createdAt)}
@@ -279,7 +279,7 @@ export default function UserPayments() {
                           <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <p className="text-lg font-bold text-primary">
                               {formatMoney(row.amount)}{" "}
-                              <span className="text-xs font-normal text-muted-foreground">ر.س</span>
+                              <span className="text-xs font-normal text-muted-foreground">ج.م</span>
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {formatDate(row.createdAt)}

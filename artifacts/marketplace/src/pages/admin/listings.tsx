@@ -25,7 +25,7 @@ const dict = {
   price: { ar: "السعر", en: "Price" },
   addedAt: { ar: "تاريخ الإضافة", en: "Added" },
   description: { ar: "الوصف", en: "Description" },
-  priceSar: { ar: "السعر (ر.س)", en: "Price (SAR)" },
+  priceSar: { ar: "السعر (ج.م)", en: "Price (EGP)" },
   editTitle: { ar: "تعديل الخدمة", en: "Edit Listing" },
   confirmShort: { ar: "تأكيد؟", en: "Confirm?" },
   updated: { ar: "تم التعديل", en: "Updated" },

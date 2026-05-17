@@ -335,7 +335,7 @@ export default function ProviderServices() {
                   )}
                   <p className="text-muted-foreground text-sm line-clamp-2 mb-4">{service.description}</p>
                   {service.price && (
-                    <div className="text-primary font-bold text-lg">{service.price} ر.س</div>
+                    <div className="text-primary font-bold text-lg">{service.price} ج.م</div>
                   )}
                 </CardContent>
                 <CardFooter className="p-4 pt-0 flex gap-2">
@@ -448,7 +448,7 @@ export default function ProviderServices() {
                   <p className="text-xs text-muted-foreground -mt-1">القسم ثابت ولا يمكن تغييره</p>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="price">السعر (ر.س)</Label>
+                  <Label htmlFor="price">السعر (ج.م)</Label>
                   <Input
                     id="price"
                     type="number"
