@@ -56,6 +56,7 @@ import AdminProperties from "@/pages/admin/properties";
 import AdminWatermark from "@/pages/admin/watermark";
 import AdminSeo from "@/pages/admin/seo";
 import AdminEmailTemplates from "@/pages/admin/email-templates";
+import AdminMessages from "@/pages/admin/messages";
 import AdminPlansCommissions from "@/pages/admin/plans-commissions";
 import PropertyDetail from "@/pages/property-detail";
 import PropertiesPage from "@/pages/properties";
@@ -309,6 +310,9 @@ function Router() {
       </Route>
       <Route path="/admin/email-templates">
         {() => <AdminProtectedRoute component={AdminEmailTemplates} />}
+      </Route>
+      <Route path="/admin/messages">
+        {() => <AdminProtectedRoute component={AdminMessages} />}
       </Route>
       <Route path="/admin/plans-commissions">
         {() => <AdminProtectedRoute component={AdminPlansCommissions} />}

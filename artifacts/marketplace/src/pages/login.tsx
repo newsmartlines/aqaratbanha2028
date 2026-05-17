@@ -358,7 +358,6 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                       width="100%"
                       text="signin_with"
                       shape="rectangular"
-                      locale="ar"
                     />
                   </div>
                   <div className="mt-4 flex items-center gap-4 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
@@ -601,7 +600,6 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                           width="100%"
                           text="signup_with"
                           shape="rectangular"
-                          locale="ar"
                         />
                       </div>
                     </div>
