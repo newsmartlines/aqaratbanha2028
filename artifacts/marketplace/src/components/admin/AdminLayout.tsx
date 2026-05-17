@@ -64,7 +64,7 @@ const layoutDict = {
   staff: { ar: "الموظفون والصلاحيات", en: "Staff & Roles" },
   listings: { ar: "الخدمات", en: "Listings" },
   categories: { ar: "التصنيفات", en: "Categories" },
-  locations: { ar: "المناطق والمدن", en: "Locations" },
+  locations: { ar: "المحافظات والمدن والمناطق", en: "Locations" },
   orders: { ar: "الطلبات", en: "Orders" },
   supportTickets: { ar: "تذاكر الدعم", en: "Support Tickets" },
   payments: { ar: "المدفوعات", en: "Payments" },
