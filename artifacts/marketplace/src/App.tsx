@@ -301,6 +301,9 @@ function Router() {
       <Route path="/admin/staff">
         {() => <AdminProtectedRoute component={AdminStaff} />}
       </Route>
+      <Route path="/admin/real-estate-categories">
+        {() => <AdminProtectedRoute component={AdminRealEstateCategories} />}
+      </Route>
 
       <Route component={NotFound} />
     </Switch>
