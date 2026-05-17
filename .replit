@@ -31,7 +31,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "concurrently \"PORT=8080 pnpm --filter @workspace/api-server run start\" \"pnpm --filter @workspace/marketplace run dev\""
+args = "concurrently \"PORT=8080 pnpm --filter @workspace/api-server run start\" \"pnpm --filter @workspace/marketplace run dev\" \"node health-server.mjs\""
 waitForPort = 5000
 
 [agent]
@@ -45,10 +45,6 @@ timeoutMs = 20000
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
 
 [[ports]]
 localPort = 20787
