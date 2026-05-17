@@ -9,11 +9,11 @@ import L from "leaflet";
 import {
   BedDouble, Bath, Maximize2, Building2, ArrowLeft, ArrowRight,
   MapPin, Phone, MessageCircle, Share2, Heart, CheckCircle2,
-  Star, ChevronLeft, ChevronRight, Play, X, Calendar,
-  Layers, Car, Home, TrendingUp, Eye, Clock,
+  Star, ChevronLeft, Play, X, Calendar,
+  Layers, Car, Home, TrendingUp, Eye, Clock, Loader2,
 } from "lucide-react";
-import { PROPERTIES } from "./home";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
+import { api } from "@/lib/api";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -24,10 +24,87 @@ L.Icon.Default.mergeOptions({
 
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=85";
 
+function tryJson<T>(val: string | null | undefined, fallback: T): T {
+  if (!val) return fallback;
+  try { return JSON.parse(val) as T; } catch { return fallback; }
+}
+
+function extractYouTubeId(url: string): string {
+  if (!url) return "";
+  const m = url.match(/(?:v=|\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : "";
+}
+
+type PropertyView = {
+  id: number;
+  title: string;
+  type: string;
+  kind: string;
+  featured: boolean;
+  address: string;
+  location: string;
+  beds: number;
+  baths: number;
+  area: number;
+  floors: number;
+  garage: number;
+  year: number;
+  gallery: string[];
+  videoId: string;
+  lat: number;
+  lng: number;
+  description: string;
+  amenities: string[];
+  price: string;
+  priceNum: number;
+  agentPhone: string;
+  agentWhatsapp: string;
+  mainCategory: string;
+};
+
+function mapDbToView(p: Record<string, unknown>): PropertyView {
+  const images = tryJson<string[]>(p.images as string, []);
+  const features = tryJson<string[]>(p.features as string, []);
+  const priceNum = parseFloat((p.price as string) ?? "0") || 0;
+  const gallery = images.length > 0 ? images : [DEFAULT_IMG];
+
+  return {
+    id: p.id as number,
+    title: (p.title as string) ?? "",
+    type: (p.listingType as string) ?? "للبيع",
+    kind: (p.mainCategory as string) ?? "شقة",
+    featured: (p.featured as boolean) ?? false,
+    address: (p.address as string) ?? "",
+    location: (p.address as string) ?? "",
+    beds: (p.rooms as number) ?? 0,
+    baths: (p.bathrooms as number) ?? 0,
+    area: parseFloat((p.area as string) ?? "0") || 0,
+    floors: (p.totalFloors as number) ?? (p.floor as number) ?? 0,
+    garage: 0,
+    year: (p.buildYear as number) ?? 0,
+    gallery,
+    videoId: extractYouTubeId((p.videoUrl as string) ?? ""),
+    lat: parseFloat((p.latitude as string) ?? "30.0444") || 30.0444,
+    lng: parseFloat((p.longitude as string) ?? "31.2357") || 31.2357,
+    description: (p.description as string) ?? "",
+    amenities: Array.isArray(features) ? features : [],
+    price: priceNum > 0 ? priceNum.toLocaleString("ar-EG") : "غير محدد",
+    priceNum,
+    agentPhone: (p.phone as string) ?? "",
+    agentWhatsapp: (p.whatsapp as string) ?? "",
+    mainCategory: (p.mainCategory as string) ?? "",
+  };
+}
+
 export default function PropertyDetail() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
-  const property = PROPERTIES.find((p) => p.id === Number(params.id));
+  const id = parseInt(params.id ?? "0");
+
+  const [property, setProperty] = useState<PropertyView | null>(null);
+  const [similar, setSimilar] = useState<PropertyView[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   const [activeImg, setActiveImg] = useState(0);
   const [lightbox, setLightbox] = useState(false);
@@ -36,9 +113,54 @@ export default function PropertyDetail() {
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [params.id]);
+  useEffect(() => {
+    if (!id) { setNotFound(true); setLoading(false); return; }
+    setLoading(true);
+    setActiveImg(0);
+    window.scrollTo({ top: 0 });
 
-  if (!property) {
+    api.properties.get(id)
+      .then((res: unknown) => {
+        const d = res as { data?: Record<string, unknown>; success?: boolean };
+        const raw = d?.data ?? (res as Record<string, unknown>);
+        if (!raw || !raw.id) { setNotFound(true); return; }
+        const mapped = mapDbToView(raw);
+        setProperty(mapped);
+        // Fetch similar
+        if (mapped.mainCategory) {
+          api.properties.list({ mainCategory: mapped.mainCategory, limit: 4 })
+            .then((rows: unknown) => {
+              const arr = (rows as Record<string, unknown>[]) ?? [];
+              setSimilar(
+                arr
+                  .filter((r) => (r.id as number) !== id)
+                  .slice(0, 3)
+                  .map(mapDbToView)
+              );
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const handleShare = () => {
+    navigator.clipboard?.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
+        <Loader2 className="w-10 h-10 text-teal-500 animate-spin" />
+        <p className="text-slate-500">جارٍ تحميل بيانات العقار...</p>
+      </div>
+    );
+  }
+
+  if (notFound || !property) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
         <Building2 className="w-16 h-16 text-muted-foreground/30" />
@@ -48,14 +170,7 @@ export default function PropertyDetail() {
     );
   }
 
-  const gallery = property.gallery ?? [property.img];
-  const similar = PROPERTIES.filter((p) => p.id !== property.id && (p.kind === property.kind || p.type === property.type)).slice(0, 3);
-
-  const handleShare = () => {
-    navigator.clipboard?.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const gallery = property.gallery;
 
   const prevImg = () => setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const nextImg = () => setActiveImg((i) => (i + 1) % gallery.length);
@@ -116,10 +231,10 @@ export default function PropertyDetail() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* ── LEFT COLUMN: Gallery + Details ── */}
+          {/* ── LEFT COLUMN ── */}
           <div className="lg:col-span-2 space-y-8">
 
-            {/* ── Main Image Gallery ── */}
+            {/* Gallery */}
             <div className="rounded-3xl overflow-hidden bg-white shadow-sm border border-border">
               <div className="relative aspect-[16/9] overflow-hidden group">
                 <img
@@ -130,8 +245,6 @@ export default function PropertyDetail() {
                   onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-
-                {/* Navigation arrows */}
                 {gallery.length > 1 && (
                   <>
                     <button onClick={prevImg} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 flex items-center justify-center hover:bg-white transition-all shadow-md">
@@ -142,23 +255,19 @@ export default function PropertyDetail() {
                     </button>
                   </>
                 )}
-
-                {/* Counter */}
                 <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium">
                   {activeImg + 1} / {gallery.length}
                 </div>
-
-                {/* Video play button */}
-                <button
-                  onClick={() => setShowVideo(true)}
-                  className="absolute bottom-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium hover:bg-primary transition-all"
-                >
-                  <Play className="w-3.5 h-3.5 fill-white" />
-                  مشاهدة الفيديو
-                </button>
+                {property.videoId && (
+                  <button
+                    onClick={() => setShowVideo(true)}
+                    className="absolute bottom-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium hover:bg-primary transition-all"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    مشاهدة الفيديو
+                  </button>
+                )}
               </div>
-
-              {/* Thumbnails */}
               {gallery.length > 1 && (
                 <div className="flex gap-2 p-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
                   {gallery.map((img, i) => (
@@ -174,7 +283,7 @@ export default function PropertyDetail() {
               )}
             </div>
 
-            {/* ── Quick Specs ── */}
+            {/* Specs */}
             <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
               <h2 className="text-lg font-bold text-gray-900 mb-5">مواصفات العقار</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -192,11 +301,13 @@ export default function PropertyDetail() {
                     <span className="text-xs text-muted-foreground">دورات المياه</span>
                   </div>
                 )}
-                <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                  <Maximize2 className="w-6 h-6 text-primary" />
-                  <span className="text-xl font-extrabold text-gray-900">{property.area}</span>
-                  <span className="text-xs text-muted-foreground">م² المساحة</span>
-                </div>
+                {property.area > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Maximize2 className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.area}</span>
+                    <span className="text-xs text-muted-foreground">م² المساحة</span>
+                  </div>
+                )}
                 {property.floors > 0 && (
                   <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
                     <Layers className="w-6 h-6 text-primary" />
@@ -221,45 +332,51 @@ export default function PropertyDetail() {
               </div>
             </div>
 
-            {/* ── Description ── */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">وصف العقار</h2>
-              <p className="text-gray-600 leading-relaxed text-base">{property.description}</p>
-            </div>
-
-            {/* ── Amenities ── */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">المرافق والمزايا</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {property.amenities.map((a, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>{a}</span>
-                  </div>
-                ))}
+            {/* Description */}
+            {property.description && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">وصف العقار</h2>
+                <p className="text-gray-600 leading-relaxed text-base">{property.description}</p>
               </div>
-            </div>
+            )}
 
-            {/* ── Video Section ── */}
-            <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
-              <div className="p-5 border-b border-border flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-primary fill-primary" />
+            {/* Amenities */}
+            {property.amenities.length > 0 && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-gray-900 mb-5">المرافق والمزايا</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {property.amenities.map((a, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>{a}</span>
+                    </div>
+                  ))}
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">جولة افتراضية بالفيديو</h2>
               </div>
-              <div className="relative aspect-video bg-gray-900">
-                <iframe
-                  src={`https://www.youtube.com/embed/${property.videoId}?autoplay=0&rel=0`}
-                  title="جولة العقار"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              </div>
-            </div>
+            )}
 
-            {/* ── Map Section ── */}
+            {/* Video */}
+            {property.videoId && (
+              <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-border flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Play className="w-4 h-4 text-primary fill-primary" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">جولة افتراضية بالفيديو</h2>
+                </div>
+                <div className="relative aspect-video bg-gray-900">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${property.videoId}?autoplay=0&rel=0`}
+                    title="جولة العقار"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Map */}
             <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
               <div className="p-5 border-b border-border flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -293,21 +410,19 @@ export default function PropertyDetail() {
                 </MapContainer>
               </div>
             </div>
-
           </div>
 
-          {/* ── RIGHT COLUMN: Price Card + Agent ── */}
+          {/* ── RIGHT COLUMN ── */}
           <div className="space-y-6">
-
             {/* Price Card */}
             <div className="bg-white rounded-3xl border border-border p-6 shadow-sm sticky top-20">
               <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-1">السعر</p>
                 <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">جنيه مصري</p>
-                {property.area > 0 && (
+                {property.area > 0 && property.priceNum > 0 && (
                   <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
-                    ≈ {Math.round(property.priceNum / property.area).toLocaleString()} ج.م / م²
+                    ≈ {Math.round(property.priceNum / property.area).toLocaleString("ar-EG")} ج.م / م²
                   </p>
                 )}
               </div>
@@ -335,53 +450,33 @@ export default function PropertyDetail() {
                 ))}
               </div>
 
-              <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
-                <Phone className="w-4 h-4 ml-2" />
-                اتصل بالوكيل
-              </Button>
-              <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50">
-                <MessageCircle className="w-4 h-4 ml-2" />
-                واتساب
-              </Button>
+              {property.agentPhone && (
+                <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20" asChild>
+                  <a href={`tel:${property.agentPhone}`}>
+                    <Phone className="w-4 h-4 ml-2" />
+                    اتصل الآن
+                  </a>
+                </Button>
+              )}
+              {property.agentWhatsapp && (
+                <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50" asChild>
+                  <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                    <MessageCircle className="w-4 h-4 ml-2" />
+                    واتساب
+                  </a>
+                </Button>
+              )}
+              {!property.agentPhone && !property.agentWhatsapp && (
+                <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
+                  <Phone className="w-4 h-4 ml-2" />
+                  تواصل مع المعلن
+                </Button>
+              )}
             </div>
-
-            {/* Agent Card */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-              <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wide">الوكيل العقاري</h3>
-              <div className="flex items-center gap-4 mb-5">
-                <img
-                  src={property.agentAvatar}
-                  alt={property.agentName}
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-primary/20 shadow"
-                  onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                />
-                <div>
-                  <p className="font-bold text-gray-900 text-base">{property.agentName}</p>
-                  <p className="text-sm text-muted-foreground">{property.agentTitle}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-xs text-emerald-600 font-medium">وكيل موثّق</span>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3 mb-5 text-center">
-                {[{ label: "عقار", value: "34" }, { label: "صفقة", value: "120+" }, { label: "سنة خبرة", value: "8" }].map((s, i) => (
-                  <div key={i} className="bg-gray-50 rounded-2xl p-2 border border-border">
-                    <p className="font-extrabold text-gray-900">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-              <a href={`tel:${property.agentPhone}`} className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary transition-colors">
-                <Phone className="w-4 h-4 text-primary" />
-                {property.agentPhone}
-              </a>
-            </div>
-
           </div>
         </div>
 
-        {/* ── Similar Properties ── */}
+        {/* Similar Properties */}
         {similar.length > 0 && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-8">
@@ -401,7 +496,7 @@ export default function PropertyDetail() {
                   onClick={() => setLocation(`/property/${p.id}`)}
                 >
                   <div className="relative h-44 overflow-hidden">
-                    <img src={p.img} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }} />
+                    <img src={p.gallery[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{p.type}</span>
                   </div>
@@ -415,7 +510,7 @@ export default function PropertyDetail() {
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       {p.beds > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{p.beds}</span>}
                       {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{p.baths}</span>}
-                      <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5" />{p.area} م²</span>
+                      {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5" />{p.area} م²</span>}
                     </div>
                   </div>
                 </motion.div>
@@ -425,7 +520,7 @@ export default function PropertyDetail() {
         )}
       </div>
 
-      {/* ── Lightbox ── */}
+      {/* Lightbox */}
       <AnimatePresence>
         {lightbox && (
           <motion.div
@@ -468,6 +563,32 @@ export default function PropertyDetail() {
                   className={`w-2 h-2 rounded-full transition-all ${i === lightboxIdx ? "bg-white w-6" : "bg-white/40"}`}
                 />
               ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Video modal */}
+      <AnimatePresence>
+        {showVideo && property.videoId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setShowVideo(false)}
+          >
+            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="w-full max-w-4xl aspect-video" onClick={e => e.stopPropagation()}>
+              <iframe
+                src={`https://www.youtube.com/embed/${property.videoId}?autoplay=1&rel=0`}
+                title="فيديو العقار"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full rounded-2xl"
+              />
             </div>
           </motion.div>
         )}

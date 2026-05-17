@@ -644,6 +644,7 @@ export const api = {
     create: (data: unknown) => fetchJson<Record<string, unknown>>(`/properties`, { method: "POST", body: JSON.stringify(data) }),
     update: (id: number, data: unknown) => fetchJson<Record<string, unknown>>(`/properties/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     delete: (id: number) => fetchJson(`/properties/${id}`, { method: "DELETE" }),
+    patchStatus: (id: number, status: string) => fetchJson(`/properties/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
   },
 
   subscriptions: {

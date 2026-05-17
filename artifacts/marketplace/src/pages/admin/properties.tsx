@@ -1,5 +1,4 @@
-import { useState, useMemo } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,184 +8,244 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
 import {
   Search, RefreshCw, Pencil, Trash2, Eye, Star, StarOff,
   CheckCircle2, XCircle, Building2, TrendingUp, Home, Loader2,
   Plus, BedDouble, Bath, Maximize2, AlertCircle, ExternalLink,
 } from "lucide-react";
-import { PROPERTIES } from "@/pages/home";
+import { api } from "@/lib/api";
+import toast from "react-hot-toast";
 
-type PropertyStatus = "published" | "pending" | "rejected";
-
-type AdminProperty = typeof PROPERTIES[0] & { status: PropertyStatus };
-
-const initialProperties: AdminProperty[] = PROPERTIES.map((p) => ({
-  ...p,
-  status: "published" as PropertyStatus,
-}));
-
-const KINDS = ["فيلا", "شقة", "مكتب", "دوبلكس", "أرض"];
-const TYPES = ["للبيع", "للإيجار"];
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر"];
+type DbProperty = {
+  id: number;
+  providerId: number;
+  title: string;
+  description: string | null;
+  mainCategory: string;
+  listingType: string;
+  subCategory: string | null;
+  price: string | null;
+  area: string | null;
+  rooms: number | null;
+  bathrooms: number | null;
+  floor: number | null;
+  totalFloors: number | null;
+  buildYear: number | null;
+  featured: boolean;
+  status: string;
+  address: string | null;
+  images: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  createdAt: string;
+};
 
 const FALLBACK = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=200&q=60";
 
-function statusBadge(status: PropertyStatus) {
+const MAIN_CATEGORIES = ["شقة", "فيلا", "مكتب", "دوبلكس", "أرض", "محل", "مستودع", "استوديو"];
+const LISTING_TYPES = ["للبيع", "للإيجار"];
+
+function getFirstImage(images: string | null): string {
+  if (!images) return FALLBACK;
+  try {
+    const arr = JSON.parse(images);
+    if (Array.isArray(arr) && arr.length > 0 && arr[0]) return arr[0];
+  } catch {}
+  if (typeof images === "string" && images.startsWith("http")) return images;
+  return FALLBACK;
+}
+
+function fmtPrice(price: string | null): string {
+  if (!price) return "—";
+  const n = parseFloat(price);
+  if (isNaN(n)) return price;
+  return n.toLocaleString("ar-EG") + " ج.م";
+}
+
+function statusBadge(status: string) {
   if (status === "published") return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">منشور</Badge>;
   if (status === "pending")   return <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">قيد المراجعة</Badge>;
   return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">مرفوض</Badge>;
 }
 
 const emptyForm = {
-  title: "", location: "", price: "", priceNum: 0, type: "للبيع", kind: "شقة",
-  beds: 3, baths: 2, area: 150, featured: false, status: "pending" as PropertyStatus,
-  description: "", img: "",
+  title: "",
+  address: "",
+  price: "",
+  listingType: "للبيع",
+  mainCategory: "شقة",
+  rooms: 3,
+  bathrooms: 2,
+  area: 150,
+  featured: false,
+  description: "",
+  img: "",
+  providerId: "",
 };
 
 export default function AdminProperties() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-
-  const [properties, setProperties] = useState<AdminProperty[]>(initialProperties);
+  const [properties, setProperties] = useState<DbProperty[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterKind, setFilterKind] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-  const [editingProp, setEditingProp] = useState<AdminProperty | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
-  const [viewProp, setViewProp] = useState<AdminProperty | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await api.properties.list();
+      setProperties(data as unknown as DbProperty[]);
+    } catch {
+      toast.error("فشل تحميل العقارات");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
 
   const filtered = useMemo(() => properties.filter((p) => {
-    if (search && !p.title.includes(search) && !p.location.includes(search)) return false;
-    if (filterType !== "all" && p.type !== filterType) return false;
-    if (filterKind !== "all" && p.kind !== filterKind) return false;
+    const q = search.toLowerCase();
+    if (q && !p.title.toLowerCase().includes(q) && !(p.address ?? "").toLowerCase().includes(q)) return false;
+    if (filterType !== "all" && p.listingType !== filterType) return false;
+    if (filterKind !== "all" && p.mainCategory !== filterKind) return false;
     if (filterStatus !== "all" && p.status !== filterStatus) return false;
     return true;
   }), [properties, search, filterType, filterKind, filterStatus]);
 
-  // Stats
   const stats = useMemo(() => ({
     total: properties.length,
     published: properties.filter(p => p.status === "published").length,
     pending: properties.filter(p => p.status === "pending").length,
     featured: properties.filter(p => p.featured).length,
-    forSale: properties.filter(p => p.type === "للبيع").length,
-    forRent: properties.filter(p => p.type === "للإيجار").length,
+    forSale: properties.filter(p => p.listingType === "للبيع").length,
+    forRent: properties.filter(p => p.listingType === "للإيجار").length,
   }), [properties]);
 
-  const update = (id: number, patch: Partial<AdminProperty>) =>
-    setProperties(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
+  const handleToggleFeatured = async (p: DbProperty) => {
+    try {
+      await api.properties.update(p.id, { featured: !p.featured });
+      setProperties(prev => prev.map(x => x.id === p.id ? { ...x, featured: !x.featured } : x));
+      toast.success(p.featured ? "تم إلغاء التمييز" : "تم تمييز العقار");
+    } catch {
+      toast.error("فشل تحديث التمييز");
+    }
+  };
 
-  const handleDelete = (id: number) => {
+  const handleStatus = async (p: DbProperty, status: string) => {
+    try {
+      await api.properties.patchStatus(p.id, status);
+      setProperties(prev => prev.map(x => x.id === p.id ? { ...x, status } : x));
+      toast.success(status === "published" ? `تم نشر: ${p.title}` : `تم رفض: ${p.title}`);
+    } catch {
+      toast.error("فشل تحديث الحالة");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
     if (deleteConfirmId === id) {
-      setProperties(prev => prev.filter(p => p.id !== id));
-      setDeleteConfirmId(null);
-      toast({ title: "تم الحذف", description: "تم حذف العقار بنجاح" });
+      try {
+        await api.properties.delete(id);
+        setProperties(prev => prev.filter(p => p.id !== id));
+        setDeleteConfirmId(null);
+        toast.success("تم حذف العقار");
+      } catch {
+        toast.error("فشل الحذف");
+      }
     } else {
       setDeleteConfirmId(id);
       setTimeout(() => setDeleteConfirmId(null), 3000);
     }
   };
 
-  const handleEditOpen = (p: AdminProperty) => {
-    setEditingProp(p);
-    setForm({
-      title: p.title, location: p.location, price: p.price,
-      priceNum: p.priceNum, type: p.type, kind: p.kind,
-      beds: p.beds, baths: p.baths, area: p.area,
-      featured: p.featured, status: p.status,
-      description: p.description ?? "", img: p.img ?? "",
-    });
-  };
-
-  const handleEditSave = () => {
-    if (!editingProp) return;
-    update(editingProp.id, { ...form });
-    setEditingProp(null);
-    toast({ title: "تم التعديل", description: "تم تحديث بيانات العقار بنجاح" });
-  };
-
-  const handleAddSave = () => {
-    const newId = Math.max(...properties.map(p => p.id)) + 1;
-    const newProp: AdminProperty = {
-      ...emptyForm,
-      ...form,
-      id: newId,
-      img: form.img || FALLBACK,
-      gallery: [form.img || FALLBACK],
-      videoId: "", address: form.location,
-      amenities: [], agentName: "", agentPhone: "", agentAvatar: "", agentTitle: "",
-      floors: 1, garage: 1, year: new Date().getFullYear(),
-      lat: 24.7136, lng: 46.6753,
-    };
-    setProperties(prev => [newProp, ...prev]);
-    setAddOpen(false);
-    setForm({ ...emptyForm });
-    toast({ title: "تمت الإضافة", description: "تم إضافة العقار بنجاح" });
+  const handleAddSave = async () => {
+    if (!form.title || !form.providerId) {
+      toast.error("العنوان ومعرّف المزود مطلوبان");
+      return;
+    }
+    setSaving(true);
+    try {
+      const newProp = await api.properties.create({
+        title: form.title,
+        address: form.address,
+        price: form.price || null,
+        listingType: form.listingType,
+        mainCategory: form.mainCategory,
+        rooms: form.rooms,
+        bathrooms: form.bathrooms,
+        area: String(form.area),
+        description: form.description || null,
+        images: form.img ? JSON.stringify([form.img]) : null,
+        featured: form.featured,
+        providerId: parseInt(form.providerId),
+        status: "pending",
+      });
+      setProperties(prev => [newProp as unknown as DbProperty, ...prev]);
+      setAddOpen(false);
+      setForm({ ...emptyForm });
+      toast.success("تمت إضافة العقار");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message ?? "فشل الإضافة");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const FormFields = ({ f, setF }: { f: typeof emptyForm; setF: (v: typeof emptyForm) => void }) => (
     <div className="grid gap-4 py-2">
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2 grid gap-1.5">
-          <Label>عنوان العقار</Label>
-          <Input value={f.title} onChange={e => setF({ ...f, title: e.target.value })} placeholder="فيلا فاخرة في حي النرجس" />
+          <Label>عنوان العقار <span className="text-red-500">*</span></Label>
+          <Input value={f.title} onChange={e => setF({ ...f, title: e.target.value })} placeholder="شقة فاخرة في الزمالك" />
         </div>
         <div className="col-span-2 grid gap-1.5">
-          <Label>الموقع</Label>
-          <Input value={f.location} onChange={e => setF({ ...f, location: e.target.value })} placeholder="حي النرجس، الرياض" />
-        </div>
-        <div className="grid gap-1.5">
-          <Label>السعر (نص)</Label>
-          <Input value={f.price} onChange={e => setF({ ...f, price: e.target.value })} placeholder="٢,٨٠٠,٠٠٠" />
-        </div>
-        <div className="grid gap-1.5">
-          <Label>السعر الرقمي</Label>
-          <Input type="number" value={f.priceNum} onChange={e => setF({ ...f, priceNum: Number(e.target.value) })} placeholder="2800000" />
+          <Label>العنوان / الموقع</Label>
+          <Input value={f.address} onChange={e => setF({ ...f, address: e.target.value })} placeholder="الزمالك، القاهرة" />
         </div>
         <div className="grid gap-1.5">
           <Label>نوع الصفقة</Label>
-          <Select value={f.type} onValueChange={v => setF({ ...f, type: v })}>
+          <Select value={f.listingType} onValueChange={v => setF({ ...f, listingType: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>{TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+            <SelectContent>{LISTING_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="grid gap-1.5">
           <Label>نوع العقار</Label>
-          <Select value={f.kind} onValueChange={v => setF({ ...f, kind: v })}>
+          <Select value={f.mainCategory} onValueChange={v => setF({ ...f, mainCategory: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>{KINDS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
+            <SelectContent>{MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="grid gap-1.5">
-          <Label>غرف النوم</Label>
-          <Input type="number" min={0} value={f.beds} onChange={e => setF({ ...f, beds: Number(e.target.value) })} />
-        </div>
-        <div className="grid gap-1.5">
-          <Label>الحمامات</Label>
-          <Input type="number" min={0} value={f.baths} onChange={e => setF({ ...f, baths: Number(e.target.value) })} />
+          <Label>السعر (ج.م)</Label>
+          <Input value={f.price} onChange={e => setF({ ...f, price: e.target.value })} placeholder="1500000" />
         </div>
         <div className="grid gap-1.5">
           <Label>المساحة (م²)</Label>
           <Input type="number" min={0} value={f.area} onChange={e => setF({ ...f, area: Number(e.target.value) })} />
         </div>
         <div className="grid gap-1.5">
-          <Label>الحالة</Label>
-          <Select value={f.status} onValueChange={v => setF({ ...f, status: v as PropertyStatus })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="published">منشور</SelectItem>
-              <SelectItem value="pending">قيد المراجعة</SelectItem>
-              <SelectItem value="rejected">مرفوض</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>غرف النوم</Label>
+          <Input type="number" min={0} value={f.rooms} onChange={e => setF({ ...f, rooms: Number(e.target.value) })} />
+        </div>
+        <div className="grid gap-1.5">
+          <Label>الحمامات</Label>
+          <Input type="number" min={0} value={f.bathrooms} onChange={e => setF({ ...f, bathrooms: Number(e.target.value) })} />
         </div>
         <div className="col-span-2 grid gap-1.5">
           <Label>رابط الصورة الرئيسية</Label>
           <Input value={f.img} onChange={e => setF({ ...f, img: e.target.value })} placeholder="https://..." />
+        </div>
+        <div className="col-span-2 grid gap-1.5">
+          <Label>معرّف المزود (providerId) <span className="text-red-500">*</span></Label>
+          <Input type="number" value={f.providerId} onChange={e => setF({ ...f, providerId: e.target.value })} placeholder="1" />
         </div>
         <div className="col-span-2 grid gap-1.5">
           <Label>الوصف</Label>
@@ -238,7 +297,6 @@ export default function AdminProperties() {
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-wrap">
-              {/* Search */}
               <div className="relative w-full sm:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
                 <Input
@@ -248,19 +306,18 @@ export default function AdminProperties() {
                   onChange={e => setSearch(e.target.value)}
                 />
               </div>
-              {/* Filters */}
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-36"><SelectValue placeholder="نوع الصفقة" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الصفقات</SelectItem>
-                  {TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {LISTING_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filterKind} onValueChange={setFilterKind}>
                 <SelectTrigger className="w-36"><SelectValue placeholder="نوع العقار" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الأنواع</SelectItem>
-                  {KINDS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                  {MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -274,6 +331,10 @@ export default function AdminProperties() {
               </Select>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-1.5">
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                تحديث
+              </Button>
               <span className="text-sm text-slate-500">{filtered.length} عقار</span>
               <Button
                 size="sm"
@@ -302,7 +363,14 @@ export default function AdminProperties() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12 text-slate-400">
+                      <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin text-teal-500" />
+                      جارٍ التحميل...
+                    </TableCell>
+                  </TableRow>
+                ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-12 text-slate-400">
                       <Building2 className="w-10 h-10 mx-auto mb-2 text-slate-200" />
@@ -315,7 +383,7 @@ export default function AdminProperties() {
                     <TableCell>
                       <div className="w-12 h-10 rounded-lg overflow-hidden border border-slate-200 shrink-0">
                         <img
-                          src={p.img}
+                          src={getFirstImage(p.images)}
                           alt={p.title}
                           className="w-full h-full object-cover"
                           onError={(e) => { e.currentTarget.src = FALLBACK; }}
@@ -327,42 +395,39 @@ export default function AdminProperties() {
                     <TableCell>
                       <div className="min-w-0">
                         <p className="font-semibold text-slate-900 text-sm truncate max-w-[180px]" dir="rtl">{p.title}</p>
-                        <p className="text-xs text-slate-400 truncate max-w-[180px]">{p.location}</p>
+                        <p className="text-xs text-slate-400 truncate max-w-[180px]">{p.address ?? "—"}</p>
                       </div>
                     </TableCell>
 
                     {/* Type + Kind */}
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <Badge variant="outline" className={`text-xs w-fit ${p.type === "للبيع" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-blue-700 border-blue-200 bg-blue-50"}`}>
-                          {p.type}
+                        <Badge variant="outline" className={`text-xs w-fit ${p.listingType === "للبيع" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-blue-700 border-blue-200 bg-blue-50"}`}>
+                          {p.listingType}
                         </Badge>
-                        <span className="text-xs text-slate-500">{p.kind}</span>
+                        <span className="text-xs text-slate-500">{p.mainCategory}</span>
                       </div>
                     </TableCell>
 
                     {/* Specs */}
                     <TableCell>
                       <div className="flex items-center gap-2 text-xs text-slate-500">
-                        {p.beds > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" />{p.beds}</span>}
-                        {p.baths > 0 && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{p.baths}</span>}
-                        <span className="flex items-center gap-0.5"><Maximize2 className="w-3 h-3" />{p.area}م²</span>
+                        {(p.rooms ?? 0) > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" />{p.rooms}</span>}
+                        {(p.bathrooms ?? 0) > 0 && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{p.bathrooms}</span>}
+                        {p.area && <span className="flex items-center gap-0.5"><Maximize2 className="w-3 h-3" />{parseFloat(p.area)}م²</span>}
                       </div>
                     </TableCell>
 
                     {/* Price */}
                     <TableCell>
-                      <span className="text-sm font-bold text-teal-700">{p.price}</span>
+                      <span className="text-sm font-bold text-teal-700">{fmtPrice(p.price)}</span>
                     </TableCell>
 
                     {/* Featured toggle */}
                     <TableCell>
                       <button
                         title={p.featured ? "إلغاء التمييز" : "تمييز العقار"}
-                        onClick={() => {
-                          update(p.id, { featured: !p.featured });
-                          toast({ title: p.featured ? "تم إلغاء التمييز" : "تم التمييز", description: p.title });
-                        }}
+                        onClick={() => handleToggleFeatured(p)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${p.featured ? "bg-amber-100 text-amber-500 hover:bg-amber-200" : "bg-slate-100 text-slate-400 hover:bg-amber-50 hover:text-amber-400"}`}
                       >
                         {p.featured ? <Star className="w-4 h-4 fill-amber-400" /> : <StarOff className="w-4 h-4" />}
@@ -375,57 +440,49 @@ export default function AdminProperties() {
                     {/* Actions */}
                     <TableCell>
                       <div className="flex items-center justify-end gap-1 flex-wrap">
-                        {/* View on site */}
-                        <Button
-                          variant="ghost" size="sm"
-                          className="text-slate-500 hover:text-slate-700 h-8 px-2"
-                          onClick={() => setLocation(`/property/${p.id}`)}
-                          title="عرض في الموقع"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </Button>
 
-                        {/* Quick view */}
+                        {/* View in site — opens new tab */}
                         <Button
                           variant="ghost" size="sm"
-                          className="text-slate-500 hover:text-blue-600 h-8 px-2"
-                          onClick={() => setViewProp(p)}
-                          title="معاينة سريعة"
+                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
+                          onClick={() => window.open(`/property/${p.id}`, "_blank")}
+                          title="معاينة الإعلان في صفحة جديدة"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </Button>
 
-                        {/* Publish / Reject */}
+                        {/* Edit — opens admin edit page in new tab */}
+                        <Button
+                          variant="ghost" size="sm"
+                          className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 h-8 px-2"
+                          onClick={() => window.open(`/admin/properties/${p.id}/edit`, "_blank")}
+                          title="تعديل في صفحة جديدة"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+
+                        {/* Publish */}
                         {p.status !== "published" && (
                           <Button
                             variant="ghost" size="sm"
                             className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-8 px-2"
-                            onClick={() => { update(p.id, { status: "published" }); toast({ title: "تم النشر", description: p.title }); }}
+                            onClick={() => handleStatus(p, "published")}
                             title="نشر"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                           </Button>
                         )}
+                        {/* Reject */}
                         {p.status !== "rejected" && (
                           <Button
                             variant="ghost" size="sm"
                             className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 px-2"
-                            onClick={() => { update(p.id, { status: "rejected" }); toast({ title: "تم الرفض", description: p.title, variant: "destructive" }); }}
+                            onClick={() => handleStatus(p, "rejected")}
                             title="رفض"
                           >
                             <XCircle className="w-3.5 h-3.5" />
                           </Button>
                         )}
-
-                        {/* Edit */}
-                        <Button
-                          variant="ghost" size="sm"
-                          className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 h-8 px-2"
-                          onClick={() => handleEditOpen(p)}
-                          title="تعديل"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
 
                         {/* Delete */}
                         <Button
@@ -446,20 +503,6 @@ export default function AdminProperties() {
         </CardContent>
       </Card>
 
-      {/* ── Edit Dialog ── */}
-      <Dialog open={!!editingProp} onOpenChange={open => !open && setEditingProp(null)}>
-        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>تعديل العقار</DialogTitle>
-          </DialogHeader>
-          <FormFields f={form} setF={setForm} />
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setEditingProp(null)}>إلغاء</Button>
-            <Button className="bg-teal-600 hover:bg-teal-700" onClick={handleEditSave}>حفظ التعديلات</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* ── Add Dialog ── */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
@@ -469,83 +512,15 @@ export default function AdminProperties() {
           <FormFields f={form} setF={setForm} />
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={() => setAddOpen(false)}>إلغاء</Button>
-            <Button className="bg-teal-600 hover:bg-teal-700" onClick={handleAddSave} disabled={!form.title}>
-              <Plus className="w-4 h-4 me-1" /> إضافة
+            <Button
+              className="bg-teal-600 hover:bg-teal-700"
+              onClick={handleAddSave}
+              disabled={saving || !form.title || !form.providerId}
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Plus className="w-4 h-4 me-1" />}
+              إضافة
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Quick View Dialog ── */}
-      <Dialog open={!!viewProp} onOpenChange={open => !open && setViewProp(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="text-right">{viewProp?.title}</DialogTitle>
-          </DialogHeader>
-          {viewProp && (
-            <div className="space-y-4" dir="rtl">
-              <img
-                src={viewProp.img}
-                alt={viewProp.title}
-                className="w-full h-52 object-cover rounded-xl"
-                onError={(e) => { e.currentTarget.src = FALLBACK; }}
-              />
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-0.5">نوع الصفقة</p>
-                  <p className="font-bold">{viewProp.type}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-0.5">نوع العقار</p>
-                  <p className="font-bold">{viewProp.kind}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-0.5">السعر</p>
-                  <p className="font-bold text-teal-700">{viewProp.price} ج.م</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-0.5">المساحة</p>
-                  <p className="font-bold">{viewProp.area} م²</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-0.5">الموقع</p>
-                  <p className="font-bold text-xs">{viewProp.location}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-0.5">الحالة</p>
-                  <div className="mt-0.5">{statusBadge(viewProp.status)}</div>
-                </div>
-                {viewProp.beds > 0 && (
-                  <div className="bg-slate-50 rounded-xl p-3">
-                    <p className="text-xs text-slate-500 mb-0.5">الغرف</p>
-                    <p className="font-bold flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{viewProp.beds} غرفة</p>
-                  </div>
-                )}
-                {viewProp.baths > 0 && (
-                  <div className="bg-slate-50 rounded-xl p-3">
-                    <p className="text-xs text-slate-500 mb-0.5">الحمامات</p>
-                    <p className="font-bold flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{viewProp.baths}</p>
-                  </div>
-                )}
-              </div>
-              {viewProp.description && (
-                <div className="bg-slate-50 rounded-xl p-3 text-sm text-slate-600 leading-relaxed">
-                  {viewProp.description}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1 bg-teal-600 hover:bg-teal-700 gap-2"
-                  onClick={() => { setViewProp(null); setLocation(`/property/${viewProp.id}`); }}
-                >
-                  <ExternalLink className="w-4 h-4" /> عرض في الموقع
-                </Button>
-                <Button variant="outline" className="flex-1 gap-2" onClick={() => { setViewProp(null); handleEditOpen(viewProp); }}>
-                  <Pencil className="w-4 h-4" /> تعديل
-                </Button>
-              </div>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
