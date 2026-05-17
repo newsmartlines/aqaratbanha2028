@@ -447,7 +447,7 @@ export default function AdminMessages() {
 
   return (
     <AdminLayout title="إدارة الرسائل والقوالب">
-      <div className="h-[calc(100vh-8rem)] flex flex-col gap-0 -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
+      <div className="flex flex-col gap-0 -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
 
         {/* ── Global Header ── */}
         <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 shrink-0">
@@ -487,13 +487,13 @@ export default function AdminMessages() {
         </div>
 
         {/* ── Main Split Layout ── */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className="flex">
 
           {/* ── LEFT SIDEBAR ── */}
-          <div className="w-72 shrink-0 flex flex-col border-l border-slate-200 bg-slate-50/80 overflow-hidden">
+          <div className="w-72 shrink-0 flex flex-col border-l border-slate-200 bg-slate-50/80 sticky top-0 self-start h-screen overflow-y-auto">
 
             {/* search */}
-            <div className="p-3 border-b border-slate-200 bg-white">
+            <div className="p-3 border-b border-slate-200 bg-white sticky top-0 z-10">
               <div className="relative">
                 <Search className="absolute top-2.5 right-3 w-3.5 h-3.5 text-slate-400" />
                 <input
@@ -507,7 +507,7 @@ export default function AdminMessages() {
             </div>
 
             {/* category filter */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1">
               <div className="p-2">
                 <p className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">التصنيفات</p>
                 {CATEGORIES.map(cat => {
@@ -578,7 +578,7 @@ export default function AdminMessages() {
 
           {/* ── RIGHT PANEL ── */}
           {!selectedTpl ? (
-            <div className="flex-1 flex flex-col items-center justify-center bg-white text-center p-12">
+            <div className="flex-1 flex flex-col items-center justify-center bg-white text-center p-12 min-h-screen">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center mb-6 shadow-inner">
                 <MessageSquare className="w-10 h-10 text-teal-400" />
               </div>
@@ -594,10 +594,10 @@ export default function AdminMessages() {
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col bg-white overflow-hidden">
+            <div className="flex-1 flex flex-col bg-white">
 
               {/* ── Template Header ── */}
-              <div className="px-6 py-4 border-b border-slate-200 bg-white shrink-0">
+              <div className="px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-10 shadow-sm shrink-0">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -668,7 +668,7 @@ export default function AdminMessages() {
               </div>
 
               {/* ── Tab Content ── */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1">
 
                 {/* EDITOR TAB */}
                 {activeTab === "editor" && (
