@@ -1,0 +1,48 @@
+import { pgTable, serial, text, numeric, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod/v4";
+import { providersTable } from "./providers";
+
+export const propertiesTable = pgTable("properties", {
+  id: serial("id").primaryKey(),
+  providerId: integer("provider_id").notNull().references(() => providersTable.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  mainCategory: text("main_category").notNull(),
+  listingType: text("listing_type").notNull(),
+  subCategory: text("sub_category"),
+  price: numeric("price", { precision: 14, scale: 2 }),
+  area: numeric("area", { precision: 10, scale: 2 }),
+  rooms: integer("rooms"),
+  bathrooms: integer("bathrooms"),
+  floor: integer("floor"),
+  totalFloors: integer("total_floors"),
+  buildYear: integer("build_year"),
+  finishing: text("finishing"),
+  condition: text("condition"),
+  furnished: text("furnished"),
+  direction: text("direction"),
+  paymentMethod: text("payment_method"),
+  address: text("address"),
+  regionId: integer("region_id"),
+  cityId: integer("city_id"),
+  district: text("district"),
+  latitude: numeric("latitude", { precision: 10, scale: 7 }),
+  longitude: numeric("longitude", { precision: 10, scale: 7 }),
+  images: text("images"),
+  videoUrl: text("video_url"),
+  brochureUrl: text("brochure_url"),
+  logoUrl: text("logo_url"),
+  phone: text("phone"),
+  whatsapp: text("whatsapp"),
+  features: text("features"),
+  nearbyServices: text("nearby_services"),
+  contactMethods: text("contact_methods"),
+  status: text("status").default("pending"),
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertPropertySchema = createInsertSchema(propertiesTable).omit({ id: true, createdAt: true });
+export type InsertProperty = z.infer<typeof insertPropertySchema>;
+export type Property = typeof propertiesTable.$inferSelect;

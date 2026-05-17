@@ -16,6 +16,7 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import OnboardingPage from "@/pages/onboarding";
+import RealEstateOnboardingPage from "@/pages/real-estate-onboarding";
 import ProviderRegisterPage from "@/pages/provider-register";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
@@ -169,6 +170,9 @@ function Router() {
       {/* Onboarding — signed-in providers only */}
       <Route path="/onboarding">
         {() => <RoleProtectedRoute component={OnboardingPage} roles={["provider"]} />}
+      </Route>
+      <Route path="/real-estate-onboarding">
+        {() => <RoleProtectedRoute component={RealEstateOnboardingPage} roles={["provider"]} />}
       </Route>
 
       {/* Provider dashboard (canonical paths) */}

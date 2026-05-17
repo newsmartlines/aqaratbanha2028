@@ -623,6 +623,26 @@ export const api = {
     avatar: (file: File) => uploadFile("/upload/avatar", "avatar", file),
     banner: (file: File) => uploadFile("/upload/banner", "banner", file),
     service: (file: File) => uploadFile("/upload/service", "image", file),
+    propertyImage: (file: File) => uploadFile("/upload/property-image", "image", file),
+    brochure: async (file: File): Promise<{ url: string }> => {
+      const form = new FormData();
+      form.append("brochure", file);
+      const res = await fetch(`${API}/upload/brochure`, { method: "POST", body: form, credentials: "include", cache: "no-store" });
+      const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      if (!res.ok) throw new ApiError(res.status, (typeof body?.error === "string" && body.error) || res.statusText);
+      const data = body?.data as { url?: string } | undefined;
+      if (!data?.url) throw new ApiError(res.status, "Invalid upload response");
+      return { url: data.url };
+    },
+  },
+
+  properties: {
+    list: async (params?: Record<string, string | number | undefined>) =>
+      ensureArray(await fetchJson(`/properties${qs(params)}`)),
+    get: (id: number) => fetchJson<Record<string, unknown>>(`/properties/${id}`),
+    create: (data: unknown) => fetchJson<Record<string, unknown>>(`/properties`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: unknown) => fetchJson<Record<string, unknown>>(`/properties/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/properties/${id}`, { method: "DELETE" }),
   },
 
   subscriptions: {

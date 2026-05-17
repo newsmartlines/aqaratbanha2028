@@ -184,7 +184,8 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
       if (role === "provider") {
         // New providers must complete onboarding (profile, services, package selection
         // → STC Pay redirect for paid plans) before landing on the dashboard.
-        const dest = safeReturnTo(returnTo, "provider") ?? "/onboarding";
+        const baseOnboarding = accountType === "real_estate" ? "/real-estate-onboarding" : "/onboarding";
+        const dest = safeReturnTo(returnTo, "provider") ?? baseOnboarding;
         setLocation(dest);
       } else {
         const dest = safeReturnTo(returnTo, "user") ?? getRedirectPath("user");

@@ -38,6 +38,30 @@ function makeUploader(subfolder: string) {
 const avatarUpload = makeUploader("avatars");
 const bannerUpload = makeUploader("banners");
 const serviceUpload = makeUploader("services");
+const propertyImageUpload = makeUploader("properties");
+
+// PDF uploader (up to 10 MB)
+const brochureDir = path.join(process.cwd(), "uploads", "brochures");
+fs.mkdirSync(brochureDir, { recursive: true });
+const pdfStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, brochureDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || ".pdf";
+    const name = crypto.randomBytes(16).toString("hex") + ext;
+    cb(null, name);
+  },
+});
+const brochureUpload = multer({
+  storage: pdfStorage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("يُسمح فقط بملفات PDF"));
+    }
+  },
+});
 
 // ── Auth guard helper (async) ──
 async function requireAuth(req: Request): Promise<boolean> {
@@ -91,6 +115,38 @@ router.post("/upload/service", async (req: Request, res) => {
     const file = (req as any).file;
     if (!file) return res.status(400).json({ success: false, error: "لم يتم إرسال أي ملف" });
     res.json({ success: true, data: { url: `/uploads/services/${file.filename}` } });
+  });
+});
+
+// POST /api/upload/property-image
+router.post("/upload/property-image", async (req: Request, res) => {
+  if (!(await requireAuth(req))) {
+    return res.status(401).json({ success: false, error: "Not authenticated" });
+  }
+  propertyImageUpload.single("image")(req as any, res as any, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, error: `خطأ في الرفع: ${err.message}` });
+    }
+    if (err) return res.status(400).json({ success: false, error: err.message });
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ success: false, error: "لم يتم إرسال أي ملف" });
+    res.json({ success: true, data: { url: `/uploads/properties/${file.filename}` } });
+  });
+});
+
+// POST /api/upload/brochure  (PDF)
+router.post("/upload/brochure", async (req: Request, res) => {
+  if (!(await requireAuth(req))) {
+    return res.status(401).json({ success: false, error: "Not authenticated" });
+  }
+  brochureUpload.single("brochure")(req as any, res as any, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, error: `خطأ في الرفع: ${err.message}` });
+    }
+    if (err) return res.status(400).json({ success: false, error: err.message });
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ success: false, error: "لم يتم إرسال أي ملف" });
+    res.json({ success: true, data: { url: `/uploads/brochures/${file.filename}` } });
   });
 });
 

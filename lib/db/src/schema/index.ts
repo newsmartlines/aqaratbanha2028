@@ -23,3 +23,4 @@ export * from "./messages";
 export * from "./supportTickets";
 export * from "./sessions";
 export * from "./resetTokens";
+export * from "./properties";

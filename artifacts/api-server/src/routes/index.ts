@@ -21,6 +21,7 @@ import messagesRouter from "./messages";
 import statsRouter from "./stats";
 import supportTicketsRouter from "./supportTickets";
 import stcpayRouter from "./stcpay";
+import propertiesRouter from "./properties";
 
 const router: IRouter = Router();
 
@@ -46,5 +47,6 @@ router.use(messagesRouter);
 router.use(statsRouter);
 router.use(supportTicketsRouter);
 router.use(stcpayRouter);
+router.use(propertiesRouter);
 
 export default router;
