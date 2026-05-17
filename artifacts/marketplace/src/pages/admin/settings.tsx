@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { api, mediaUrl, type SiteSettings } from "@/lib/api";
-import { Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload, ImageIcon } from "lucide-react";
+import { Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload, ImageIcon, Palette } from "lucide-react";
+import { AppearanceTab } from "./settings-appearance";
 import { useToast } from "@/hooks/use-toast";
 import { useT, commonDict } from "@/lib/i18n";
 
@@ -20,6 +21,7 @@ const dict = {
   pages: { ar: "محتوى الصفحات", en: "Pages Content" },
   faq: { ar: "الأسئلة الشائعة", en: "FAQ" },
   security: { ar: "الأمان", en: "Security" },
+  appearance: { ar: "المظهر", en: "Appearance" },
   generalSettings: { ar: "الإعدادات العامة", en: "General Settings" },
   generalDesc: { ar: "اسم الموقع، الشعار، والهوية المعروضة في الواجهة", en: "Site name, logo, and branding shown on the frontend" },
   siteNameAr: { ar: "اسم الموقع (عربي)", en: "Site Name (Arabic)" },
@@ -188,6 +190,9 @@ export default function AdminSettings() {
           </TabsTrigger>
           <TabsTrigger value="security" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Lock className="w-4 h-4 me-2" />{t("security")}
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary font-semibold">
+            <Palette className="w-4 h-4 me-2" />{t("appearance")}
           </TabsTrigger>
         </TabsList>
 
@@ -443,6 +448,9 @@ export default function AdminSettings() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="appearance">
+          <AppearanceTab settings={form} />
         </TabsContent>
       </Tabs>
     </AdminLayout>

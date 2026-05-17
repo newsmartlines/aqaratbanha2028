@@ -8,6 +8,7 @@ import { Toaster as HotToaster } from "react-hot-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LanguageProvider } from "@/lib/i18n";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { api, mediaUrl } from "@/lib/api";
 import Home from "@/pages/home";
 import Home2 from "@/pages/home2";
@@ -358,6 +359,7 @@ function App() {
           <AuthProvider>
             <TooltipProvider>
               <FaviconUpdater />
+              <ThemeProvider />
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <Router />
               </WouterRouter>
