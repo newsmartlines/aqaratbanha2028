@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -178,9 +179,12 @@ export default function AdminSettings() {
     </AdminLayout>
   );
 
+  const search = useSearch();
+  const initialTab = useMemo(() => new URLSearchParams(search).get("tab") ?? "general", [search]);
+
   return (
     <AdminLayout title={t("pageTitle")}>
-      <Tabs defaultValue="general" className="space-y-6">
+      <Tabs defaultValue={initialTab} className="space-y-6">
         <TabsList className="bg-slate-100 p-1 flex-wrap h-auto">
           <TabsTrigger value="general" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Globe className="w-4 h-4 me-2" />{t("general")}

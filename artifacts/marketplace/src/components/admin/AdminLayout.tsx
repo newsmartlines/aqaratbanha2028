@@ -29,6 +29,7 @@ import {
   Building2,
   Stamp,
   Search,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -192,6 +193,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: MessageSquare,   label: "الرسائل والقوالب",   href: "/admin/messages",         perm: "settings" },
     { icon: Mail,            label: "البريد الإلكتروني", href: "/admin/email-templates",  perm: "settings" },
     { icon: Layers3,         label: "الباقات والعمولات", href: "/admin/plans-commissions", perm: "commission" },
+    { icon: KeyRound,        label: "إعدادات جوجل",       href: "/admin/settings?tab=google", perm: "settings" },
     { icon: Settings,        label: t("settings"),        href: "/admin/settings",         perm: "settings" },
   ];
 
@@ -237,7 +239,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">{t("menu")}</p>
         <nav className="space-y-0">
           {menuItems.map((item) => {
-            const isActive = location === item.href || location.startsWith(item.href + "/");
+            const hrefPath = item.href.split("?")[0];
+            const isActive = location === item.href || location === hrefPath || location.startsWith(hrefPath + "/");
             const n = pendingForHref(item.href, sidebarCounts);
             return (
               <Link key={item.href} href={item.href}>
