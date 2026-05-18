@@ -9,11 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { api, mediaUrl, type SiteSettings } from "@/lib/api";
-import { Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload, ImageIcon, Palette, KeyRound } from "lucide-react";
+import {
+  Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload,
+  ImageIcon, Palette, KeyRound, Mail, Share2, Search, AlertTriangle, Eye, EyeOff,
+  Send, Wifi, WifiOff, Instagram, Youtube, Facebook, Twitter, Linkedin, Shield
+} from "lucide-react";
 import { AppearanceTab } from "./settings-appearance";
 import { useToast } from "@/hooks/use-toast";
 import { useT, commonDict } from "@/lib/i18n";
+import toast from "react-hot-toast";
 
 const dict = {
   pageTitle: { ar: "إعدادات المنصة", en: "Platform Settings" },
@@ -23,6 +29,10 @@ const dict = {
   faq: { ar: "الأسئلة الشائعة", en: "FAQ" },
   security: { ar: "الأمان", en: "Security" },
   appearance: { ar: "المظهر", en: "Appearance" },
+  smtp: { ar: "البريد الإلكتروني", en: "Email / SMTP" },
+  social: { ar: "التواصل الاجتماعي", en: "Social Media" },
+  seo: { ar: "SEO والتحليلات", en: "SEO & Analytics" },
+  platform: { ar: "قواعد المنصة", en: "Platform Rules" },
   generalSettings: { ar: "الإعدادات العامة", en: "General Settings" },
   generalDesc: { ar: "اسم الموقع، الشعار، والهوية المعروضة في الواجهة", en: "Site name, logo, and branding shown on the frontend" },
   siteNameAr: { ar: "اسم الموقع (عربي)", en: "Site Name (Arabic)" },
@@ -82,16 +92,28 @@ const dict = {
 };
 
 export default function AdminSettings() {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const queryClient = useQueryClient();
   const t = useT(dict);
   const tc = useT(commonDict);
   const [form, setForm] = useState<Partial<SiteSettings>>({});
   const [faqItems, setFaqItems] = useState<{ q: string; a: string }[]>([]);
   const [newPassword, setNewPassword] = useState({ current: "", newPass: "", confirm: "" });
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [passLoading, setPassLoading] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
   const [faviconUploading, setFaviconUploading] = useState(false);
   const [heroImageUploading, setHeroImageUploading] = useState(false);
+  const [smtpForm, setSmtpForm] = useState({
+    smtpHost: "", smtpPort: "587", smtpSecure: "false",
+    smtpUser: "", smtpPass: "", smtpFromName: "", smtpFromEmail: "",
+  });
+  const [smtpLoading, setSmtpLoading] = useState(false);
+  const [smtpTesting, setSmtpTesting] = useState(false);
+  const [smtpTestResult, setSmtpTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const heroImageInputRef = useRef<HTMLInputElement>(null);
@@ -103,13 +125,9 @@ export default function AdminSettings() {
     try {
       const result = await api.upload.avatar(file);
       setForm(f => ({ ...f, logoUrl: result.url }));
-      toast({ title: "تم رفع الشعار", description: "تم رفع الشعار بنجاح، اضغط حفظ لتطبيق التغييرات." });
-    } catch {
-      toast({ title: "فشل رفع الشعار", variant: "destructive" });
-    } finally {
-      setLogoUploading(false);
-      if (logoInputRef.current) logoInputRef.current.value = "";
-    }
+      uiToast({ title: "تم رفع الشعار", description: "اضغط حفظ لتطبيق التغييرات." });
+    } catch { uiToast({ title: "فشل رفع الشعار", variant: "destructive" }); }
+    finally { setLogoUploading(false); if (logoInputRef.current) logoInputRef.current.value = ""; }
   };
 
   const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,13 +137,9 @@ export default function AdminSettings() {
     try {
       const result = await api.upload.avatar(file);
       setForm(f => ({ ...f, faviconUrl: result.url }));
-      toast({ title: "تم رفع الفافيكون", description: "تم الرفع بنجاح، اضغط حفظ لتطبيق التغييرات." });
-    } catch {
-      toast({ title: "فشل رفع الفافيكون", variant: "destructive" });
-    } finally {
-      setFaviconUploading(false);
-      if (faviconInputRef.current) faviconInputRef.current.value = "";
-    }
+      uiToast({ title: "تم رفع الفافيكون", description: "اضغط حفظ لتطبيق التغييرات." });
+    } catch { uiToast({ title: "فشل رفع الفافيكون", variant: "destructive" }); }
+    finally { setFaviconUploading(false); if (faviconInputRef.current) faviconInputRef.current.value = ""; }
   };
 
   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,13 +149,9 @@ export default function AdminSettings() {
     try {
       const result = await api.upload.banner(file);
       setForm(f => ({ ...f, heroImage: result.url }));
-      toast({ title: "تم رفع صورة الهيرو", description: "تم الرفع بنجاح، اضغط حفظ لتطبيق التغييرات." });
-    } catch {
-      toast({ title: "فشل رفع الصورة", variant: "destructive" });
-    } finally {
-      setHeroImageUploading(false);
-      if (heroImageInputRef.current) heroImageInputRef.current.value = "";
-    }
+      uiToast({ title: "تم رفع صورة الهيرو", description: "اضغط حفظ لتطبيق التغييرات." });
+    } catch { uiToast({ title: "فشل رفع الصورة", variant: "destructive" }); }
+    finally { setHeroImageUploading(false); if (heroImageInputRef.current) heroImageInputRef.current.value = ""; }
   };
 
   const { data: settings, isLoading } = useQuery({
@@ -155,23 +165,66 @@ export default function AdminSettings() {
       try {
         const parsed = JSON.parse(settings.faqContent ?? "[]");
         setFaqItems(Array.isArray(parsed) ? parsed : []);
-      } catch {
-        setFaqItems([]);
-      }
+      } catch { setFaqItems([]); }
     }
   }, [settings]);
+
+  useEffect(() => {
+    const loadSmtp = async () => {
+      try {
+        const res = await api.fetchJson<{ data: Record<string, string> }>("/admin/email/smtp");
+        if (res.data) setSmtpForm(s => ({ ...s, ...res.data }));
+      } catch {}
+    };
+    loadSmtp();
+  }, []);
 
   const saveMutation = useMutation({
     mutationFn: (data: Partial<SiteSettings>) => api.settings.save(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
-      toast({ title: t("saved"), description: t("savedDesc") });
+      uiToast({ title: t("saved"), description: t("savedDesc") });
     },
-    onError: () => toast({ title: tc("error"), description: t("saveFailed"), variant: "destructive" }),
+    onError: () => uiToast({ title: tc("error"), description: t("saveFailed"), variant: "destructive" }),
   });
 
   const handleSave = (section: Partial<SiteSettings>) => saveMutation.mutate(section);
   const handleFaqSave = () => saveMutation.mutate({ faqContent: JSON.stringify(faqItems) });
+
+  const handleChangePassword = async () => {
+    if (newPassword.newPass !== newPassword.confirm) return;
+    setPassLoading(true);
+    try {
+      await api.fetchJson("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify({ currentPassword: newPassword.current, newPassword: newPassword.newPass }),
+      });
+      uiToast({ title: t("passUpdated"), description: t("passUpdatedDesc") });
+      setNewPassword({ current: "", newPass: "", confirm: "" });
+    } catch (e: any) {
+      uiToast({ title: "فشل تغيير كلمة المرور", description: e?.message ?? "تحقق من كلمة المرور الحالية", variant: "destructive" });
+    } finally { setPassLoading(false); }
+  };
+
+  const handleSmtpSave = async () => {
+    setSmtpLoading(true);
+    try {
+      await api.fetchJson("/admin/email/smtp", { method: "PUT", body: JSON.stringify(smtpForm) });
+      toast.success("تم حفظ إعدادات البريد");
+    } catch { toast.error("فشل حفظ إعدادات البريد"); }
+    finally { setSmtpLoading(false); }
+  };
+
+  const handleSmtpTest = async () => {
+    setSmtpTesting(true);
+    setSmtpTestResult(null);
+    try {
+      const res = await api.fetchJson<{ success: boolean; error?: string; message?: string }>("/admin/email/smtp/test", { method: "POST" });
+      setSmtpTestResult({ ok: !!res.success, msg: res.success ? "الاتصال ناجح ✓" : (res.error ?? "فشل الاتصال") });
+    } catch (e: any) {
+      setSmtpTestResult({ ok: false, msg: e?.message ?? "فشل الاتصال" });
+    } finally { setSmtpTesting(false); }
+  };
 
   if (isLoading) return (
     <AdminLayout title={t("pageTitle")}>
@@ -182,33 +235,50 @@ export default function AdminSettings() {
   const search = useSearch();
   const initialTab = useMemo(() => new URLSearchParams(search).get("tab") ?? "general", [search]);
 
+  const isMaintenance = form.maintenanceMode === "true";
+  const requireApproval = form.requireProviderApproval !== "false";
+  const allowRegistration = form.allowRegistration !== "false";
+
   return (
     <AdminLayout title={t("pageTitle")}>
       <Tabs defaultValue={initialTab} className="space-y-6">
-        <TabsList className="bg-slate-100 p-1 flex-wrap h-auto">
+        <TabsList className="bg-slate-100 p-1 flex-wrap h-auto gap-1">
           <TabsTrigger value="general" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Globe className="w-4 h-4 me-2" />{t("general")}
+            <Globe className="w-4 h-4 me-1.5" />{t("general")}
           </TabsTrigger>
           <TabsTrigger value="contact" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Phone className="w-4 h-4 me-2" />{t("contact")}
+            <Phone className="w-4 h-4 me-1.5" />{t("contact")}
+          </TabsTrigger>
+          <TabsTrigger value="social" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Share2 className="w-4 h-4 me-1.5" />{t("social")}
           </TabsTrigger>
           <TabsTrigger value="pages" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <FileText className="w-4 h-4 me-2" />{t("pages")}
+            <FileText className="w-4 h-4 me-1.5" />{t("pages")}
           </TabsTrigger>
           <TabsTrigger value="faq" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <HelpCircle className="w-4 h-4 me-2" />{t("faq")}
+            <HelpCircle className="w-4 h-4 me-1.5" />{t("faq")}
+          </TabsTrigger>
+          <TabsTrigger value="seo" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Search className="w-4 h-4 me-1.5" />{t("seo")}
+          </TabsTrigger>
+          <TabsTrigger value="smtp" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Mail className="w-4 h-4 me-1.5" />{t("smtp")}
+          </TabsTrigger>
+          <TabsTrigger value="platform" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Shield className="w-4 h-4 me-1.5" />{t("platform")}
           </TabsTrigger>
           <TabsTrigger value="security" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Lock className="w-4 h-4 me-2" />{t("security")}
+            <Lock className="w-4 h-4 me-1.5" />{t("security")}
           </TabsTrigger>
           <TabsTrigger value="google" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <KeyRound className="w-4 h-4 me-2" />{t("googleOAuth")}
+            <KeyRound className="w-4 h-4 me-1.5" />{t("googleOAuth")}
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary font-semibold">
-            <Palette className="w-4 h-4 me-2" />{t("appearance")}
+          <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold">
+            <Palette className="w-4 h-4 me-1.5" />{t("appearance")}
           </TabsTrigger>
         </TabsList>
 
+        {/* ── General ─────────────────────────────────────────────── */}
         <TabsContent value="general">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
@@ -252,9 +322,7 @@ export default function AdminSettings() {
                     {form.logoUrl ? (
                       <img src={mediaUrl(form.logoUrl)} alt={t("logoAlt")} className="w-full h-full object-contain p-1"
                         onError={e => { e.currentTarget.style.display = "none"; }} />
-                    ) : (
-                      <ImageIcon className="w-8 h-8 text-slate-300" />
-                    )}
+                    ) : <ImageIcon className="w-8 h-8 text-slate-300" />}
                   </div>
                 </div>
               </div>
@@ -275,9 +343,7 @@ export default function AdminSettings() {
                     {form.faviconUrl ? (
                       <img src={mediaUrl(form.faviconUrl)} alt={t("faviconAlt")} className="w-full h-full object-contain p-1"
                         onError={e => { e.currentTarget.style.display = "none"; }} />
-                    ) : (
-                      <ImageIcon className="w-6 h-6 text-slate-300" />
-                    )}
+                    ) : <ImageIcon className="w-6 h-6 text-slate-300" />}
                   </div>
                 </div>
               </div>
@@ -298,9 +364,7 @@ export default function AdminSettings() {
                     {form.heroImage ? (
                       <img src={mediaUrl(form.heroImage)} alt={t("heroImageAlt")} className="w-full h-full object-cover"
                         onError={e => { e.currentTarget.style.display = "none"; }} />
-                    ) : (
-                      <ImageIcon className="w-8 h-8 text-slate-300" />
-                    )}
+                    ) : <ImageIcon className="w-8 h-8 text-slate-300" />}
                   </div>
                 </div>
               </div>
@@ -324,8 +388,7 @@ export default function AdminSettings() {
               </div>
               <Button onClick={() => handleSave({
                 siteName: form.siteName, siteNameEn: form.siteNameEn,
-                logoUrl: form.logoUrl, faviconUrl: form.faviconUrl,
-                heroImage: form.heroImage,
+                logoUrl: form.logoUrl, faviconUrl: form.faviconUrl, heroImage: form.heroImage,
                 heroTitle: form.heroTitle, heroSubtitle: form.heroSubtitle,
                 ctaText: form.ctaText, ctaButtonText: form.ctaButtonText,
                 businessHours: form.businessHours, businessHoursEn: form.businessHoursEn,
@@ -337,6 +400,7 @@ export default function AdminSettings() {
           </Card>
         </TabsContent>
 
+        {/* ── Contact ─────────────────────────────────────────────── */}
         <TabsContent value="contact">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
@@ -344,27 +408,44 @@ export default function AdminSettings() {
               <CardDescription>{t("contactDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="space-y-1.5">
-                <Label>{t("contactEmail")}</Label>
-                <Input type="email" dir="ltr" value={form.contactEmail ?? ""} onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t("contactEmail")}</Label>
+                  <Input type="email" dir="ltr" value={form.contactEmail ?? ""} onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("contactPhone")}</Label>
+                  <Input dir="ltr" value={form.contactPhone ?? ""} onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))} />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>{t("contactPhone")}</Label>
-                <Input dir="ltr" value={form.contactPhone ?? ""} onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>واتساب</Label>
-                <Input dir="ltr" value={form.contactWhatsapp ?? ""} onChange={e => setForm(f => ({ ...f, contactWhatsapp: e.target.value }))} placeholder="+201000000000" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>واتساب</Label>
+                  <Input dir="ltr" value={form.contactWhatsapp ?? ""} onChange={e => setForm(f => ({ ...f, contactWhatsapp: e.target.value }))} placeholder="+201000000000" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>فاكس</Label>
+                  <Input dir="ltr" value={form.contactFax ?? ""} onChange={e => setForm(f => ({ ...f, contactFax: e.target.value }))} placeholder="+20xxxxxxxx" />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("addressAr")}</Label>
                 <Input value={form.contactAddress ?? ""} onChange={e => setForm(f => ({ ...f, contactAddress: e.target.value }))} dir="rtl" />
               </div>
               <div className="space-y-1.5">
+                <Label>رابط خرائط جوجل</Label>
+                <Input dir="ltr" value={form.googleMapsUrl ?? ""} onChange={e => setForm(f => ({ ...f, googleMapsUrl: e.target.value }))} placeholder="https://maps.google.com/..." />
+              </div>
+              <div className="space-y-1.5">
                 <Label>ساعات العمل</Label>
                 <Input value={form.workingHours ?? ""} onChange={e => setForm(f => ({ ...f, workingHours: e.target.value }))} dir="rtl" placeholder="الأحد — الخميس، من 9 صباحاً حتى 6 مساءً" />
               </div>
-              <Button onClick={() => handleSave({ contactEmail: form.contactEmail, contactPhone: form.contactPhone, contactWhatsapp: form.contactWhatsapp, contactAddress: form.contactAddress, workingHours: form.workingHours })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+              <Button onClick={() => handleSave({
+                contactEmail: form.contactEmail, contactPhone: form.contactPhone,
+                contactWhatsapp: form.contactWhatsapp, contactFax: form.contactFax,
+                contactAddress: form.contactAddress, googleMapsUrl: form.googleMapsUrl,
+                workingHours: form.workingHours,
+              })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
                 {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
                 {t("saveContact")}
               </Button>
@@ -372,25 +453,144 @@ export default function AdminSettings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="pages">
+        {/* ── Social Media ─────────────────────────────────────────── */}
+        <TabsContent value="social">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5 text-teal-600" /> {t("pageContent")}</CardTitle>
-              <CardDescription>{t("pageContentDesc")}</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Share2 className="w-5 h-5 text-teal-600" /> روابط التواصل الاجتماعي</CardTitle>
+              <CardDescription>تظهر في التذييل وصفحة التواصل معنا</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="space-y-1.5">
-                <Label>{t("aboutAr")}</Label>
-                <Textarea value={form.aboutContent ?? ""} onChange={e => setForm(f => ({ ...f, aboutContent: e.target.value }))} dir="rtl" rows={8} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center"><Facebook className="w-3 h-3 text-white" /></span>
+                    فيسبوك
+                  </Label>
+                  <Input dir="ltr" value={form.socialFacebook ?? ""} onChange={e => setForm(f => ({ ...f, socialFacebook: e.target.value }))} placeholder="https://facebook.com/yourpage" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><Instagram className="w-3 h-3 text-white" /></span>
+                    إنستجرام
+                  </Label>
+                  <Input dir="ltr" value={form.socialInstagram ?? ""} onChange={e => setForm(f => ({ ...f, socialInstagram: e.target.value }))} placeholder="https://instagram.com/yourprofile" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-sky-500 flex items-center justify-center"><Twitter className="w-3 h-3 text-white" /></span>
+                    تويتر / X
+                  </Label>
+                  <Input dir="ltr" value={form.socialTwitter ?? ""} onChange={e => setForm(f => ({ ...f, socialTwitter: e.target.value }))} placeholder="https://twitter.com/yourhandle" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-red-600 flex items-center justify-center"><Youtube className="w-3 h-3 text-white" /></span>
+                    يوتيوب
+                  </Label>
+                  <Input dir="ltr" value={form.socialYoutube ?? ""} onChange={e => setForm(f => ({ ...f, socialYoutube: e.target.value }))} placeholder="https://youtube.com/@yourchannel" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-black flex items-center justify-center text-white text-[10px] font-bold leading-none">TK</span>
+                    تيك توك
+                  </Label>
+                  <Input dir="ltr" value={form.socialTiktok ?? ""} onChange={e => setForm(f => ({ ...f, socialTiktok: e.target.value }))} placeholder="https://tiktok.com/@yourprofile" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-yellow-400 flex items-center justify-center text-white text-[10px] font-bold leading-none">SC</span>
+                    سناب شات
+                  </Label>
+                  <Input dir="ltr" value={form.socialSnapchat ?? ""} onChange={e => setForm(f => ({ ...f, socialSnapchat: e.target.value }))} placeholder="https://snapchat.com/add/yourname" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-blue-700 flex items-center justify-center"><Linkedin className="w-3 h-3 text-white" /></span>
+                    لينكد إن
+                  </Label>
+                  <Input dir="ltr" value={form.socialLinkedin ?? ""} onChange={e => setForm(f => ({ ...f, socialLinkedin: e.target.value }))} placeholder="https://linkedin.com/company/yourco" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-white text-[9px] font-bold leading-none">WA</span>
+                    رابط واتساب للتواصل
+                  </Label>
+                  <Input dir="ltr" value={form.socialWhatsapp ?? ""} onChange={e => setForm(f => ({ ...f, socialWhatsapp: e.target.value }))} placeholder="https://wa.me/201000000000" />
+                </div>
               </div>
-              <Button onClick={() => handleSave({ aboutContent: form.aboutContent })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+              <Button onClick={() => handleSave({
+                socialFacebook: form.socialFacebook, socialInstagram: form.socialInstagram,
+                socialTwitter: form.socialTwitter, socialYoutube: form.socialYoutube,
+                socialTiktok: form.socialTiktok, socialSnapchat: form.socialSnapchat,
+                socialLinkedin: form.socialLinkedin, socialWhatsapp: form.socialWhatsapp,
+              })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
                 {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
-                {t("savePages")}
+                حفظ روابط التواصل
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* ── Pages ───────────────────────────────────────────────── */}
+        <TabsContent value="pages">
+          <div className="space-y-6">
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5 text-teal-600" /> {t("pageContent")}</CardTitle>
+                <CardDescription>{t("pageContentDesc")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label>{t("aboutAr")}</Label>
+                  <Textarea value={form.aboutContent ?? ""} onChange={e => setForm(f => ({ ...f, aboutContent: e.target.value }))} dir="rtl" rows={8} />
+                </div>
+                <Button onClick={() => handleSave({ aboutContent: form.aboutContent })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  {t("savePages")}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-teal-600" /> روابط الصفحات القانونية</CardTitle>
+                <CardDescription>روابط شروط الاستخدام وسياسة الخصوصية وسياسة الاسترداد</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label>رابط صفحة شروط الاستخدام</Label>
+                  <Input dir="ltr" value={form.termsUrl ?? ""} onChange={e => setForm(f => ({ ...f, termsUrl: e.target.value }))} placeholder="https://example.com/terms" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>رابط صفحة سياسة الخصوصية</Label>
+                  <Input dir="ltr" value={form.privacyUrl ?? ""} onChange={e => setForm(f => ({ ...f, privacyUrl: e.target.value }))} placeholder="https://example.com/privacy" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>رابط سياسة الاسترداد</Label>
+                  <Input dir="ltr" value={form.refundUrl ?? ""} onChange={e => setForm(f => ({ ...f, refundUrl: e.target.value }))} placeholder="https://example.com/refund" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>نص شروط الاستخدام (للصفحة الداخلية)</Label>
+                  <Textarea value={form.termsContent ?? ""} onChange={e => setForm(f => ({ ...f, termsContent: e.target.value }))} dir="rtl" rows={5} placeholder="اكتب شروط الاستخدام هنا..." />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>نص سياسة الخصوصية (للصفحة الداخلية)</Label>
+                  <Textarea value={form.privacyContent ?? ""} onChange={e => setForm(f => ({ ...f, privacyContent: e.target.value }))} dir="rtl" rows={5} placeholder="اكتب سياسة الخصوصية هنا..." />
+                </div>
+                <Button onClick={() => handleSave({
+                  termsUrl: form.termsUrl, privacyUrl: form.privacyUrl, refundUrl: form.refundUrl,
+                  termsContent: form.termsContent, privacyContent: form.privacyContent,
+                })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ الصفحات القانونية
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ── FAQ ─────────────────────────────────────────────────── */}
         <TabsContent value="faq">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
@@ -427,6 +627,334 @@ export default function AdminSettings() {
           </Card>
         </TabsContent>
 
+        {/* ── SEO & Analytics ─────────────────────────────────────── */}
+        <TabsContent value="seo">
+          <div className="space-y-6">
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Search className="w-5 h-5 text-teal-600" /> إعدادات SEO</CardTitle>
+                <CardDescription>بيانات تحسين محركات البحث تظهر في نتائج جوجل</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label>عنوان الصفحة الرئيسية (Meta Title)</Label>
+                  <Input dir="rtl" value={form.metaTitle ?? ""} onChange={e => setForm(f => ({ ...f, metaTitle: e.target.value }))} placeholder="سمارت لاينز للنظم المتطورة — خدمات محلية موثوقة" />
+                  <p className="text-xs text-slate-400">يُنصح بـ 50-60 حرفاً · الحالي: {(form.metaTitle ?? "").length}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>وصف الصفحة (Meta Description)</Label>
+                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة سمارت لاينز للنظم المتطورة تربطك بأفضل مزودي الخدمات المحلية الموثوقين في مصر." />
+                  <p className="text-xs text-slate-400">يُنصح بـ 150-160 حرفاً · الحالي: {(form.metaDescription ?? "").length}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>الكلمات المفتاحية (Keywords)</Label>
+                  <Input dir="rtl" value={form.metaKeywords ?? ""} onChange={e => setForm(f => ({ ...f, metaKeywords: e.target.value }))} placeholder="خدمات منزلية، صيانة، نظافة، طعام بيتي" />
+                  <p className="text-xs text-slate-400">افصل الكلمات بفاصلة</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>رابط صورة المشاركة (OG Image)</Label>
+                  <Input dir="ltr" value={form.ogImage ?? ""} onChange={e => setForm(f => ({ ...f, ogImage: e.target.value }))} placeholder="https://example.com/og-image.jpg" />
+                  <p className="text-xs text-slate-400">الصورة التي تظهر عند مشاركة الموقع على السوشيال ميديا (1200×630 بكسل)</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>رابط الموقع الرسمي (Canonical URL)</Label>
+                  <Input dir="ltr" value={form.siteUrl ?? ""} onChange={e => setForm(f => ({ ...f, siteUrl: e.target.value }))} placeholder="https://www.dalilsmartlines.com" />
+                </div>
+                <Button onClick={() => handleSave({
+                  metaTitle: form.metaTitle, metaDescription: form.metaDescription,
+                  metaKeywords: form.metaKeywords, ogImage: form.ogImage, siteUrl: form.siteUrl,
+                })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعدادات SEO
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded bg-orange-500 flex items-center justify-center text-white text-[10px] font-bold">GA</span>
+                  أكواد التتبع والتحليلات
+                </CardTitle>
+                <CardDescription>Google Analytics وFacebook Pixel وGoogle Tag Manager</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-orange-400 text-white text-[9px] flex items-center justify-center font-bold">G</span>
+                    Google Analytics 4 — Measurement ID
+                  </Label>
+                  <Input dir="ltr" value={form.gaTrackingId ?? ""} onChange={e => setForm(f => ({ ...f, gaTrackingId: e.target.value }))} placeholder="G-XXXXXXXXXX" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-blue-600 text-white text-[9px] flex items-center justify-center font-bold">FB</span>
+                    Facebook Pixel ID
+                  </Label>
+                  <Input dir="ltr" value={form.fbPixelId ?? ""} onChange={e => setForm(f => ({ ...f, fbPixelId: e.target.value }))} placeholder="XXXXXXXXXXXXXXXXXX" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-blue-500 text-white text-[9px] flex items-center justify-center font-bold">GT</span>
+                    Google Tag Manager ID
+                  </Label>
+                  <Input dir="ltr" value={form.gtmId ?? ""} onChange={e => setForm(f => ({ ...f, gtmId: e.target.value }))} placeholder="GTM-XXXXXXX" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-green-600 text-white text-[9px] flex items-center justify-center font-bold">SC</span>
+                    Google Search Console Verification Code
+                  </Label>
+                  <Input dir="ltr" value={form.searchConsoleVerify ?? ""} onChange={e => setForm(f => ({ ...f, searchConsoleVerify: e.target.value }))} placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>كود تتبع مخصص (Custom Head Script)</Label>
+                  <Textarea dir="ltr" rows={4} value={form.customHeadScript ?? ""} onChange={e => setForm(f => ({ ...f, customHeadScript: e.target.value }))} placeholder={'<script><!-- custom tracking code --></script>'} className="font-mono text-xs" />
+                  <p className="text-xs text-slate-400">يُضاف في قسم &lt;head&gt; من كل صفحة</p>
+                </div>
+                <Button onClick={() => handleSave({
+                  gaTrackingId: form.gaTrackingId, fbPixelId: form.fbPixelId,
+                  gtmId: form.gtmId, searchConsoleVerify: form.searchConsoleVerify,
+                  customHeadScript: form.customHeadScript,
+                })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ أكواد التتبع
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ── SMTP ────────────────────────────────────────────────── */}
+        <TabsContent value="smtp">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-teal-600" /> إعدادات خادم البريد (SMTP)</CardTitle>
+              <CardDescription>إعدادات إرسال البريد الإلكتروني من المنصة — ترحيب، تأكيد، إشعارات</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800 leading-relaxed" dir="rtl">
+                <p className="font-semibold mb-1">📧 مزودو SMTP الشائعون:</p>
+                <div className="grid grid-cols-2 gap-1 text-xs">
+                  <span>Gmail: smtp.gmail.com (منفذ 587)</span>
+                  <span>Outlook: smtp-mail.outlook.com (587)</span>
+                  <span>SendGrid: smtp.sendgrid.net (587)</span>
+                  <span>Mailgun: smtp.mailgun.org (587)</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label>خادم SMTP (Host)</Label>
+                  <Input dir="ltr" value={smtpForm.smtpHost} onChange={e => setSmtpForm(s => ({ ...s, smtpHost: e.target.value }))} placeholder="smtp.gmail.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>المنفذ (Port)</Label>
+                  <Input dir="ltr" value={smtpForm.smtpPort} onChange={e => setSmtpForm(s => ({ ...s, smtpPort: e.target.value }))} placeholder="587" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <Switch
+                  checked={smtpForm.smtpSecure === "true"}
+                  onCheckedChange={v => setSmtpForm(s => ({ ...s, smtpSecure: v ? "true" : "false" }))}
+                />
+                <div>
+                  <p className="text-sm font-medium">استخدام SSL/TLS</p>
+                  <p className="text-xs text-slate-500">فعّل للمنفذ 465، وأوقف للمنافذ 587 أو 25</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>اسم المستخدم (Username / Email)</Label>
+                  <Input dir="ltr" value={smtpForm.smtpUser} onChange={e => setSmtpForm(s => ({ ...s, smtpUser: e.target.value }))} placeholder="your@gmail.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>كلمة المرور / App Password</Label>
+                  <div className="relative">
+                    <Input dir="ltr" type={showSmtpPass ? "text" : "password"} value={smtpForm.smtpPass} onChange={e => setSmtpForm(s => ({ ...s, smtpPass: e.target.value }))} placeholder="••••••••••••" />
+                    <button type="button" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      onClick={() => setShowSmtpPass(v => !v)}>
+                      {showSmtpPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>اسم المرسل (From Name)</Label>
+                  <Input dir="rtl" value={smtpForm.smtpFromName} onChange={e => setSmtpForm(s => ({ ...s, smtpFromName: e.target.value }))} placeholder="سمارت لاينز للنظم المتطورة" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>بريد المرسل (From Email)</Label>
+                  <Input dir="ltr" value={smtpForm.smtpFromEmail} onChange={e => setSmtpForm(s => ({ ...s, smtpFromEmail: e.target.value }))} placeholder="noreply@dalilsmartlines.com" />
+                </div>
+              </div>
+
+              {smtpTestResult && (
+                <div className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium ${smtpTestResult.ok ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"}`}>
+                  {smtpTestResult.ok ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
+                  {smtpTestResult.msg}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <Button onClick={handleSmtpSave} disabled={smtpLoading} className="bg-teal-600 hover:bg-teal-700">
+                  {smtpLoading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعدادات البريد
+                </Button>
+                <Button variant="outline" onClick={handleSmtpTest} disabled={smtpTesting || !smtpForm.smtpHost} className="gap-2">
+                  {smtpTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  اختبار الاتصال
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Platform Rules ──────────────────────────────────────── */}
+        <TabsContent value="platform">
+          <div className="space-y-6">
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-teal-600" /> إعدادات التسجيل والموافقة</CardTitle>
+                <CardDescription>التحكم في التسجيل وآلية قبول مزودي الخدمات</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <div>
+                    <p className="font-medium text-sm">السماح بتسجيل مستخدمين جدد</p>
+                    <p className="text-xs text-slate-500 mt-0.5">عند التعطيل، لن يتمكن أحد من إنشاء حساب جديد</p>
+                  </div>
+                  <Switch
+                    checked={allowRegistration}
+                    onCheckedChange={v => setForm(f => ({ ...f, allowRegistration: v ? "true" : "false" }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <div>
+                    <p className="font-medium text-sm">مراجعة حسابات مزودي الخدمة</p>
+                    <p className="text-xs text-slate-500 mt-0.5">يحتاج مزودو الخدمة موافقة الأدمن قبل الظهور في القوائم</p>
+                  </div>
+                  <Switch
+                    checked={requireApproval}
+                    onCheckedChange={v => setForm(f => ({ ...f, requireProviderApproval: v ? "true" : "false" }))}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>الحد الأقصى لصور الخدمة</Label>
+                    <Input type="number" min="1" max="20" value={form.maxServiceImages ?? "5"} onChange={e => setForm(f => ({ ...f, maxServiceImages: e.target.value }))} dir="ltr" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>الحد الأقصى لعدد الخدمات (لكل مزود)</Label>
+                    <Input type="number" min="1" value={form.maxServicesPerProvider ?? "20"} onChange={e => setForm(f => ({ ...f, maxServicesPerProvider: e.target.value }))} dir="ltr" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>الحد الأدنى لنص الخدمة (أحرف)</Label>
+                    <Input type="number" min="10" value={form.minServiceDescLength ?? "50"} onChange={e => setForm(f => ({ ...f, minServiceDescLength: e.target.value }))} dir="ltr" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>مدة انتهاء الجلسة (دقائق)</Label>
+                    <Input type="number" min="15" value={form.sessionTimeoutMinutes ?? "1440"} onChange={e => setForm(f => ({ ...f, sessionTimeoutMinutes: e.target.value }))} dir="ltr" />
+                  </div>
+                </div>
+                <Button onClick={() => handleSave({
+                  allowRegistration: form.allowRegistration,
+                  requireProviderApproval: form.requireProviderApproval,
+                  maxServiceImages: form.maxServiceImages,
+                  maxServicesPerProvider: form.maxServicesPerProvider,
+                  minServiceDescLength: form.minServiceDescLength,
+                  sessionTimeoutMinutes: form.sessionTimeoutMinutes,
+                })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعدادات التسجيل
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">💰 إعدادات المالية والعمولة</CardTitle>
+                <CardDescription>نسبة العمولة العامة ورمز العملة والإعدادات المالية</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>نسبة العمولة العامة (%)</Label>
+                    <Input type="number" min="0" max="100" step="0.5" value={form.commissionPercent ?? "10"} onChange={e => setForm(f => ({ ...f, commissionPercent: e.target.value }))} dir="ltr" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>رمز العملة</Label>
+                    <Input dir="ltr" value={form.currencySymbol ?? "ج.م"} onChange={e => setForm(f => ({ ...f, currencySymbol: e.target.value }))} placeholder="ج.م" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>اسم العملة</Label>
+                    <Input dir="rtl" value={form.currencyName ?? "جنيه مصري"} onChange={e => setForm(f => ({ ...f, currencyName: e.target.value }))} placeholder="جنيه مصري" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>الحد الأدنى لمبلغ الطلب</Label>
+                    <Input type="number" min="0" value={form.minOrderAmount ?? "0"} onChange={e => setForm(f => ({ ...f, minOrderAmount: e.target.value }))} dir="ltr" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>الحد الأقصى لمبلغ الطلب</Label>
+                    <Input type="number" min="0" value={form.maxOrderAmount ?? ""} onChange={e => setForm(f => ({ ...f, maxOrderAmount: e.target.value }))} dir="ltr" placeholder="بلا حد أقصى" />
+                  </div>
+                </div>
+                <Button onClick={() => handleSave({
+                  commissionPercent: form.commissionPercent,
+                  currencySymbol: form.currencySymbol, currencyName: form.currencyName,
+                  minOrderAmount: form.minOrderAmount, maxOrderAmount: form.maxOrderAmount,
+                })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ الإعدادات المالية
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-amber-700">
+                  <AlertTriangle className="w-5 h-5 text-amber-500" /> وضع الصيانة
+                </CardTitle>
+                <CardDescription>عند التفعيل، يُعرض على الزوار رسالة الصيانة بدلاً من الموقع</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className={`flex items-center justify-between p-4 rounded-xl border-2 transition-colors ${isMaintenance ? "bg-amber-50 border-amber-300" : "bg-slate-50 border-slate-200"}`}>
+                  <div>
+                    <p className="font-semibold text-sm">{isMaintenance ? "⚠️ وضع الصيانة مفعّل" : "الموقع يعمل بشكل طبيعي"}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{isMaintenance ? "الزوار يرون رسالة الصيانة الآن" : "فعّل لإظهار صفحة الصيانة للزوار"}</p>
+                  </div>
+                  <Switch
+                    checked={isMaintenance}
+                    onCheckedChange={v => setForm(f => ({ ...f, maintenanceMode: v ? "true" : "false" }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>رسالة الصيانة</Label>
+                  <Textarea dir="rtl" rows={3} value={form.maintenanceMessage ?? ""} onChange={e => setForm(f => ({ ...f, maintenanceMessage: e.target.value }))} placeholder="نقوم حالياً بصيانة وتحديث المنصة لتقديم تجربة أفضل. سنعود قريباً! 🔧" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>وقت العودة المتوقع</Label>
+                    <Input dir="ltr" value={form.maintenanceEnd ?? ""} onChange={e => setForm(f => ({ ...f, maintenanceEnd: e.target.value }))} placeholder="السبت 3:00 ص" />
+                  </div>
+                </div>
+                <Button onClick={() => handleSave({
+                  maintenanceMode: form.maintenanceMode,
+                  maintenanceMessage: form.maintenanceMessage,
+                  maintenanceEnd: form.maintenanceEnd,
+                })} disabled={saveMutation.isPending}
+                  className={isMaintenance ? "bg-amber-500 hover:bg-amber-600" : "bg-teal-600 hover:bg-teal-700"}>
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعدادات الصيانة
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ── Security ────────────────────────────────────────────── */}
         <TabsContent value="security">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
@@ -436,32 +964,59 @@ export default function AdminSettings() {
             <CardContent className="space-y-4 max-w-md">
               <div className="space-y-1.5">
                 <Label>{t("currentPass")}</Label>
-                <Input type="password" value={newPassword.current} onChange={e => setNewPassword(p => ({ ...p, current: e.target.value }))} />
+                <div className="relative">
+                  <Input type={showCurrentPass ? "text" : "password"} value={newPassword.current} onChange={e => setNewPassword(p => ({ ...p, current: e.target.value }))} />
+                  <button type="button" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" onClick={() => setShowCurrentPass(v => !v)}>
+                    {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("newPass")}</Label>
-                <Input type="password" value={newPassword.newPass} onChange={e => setNewPassword(p => ({ ...p, newPass: e.target.value }))} />
+                <div className="relative">
+                  <Input type={showNewPass ? "text" : "password"} value={newPassword.newPass} onChange={e => setNewPassword(p => ({ ...p, newPass: e.target.value }))} />
+                  <button type="button" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" onClick={() => setShowNewPass(v => !v)}>
+                    {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {newPassword.newPass && (
+                  <div className="flex gap-1 mt-1">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
+                        newPassword.newPass.length >= i * 3
+                          ? i <= 1 ? "bg-red-400" : i === 2 ? "bg-yellow-400" : i === 3 ? "bg-blue-400" : "bg-green-500"
+                          : "bg-slate-200"
+                      }`} />
+                    ))}
+                    <span className="text-xs text-slate-400 mr-1">
+                      {newPassword.newPass.length < 4 ? "ضعيفة" : newPassword.newPass.length < 8 ? "متوسطة" : newPassword.newPass.length < 12 ? "جيدة" : "قوية"}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label>{t("confirmPass")}</Label>
                 <Input type="password" value={newPassword.confirm} onChange={e => setNewPassword(p => ({ ...p, confirm: e.target.value }))} />
                 {newPassword.confirm && newPassword.newPass !== newPassword.confirm && (
-                  <p className="text-xs text-red-500">{t("passMismatch")}</p>
+                  <p className="text-xs text-red-500 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {t("passMismatch")}</p>
+                )}
+                {newPassword.confirm && newPassword.newPass === newPassword.confirm && newPassword.confirm.length > 0 && (
+                  <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> كلمتا المرور متطابقتان</p>
                 )}
               </div>
               <Button
                 className="bg-teal-600 hover:bg-teal-700"
-                disabled={!newPassword.current || !newPassword.newPass || newPassword.newPass !== newPassword.confirm}
-                onClick={() => {
-                  toast({ title: t("passUpdated"), description: t("passUpdatedDesc") });
-                  setNewPassword({ current: "", newPass: "", confirm: "" });
-                }}
+                disabled={passLoading || !newPassword.current || !newPassword.newPass || newPassword.newPass !== newPassword.confirm || newPassword.newPass.length < 6}
+                onClick={handleChangePassword}
               >
-                <Lock className="w-4 h-4 me-2" />{t("changePasswordBtn")}
+                {passLoading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Lock className="w-4 h-4 me-2" />}
+                {t("changePasswordBtn")}
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ── Google OAuth ─────────────────────────────────────────── */}
         <TabsContent value="google">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
@@ -494,7 +1049,8 @@ export default function AdminSettings() {
                   <span>سيظهر زر "تسجيل الدخول بجوجل" في صفحتي الدخول والتسجيل</span>
                 </div>
               )}
-              <Button onClick={() => handleSave({ googleClientId: form.googleClientId ?? "", googleClientSecret: form.googleClientSecret ?? "" })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+              <Button onClick={() => handleSave({ googleClientId: form.googleClientId, googleClientSecret: form.googleClientSecret })}
+                disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
                 {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
                 {t("saveGoogle")}
               </Button>
@@ -502,6 +1058,7 @@ export default function AdminSettings() {
           </Card>
         </TabsContent>
 
+        {/* ── Appearance ──────────────────────────────────────────── */}
         <TabsContent value="appearance">
           <AppearanceTab settings={form} />
         </TabsContent>
