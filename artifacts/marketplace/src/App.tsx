@@ -57,6 +57,7 @@ import AdminProperties from "@/pages/admin/properties";
 import AdminPropertyEdit from "@/pages/admin/property-edit";
 import AdminWatermark from "@/pages/admin/watermark";
 import AdminSeo from "@/pages/admin/seo";
+import AdminGoogleKit from "@/pages/admin/google-kit";
 import AdminEmailTemplates from "@/pages/admin/email-templates";
 import AdminMessages from "@/pages/admin/messages";
 import AdminPlansCommissions from "@/pages/admin/plans-commissions";
@@ -276,6 +277,9 @@ function Router() {
       </Route>
       <Route path="/admin/seo">
         {() => <AdminProtectedRoute component={AdminSeo} />}
+      </Route>
+      <Route path="/admin/google-kit">
+        {() => <AdminProtectedRoute component={AdminGoogleKit} />}
       </Route>
       <Route path="/admin/commission">
         {() => <AdminProtectedRoute component={AdminCommission} />}

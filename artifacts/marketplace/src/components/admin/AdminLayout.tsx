@@ -192,7 +192,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: MessageSquare,   label: "الرسائل والقوالب",   href: "/admin/messages",         perm: "settings" },
     { icon: Mail,            label: "البريد الإلكتروني", href: "/admin/email-templates",  perm: "settings" },
     { icon: Layers3,         label: "الباقات والعمولات", href: "/admin/plans-commissions", perm: "commission" },
-    { icon: KeyRound,        label: "إعدادات جوجل",       href: "/admin/settings?tab=google", perm: "settings" },
+    { icon: KeyRound,        label: "Google Kit",            href: "/admin/google-kit",          perm: "settings" },
     { icon: Settings,        label: t("settings"),        href: "/admin/settings",         perm: "settings" },
   ];
 
