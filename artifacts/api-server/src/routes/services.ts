@@ -1,9 +1,63 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { servicesTable, providersTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { servicesTable, providersTable, categoriesTable, usersTable } from "@workspace/db";
+import { eq, and, ilike, gte, lte } from "drizzle-orm";
 
 const router = Router();
+
+/* ── Public: list all active services (with provider + category info) ── */
+router.get("/services", async (req, res) => {
+  try {
+    const { search, category, city, priceMin, priceMax } = req.query as Record<string, string>;
+
+    const rows = await db
+      .select({
+        id: servicesTable.id,
+        title: servicesTable.title,
+        description: servicesTable.description,
+        price: servicesTable.price,
+        subcategory: servicesTable.subcategory,
+        img: servicesTable.img,
+        status: servicesTable.status,
+        createdAt: servicesTable.createdAt,
+        providerId: servicesTable.providerId,
+        providerName: usersTable.name,
+        providerAvatar: providersTable.avatar,
+        providerCity: providersTable.city,
+        providerApproved: providersTable.approved,
+        providerSuspended: providersTable.suspended,
+        categoryId: categoriesTable.id,
+        categoryNameAr: categoriesTable.nameAr,
+      })
+      .from(servicesTable)
+      .leftJoin(providersTable, eq(servicesTable.providerId, providersTable.id))
+      .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
+      .leftJoin(categoriesTable, eq(servicesTable.categoryId, categoriesTable.id))
+      .where(
+        and(
+          eq(servicesTable.status, "active"),
+          search ? ilike(servicesTable.title, `%${search}%`) : undefined,
+          category && category !== "all" ? eq(servicesTable.categoryId, parseInt(category)) : undefined,
+          priceMin ? gte(servicesTable.price, priceMin) : undefined,
+          priceMax ? lte(servicesTable.price, priceMax) : undefined,
+        )
+      )
+      .orderBy(servicesTable.createdAt);
+
+    // Filter by city (on provider) if requested — done in JS since city is on provider
+    const cityFiltered = city && city !== "all"
+      ? rows.filter(r => r.providerCity?.toLowerCase().includes(city.toLowerCase()))
+      : rows;
+
+    // Only show services from approved, non-suspended providers
+    const visible = cityFiltered.filter(r => r.providerApproved && !r.providerSuspended);
+
+    res.json({ success: true, data: visible });
+  } catch (err) {
+    console.error("GET /services error:", err);
+    res.status(500).json({ success: false, error: "Failed to fetch services" });
+  }
+});
 
 router.get("/providers/:providerId/services", async (req, res) => {
   try {

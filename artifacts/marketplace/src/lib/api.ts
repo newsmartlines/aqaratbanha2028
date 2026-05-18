@@ -189,6 +189,22 @@ export interface Listing extends Service {
   providerName: string;
   categoryNameAr: string | null;
 }
+export interface PublicService {
+  id: number;
+  title: string;
+  description: string | null;
+  price: string | null;
+  subcategory: string | null;
+  img: string | null;
+  status: string;
+  createdAt: string;
+  providerId: number;
+  providerName: string | null;
+  providerAvatar: string | null;
+  providerCity: string | null;
+  categoryId: number | null;
+  categoryNameAr: string | null;
+}
 export interface Review {
   id: number;
   rating: number;
@@ -612,6 +628,8 @@ export const api = {
   },
 
   services: {
+    listAll: async (params?: Record<string, string | undefined>) =>
+      ensureArray<import("./api").PublicService>(await fetchJson(`/services${qs(params)}`)),
     list: async (providerId: number) => ensureArray<Service>(await fetchJson(`/providers/${providerId}/services`)),
     create: (providerId: number, data: unknown) =>
       fetchJson<Service>(`/providers/${providerId}/services`, { method: "POST", body: JSON.stringify(data) }),

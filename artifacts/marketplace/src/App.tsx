@@ -63,6 +63,7 @@ import AdminMessages from "@/pages/admin/messages";
 import AdminPlansCommissions from "@/pages/admin/plans-commissions";
 import PropertyDetail from "@/pages/property-detail";
 import PropertiesPage from "@/pages/properties";
+import ServicesPage from "@/pages/services";
 import CategoriesPage from "@/pages/categories";
 import AboutPage from "@/pages/about";
 import ContactPage from "@/pages/contact";
@@ -161,6 +162,7 @@ function Router() {
       <Route path="/provider/:id" component={ProviderPage} />
       <Route path="/properties" component={PropertiesPage} />
       <Route path="/property/:id" component={PropertyDetail} />
+      <Route path="/services" component={ServicesPage} />
       <Route path="/categories" component={CategoriesPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/contact" component={ContactPage} />

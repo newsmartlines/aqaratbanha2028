@@ -29,10 +29,9 @@ export function Header() {
 
   const navLinks = [
     { href: "/", label: "الرئيسية" },
-    { href: "/home2", label: "رئيسية 2" },
-    { href: "/categories", label: "التصنيفات" },
-    { href: "/search", label: "البحث" },
     { href: "/properties", label: "العقارات" },
+    { href: "/services", label: "الخدمات" },
+    { href: "/categories", label: "التصنيفات" },
     { href: "/about", label: "من نحن" },
     { href: "/contact", label: "تواصل معنا" },
     { href: "/faq", label: "الأسئلة الشائعة" },
