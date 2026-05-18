@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { X, Upload, Plus, Camera, MapPin, CheckCircle2, ChevronLeft, ChevronRight, Check, Phone, MessageCircle, Mail, Video, User, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import toastHot from "react-hot-toast";
-import { api, type Region } from "@/lib/api";
+import { api, type Region, type Package } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -68,7 +68,8 @@ export default function Onboarding() {
   const [services, setServices] = useState([{ id: 1, title: "", desc: "", price: "" }]);
   const [gallery, setGallery] = useState<string[]>([]);
   const [contact, setContact] = useState({ showPhone: true, whatsapp: "", visible: true });
-  const [plan, setPlan] = useState("free");
+  const [selectedPkgId, setSelectedPkgId] = useState<number | null>(null);
+  const { data: packages = [] } = useQuery<Package[]>({ queryKey: ["packages"], queryFn: api.packages.list });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
@@ -226,16 +227,8 @@ export default function Onboarding() {
       }
 
       // 4. Paid plan? Directly subscribe.
-      if (plan !== "free") {
-        const packages = await api.packages.list();
-        const matchPkg = packages.find(p =>
-          plan === "bronze"
-            ? parseFloat(p.price) > 0 && parseFloat(p.price) <= 150
-            : parseFloat(p.price) > 150
-        );
-        if (matchPkg) {
-          await api.subscriptions.subscribe(providerId, matchPkg.id);
-        }
+      if (selectedPkgId !== null) {
+        await api.subscriptions.subscribe(providerId, selectedPkgId);
       }
 
       await refetchAuth();
@@ -619,105 +612,65 @@ export default function Onboarding() {
     </div>
   );
 
-  const renderStep6 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
-      <div className="text-center md:text-start mb-8">
-        <h2 className="text-3xl font-bold mb-2">اختر باقتك</h2>
-        <p className="text-muted-foreground">اختر الباقة التي تناسب حجم نشاطك</p>
+  const renderStep6 = () => {
+    const freePkg = packages.find(p => parseFloat(p.price) === 0) ?? packages[0];
+    const midIdx = Math.floor((packages.length - 1) / 2);
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+        <div className="text-center md:text-start mb-8">
+          <h2 className="text-3xl font-bold mb-2">اختر باقتك</h2>
+          <p className="text-muted-foreground">اختر الباقة التي تناسب حجم نشاطك</p>
+        </div>
+        {packages.length === 0 ? (
+          <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+        ) : (
+          <div className={`grid grid-cols-1 gap-6 ${packages.length === 2 ? "md:grid-cols-2" : packages.length >= 3 ? "md:grid-cols-3" : ""}`}>
+            {packages.map((pkg, idx) => {
+              const isFree = parseFloat(pkg.price) === 0;
+              const isRecommended = packages.length >= 3 && idx === midIdx && !isFree;
+              const isSelected = selectedPkgId === pkg.id || (selectedPkgId === null && pkg.id === freePkg?.id);
+              return (
+                <Card key={pkg.id}
+                  className={`cursor-pointer transition-all duration-300 relative overflow-hidden ${isRecommended ? "md:-translate-y-4 md:scale-105 border-primary/30 shadow-md hover:border-primary/80" : "border-border/60 hover:border-primary/50 hover:shadow-sm"} ${isSelected ? "border-primary shadow-xl ring-2 ring-primary" : ""}`}
+                  onClick={() => setSelectedPkgId(isFree ? null : pkg.id)}>
+                  {isRecommended && <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">موصى به</div>}
+                  <CardContent className={`p-6 flex flex-col h-full ${isRecommended ? "pt-8 bg-primary/5" : ""}`}>
+                    <div className="mb-4">
+                      <h3 className={`font-bold text-xl mb-2 ${isRecommended ? "text-primary" : ""}`}>{pkg.nameAr}</h3>
+                      <div className="flex items-baseline gap-1">
+                        {isFree
+                          ? <span className="text-3xl font-black">مجاناً</span>
+                          : <><span className={`text-4xl font-black ${isRecommended ? "text-primary" : ""}`}>{pkg.price}</span><span className="text-muted-foreground text-sm">ج.م / {pkg.durationDays <= 31 ? "شهر" : `${pkg.durationDays} يوم`}</span></>}
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t border-border/40 mb-6 space-y-2 text-xs text-muted-foreground flex-1">
+                      <div className="flex justify-between"><span>عمولة المنصة</span><span className="font-bold text-foreground">{pkg.commissionRate}%</span></div>
+                      <div className="flex justify-between"><span>أولوية البحث</span><span className="font-bold text-foreground">{pkg.priorityRank > 1 ? "مميزة" : "عادية"}</span></div>
+                      <div className="flex justify-between"><span>الإعلانات المميزة</span><span className="font-bold text-foreground">{pkg.featuredAllowed ? `حتى ${pkg.featuredAllowed}` : "غير متاح"}</span></div>
+                      {pkg.maxListings && <div className="flex justify-between"><span>الحد الأقصى للإعلانات</span><span className="font-bold text-foreground">{pkg.maxListings}</span></div>}
+                    </div>
+                    <div className={`text-center py-2.5 rounded-lg font-bold text-sm transition-colors ${isSelected ? "bg-primary text-primary-foreground" : isRecommended ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
+                      {isSelected ? "مختار" : isFree ? "اختر المجاني" : "اشترك الآن"}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Free Plan */}
-        <Card 
-          className={`cursor-pointer transition-all duration-300 relative overflow-hidden ${plan === "free" ? "border-primary shadow-md ring-1 ring-primary" : "border-border/60 hover:border-primary/50 hover:shadow-sm"}`}
-          onClick={() => setPlan("free")}
-        >
-          <CardContent className="p-6 flex flex-col h-full">
-            <div className="mb-4">
-              <h3 className="font-bold text-xl mb-2">مجاني</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-black">مجاناً</span>
-              </div>
-            </div>
-            <ul className="space-y-3 mb-8 flex-1 text-sm">
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> ملف شخصي أساسي</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> ظهور في البحث</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> حتى 3 خدمات</li>
-            </ul>
-            <div className="pt-4 border-t border-border/40 mb-6 space-y-2 text-xs text-muted-foreground">
-              <div className="flex justify-between"><span>عمولة المنصة</span><span className="font-bold text-foreground">15%</span></div>
-              <div className="flex justify-between"><span>أولوية البحث</span><span className="font-bold text-foreground">عادية</span></div>
-              <div className="flex justify-between"><span>إعلانات مميزة</span><span className="font-bold text-foreground">غير متاح</span></div>
-            </div>
-            <div className={`text-center py-2.5 rounded-lg font-bold text-sm transition-colors ${plan === "free" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
-              اختر المجاني
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bronze Plan */}
-        <Card 
-          className={`cursor-pointer transition-all duration-300 relative overflow-hidden md:-translate-y-4 md:scale-105 ${plan === "bronze" ? "border-primary shadow-xl ring-2 ring-primary" : "border-primary/30 shadow-md hover:border-primary/80"}`}
-          onClick={() => setPlan("bronze")}
-        >
-          <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">موصى به</div>
-          <CardContent className="p-6 pt-8 flex flex-col h-full bg-primary/5">
-            <div className="mb-4">
-              <h3 className="font-bold text-xl mb-2 text-primary">برونزي</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-primary">٩٩</span>
-                <span className="text-muted-foreground font-medium">ج.م / شهر</span>
-              </div>
-            </div>
-            <ul className="space-y-3 mb-8 flex-1 text-sm font-medium">
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> كل مزايا المجاني</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> حتى 10 خدمات</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> ظهور مميز</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> شارة موثق</li>
-            </ul>
-            <div className={`text-center py-3 rounded-lg font-bold text-sm transition-colors ${plan === "bronze" ? "bg-primary text-primary-foreground" : "bg-primary/20 text-primary"}`}>
-              اشترك الآن
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Premium Plan */}
-        <Card 
-          className={`cursor-pointer transition-all duration-300 relative overflow-hidden ${plan === "premium" ? "border-primary shadow-md ring-1 ring-primary" : "border-border/60 hover:border-primary/50 hover:shadow-sm"}`}
-          onClick={() => setPlan("premium")}
-        >
-          <CardContent className="p-6 flex flex-col h-full">
-            <div className="mb-4">
-              <h3 className="font-bold text-xl mb-2">بريميوم</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-black">٢٤٩</span>
-                <span className="text-muted-foreground text-sm">ج.م / شهر</span>
-              </div>
-            </div>
-            <ul className="space-y-3 mb-8 flex-1 text-sm">
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> كل مزايا البرونزي</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> خدمات غير محدودة</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> أولوية في البحث</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> دعم مخصص</li>
-            </ul>
-            <div className={`text-center py-2.5 rounded-lg font-bold text-sm transition-colors ${plan === "premium" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
-              اشترك الآن
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderStep7 = () => {
     const selectedCategory = (categories as any[]).find((c: any) => c.id === selectedCategoryId);
     const selectedRegion = (regionsList as Region[]).find(r => r.id === locRegionId);
-    const planLabel =
-      plan === "free"
-        ? "مجاني"
-        : plan === "bronze"
-        ? "برونزي — ٩٩ ج.م / شهر"
-        : "بريميوم — ٢٤٩ ج.م / شهر";
+    const selectedPkg = packages.find(p => p.id === selectedPkgId);
+    const planLabel = selectedPkg
+      ? `${selectedPkg.nameAr} — ${parseFloat(selectedPkg.price) === 0 ? "مجاناً" : `${selectedPkg.price} ج.م / شهر`}`
+      : packages.length > 0
+      ? `${packages[0].nameAr} — مجاناً`
+      : "مجاني";
     const contactMethodLabels = selectedContactMethods
       .map(id => CONTACT_METHODS.find(m => m.id === id)?.label)
       .filter(Boolean) as string[];

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import toast from "react-hot-toast";
-import { api, type Region } from "@/lib/api";
+import { api, type Region, type Package } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 const DRAFT_KEY = "re_onboarding_draft";
@@ -101,7 +101,7 @@ interface FormDraft {
   nearbyServices: string[];
   contactMethods: string[];
   whatsapp: string;
-  plan: string;
+  plan: number | null;
 }
 
 const defaultDraft: FormDraft = {
@@ -115,7 +115,7 @@ const defaultDraft: FormDraft = {
   propDirection: "", propPaymentMethod: "",
   images: [], videoUrl: "", brochureUrl: "",
   features: [], nearbyServices: [],
-  contactMethods: [], whatsapp: "", plan: "free",
+  contactMethods: [], whatsapp: "", plan: null,
 };
 
 function loadDraft(): FormDraft {
@@ -142,6 +142,7 @@ export default function RealEstateOnboarding() {
   const imageFilesRef = useRef<File[]>([]);
 
   const [draft, setDraft] = useState<FormDraft>(loadDraft);
+  const { data: packages = [] } = useQuery<Package[]>({ queryKey: ["packages"], queryFn: api.packages.list });
 
   const updateDraft = useCallback((patch: Partial<FormDraft>) => {
     setDraft(prev => {
@@ -397,16 +398,8 @@ export default function RealEstateOnboarding() {
         contactMethods: draft.contactMethods,
       });
 
-      if (draft.plan !== "free") {
-        const packages = await api.packages.list();
-        const matchPkg = packages.find(p =>
-          draft.plan === "bronze"
-            ? parseFloat(p.price) > 0 && parseFloat(p.price) <= 150
-            : parseFloat(p.price) > 150
-        );
-        if (matchPkg) {
-          await api.subscriptions.subscribe(providerId, matchPkg.id);
-        }
+      if (draft.plan !== null) {
+        await api.subscriptions.subscribe(providerId, draft.plan);
       }
 
       await refetchAuth();
@@ -899,31 +892,41 @@ export default function RealEstateOnboarding() {
       </Card>
       <div>
         <Label className="text-base font-bold mb-4 block">اختر باقتك</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { id: "free", label: "مجاني", price: "مجاناً", features: ["ملف أساسي", "عقار واحد", "ظهور في البحث"], featured: false },
-            { id: "bronze", label: "برونزي", price: "٩٩ ج.م/شهر", features: ["حتى 10 عقارات", "ظهور مميز", "شارة موثق"], featured: true },
-            { id: "premium", label: "بريميوم", price: "٢٤٩ ج.م/شهر", features: ["عقارات غير محدودة", "أولوية البحث", "دعم مخصص"], featured: false },
-          ].map(p => {
-            const sel = draft.plan === p.id;
-            return (
-              <Card key={p.id} onClick={() => updateDraft({ plan: p.id })}
-                className={`cursor-pointer transition-all duration-300 relative overflow-hidden ${p.featured ? "md:-translate-y-2 md:scale-105" : ""} ${sel ? "border-primary shadow-lg ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40 hover:shadow-sm"}`}>
-                {p.featured && <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">موصى به</div>}
-                <CardContent className={`p-5 ${p.featured ? "pt-7 bg-primary/5" : ""}`}>
-                  <h3 className={`font-bold text-lg mb-1 ${p.featured ? "text-primary" : ""}`}>{p.label}</h3>
-                  <div className={`text-2xl font-black mb-4 ${p.featured ? "text-primary" : ""}`}>{p.price}</div>
-                  <ul className="space-y-2 text-sm">
-                    {p.features.map(f => <li key={f} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary shrink-0" />{f}</li>)}
-                  </ul>
-                  <div className={`mt-5 text-center py-2.5 rounded-lg font-bold text-sm transition-colors ${sel ? "bg-primary text-primary-foreground" : p.featured ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
-                    {sel ? "مختار" : "اختر"}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        {packages.length === 0 ? (
+          <div className="flex justify-center py-8"><Loader2 className="w-7 h-7 animate-spin text-primary" /></div>
+        ) : (() => {
+          const freePkg = packages.find(p => parseFloat(p.price) === 0) ?? packages[0];
+          const midIdx = Math.floor((packages.length - 1) / 2);
+          return (
+            <div className={`grid grid-cols-1 gap-4 ${packages.length === 2 ? "sm:grid-cols-2" : packages.length >= 3 ? "sm:grid-cols-3" : ""}`}>
+              {packages.map((pkg, idx) => {
+                const isFree = parseFloat(pkg.price) === 0;
+                const isRecommended = packages.length >= 3 && idx === midIdx && !isFree;
+                const isSelected = draft.plan === pkg.id || (draft.plan === null && pkg.id === freePkg?.id);
+                return (
+                  <Card key={pkg.id} onClick={() => updateDraft({ plan: isFree ? null : pkg.id })}
+                    className={`cursor-pointer transition-all duration-300 relative overflow-hidden ${isRecommended ? "md:-translate-y-2 md:scale-105" : ""} ${isSelected ? "border-primary shadow-lg ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40 hover:shadow-sm"}`}>
+                    {isRecommended && <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">موصى به</div>}
+                    <CardContent className={`p-5 ${isRecommended ? "pt-7 bg-primary/5" : ""}`}>
+                      <h3 className={`font-bold text-lg mb-1 ${isRecommended ? "text-primary" : ""}`}>{pkg.nameAr}</h3>
+                      <div className={`text-2xl font-black mb-3 ${isRecommended ? "text-primary" : ""}`}>
+                        {isFree ? "مجاناً" : `${pkg.price} ج.م/${pkg.durationDays <= 31 ? "شهر" : `${pkg.durationDays}ي`}`}
+                      </div>
+                      <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+                        <div className="flex justify-between"><span>العمولة</span><span className="font-bold text-foreground">{pkg.commissionRate}%</span></div>
+                        <div className="flex justify-between"><span>أولوية البحث</span><span className="font-bold text-foreground">{pkg.priorityRank > 1 ? "مميزة" : "عادية"}</span></div>
+                        {pkg.maxListings && <div className="flex justify-between"><span>الحد الأقصى</span><span className="font-bold text-foreground">{pkg.maxListings} إعلان</span></div>}
+                      </div>
+                      <div className={`mt-4 text-center py-2.5 rounded-lg font-bold text-sm transition-colors ${isSelected ? "bg-primary text-primary-foreground" : isRecommended ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
+                        {isSelected ? "مختار" : "اختر"}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
@@ -932,7 +935,11 @@ export default function RealEstateOnboarding() {
     const mainCat = MAIN_CATEGORIES.find(c => c.id === draft.mainCategory);
     const listType = LISTING_TYPES.find(l => l.id === draft.listingType);
     const regionName = (regionsList as Region[]).find(r => r.id === draft.locRegionId)?.nameAr;
-    const planLabel = { free: "مجاني", bronze: "برونزي — ٩٩ ج.م/شهر", premium: "بريميوم — ٢٤٩ ج.م/شهر" }[draft.plan] ?? "";
+    const selectedPkg = packages.find(p => p.id === draft.plan);
+    const freePkg = packages.find(p => parseFloat(p.price) === 0) ?? packages[0];
+    const planLabel = selectedPkg
+      ? `${selectedPkg.nameAr} — ${selectedPkg.price} ج.م/${selectedPkg.durationDays <= 31 ? "شهر" : `${selectedPkg.durationDays} يوم`}`
+      : freePkg ? `${freePkg.nameAr} — مجاناً` : "مجاني";
 
     const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
       <div className="grid grid-cols-3 gap-2 py-2 text-sm border-b border-border/30 last:border-0">
