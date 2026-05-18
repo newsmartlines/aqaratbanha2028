@@ -33,7 +33,6 @@ export function Header() {
     { href: "/categories", label: "التصنيفات" },
     { href: "/search", label: "البحث" },
     { href: "/properties", label: "العقارات" },
-    { href: "/add-property", label: "أضف عقارك" },
     { href: "/about", label: "من نحن" },
     { href: "/contact", label: "تواصل معنا" },
     { href: "/faq", label: "الأسئلة الشائعة" },
@@ -167,11 +166,6 @@ export function Header() {
               <Link href="/login">
                 <Button variant="ghost" className="text-sm font-medium hover:bg-secondary/50">تسجيل الدخول</Button>
               </Link>
-              <Link href="/add-property">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-5 shadow-sm">
-                  أضف عقارك
-                </Button>
-              </Link>
             </>
           )}
         </div>
@@ -223,9 +217,6 @@ export function Header() {
                 <>
                   <Link href="/login" onClick={() => setMobileOpen(false)}>
                     <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/50 rounded-lg cursor-pointer">تسجيل الدخول</span>
-                  </Link>
-                  <Link href="/add-property" onClick={() => setMobileOpen(false)}>
-                    <span className="block px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg cursor-pointer text-center">أضف عقارك</span>
                   </Link>
                 </>
               )}

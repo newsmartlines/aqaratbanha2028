@@ -88,7 +88,7 @@ L.Icon.Default.mergeOptions({
 const FALLBACK = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80";
 const MAP_CENTER: [number, number] = [24.7136, 46.6753];
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر"];
+const CITIES: string[] = [];
 const KINDS = ["فيلا", "شقة", "مكتب", "دوبلكس", "أرض"];
 const TYPES = ["للبيع", "للإيجار"];
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
@@ -325,26 +325,6 @@ export default function PropertiesPage() {
                 <div className="flex flex-wrap gap-2">
                   {KINDS.map((k) => (
                     <Chip key={k} label={k} active={selectedKind === k} onClick={() => setSelectedKind(selectedKind === k ? null : k)} />
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* City */}
-              <FilterSection title="المدينة">
-                <div className="flex flex-col gap-2">
-                  {CITIES.map((c) => (
-                    <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-                      <div
-                        onClick={() => setSelectedCity(selectedCity === c ? null : c)}
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedCity === c ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
-                      >
-                        {selectedCity === c && <div className="w-2 h-2 rounded-sm bg-white" />}
-                      </div>
-                      <span
-                        onClick={() => setSelectedCity(selectedCity === c ? null : c)}
-                        className={`text-sm transition-colors ${selectedCity === c ? "text-primary font-semibold" : "text-gray-600"}`}
-                      >{c}</span>
-                    </label>
                   ))}
                 </div>
               </FilterSection>
