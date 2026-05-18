@@ -412,19 +412,28 @@ router.post("/auth/change-password", async (req: Request, res) => {
 // ── Google OAuth ──────────────────────────────────────────────────────────────
 
 router.post("/auth/google", async (req, res) => {
-  const { credential } = req.body;
-  if (!credential) return res.status(400).json({ success: false, error: "credential required" });
+  const { credential, access_token } = req.body;
+  if (!credential && !access_token) return res.status(400).json({ success: false, error: "credential or access_token required" });
   const clientIdFromEnv = process.env.GOOGLE_CLIENT_ID;
   const [settingRow] = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, "googleClientId")).limit(1);
   const clientId = settingRow?.value || clientIdFromEnv;
   if (!clientId) return res.status(503).json({ success: false, error: "Google Sign-In not configured" });
   try {
-    const { OAuth2Client } = await import("google-auth-library");
-    const client = new OAuth2Client(clientId);
-    const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId });
-    const payload = ticket.getPayload();
-    if (!payload?.email) return res.status(400).json({ success: false, error: "Invalid Google credential" });
-    const { email, name, picture, sub: googleId } = payload;
+    let email: string, name: string | undefined, picture: string | undefined, googleId: string;
+    if (access_token) {
+      const resp = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
+      if (!resp.ok) return res.status(400).json({ success: false, error: "Invalid Google access_token" });
+      const info = await resp.json() as any;
+      if (!info.email) return res.status(400).json({ success: false, error: "Invalid Google credential" });
+      email = info.email; name = info.name; picture = info.picture; googleId = info.sub;
+    } else {
+      const { OAuth2Client } = await import("google-auth-library");
+      const client = new OAuth2Client(clientId);
+      const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId });
+      const payload = ticket.getPayload();
+      if (!payload?.email) return res.status(400).json({ success: false, error: "Invalid Google credential" });
+      email = payload.email; name = payload.name; picture = payload.picture; googleId = payload.sub!;
+    }
     let [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
     if (!user) {
       const [newUser] = await db.insert(usersTable).values({
