@@ -530,6 +530,12 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: homePropsRaw = [], isLoading: propsLoading } = useQuery<any[]>({
+    queryKey: ["home-properties"],
+    queryFn: () => api.properties.list({ status: "published" }),
+    staleTime: 2 * 60 * 1000,
+  });
+
   const heroCityOptions = useMemo(() => {
     const opts: { value: string; label: string }[] = [{ value: "__all__", label: "كل المدن" }];
     const addCity = (nameAr: string) => {
@@ -622,13 +628,10 @@ export default function Home() {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery);
-    if (heroRegionId != null) params.set("regionId", String(heroRegionId));
-    if (heroCityName) params.set("city", heroCityName);
     if (selectedCategory && selectedCategory !== "all") params.set("category", selectedCategory);
-    if (heroSubcategoryId && heroSubcategoryId !== "all") params.set("sub", heroSubcategoryId);
     if (listingType) params.set("type", listingType);
     if (priceRange && priceRange !== "all") params.set("price", priceRange);
-    setLocation(`/search?${params.toString()}`);
+    setLocation(`/properties?${params.toString()}`);
   };
 
   const handleNearMe = () => {
@@ -706,18 +709,23 @@ export default function Home() {
                 className="bg-card rounded-2xl shadow-xl border border-border/60 max-w-4xl transition-shadow hover:shadow-2xl duration-500 overflow-hidden"
               >
                 {/* Sale / Rent Tabs */}
-                <div className="flex border-b border-border/40">
+                <div className="relative flex border-b border-border/40 overflow-hidden">
                   {(["للبيع", "للإيجار"] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => setListingType(tab)}
-                      className={`flex-1 py-3.5 text-sm font-bold transition-colors ${
-                        listingType === tab
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted/50"
+                      className={`relative flex-1 py-4 text-sm font-bold transition-colors z-10 ${
+                        listingType === tab ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {tab === "للبيع" ? "🏷️ للبيع" : "🔑 للإيجار"}
+                      {listingType === tab && (
+                        <motion.span
+                          layoutId="tab-indicator"
+                          className="absolute inset-0 bg-primary"
+                          transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                        />
+                      )}
+                      <span className="relative z-10">{tab}</span>
                     </button>
                   ))}
                 </div>
@@ -851,28 +859,9 @@ export default function Home() {
                 </div>
 
                 {/* Footer row */}
-                <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <Button
-                      variant="ghost" size="sm"
-                      onClick={handleNearMe}
-                      disabled={nearMeLoading}
-                      className="text-primary hover:bg-primary/10 gap-1.5 rounded-full h-8 text-xs"
-                    >
-                      {nearMeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
-                      الأقرب لي
-                    </Button>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">اكتشف العقارات القريبة من موقعك</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs gap-1.5 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-semibold"
-                    onClick={() => setLocation("/add-property")}
-                  >
-                    <Building2 className="w-3.5 h-3.5" />
-                    أضف عقارك
-                  </Button>
+                <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center gap-2 flex-wrap">
+                  <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="text-xs text-muted-foreground">بنها — القليوبية — مصر</span>
                 </div>
               </motion.div>
 
@@ -910,391 +899,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── BROWSE BY CATEGORY — Horizontal pills with inline subcategories ── */}
-        <section className="py-10 bg-background border-b">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">تصفح حسب التصنيف</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">اختر تصنيفاً لعرض الفئات الفرعية</p>
-              </div>
-              <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/5 rounded-full gap-1" onClick={() => setLocation("/categories")}>
-                عرض الكل
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* Horizontal category strip */}
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
-              {(categories as Category[] | undefined)?.map((cat, i) => {
-                const Icon = ICON_MAP[cat.icon ?? "Grid"] ?? Grid;
-                const isActive = expandedCat === cat.id;
-                const colorClass = isActive ? ACTIVE_COLOR_MAP[i % ACTIVE_COLOR_MAP.length] : COLOR_MAP[i % COLOR_MAP.length];
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setExpandedCat(isActive ? null : cat.id)}
-                    className={`flex flex-col items-center gap-2 px-5 py-3 rounded-2xl border shrink-0 transition-all duration-200 ${isActive ? "border-primary/50 shadow-md scale-[1.03]" : "border-border/40 hover:border-primary/30 hover:shadow-sm bg-card"} ${isActive ? colorClass : ""}`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive ? "bg-white/20" : colorClass}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-xs font-semibold whitespace-nowrap">{cat.nameAr}</span>
-                    {getSubs(cat.id).length > 0 && (
-                      <span className={`text-[10px] ${isActive ? "text-white/70" : "text-muted-foreground"}`}>
-                        {getSubs(cat.id).length} فرعي
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Inline subcategories panel */}
-            {expandedCat && expandedCatObj && (
-              <div className="mt-4 p-4 rounded-2xl bg-secondary/30 border border-border/30 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex items-center gap-2 mb-3">
-                  {(() => {
-                    const Icon = ICON_MAP[expandedCatObj.icon ?? "Grid"] ?? Grid;
-                    return <Icon className="w-4 h-4 text-primary" />;
-                  })()}
-                  <span className="text-sm font-bold text-foreground">{expandedCatObj.nameAr}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">التصنيفات الفرعية</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${ACTIVE_COLOR_MAP[expandedCatIndex % ACTIVE_COLOR_MAP.length]} shadow-sm`}
-                    onClick={() => setLocation(`/search?category=${expandedCat}`)}
-                  >
-                    <Grid className="w-3 h-3" />
-                    عرض الكل
-                  </button>
-                  {getSubs(expandedCat).map(sub => {
-                    const SubIcon = ICON_MAP[sub.icon ?? "Grid"] ?? Grid;
-                    return (
-                      <button
-                        key={sub.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/50 text-xs font-medium bg-background hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all"
-                        onClick={() => setLocation(`/search?category=${expandedCat}&subcategory=${sub.id}`)}
-                      >
-                        <SubIcon className="w-3 h-3 text-muted-foreground" />
-                        {sub.nameAr}
-                      </button>
-                    );
-                  })}
-                  {getSubs(expandedCat).length === 0 && (
-                    <p className="text-xs text-muted-foreground">لا توجد تصنيفات فرعية</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ── NEAR ME SECTION ── */}
-        <section ref={nearMeRef} className="py-16 bg-gradient-to-b from-teal-50/60 via-background to-background border-b">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-bold">الأقرب إليك</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {userLocation ? "يتم عرض مقدمي الخدمات الأقرب إلى موقعك" : "اكتشف مقدمي الخدمات القريبين من موقعك"}
-                </p>
-              </div>
-              <Button
-                onClick={handleDetectLocation}
-                disabled={nearMeLoading}
-                className="bg-primary text-white rounded-full gap-2 shadow-md shadow-primary/20"
-              >
-                {nearMeLoading
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <Navigation className="w-4 h-4" />}
-                {userLocation ? "تحديث الموقع" : "حدد موقعي"}
-              </Button>
-            </div>
-
-            {/* Map */}
-            {showNearMeMap && userLocation && (
-              <div className="h-64 md:h-80 rounded-2xl overflow-hidden mb-6 border border-border/50 shadow-md">
-                <MapContainer
-                  key={`${userLocation.lat}-${userLocation.lng}`}
-                  center={[userLocation.lat, userLocation.lng]}
-                  zoom={11}
-                  className="h-full w-full"
-                  zoomControl={false}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  />
-                  <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
-                    <Popup>موقعك الحالي</Popup>
-                  </Marker>
-                  {(providers as Provider[] | undefined)?.map(p => {
-                    const coords = getProviderCoords(p);
-                    if (!coords) return null;
-                    return (
-                      <Marker key={p.id} position={coords}>
-                        <Popup>
-                          <div className="text-right min-w-[140px]">
-                            <p className="font-bold text-sm">{p.userName}</p>
-                            <p className="text-xs text-gray-500">{p.city ?? ""}</p>
-                            <p className="text-xs text-gray-400">{p.categoryNameAr ?? ""}</p>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-                </MapContainer>
-              </div>
-            )}
-
-            {!showNearMeMap && (
-              <div className="h-52 rounded-2xl border-2 border-dashed border-border/50 bg-secondary/20 flex flex-col items-center justify-center gap-3 mb-6 cursor-pointer hover:bg-primary/5 hover:border-primary/30 transition-all group" onClick={handleDetectLocation}>
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <Map className="w-7 h-7 text-primary" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground">انقر هنا للسماح بتحديد موقعك وعرض الخريطة</p>
-              </div>
-            )}
-
-            {/* Nearby providers carousel */}
-            {nearbyProviders.length > 0 ? (
-              <div className="flex overflow-x-auto gap-4 -mx-4 px-4 pb-2" style={{ scrollbarWidth: "none" }}>
-                {nearbyProviders.map((provider: any) => {
-                  const phoneDigits = (provider.phone ?? "").replace(/\D/g, "");
-                  const waDigits = ((provider.whatsapp ?? provider.phone ?? "") as string).replace(/\D/g, "");
-                  return (
-                  <div key={provider.id} className="min-w-[230px] shrink-0">
-                    <Card
-                      className="overflow-hidden group border-border/40 hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer h-full"
-                      onClick={() => setLocation(`/provider/${provider.id}`)}
-                    >
-                      <div className="relative h-32 overflow-hidden bg-muted">
-                        <img
-                          src={provider.avatar ?? DEFAULT_IMG}
-                          alt={provider.userName}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                        />
-                        <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                          {provider.featured && (
-                            <Badge className="bg-accent text-accent-foreground border-none text-[10px] px-2 py-0.5">مميز</Badge>
-                          )}
-                          {provider.verified && (
-                            <Badge className="bg-teal-500/95 text-white border-none text-[10px] px-2 py-0.5 gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> موثّق
-                            </Badge>
-                          )}
-                        </div>
-                        {userLocation && typeof provider.dist === "number" && provider.dist < 9999 && (
-                          <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <MapPin className="w-2.5 h-2.5" />
-                            {provider.dist < 1 ? "أقل من كم" : `${Math.round(provider.dist)} كم`}
-                          </div>
-                        )}
-                      </div>
-                      <CardContent className="p-3">
-                        <h3 className="font-bold text-sm truncate mb-0.5">{provider.userName}</h3>
-                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1">
-                          <MapPin className="w-3 h-3" />
-                          {provider.city ?? "مصر"}
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-accent text-accent" />
-                            <span className="text-xs font-bold">{parseFloat(provider.rating).toFixed(1)}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {phoneDigits && (
-                              <a
-                                href={`tel:${phoneDigits}`}
-                                onClick={(e) => e.stopPropagation()}
-                                title="اتصال"
-                                className="w-7 h-7 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-colors"
-                              >
-                                <Phone className="w-3.5 h-3.5" />
-                              </a>
-                            )}
-                            {waDigits && (
-                              <a
-                                href={`https://wa.me/${waDigits}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                title="واتساب"
-                                className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-colors"
-                              >
-                                <MessageCircle className="w-3.5 h-3.5" />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-10 text-muted-foreground text-sm border border-dashed border-border/50 rounded-2xl bg-secondary/20">
-                {providersLoading ? (
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                ) : userLocation ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <MapPin className="w-6 h-6 text-muted-foreground/60" />
-                    <p>لا يوجد مقدمو خدمات ضمن {NEARBY_RADIUS_KM} كم من موقعك.</p>
-                    <p className="text-xs text-muted-foreground/80">جرّب تغيير التصنيف أو وسّع نطاق البحث.</p>
-                  </div>
-                ) : (
-                  "لا توجد خدمات متاحة"
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ── ALL PROVIDERS ── */}
-        <section className="py-20 bg-background">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-8">استكشف الخدمات</h2>
-
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
-              <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
-                <TabsList className="bg-secondary/50 p-1 w-full justify-start overflow-x-auto">
-                  <TabsTrigger value="all" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">الكل</TabsTrigger>
-                  <TabsTrigger value="food" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">طعام</TabsTrigger>
-                  <TabsTrigger value="design" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">تصميم</TabsTrigger>
-                  <TabsTrigger value="maintenance" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">صيانة</TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <Button variant="outline" className="rounded-full flex-1 md:flex-none border-border/60" onClick={() => setLocation("/search")}>
-                  <Filter className="w-4 h-4 ml-2" />
-                  تصفية
-                </Button>
-              </div>
-            </div>
-
-            {providersLoading ? (
-              <div className="flex justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredProviders.slice(0, 8).map((provider: Provider) => {
-                  const isFav = favoriteIds.has(provider.id);
-                  const cardBanner = provider.banner ?? provider.avatar ?? DEFAULT_IMG;
-                  const phoneDigits = (provider.phone ?? "").replace(/\D/g, "");
-                  const waDigits = ((provider.whatsapp ?? provider.phone ?? "") as string).replace(/\D/g, "");
-                  return (
-                    <Card key={provider.id} className="overflow-hidden group border-border/50 hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer" onClick={() => setLocation(`/provider/${provider.id}`)}>
-                      {/* Banner image */}
-                      <div className="relative h-36 overflow-hidden bg-muted">
-                        <img
-                          src={cardBanner}
-                          alt={provider.userName}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                          onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        <div className="absolute top-2 right-2 flex flex-wrap gap-1.5 max-w-[70%] justify-end">
-                          <Badge className="bg-background/90 text-foreground backdrop-blur-sm border-none text-[10px] px-2 py-0.5">
-                            {provider.categoryNameAr ?? "خدمات"}
-                          </Badge>
-                          {provider.featured && (
-                            <Badge className="bg-accent text-accent-foreground border-none text-[10px] px-2 py-0.5">مميز</Badge>
-                          )}
-                          {provider.verified && (
-                            <Badge className="bg-teal-500/95 text-white border-none text-[10px] px-2 py-0.5 gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> موثّق
-                            </Badge>
-                          )}
-                        </div>
-                        {user && user.role === "user" && (
-                          <button
-                            className={`absolute top-2 left-2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow transition-all hover:scale-110 ${isFav ? "text-rose-500" : "text-muted-foreground hover:text-rose-400"}`}
-                            onClick={(e) => { e.stopPropagation(); toggleFavMutation.mutate(provider.id); }}
-                            title={isFav ? "إزالة من المفضلة" : "إضافة للمفضلة"}
-                          >
-                            <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-rose-500" : ""}`} />
-                          </button>
-                        )}
-                      </div>
-
-                      <CardContent className="p-4">
-                        {/* Avatar + Name row */}
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary shrink-0 border-2 border-background shadow">
-                            <img
-                              src={provider.avatar ?? DEFAULT_IMG}
-                              alt={provider.userName}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-sm leading-tight truncate">{provider.userName}</h3>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{provider.city ?? "مصر"}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-0.5 shrink-0 bg-secondary/80 px-1.5 py-0.5 rounded text-xs">
-                            <Star className="w-3 h-3 fill-accent text-accent" />
-                            <span className="font-bold">{parseFloat(provider.rating).toFixed(1)}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button className="flex-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors shadow-none rounded-xl text-xs h-8">
-                            عرض التفاصيل
-                          </Button>
-                          {phoneDigits && (
-                            <a
-                              href={`tel:${phoneDigits}`}
-                              onClick={(e) => e.stopPropagation()}
-                              title="اتصال"
-                              className="w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-colors shrink-0"
-                            >
-                              <Phone className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                          {waDigits && (
-                            <a
-                              href={`https://wa.me/${waDigits}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              title="واتساب"
-                              className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-colors shrink-0"
-                            >
-                              <MessageCircle className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="mt-12 flex justify-center">
-              <Button variant="outline" size="lg" className="rounded-full px-8 border-border hover:bg-secondary" onClick={() => setLocation("/search")}>
-                عرض المزيد من الخدمات
-                <ChevronDown className="w-4 h-4 mr-2" />
-              </Button>
-            </div>
-          </div>
-        </section>
-
         {/* ── REAL ESTATE LISTINGS ── */}
         <section className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
           {/* Decorative background blobs */}
@@ -1316,7 +920,7 @@ export default function Home() {
                 <p className="text-muted-foreground mt-3 text-base max-w-md">شقق وفلل ومكاتب تجارية بأسعار تنافسية في أفضل المواقع</p>
               </div>
               <button
-                onClick={() => setLocation("/search?category=real-estate")}
+                onClick={() => setLocation("/properties")}
                 className="hidden md:flex items-center gap-2 text-sm text-primary font-semibold border border-primary/30 rounded-full px-5 py-2.5 hover:bg-primary/10 transition-all group"
               >
                 عرض الكل
@@ -1345,8 +949,25 @@ export default function Home() {
             </div>
 
             {/* Property cards grid */}
+            {propsLoading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : homePropsRaw.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground border border-dashed border-border/60 rounded-3xl bg-secondary/20">
+                <Building2 className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
+                <p className="font-medium">لا توجد عقارات متاحة حالياً</p>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {PROPERTIES.map((property, idx) => (
+              {homePropsRaw.slice(0, 6).map((property, idx) => {
+                const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+                const thumb = imgs[0] ?? DEFAULT_IMG;
+                const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
+                const priceNum = Number(property.price);
+                const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "—";
+                const listType = property.listingType ?? "";
+                return (
                 <motion.div
                   key={property.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -1356,12 +977,12 @@ export default function Home() {
                 >
                   <div
                     className="group relative bg-white border border-border rounded-3xl overflow-hidden hover:border-primary/30 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    onClick={() => setLocation(`/property/${property.id}`)}
+                    onClick={() => window.open(`/property/${property.id}`, "_blank")}
                   >
                     {/* Image */}
                     <div className="relative h-52 overflow-hidden">
                       <img
-                        src={property.img}
+                        src={thumb}
                         alt={property.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                         onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
@@ -1370,22 +991,21 @@ export default function Home() {
 
                       {/* Top badges */}
                       <div className="absolute top-3 right-3 flex gap-2">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full shadow-lg ${property.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
-                          {property.type}
-                        </span>
-                        {property.featured && (
-                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-400 text-amber-900 shadow-lg">
-                            ⭐ مميز
+                        {listType && (
+                          <span className={`text-xs font-bold px-3 py-1 rounded-full shadow-lg ${listType === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
+                            {listType}
                           </span>
                         )}
                       </div>
 
                       {/* Kind badge bottom left */}
-                      <div className="absolute bottom-3 left-3">
-                        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/25 backdrop-blur-md text-white border border-white/30">
-                          {property.kind}
-                        </span>
-                      </div>
+                      {property.propertyType && (
+                        <div className="absolute bottom-3 left-3">
+                          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/25 backdrop-blur-md text-white border border-white/30">
+                            {property.propertyType}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Fav button */}
                       <button
@@ -1400,12 +1020,8 @@ export default function Home() {
                     <div className="p-5">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <p className="text-primary font-extrabold text-xl leading-none">{property.price}</p>
+                          <p className="text-primary font-extrabold text-xl leading-none">{priceStr}</p>
                           <p className="text-muted-foreground text-xs mt-0.5">جنيه مصري</p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          <span className="text-xs font-bold text-gray-700">4.8</span>
                         </div>
                       </div>
 
@@ -1415,43 +1031,36 @@ export default function Home() {
 
                       <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-4">
                         <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="truncate">{property.location}</span>
+                        <span className="truncate">{location}</span>
                       </div>
 
                       <div className="border-t border-border mb-4" />
 
                       <div className="flex items-center gap-4 mb-4">
-                        {property.beds > 0 && (
+                        {(property.bedrooms ?? 0) > 0 && (
                           <div className="flex items-center gap-1.5 text-gray-600 text-sm">
                             <BedDouble className="w-4 h-4 text-gray-400" />
-                            <span>{property.beds} غرف</span>
+                            <span>{property.bedrooms} غرف</span>
                           </div>
                         )}
-                        {property.baths > 0 && (
+                        {(property.bathrooms ?? 0) > 0 && (
                           <div className="flex items-center gap-1.5 text-gray-600 text-sm">
                             <Bath className="w-4 h-4 text-gray-400" />
-                            <span>{property.baths} حمام</span>
+                            <span>{property.bathrooms} حمام</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-1.5 text-gray-600 text-sm">
-                          <Maximize2 className="w-4 h-4 text-gray-400" />
-                          <span>{property.area} م²</span>
-                        </div>
+                        {(property.area ?? 0) > 0 && (
+                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                            <Maximize2 className="w-4 h-4 text-gray-400" />
+                            <span>{property.area} م²</span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={property.agentAvatar}
-                            alt={property.agentName}
-                            className="w-7 h-7 rounded-full object-cover border-2 border-primary/20"
-                            onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                          />
-                          <span className="text-muted-foreground text-xs">{property.agentName}</span>
-                        </div>
+                      <div className="flex items-center justify-end">
                         <button
                           className="text-xs font-semibold text-primary border border-primary/30 rounded-full px-4 py-1.5 hover:bg-primary hover:text-white transition-all"
-                          onClick={(e) => { e.stopPropagation(); setLocation(`/property/${property.id}`); }}
+                          onClick={(e) => { e.stopPropagation(); window.open(`/property/${property.id}`, "_blank"); }}
                         >
                           تفاصيل
                         </button>
@@ -1459,16 +1068,18 @@ export default function Home() {
                     </div>
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
+            )}
 
-            {/* Mobile "show all" */}
-            <div className="mt-10 flex justify-center md:hidden">
+            {/* Show all button */}
+            <div className="mt-10 flex justify-center">
               <Button
                 variant="outline"
                 size="lg"
                 className="rounded-full px-10 border-primary/40 text-primary hover:bg-primary/10"
-                onClick={() => setLocation("/search")}
+                onClick={() => setLocation("/properties")}
               >
                 عرض جميع العقارات
                 <ArrowLeft className="w-4 h-4 mr-2" />
