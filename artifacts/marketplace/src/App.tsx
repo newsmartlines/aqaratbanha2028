@@ -351,12 +351,22 @@ function FaviconUpdater() {
   return null;
 }
 
+function GoogleWrapper({ children }: { children: React.ReactNode }) {
+  const { data: settings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: api.settings.list,
+    staleTime: 60_000,
+  });
+  const clientId = (settings as any)?.googleClientId || import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+  return <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>;
+}
+
 function App() {
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ""}>
-      <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <AuthProvider>
+          <GoogleWrapper>
             <TooltipProvider>
               <FaviconUpdater />
               <ThemeProvider />
@@ -366,10 +376,10 @@ function App() {
               <Toaster />
               <HotToaster position="top-center" />
             </TooltipProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      </QueryClientProvider>
-    </GoogleOAuthProvider>
+          </GoogleWrapper>
+        </AuthProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
   );
 }
 

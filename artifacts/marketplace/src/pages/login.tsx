@@ -349,7 +349,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
               )}
 
               {/* Google Login */}
-              {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+              {(settings as any)?.googleClientId && (
                 <div className="mb-6">
                   <div className="flex justify-center">
                     <GoogleLogin
@@ -588,7 +588,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                   </form>
 
                   {/* Google Register */}
-                  {import.meta.env.VITE_GOOGLE_CLIENT_ID && accountType === "user" && (
+                  {(settings as any)?.googleClientId && accountType === "user" && (
                     <div className="mt-4">
                       <div className="flex items-center gap-4 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border mb-4">
                         <span className="text-muted-foreground text-xs">أو سجل بجوجل</span>

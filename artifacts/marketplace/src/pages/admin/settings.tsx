@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { api, mediaUrl, type SiteSettings } from "@/lib/api";
-import { Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload, ImageIcon, Palette } from "lucide-react";
+import { Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload, ImageIcon, Palette, KeyRound } from "lucide-react";
 import { AppearanceTab } from "./settings-appearance";
 import { useToast } from "@/hooks/use-toast";
 import { useT, commonDict } from "@/lib/i18n";
@@ -72,6 +72,12 @@ const dict = {
   saved: { ar: "تم الحفظ!", en: "Saved!" },
   savedDesc: { ar: "تم حفظ الإعدادات بنجاح.", en: "Settings saved successfully." },
   saveFailed: { ar: "فشل حفظ الإعدادات.", en: "Failed to save settings." },
+  googleOAuth: { ar: "تسجيل الدخول بجوجل", en: "Google Sign-In" },
+  googleOAuthDesc: { ar: "أدخل بيانات تطبيق OAuth من Google Cloud Console لتفعيل تسجيل الدخول بجوجل في صفحات الدخول والتسجيل", en: "Enter OAuth credentials from Google Cloud Console to enable Google Sign-In on login and register pages" },
+  googleClientId: { ar: "Google Client ID", en: "Google Client ID" },
+  googleClientSecret: { ar: "Google Client Secret", en: "Google Client Secret" },
+  googleClientIdPh: { ar: "xxxx.apps.googleusercontent.com", en: "xxxx.apps.googleusercontent.com" },
+  saveGoogle: { ar: "حفظ إعدادات جوجل", en: "Save Google Settings" },
 };
 
 export default function AdminSettings() {
@@ -190,6 +196,9 @@ export default function AdminSettings() {
           </TabsTrigger>
           <TabsTrigger value="security" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Lock className="w-4 h-4 me-2" />{t("security")}
+          </TabsTrigger>
+          <TabsTrigger value="google" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <KeyRound className="w-4 h-4 me-2" />{t("googleOAuth")}
           </TabsTrigger>
           <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary font-semibold">
             <Palette className="w-4 h-4 me-2" />{t("appearance")}
@@ -449,6 +458,46 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="google">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><KeyRound className="w-5 h-5 text-teal-600" /> {t("googleOAuth")}</CardTitle>
+              <CardDescription>{t("googleOAuthDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5 max-w-lg">
+              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800 leading-relaxed" dir="rtl">
+                <p className="font-semibold mb-1">كيفية الحصول على المفاتيح:</p>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>اذهب إلى <span className="font-mono">console.cloud.google.com</span></li>
+                  <li>أنشئ مشروعاً جديداً أو اختر مشروعاً موجوداً</li>
+                  <li>من القائمة: APIs &amp; Services → Credentials</li>
+                  <li>أنشئ OAuth 2.0 Client ID من نوع Web application</li>
+                  <li>أضف نطاقك في Authorized JavaScript origins</li>
+                  <li>انسخ Client ID و Client Secret وألصقهما أدناه</li>
+                </ol>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("googleClientId")}</Label>
+                <Input dir="ltr" placeholder={t("googleClientIdPh")} value={form.googleClientId ?? ""} onChange={e => setForm(f => ({ ...f, googleClientId: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("googleClientSecret")}</Label>
+                <Input dir="ltr" type="password" placeholder="GOCSPX-..." value={form.googleClientSecret ?? ""} onChange={e => setForm(f => ({ ...f, googleClientSecret: e.target.value }))} />
+              </div>
+              {form.googleClientId && (
+                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>سيظهر زر "تسجيل الدخول بجوجل" في صفحتي الدخول والتسجيل</span>
+                </div>
+              )}
+              <Button onClick={() => handleSave({ googleClientId: form.googleClientId ?? "", googleClientSecret: form.googleClientSecret ?? "" })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">
+                {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                {t("saveGoogle")}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="appearance">
           <AppearanceTab settings={form} />
         </TabsContent>

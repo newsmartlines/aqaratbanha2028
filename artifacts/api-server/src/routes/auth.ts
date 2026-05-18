@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
-import { usersTable, providersTable, notificationsTable } from "@workspace/db";
+import { usersTable, providersTable, notificationsTable, siteSettingsTable } from "@workspace/db";
 import { sessionsTable, resetTokensTable } from "@workspace/db";
 import { adminStaffTable } from "@workspace/db/schema";
 import { eq, and, gt } from "drizzle-orm";
@@ -414,7 +414,9 @@ router.post("/auth/change-password", async (req: Request, res) => {
 router.post("/auth/google", async (req, res) => {
   const { credential } = req.body;
   if (!credential) return res.status(400).json({ success: false, error: "credential required" });
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientIdFromEnv = process.env.GOOGLE_CLIENT_ID;
+  const [settingRow] = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, "googleClientId")).limit(1);
+  const clientId = settingRow?.value || clientIdFromEnv;
   if (!clientId) return res.status(503).json({ success: false, error: "Google Sign-In not configured" });
   try {
     const { OAuth2Client } = await import("google-auth-library");

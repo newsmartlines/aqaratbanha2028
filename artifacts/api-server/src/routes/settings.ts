@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 const router = Router();
 
 const DEFAULT_SETTINGS: Record<string, string> = {
+  googleClientId: "",
+  googleClientSecret: "",
   siteName: "سمارت لاينز للنظم المتطورة",
   siteNameEn: "Smart Lines Advanced Systems",
   logoUrl: "",
