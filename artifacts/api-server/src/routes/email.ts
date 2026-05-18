@@ -43,7 +43,7 @@ async function sendEmail(opts: {
         secure: cfg.smtpSecure === "true", auth: { user: cfg.smtpUser, pass: cfg.smtpPass },
       } as any);
       await transporter.sendMail({
-        from: `"${cfg.smtpFromName || "دليل بلس"}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
+        from: `"${cfg.smtpFromName || "عقارات بنها"}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
         to: opts.toName ? `"${opts.toName}" <${opts.to}>` : opts.to,
         subject: opts.subject, html: opts.html,
       });
@@ -1348,7 +1348,7 @@ router.post("/admin/email/templates/:id/preview", async (req, res) => {
     const [tpl] = await db.select().from(emailTemplatesTable).where(eq(emailTemplatesTable.id, id));
     if (!tpl) return res.status(404).json({ success: false, error: "Template not found" });
     const vars: Record<string, string> = {
-      siteName: (await getSetting("siteName")) ?? "دليل بلس",
+      siteName: (await getSetting("siteName")) ?? "عقارات بنها",
       siteUrl: (await getSetting("siteUrl")) ?? "https://example.com",
       contactEmail: (await getSetting("contactEmail")) ?? "info@example.com",
       year: new Date().getFullYear().toString(),
@@ -1374,7 +1374,7 @@ router.post("/admin/email/send", async (req, res) => {
       if (!tpl) return res.status(404).json({ success: false, error: "Template not found" });
       templateName = tpl.name;
       const vars: Record<string, string> = {
-        siteName: (await getSetting("siteName")) ?? "دليل بلس",
+        siteName: (await getSetting("siteName")) ?? "عقارات بنها",
         siteUrl: (await getSetting("siteUrl")) ?? "https://example.com",
         contactEmail: (await getSetting("contactEmail")) ?? "info@example.com",
         year: new Date().getFullYear().toString(),

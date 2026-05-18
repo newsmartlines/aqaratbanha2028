@@ -16,7 +16,7 @@ export function RealEstateFooter() {
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-extrabold text-white text-lg leading-none">دليل بلس</p>
+                <p className="font-extrabold text-white text-lg leading-none">عقارات بنها</p>
                 <p className="text-xs text-gray-400">العقارات</p>
               </div>
             </div>
@@ -110,7 +110,7 @@ export function RealEstateFooter() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-          <p>© {new Date().getFullYear()} دليل بلس للعقارات. جميع الحقوق محفوظة.</p>
+          <p>© {new Date().getFullYear()} عقارات بنها للعقارات. جميع الحقوق محفوظة.</p>
           <div className="flex items-center gap-4">
             <button className="hover:text-gray-300 transition-colors">سياسة الخصوصية</button>
             <span>·</span>

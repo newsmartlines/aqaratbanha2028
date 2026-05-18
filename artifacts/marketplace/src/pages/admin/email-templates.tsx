@@ -603,7 +603,7 @@ export default function AdminEmailTemplates() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>اسم المُرسِل</Label>
-                      <Input placeholder="دليل بلس" value={smtp.smtpFromName} onChange={e => setSmtp(s => ({ ...s, smtpFromName: e.target.value }))} />
+                      <Input placeholder="عقارات بنها" value={smtp.smtpFromName} onChange={e => setSmtp(s => ({ ...s, smtpFromName: e.target.value }))} />
                     </div>
                     <div className="space-y-1.5">
                       <Label>بريد المُرسِل</Label>

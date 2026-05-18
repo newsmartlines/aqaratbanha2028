@@ -133,12 +133,12 @@ export default function AdminSeo() {
   const [tab, setTab] = useState("dashboard");
 
   /* General SEO state */
-  const [siteTitle,    setSiteTitle]    = useState("دليل بلس العقارات | أفضل عقارات مصر");
-  const [siteDesc,     setSiteDesc]     = useState("منصة دليل بلس لبيع وشراء وإيجار العقارات في جميع مدن جمهورية مصر العربية.");
+  const [siteTitle,    setSiteTitle]    = useState("عقارات بنها العقارات | أفضل عقارات مصر");
+  const [siteDesc,     setSiteDesc]     = useState("منصة عقارات بنها لبيع وشراء وإيجار العقارات في جميع مدن جمهورية مصر العربية.");
   const [canonical,    setCanonical]    = useState("https://daleel.sa");
   const [indexAll,     setIndexAll]     = useState(true);
-  const [ogTitle,      setOgTitle]      = useState("دليل بلس العقارات");
-  const [ogDesc,       setOgDesc]       = useState("اعثر على عقارك المثالي مع دليل بلس");
+  const [ogTitle,      setOgTitle]      = useState("عقارات بنها العقارات");
+  const [ogDesc,       setOgDesc]       = useState("اعثر على عقارك المثالي مع عقارات بنها");
   const [twitterCard,  setTwitterCard]  = useState("summary_large_image");
   const [gaId,         setGaId]         = useState("G-XXXXXXXXXX");
 
@@ -174,9 +174,9 @@ export default function AdminSeo() {
     setAiLoading(true);
     setTimeout(() => {
       setAiResult({
-        title:    `${aiInput} | دليل بلس العقارات`,
-        desc:     `اكتشف أفضل ${aiInput} في جمهورية مصر العربية مع دليل بلس. أسعار تنافسية، موقع متميز، ومزايا حصرية لا تفوّت. تواصل معنا الآن.`,
-        keywords: `${aiInput}، عقارات مصر، دليل بلس، بيع وشراء، إيجار`,
+        title:    `${aiInput} | عقارات بنها العقارات`,
+        desc:     `اكتشف أفضل ${aiInput} في جمهورية مصر العربية مع عقارات بنها. أسعار تنافسية، موقع متميز، ومزايا حصرية لا تفوّت. تواصل معنا الآن.`,
+        keywords: `${aiInput}، عقارات مصر، عقارات بنها، بيع وشراء، إيجار`,
       });
       setAiLoading(false);
     }, 1800);
@@ -202,7 +202,7 @@ export default function AdminSeo() {
       },
       organization: {
         "@context": "https://schema.org", "@type": "Organization",
-        name: "دليل بلس", url: "https://daleel.sa",
+        name: "عقارات بنها", url: "https://daleel.sa",
         logo: "https://daleel.sa/logo.png",
         contactPoint: { "@type": "ContactPoint", telephone: "+20-xx-xxx-xxxx", contactType: "customer service" },
       },
@@ -221,7 +221,7 @@ export default function AdminSeo() {
       },
       localBusiness: {
         "@context": "https://schema.org", "@type": "RealEstateAgent",
-        name: "دليل بلس", address: { "@type": "PostalAddress", addressCountry: "SA" },
+        name: "عقارات بنها", address: { "@type": "PostalAddress", addressCountry: "SA" },
         openingHours: "Mo-Sa 09:00-18:00",
       },
     };
@@ -240,7 +240,7 @@ export default function AdminSeo() {
             <h1 className="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
               <Search className="w-6 h-6 text-primary" /> إدارة السيو — SEO Management
             </h1>
-            <p className="text-slate-500 text-sm mt-0.5">تحكم شامل في تحسين محركات البحث لمنصة دليل بلس</p>
+            <p className="text-slate-500 text-sm mt-0.5">تحكم شامل في تحسين محركات البحث لمنصة عقارات بنها</p>
           </div>
           <div className="flex items-center gap-2">
             <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border gap-1 px-3 py-1.5">
@@ -581,7 +581,7 @@ export default function AdminSeo() {
                         </td>
                         <td className="py-3 text-center">
                           <Button size="sm" variant="outline" className="h-7 text-xs gap-1"
-                            onClick={() => { setEditProp(p); setEditTitle(p.title + " — دليل بلس"); setEditDesc(""); setEditKeywords(""); }}>
+                            onClick={() => { setEditProp(p); setEditTitle(p.title + " — عقارات بنها"); setEditDesc(""); setEditKeywords(""); }}>
                             <Edit2 className="w-3 h-3" /> تحرير
                           </Button>
                         </td>

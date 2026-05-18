@@ -38,7 +38,7 @@ interface WatermarkSettings {
 const DEFAULT: WatermarkSettings = {
   enabled: true,
   type: "text",
-  text: "دليل بلس",
+  text: "عقارات بنها",
   textColor: "#ffffff",
   fontSize: 32,
   fontFamily: "Tajawal, Arial",
@@ -310,7 +310,7 @@ export default function AdminWatermark() {
                           <Input
                             value={settings.text}
                             onChange={e => upd("text", e.target.value)}
-                            placeholder="مثال: دليل بلس العقارات"
+                            placeholder="مثال: عقارات بنها العقارات"
                             className="text-right"
                             maxLength={60}
                           />

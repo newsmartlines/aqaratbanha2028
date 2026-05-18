@@ -78,7 +78,7 @@ const CHANNEL_CONFIG = [
 const DEMO_VARS: Record<string, string> = {
   userName: "أحمد محمد",
   userEmail: "ahmed@example.com",
-  siteName: "دليل بلس",
+  siteName: "عقارات بنها",
   siteUrl: "https://example.com",
   contactEmail: "info@example.com",
   year: new Date().getFullYear().toString(),
@@ -408,7 +408,7 @@ export default function AdminMessages() {
     try {
       const res = await api.fetchJson<{ result: string; demo?: boolean }>("/admin/email/ai-assist", {
         method: "POST",
-        body: JSON.stringify({ prompt: aiPrompt, type: aiType, context: { siteName: "دليل بلس" } }),
+        body: JSON.stringify({ prompt: aiPrompt, type: aiType, context: { siteName: "عقارات بنها" } }),
       });
       setAiResult(res.result);
       setAiDemo(!!res.demo);
