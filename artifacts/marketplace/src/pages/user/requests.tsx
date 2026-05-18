@@ -383,7 +383,7 @@ export default function UserRequests() {
                 <div className="bg-indigo-600 text-white px-5 py-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-indigo-200">سمارت لاينز للنظم المتطورة</p>
+                      <p className="text-xs text-indigo-200">عقارات بنها</p>
                       <p className="font-bold text-lg">فاتورة خدمة</p>
                     </div>
                     <div className="text-left">

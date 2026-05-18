@@ -149,7 +149,7 @@ export default function CategoriesPage() {
       {/* Footer */}
       <footer className="mt-16 py-8 border-t border-border/30 bg-secondary/20">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2026 سمارت لاينز للنظم المتطورة — جميع الحقوق محفوظة</p>
+          <p>© 2026 عقارات بنها — جميع الحقوق محفوظة</p>
         </div>
       </footer>
     </div>

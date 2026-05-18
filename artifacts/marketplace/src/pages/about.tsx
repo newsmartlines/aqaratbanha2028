@@ -10,8 +10,8 @@ export default function AboutPage() {
     queryFn: api.settings.list,
   });
 
-  const siteName = settings?.siteName ?? "سمارت لاينز للنظم المتطورة";
-  const aboutContent = settings?.aboutContent ?? "نحن منصة سمارت لاينز للنظم المتطورة، الوجهة الأولى للخدمات المنزلية والمحلية في جمهورية مصر العربية.";
+  const siteName = settings?.siteName ?? "عقارات بنها";
+  const aboutContent = settings?.aboutContent ?? "نحن منصة عقارات بنها، الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية، مع خدمات التشطيبات والديكور ومواد البناء.";
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">

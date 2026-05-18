@@ -167,7 +167,7 @@ export default function RealEstateOnboarding() {
     queryFn: api.settings.list,
     staleTime: 5 * 60 * 1000,
   });
-  const siteName = (settings as any)?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
 
   useEffect(() => {
     if (!user || user.role === "admin" || providerSessionRef.current) return;

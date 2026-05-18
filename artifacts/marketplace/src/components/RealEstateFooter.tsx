@@ -96,7 +96,7 @@ export function RealEstateFooter() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm text-gray-400">realestate@daleelplus.sa</span>
+                <span className="text-sm text-gray-400">realestate@aqarat-banha.com</span>
               </li>
             </ul>
 

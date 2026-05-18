@@ -94,7 +94,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
     queryFn: api.settings.list,
     staleTime: 5 * 60 * 1000,
   });
-  const siteName = (settings as any)?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
 
   const siteNavLinks = [
     { href: "/", label: "الرئيسية" },
@@ -220,7 +220,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
         description:
           role === "provider" && merged.providerId == null
             ? "مرحباً بك. إذا لم تُفتح لوحة التحكم بشكل صحيح، حدّث الصفحة أو أعد تسجيل الدخول."
-            : "مرحباً بك في سمارت لاينز للنظم المتطورة!",
+            : "مرحباً بك في عقارات بنها!",
       });
       if (role === "provider") {
         // New providers must complete onboarding (profile, services, package selection
@@ -319,10 +319,10 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
         <div className="relative z-10 text-center flex flex-col items-center">
           <Link href="/" className="flex items-center gap-3 mb-8 cursor-pointer hover:opacity-90 transition-opacity">
             <div className="w-14 h-14 rounded-2xl bg-background flex items-center justify-center text-primary font-bold text-3xl shadow-lg">✦</div>
-            <span className="font-bold text-5xl tracking-tight text-primary-foreground">سمارت لاينز للنظم المتطورة</span>
+            <span className="font-bold text-5xl tracking-tight text-primary-foreground">عقارات بنها</span>
           </Link>
-          <h1 className="text-3xl font-bold leading-tight mb-4 max-w-sm">اكتشف أفضل الخدمات من أيدٍ محلية موثوقة</h1>
-          <p className="text-primary-foreground/80 text-lg max-w-sm">المنصة الأولى التي تجمع بين أصحاب المهارات والباحثين عن الجودة.</p>
+          <h1 className="text-3xl font-bold leading-tight mb-4 max-w-sm">اعثر على عقارك المثالي في بنها والقليوبية</h1>
+          <p className="text-primary-foreground/80 text-lg max-w-sm">بيع وشراء وإيجار العقارات مع خدمات التشطيبات والديكور ومواد البناء.</p>
         </div>
         <div className="absolute top-1/4 -right-12 w-64 h-64 bg-accent/20 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 -left-12 w-64 h-64 bg-secondary/20 rounded-full blur-3xl" />
@@ -354,7 +354,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
           <div className="flex lg:hidden justify-center mb-10">
             <Link href="/" className="flex items-center gap-2 cursor-pointer">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-md">✦</div>
-              <span className="font-bold text-3xl tracking-tight text-primary">سمارت لاينز للنظم المتطورة</span>
+              <span className="font-bold text-3xl tracking-tight text-primary">عقارات بنها</span>
             </Link>
           </div>
 

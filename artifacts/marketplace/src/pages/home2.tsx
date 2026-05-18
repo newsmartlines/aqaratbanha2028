@@ -489,7 +489,7 @@ export default function Home2() {
       <section className="py-16 bg-primary text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-extrabold mb-2">لماذا عقارات بنها العقارات؟</h2>
+            <h2 className="text-3xl font-extrabold mb-2">لماذا عقارات بنها؟</h2>
             <p className="text-white/70">المنصة الأكثر ثقةً لبيع وشراء وإيجار العقارات في مصر</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

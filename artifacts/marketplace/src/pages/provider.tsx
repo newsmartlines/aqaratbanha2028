@@ -83,7 +83,7 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
   });
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareTitle = provider ? `${provider.userName} – سمارت لاينز للنظم المتطورة` : "سمارت لاينز للنظم المتطورة";
+  const shareTitle = provider ? `${provider.userName} – عقارات بنها` : "عقارات بنها";
 
   /* ─── Favorites ─── */
   const { data: favorites } = useQuery<{ providerId: number }[]>({

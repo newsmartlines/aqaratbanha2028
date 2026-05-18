@@ -49,7 +49,7 @@ export default function Onboarding() {
     queryFn: api.settings.list,
     staleTime: 5 * 60 * 1000,
   });
-  const siteName = (settings as any)?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
 
   const siteNavLinks = [
     { href: "/", label: "الرئيسية" },

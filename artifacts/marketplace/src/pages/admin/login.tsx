@@ -11,11 +11,11 @@ import { useAuth } from "@/lib/auth-context";
 import { useT, useLanguage } from "@/lib/i18n";
 
 const dict = {
-  brand: { ar: "سمارت لاينز للنظم المتطورة - لوحة المسؤول", en: "Smart Lines Advanced Systems Admin" },
+  brand: { ar: "عقارتي - لوحة المسؤول", en: "Aqaraty Admin" },
   subtitle: { ar: "سجّل الدخول إلى لوحة التحكم", en: "Sign in to the control panel" },
   email: { ar: "البريد الإلكتروني", en: "Email" },
   password: { ar: "كلمة المرور", en: "Password" },
-  defaults: { ar: "الافتراضي: admin@dalilsmartlines.com / admin123", en: "Default: admin@dalilsmartlines.com / admin123" },
+  defaults: { ar: "الافتراضي: admin@aqarat-banha.com / admin123", en: "Default: admin@aqarat-banha.com / admin123" },
   signIn: { ar: "تسجيل الدخول", en: "Sign in" },
   signingIn: { ar: "جاري تسجيل الدخول...", en: "Signing in..." },
   notAdmin: { ar: "هذه الصفحة مخصصة للمسؤولين فقط. يرجى استخدام صفحة الدخول العادية.", en: "This page is for admins only. Please use the regular sign-in page." },
@@ -83,7 +83,7 @@ export default function AdminLogin() {
                 <div className="relative">
                   <User className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                   <Input
-                    id="admin-email" type="email" placeholder="admin@dalilsmartlines.com" dir="ltr"
+                    id="admin-email" type="email" placeholder="admin@aqarat-banha.com" dir="ltr"
                     className="ps-10 bg-slate-950 border-slate-800 text-white h-12 focus-visible:ring-teal-500 placeholder:text-slate-600"
                     value={email} onChange={e => { setEmail(e.target.value); setError(null); }}
                     disabled={loading} required

@@ -55,7 +55,7 @@ function pendingForHref(href: string, c: SidebarCounts | undefined): number {
 }
 
 const layoutDict = {
-  brand: { ar: "سمارت لاينز للنظم المتطورة - المسؤول", en: "Dalil Admin" },
+  brand: { ar: "عقارتي - لوحة المسؤول", en: "Aqaraty Admin" },
   brandShort: { ar: "المسؤول", en: "Admin" },
   superAdmin: { ar: "مسؤول عام", en: "Super Admin" },
   menu: { ar: "القائمة", en: "Menu" },

@@ -55,8 +55,8 @@ function InvoiceModal({ invoice, open, onClose }: { invoice: FakeInvoice | null;
             <div className="bg-primary p-6 text-primary-foreground">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-2xl font-black">سمارت لاينز للنظم المتطورة</h2>
-                  <p className="text-primary-foreground/70 text-sm mt-1">منصة الخدمات مصر</p>
+                  <h2 className="text-2xl font-black">عقارتي</h2>
+                  <p className="text-primary-foreground/70 text-sm mt-1">عقارات بنها</p>
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-bold text-primary-foreground/80">فاتورة رقم</p>
@@ -117,7 +117,7 @@ function InvoiceModal({ invoice, open, onClose }: { invoice: FakeInvoice | null;
                 >
                   {invoice.status}
                 </Badge>
-                <p className="text-xs text-muted-foreground">سمارت لاينز للنظم المتطورة © {new Date().getFullYear()}</p>
+                <p className="text-xs text-muted-foreground">عقارات بنها © {new Date().getFullYear()}</p>
               </div>
             </div>
           </div>

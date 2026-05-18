@@ -24,7 +24,7 @@ export function Header() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const siteName = settings?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = settings?.siteName ?? "عقارات بنها";
   const logoUrl = settings?.logoUrl;
 
   const navLinks = [
@@ -91,7 +91,7 @@ export function Header() {
           )}
           <span className="flex flex-col leading-tight min-w-0">
             <span className="font-bold text-xl tracking-tight text-primary truncate">{siteName}</span>
-            <span className="text-[11px] font-semibold text-muted-foreground truncate">dalilsmartlines.com</span>
+            <span className="text-[11px] font-semibold text-muted-foreground truncate">بنها — عقارات وخدمات</span>
           </span>
         </Link>
 

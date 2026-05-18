@@ -19,7 +19,7 @@ export default function ContactPage() {
     queryFn: api.settings.list,
   });
 
-  const siteName = settings?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = settings?.siteName ?? "عقارات بنها";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +58,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-muted-foreground mb-0.5">البريد الإلكتروني</p>
-                  <p className="font-medium">{settings?.contactEmail ?? "info@dalilsmartlines.com"}</p>
+                  <p className="font-medium">{settings?.contactEmail ?? "info@aqarat-banha.com"}</p>
                 </div>
               </div>
 

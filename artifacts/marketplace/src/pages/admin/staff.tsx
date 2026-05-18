@@ -37,7 +37,7 @@ const dict = {
   noStaff: { ar: "لا يوجد موظفون", en: "No staff members found" },
   fullName: { ar: "الاسم الكامل", en: "Full Name" },
   fullNamePh: { ar: "محمد عبدالله", en: "John Doe" },
-  emailPh: { ar: "staff@dalilsmartlines.com", en: "staff@dalilsmartlines.com" },
+  emailPh: { ar: "staff@aqarat-banha.com", en: "staff@aqarat-banha.com" },
   passwordNew: { ar: "كلمة مرور جديدة (اتركه فارغاً للإبقاء)", en: "New Password (leave blank to keep)" },
   role: { ar: "الدور", en: "Role" },
   permissions: { ar: "الصلاحيات", en: "Permissions" },

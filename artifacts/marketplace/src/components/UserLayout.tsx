@@ -39,7 +39,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const siteName = (settings as any)?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
 
   const siteNavLinks = [
     { href: "/", label: "الرئيسية", icon: Home },
@@ -80,7 +80,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       <div className="flex h-14 shrink-0 items-center px-5 border-b border-white/10 lg:hidden">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-indigo-900 font-bold text-lg">✦</div>
-          <span className="font-bold text-xl tracking-tight text-white">{siteName}</span>
+          <span className="font-bold text-xl tracking-tight text-white">عقارتي</span>
         </Link>
       </div>
 

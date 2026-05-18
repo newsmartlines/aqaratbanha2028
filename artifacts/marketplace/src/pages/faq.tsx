@@ -15,7 +15,7 @@ export default function FaqPage() {
     queryFn: api.settings.list,
   });
 
-  const siteName = settings?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = settings?.siteName ?? "عقارات بنها";
   let faqItems: FaqItem[] = [];
   try {
     faqItems = JSON.parse(settings?.faqContent ?? "[]");

@@ -289,7 +289,7 @@ export default function AdminSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>{t("siteNameAr")}</Label>
-                  <Input value={form.siteName ?? ""} onChange={e => setForm(f => ({ ...f, siteName: e.target.value }))} placeholder="سمارت لاينز للنظم المتطورة" />
+                  <Input value={form.siteName ?? ""} onChange={e => setForm(f => ({ ...f, siteName: e.target.value }))} placeholder="عقارات بنها" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>{t("siteNameEn")}</Label>
@@ -638,12 +638,12 @@ export default function AdminSettings() {
               <CardContent className="space-y-5">
                 <div className="space-y-1.5">
                   <Label>عنوان الصفحة الرئيسية (Meta Title)</Label>
-                  <Input dir="rtl" value={form.metaTitle ?? ""} onChange={e => setForm(f => ({ ...f, metaTitle: e.target.value }))} placeholder="سمارت لاينز للنظم المتطورة — خدمات محلية موثوقة" />
+                  <Input dir="rtl" value={form.metaTitle ?? ""} onChange={e => setForm(f => ({ ...f, metaTitle: e.target.value }))} placeholder="عقارات بنها — خدمات محلية موثوقة" />
                   <p className="text-xs text-slate-400">يُنصح بـ 50-60 حرفاً · الحالي: {(form.metaTitle ?? "").length}</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>وصف الصفحة (Meta Description)</Label>
-                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة سمارت لاينز للنظم المتطورة تربطك بأفضل مزودي الخدمات المحلية الموثوقين في مصر." />
+                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة عقارات بنها تربطك بأفضل مزودي الخدمات المحلية الموثوقين في مصر." />
                   <p className="text-xs text-slate-400">يُنصح بـ 150-160 حرفاً · الحالي: {(form.metaDescription ?? "").length}</p>
                 </div>
                 <div className="space-y-1.5">
@@ -658,7 +658,7 @@ export default function AdminSettings() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>رابط الموقع الرسمي (Canonical URL)</Label>
-                  <Input dir="ltr" value={form.siteUrl ?? ""} onChange={e => setForm(f => ({ ...f, siteUrl: e.target.value }))} placeholder="https://www.dalilsmartlines.com" />
+                  <Input dir="ltr" value={form.siteUrl ?? ""} onChange={e => setForm(f => ({ ...f, siteUrl: e.target.value }))} placeholder="https://www.aqarat-banha.com" />
                 </div>
                 <Button onClick={() => handleSave({
                   metaTitle: form.metaTitle, metaDescription: form.metaDescription,
@@ -781,11 +781,11 @@ export default function AdminSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>اسم المرسل (From Name)</Label>
-                  <Input dir="rtl" value={smtpForm.smtpFromName} onChange={e => setSmtpForm(s => ({ ...s, smtpFromName: e.target.value }))} placeholder="سمارت لاينز للنظم المتطورة" />
+                  <Input dir="rtl" value={smtpForm.smtpFromName} onChange={e => setSmtpForm(s => ({ ...s, smtpFromName: e.target.value }))} placeholder="عقارات بنها" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>بريد المرسل (From Email)</Label>
-                  <Input dir="ltr" value={smtpForm.smtpFromEmail} onChange={e => setSmtpForm(s => ({ ...s, smtpFromEmail: e.target.value }))} placeholder="noreply@dalilsmartlines.com" />
+                  <Input dir="ltr" value={smtpForm.smtpFromEmail} onChange={e => setSmtpForm(s => ({ ...s, smtpFromEmail: e.target.value }))} placeholder="noreply@aqarat-banha.com" />
                 </div>
               </div>
 

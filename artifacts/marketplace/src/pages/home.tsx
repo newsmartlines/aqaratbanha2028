@@ -574,7 +574,7 @@ export default function Home() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["favorites", user?.id] }),
   });
 
-  const siteName = (settings as SiteSettings | undefined)?.siteName ?? "سمارت لاينز للنظم المتطورة";
+  const siteName = (settings as SiteSettings | undefined)?.siteName ?? "عقارات بنها";
   const _ctaText = (settings as SiteSettings | undefined)?.ctaText ?? "ندعم المشاريع المنزلية ونضمن حقوقك";
   const _ctaButtonText = (settings as SiteSettings | undefined)?.ctaButtonText ?? "انضم إلينا الآن";
   const heroImage = (settings as SiteSettings | undefined)?.heroImage ?? "";
@@ -689,15 +689,15 @@ export default function Home() {
           <div className="container relative z-10 mx-auto px-4">
             <div className="max-w-3xl">
               <Badge variant="secondary" className="mb-6 bg-secondary text-primary px-4 py-1.5 rounded-full text-sm font-medium border border-primary/10">
-                المنصة الأولى للخدمات المنزلية والمحلية
+                عقارات بنها — بيع وإيجار وخدمات
               </Badge>
               <h1 className="text-5xl md:text-7xl font-extrabold text-foreground leading-[1.15] mb-6 tracking-tight">
                 {heroTitle || (
-                  <>اكتشف أفضل <span className="text-primary relative inline-block">الخدمات<div className="absolute -bottom-1 left-0 right-0 h-3 bg-accent/20 -z-10 rounded-full"></div></span><br />من أيدي محلية موثوقة</>
+                  <>اعثر على <span className="text-primary relative inline-block">عقارك المثالي<div className="absolute -bottom-1 left-0 right-0 h-3 bg-accent/20 -z-10 rounded-full"></div></span><br />في بنها</>
                 )}
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-                {heroSubtitle || `سواء كنت تبحث عن طعام بيتي لذيذ، أو حرف يدوية متقنة، أو خدمات صيانة موثوقة، "${siteName}" يربطك بأفضل مقدمي الخدمات في منطقتك بسرعة وأمان.`}
+                {heroSubtitle || `سواء كنت تبحث عن شقة أو فيلا أو أرض للبيع أو الإيجار، "${siteName}" يربطك بأفضل العروض في القليوبية بسرعة وأمان.`}
               </p>
 
               {/* ── Real-Estate Search Box ── */}
@@ -1528,7 +1528,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
               <div className="md:col-span-2">
                 <h3 className="text-2xl font-extrabold text-white mb-3">{siteName}</h3>
-                <p className="text-slate-400 leading-relaxed max-w-sm">المنصة الأولى للخدمات المنزلية والمحلية في جمهورية مصر العربية.</p>
+                <p className="text-slate-400 leading-relaxed max-w-sm">الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية مع خدمات التشطيبات والديكور.</p>
                 <div className="flex gap-3 mt-5">
                   {["twitter", "instagram", "whatsapp"].map(s => (
                     <div key={s} className="w-10 h-10 rounded-full bg-white/10 hover:bg-primary/80 flex items-center justify-center cursor-pointer transition-colors">
@@ -1548,7 +1548,7 @@ export default function Home() {
               <div>
                 <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">تواصل معنا</h4>
                 <ul className="space-y-2 text-slate-400 text-sm">
-                  <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" />info@dalilsmartlines.com</li>
+                  <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" />info@aqarat-banha.com</li>
                   <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" />920XXXXXX</li>
                   <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />القاهرة، جمهورية مصر العربية</li>
                 </ul>

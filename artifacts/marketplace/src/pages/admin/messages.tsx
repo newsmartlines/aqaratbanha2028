@@ -582,7 +582,7 @@ export default function AdminMessages() {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-teal-700 hover:bg-teal-50 transition-colors group"
               >
                 <Home className="w-3.5 h-3.5 shrink-0 text-teal-500 group-hover:text-teal-700" />
-                <span>العودة إلى سمارت لاينز للنظم المتطورة</span>
+                <span>العودة إلى عقارات بنها</span>
               </a>
             </div>
           </div>
