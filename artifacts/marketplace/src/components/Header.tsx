@@ -33,6 +33,7 @@ export function Header() {
     { href: "/categories", label: "التصنيفات" },
     { href: "/search", label: "البحث" },
     { href: "/properties", label: "العقارات" },
+    { href: "/add-property", label: "أضف عقارك" },
     { href: "/about", label: "من نحن" },
     { href: "/contact", label: "تواصل معنا" },
     { href: "/faq", label: "الأسئلة الشائعة" },
