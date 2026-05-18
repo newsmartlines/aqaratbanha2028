@@ -556,6 +556,601 @@ const DEFAULT_TEMPLATES = [
       <p style="margin:0;color:#94a3b8;font-size:13px;text-align:center;">نعتذر عن أي إزعاج. للاستفسار: <a href="mailto:{{contactEmail}}" style="color:#0d9488;">{{contactEmail}}</a></p>
     `),
   },
+
+  // ── PROVIDER FLOWS ──────────────────────────────────────────────────────────
+
+  {
+    name: "مرحباً بمزود الخدمة",
+    slug: "provider-welcome",
+    subject: "مرحباً بك في {{siteName}} كمزود خدمة 🎉",
+    category: "welcome",
+    channels: '["email","whatsapp"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","providerCategory","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}! يسعدنا انضمامك كمزود خدمة في {{siteName}}. ابدأ بإضافة خدماتك من لوحة التحكم: {{siteUrl}}/dashboard",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">🏆</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:26px;font-weight:800;text-align:center;">أهلاً {{userName}}!</h2>
+      <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">نرحب بك كمزود خدمة في <strong style="color:#0d9488;">{{siteName}}</strong>. حسابك قيد المراجعة وسيتم إشعارك بالموافقة قريباً.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0fdf9;border-radius:14px;border:1px solid #ccfbf1;margin-bottom:28px;">
+        <tr><td style="padding:24px 28px;">
+          <p style="margin:0 0 14px;color:#0f172a;font-weight:700;font-size:15px;">📋 الخطوات القادمة:</p>
+          <p style="margin:0 0 8px;color:#475569;font-size:14px;">1️⃣ &nbsp; مراجعة حسابك من قِبَل الفريق (خلال 24 ساعة)</p>
+          <p style="margin:0 0 8px;color:#475569;font-size:14px;">2️⃣ &nbsp; استلام إشعار الموافقة</p>
+          <p style="margin:0 0 8px;color:#475569;font-size:14px;">3️⃣ &nbsp; إضافة خدماتك من لوحة التحكم</p>
+          <p style="margin:0;color:#475569;font-size:14px;">4️⃣ &nbsp; البدء في استقبال الطلبات من العملاء</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/dashboard" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">لوحة التحكم →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "قبول حساب مزود الخدمة",
+    slug: "provider-approved",
+    subject: "🎉 تم قبول حسابك كمزود خدمة في {{siteName}}!",
+    category: "listing",
+    channels: '["email","whatsapp","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","providerCategory","contactEmail","year"]),
+    plainBody: "مبروك {{userName}}! تم قبول حسابك كمزود خدمة في {{siteName}}. ابدأ الآن بإضافة خدماتك: {{siteUrl}}/dashboard/services",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">🎉</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:26px;font-weight:800;text-align:center;">تم قبول حسابك!</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مبروك <strong>{{userName}}</strong>! تمت الموافقة على حسابك كمزود خدمة في <strong style="color:#0d9488;">{{siteName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#f0fdf9,#dcfce7);border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;text-align:center;">
+          <p style="margin:0 0 6px;color:#166534;font-size:14px;">تخصصك</p>
+          <p style="margin:0;color:#0d9488;font-size:20px;font-weight:800;">{{providerCategory}}</p>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;text-align:center;line-height:1.7;">حسابك نشط الآن! ابدأ بإضافة خدماتك واستقبال الطلبات من العملاء.</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/dashboard/services" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">أضف أول خدمة لك →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "رفض حساب مزود الخدمة",
+    slug: "provider-rejected",
+    subject: "بشأن طلب تسجيلك في {{siteName}}",
+    category: "listing",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","rejectReason","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، للأسف لم نتمكن من قبول حسابك في الوقت الحالي. السبب: {{rejectReason}}. للاستفسار: {{contactEmail}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#fee2e2;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">📄</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">بشأن طلب تسجيلك</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، شكراً لاهتمامك بالانضمام إلى <strong style="color:#0d9488;">{{siteName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef2f2;border-radius:14px;border:1px solid #fecaca;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;">
+          <p style="margin:0 0 8px;color:#991b1b;font-weight:700;font-size:14px;">📌 سبب عدم القبول:</p>
+          <p style="margin:0;color:#7f1d1d;font-size:14px;line-height:1.7;">{{rejectReason}}</p>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;text-align:center;line-height:1.7;">يمكنك تعديل بياناتك وإعادة التقديم، أو التواصل مع فريق الدعم للمساعدة.</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="border:2px solid #0d9488;border-radius:12px;padding:12px 32px;text-align:center;">
+          <a href="mailto:{{contactEmail}}" style="color:#0d9488;text-decoration:none;font-weight:700;font-size:15px;display:block;">تواصل مع الدعم →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── ORDER FLOWS ─────────────────────────────────────────────────────────────
+
+  {
+    name: "طلب جديد لمزود الخدمة",
+    slug: "provider-new-order",
+    subject: "📦 طلب خدمة جديد — {{siteName}}",
+    category: "order",
+    channels: '["email","whatsapp","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","providerName","userName","orderNumber","serviceName","orderDate","amount","adminUrl","year"]),
+    plainBody: "مرحباً {{providerName}}! تلقيت طلباً جديداً #{{orderNumber}} من {{userName}} للخدمة: {{serviceName}}. اطلع على التفاصيل: {{siteUrl}}/dashboard/orders",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dbeafe;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">📦</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">طلب جديد بانتظارك!</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{providerName}}</strong>، وصل طلب جديد من العميل <strong>{{userName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;">
+          <p style="margin:0 0 16px;color:#0f172a;font-weight:700;font-size:15px;">📋 تفاصيل الطلب</p>
+          <table width="100%">
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">رقم الطلب</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">#{{orderNumber}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">الخدمة</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{serviceName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">العميل</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{userName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">التاريخ</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{orderDate}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;">المبلغ</td><td style="color:#0d9488;font-weight:700;font-size:15px;text-align:left;">{{amount}} ج.م</td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/dashboard/orders" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">عرض الطلب →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "إتمام الطلب",
+    slug: "order-completed",
+    subject: "✅ تم إتمام طلبك #{{orderNumber}} — {{siteName}}",
+    category: "order",
+    channels: '["email","whatsapp","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","orderNumber","serviceName","providerName","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، تم إتمام طلبك #{{orderNumber}} للخدمة {{serviceName}}. يسعدنا معرفة رأيك — قيّم مزود الخدمة: {{siteUrl}}/user/requests",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">✅</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم إتمام طلبك!</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، تم إتمام طلبك #<strong>{{orderNumber}}</strong> للخدمة <strong style="color:#0d9488;">{{serviceName}}</strong> مع <strong>{{providerName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0fdf4;border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;text-align:center;">
+          <p style="margin:0 0 8px;color:#166534;font-weight:700;font-size:15px;">⭐ شاركنا رأيك!</p>
+          <p style="margin:0;color:#166534;font-size:13px;line-height:1.7;">تقييمك يساعد مزودي الخدمة على التطوير ويساعد العملاء الآخرين على الاختيار.</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/user/requests" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">تقييم الخدمة ⭐ →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "إلغاء الطلب",
+    slug: "order-cancelled",
+    subject: "إشعار إلغاء الطلب #{{orderNumber}} — {{siteName}}",
+    category: "order",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","orderNumber","serviceName","rejectReason","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، تم إلغاء طلبك #{{orderNumber}} للخدمة {{serviceName}}. السبب: {{rejectReason}}. للاستفسار: {{contactEmail}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#fee2e2;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">❌</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم إلغاء الطلب</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، تم إلغاء طلبك #<strong>{{orderNumber}}</strong> للخدمة <strong>{{serviceName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef2f2;border-radius:14px;border:1px solid #fecaca;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;">
+          <p style="margin:0 0 8px;color:#991b1b;font-weight:700;font-size:14px;">سبب الإلغاء:</p>
+          <p style="margin:0;color:#7f1d1d;font-size:14px;line-height:1.7;">{{rejectReason}}</p>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;text-align:center;">يمكنك البحث عن مزود خدمة آخر أو التواصل مع فريق الدعم.</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/search" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">البحث عن خدمة أخرى →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── REVIEWS ─────────────────────────────────────────────────────────────────
+
+  {
+    name: "تقييم جديد لمزود الخدمة",
+    slug: "provider-new-review",
+    subject: "⭐ تقييم جديد لخدمتك في {{siteName}}",
+    category: "notification",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","providerName","userName","serviceName","reviewText","rating","contactEmail","year"]),
+    plainBody: "مرحباً {{providerName}}! تلقيت تقييماً جديداً من {{userName}} على خدمة {{serviceName}}: {{reviewText}}. اطلع على التقييمات: {{siteUrl}}/dashboard/reviews",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#fef3c7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">⭐</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تقييم جديد!</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{providerName}}</strong>، قيّمك العميل <strong>{{userName}}</strong> على خدمة <strong style="color:#0d9488;">{{serviceName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffbeb;border-radius:14px;border:1px solid #fde68a;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;">
+          <p style="margin:0 0 12px;color:#92400e;font-size:24px;text-align:center;">{{rating}} ⭐</p>
+          <p style="margin:0;color:#78350f;font-size:14px;line-height:1.8;text-align:center;font-style:italic;">"{{reviewText}}"</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/dashboard/reviews" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">الرد على التقييم →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── SUBSCRIPTION ────────────────────────────────────────────────────────────
+
+  {
+    name: "انتهاء الاشتراك",
+    slug: "subscription-expired",
+    subject: "انتهى اشتراكك في {{siteName}} — جدد الآن",
+    category: "subscription",
+    channels: '["email","whatsapp","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","planName","renewUrl","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، انتهى اشتراكك في {{planName}}. جدد اشتراكك للحفاظ على خدماتك النشطة: {{renewUrl}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#fee2e2;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">⏰</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">انتهى اشتراكك</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، انتهى اشتراكك في <strong style="color:#0d9488;">{{planName}}</strong>. خدماتك أُوقفت مؤقتاً.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef2f2;border-radius:14px;border:1px solid #fecaca;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;text-align:center;">
+          <p style="margin:0;color:#991b1b;font-size:14px;line-height:1.7;">⚠️ لإعادة تفعيل خدماتك وظهورها للعملاء، جدد اشتراكك الآن.</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#ef4444;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{renewUrl}}" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">تجديد الاشتراك الآن →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "تجديد الاشتراك",
+    slug: "subscription-renewed",
+    subject: "تم تجديد اشتراكك في {{siteName}} ✅",
+    category: "subscription",
+    channels: '["email","whatsapp"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","planName","startDate","endDate","price","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}! تم تجديد اشتراكك في {{planName}} بنجاح حتى {{endDate}}. أدر لوحتك: {{siteUrl}}/dashboard",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">🔄</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم تجديد اشتراكك!</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، تم تجديد اشتراكك في <strong style="color:#0d9488;">{{planName}}</strong> بنجاح.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#f0fdf9,#dcfce7);border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;text-align:center;">
+          <p style="margin:0 0 4px;color:#166534;font-size:14px;">{{planName}}</p>
+          <p style="margin:0 0 12px;color:#16a34a;font-size:26px;font-weight:900;">{{price}} ج.م</p>
+          <p style="margin:0;color:#166534;font-size:13px;">من {{startDate}} حتى {{endDate}}</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}/dashboard" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">لوحة التحكم →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── PAYMENT / INVOICE ───────────────────────────────────────────────────────
+
+  {
+    name: "إيصال الدفع",
+    slug: "payment-receipt",
+    subject: "إيصال دفع #{{transactionId}} — {{siteName}}",
+    category: "payment",
+    channels: '["email"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","amount","transactionId","paymentDate","planName","contactEmail","year"]),
+    plainBody: "إيصال دفع: {{userName}} دفع {{amount}} ج.م بتاريخ {{paymentDate}}. رقم المعاملة: {{transactionId}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:20px;">
+        <p style="margin:0;color:#94a3b8;font-size:12px;letter-spacing:2px;text-transform:uppercase;">إيصال رسمي</p>
+        <h2 style="margin:4px 0 0;color:#0f172a;font-size:26px;font-weight:900;">إيصال الدفع</h2>
+      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;">
+          <table width="100%">
+            <tr><td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #e2e8f0;">رقم المعاملة</td><td style="color:#0f172a;font-weight:700;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{transactionId}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #e2e8f0;">الاسم</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{userName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #e2e8f0;">الباقة</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{planName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:8px 0;border-bottom:1px solid #e2e8f0;">تاريخ الدفع</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{paymentDate}}</td></tr>
+            <tr><td style="color:#64748b;font-size:14px;padding:12px 0 0;font-weight:700;">إجمالي المبلغ</td><td style="color:#0d9488;font-weight:900;font-size:20px;text-align:left;padding-top:12px;">{{amount}} ج.م</td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;line-height:1.7;">للاستفسار أو طلب فاتورة رسمية: <a href="mailto:{{contactEmail}}" style="color:#0d9488;">{{contactEmail}}</a></p>
+    `),
+  },
+  {
+    name: "استرداد المبلغ",
+    slug: "payment-refund",
+    subject: "تم استرداد مبلغك — {{siteName}}",
+    category: "payment",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","amount","transactionId","paymentDate","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، تم استرداد مبلغ {{amount}} ج.م إلى حسابك. رقم المعاملة: {{transactionId}}. قد يستغرق ذلك 3-5 أيام عمل.",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dbeafe;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">💰</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم استرداد مبلغك</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، تمت معالجة طلب استرداد مبلغك بنجاح.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eff6ff;border-radius:14px;border:1px solid #bfdbfe;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;text-align:center;">
+          <p style="margin:0 0 4px;color:#1e40af;font-size:14px;">المبلغ المُسترد</p>
+          <p style="margin:0 0 8px;color:#1d4ed8;font-size:28px;font-weight:900;">{{amount}} ج.م</p>
+          <p style="margin:0;color:#3730a3;font-size:12px;">رقم المعاملة: {{transactionId}} &nbsp;·&nbsp; {{paymentDate}}</p>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;border-radius:12px;">
+        <tr><td style="padding:16px 20px;text-align:center;">
+          <p style="margin:0;color:#64748b;font-size:13px;">قد يستغرق وصول المبلغ إلى حسابك البنكي من 3 إلى 5 أيام عمل.</p>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── ACCOUNT ─────────────────────────────────────────────────────────────────
+
+  {
+    name: "تعليق الحساب",
+    slug: "account-suspended",
+    subject: "إشعار بشأن حسابك في {{siteName}}",
+    category: "admin",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","rejectReason","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، تم تعليق حسابك في {{siteName}} مؤقتاً. السبب: {{rejectReason}}. للاعتراض: {{contactEmail}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#fef3c7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">⚠️</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم تعليق حسابك مؤقتاً</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، تم تعليق حسابك في <strong style="color:#0d9488;">{{siteName}}</strong> مؤقتاً.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffbeb;border-radius:14px;border:1px solid #fde68a;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;">
+          <p style="margin:0 0 8px;color:#92400e;font-weight:700;font-size:14px;">السبب:</p>
+          <p style="margin:0;color:#78350f;font-size:14px;line-height:1.7;">{{rejectReason}}</p>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;text-align:center;">إذا كنت تعتقد أن هذا القرار خاطئ، تواصل مع فريق الدعم.</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="border:2px solid #d97706;border-radius:12px;padding:12px 32px;text-align:center;">
+          <a href="mailto:{{contactEmail}}" style="color:#d97706;text-decoration:none;font-weight:700;font-size:15px;display:block;">تواصل مع الدعم →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "إعادة تفعيل الحساب",
+    slug: "account-reactivated",
+    subject: "✅ تم إعادة تفعيل حسابك في {{siteName}}",
+    category: "admin",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}! تم رفع التعليق عن حسابك في {{siteName}}. يمكنك تسجيل الدخول والاستمرار: {{siteUrl}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">✅</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم إعادة تفعيل حسابك</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، يسعدنا إخبارك بأنه تم رفع التعليق عن حسابك في <strong style="color:#0d9488;">{{siteName}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0fdf4;border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;text-align:center;">
+          <p style="margin:0;color:#166534;font-size:14px;line-height:1.7;">حسابك نشط الآن ويمكنك الاستمرار في استخدام جميع الخدمات.</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{siteUrl}}" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">تسجيل الدخول →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── SUPPORT ─────────────────────────────────────────────────────────────────
+
+  {
+    name: "استلام رسالة دعم",
+    slug: "support-ticket-received",
+    subject: "تم استلام رسالتك — {{siteName}}",
+    category: "system",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","orderNumber","notificationBody","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، تم استلام رسالتك #{{orderNumber}} وسيرد عليك فريق الدعم خلال 24 ساعة.",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dbeafe;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">📨</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">تم استلام رسالتك!</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، تلقينا رسالتك رقم #<strong>{{orderNumber}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eff6ff;border-radius:14px;border:1px solid #bfdbfe;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;">
+          <p style="margin:0 0 8px;color:#1e40af;font-weight:700;font-size:14px;">موضوع رسالتك:</p>
+          <p style="margin:0;color:#1e3a8a;font-size:14px;line-height:1.7;">{{notificationBody}}</p>
+        </td></tr>
+      </table>
+      <p style="margin:0;color:#94a3b8;font-size:13px;text-align:center;line-height:1.7;">سيرد عليك فريق الدعم خلال <strong>24 ساعة عمل</strong>.<br/>للاستفسار العاجل: <a href="mailto:{{contactEmail}}" style="color:#0d9488;">{{contactEmail}}</a></p>
+    `),
+  },
+  {
+    name: "رد على رسالة الدعم",
+    slug: "support-ticket-reply",
+    subject: "رد من فريق الدعم — {{siteName}}",
+    category: "system",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","orderNumber","notificationBody","actionLink","contactEmail","year"]),
+    plainBody: "مرحباً {{userName}}، رد فريق الدعم على رسالتك #{{orderNumber}}: {{notificationBody}}. شاهد التفاصيل: {{actionLink}}",
+    htmlBody: BASE_HTML(`
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:72px;height:72px;line-height:72px;font-size:32px;text-align:center;">💬</div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;text-align:center;">رد من فريق الدعم</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:15px;line-height:1.7;text-align:center;">مرحباً <strong>{{userName}}</strong>، ردّ فريق الدعم على رسالتك رقم #<strong>{{orderNumber}}</strong>.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0fdf4;border-radius:14px;border:1px solid #bbf7d0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;">
+          <p style="margin:0 0 8px;color:#166534;font-weight:700;font-size:14px;">رد فريق الدعم:</p>
+          <p style="margin:0;color:#14532d;font-size:14px;line-height:1.8;">{{notificationBody}}</p>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{actionLink}}" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">عرض المحادثة →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── ADMIN NOTIFICATIONS ─────────────────────────────────────────────────────
+
+  {
+    name: "مستخدم جديد (للأدمن)",
+    slug: "admin-new-user",
+    subject: "👤 مستخدم جديد تسجّل في {{siteName}}",
+    category: "admin",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","userEmail","providerPhone","registrationDate","adminUrl","year"]),
+    plainBody: "مستخدم جديد: {{userName}} ({{userEmail}}) سجّل في {{registrationDate}}. راجع: {{adminUrl}}",
+    htmlBody: BASE_HTML(`
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:22px;font-weight:800;">👤 مستخدم جديد</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.7;">تم تسجيل مستخدم جديد على المنصة.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;">
+          <table width="100%">
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">الاسم</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{userName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">البريد</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{userEmail}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">الهاتف</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{providerPhone}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;">تاريخ التسجيل</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;">{{registrationDate}}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{adminUrl}}" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">لوحة الإدارة →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+  {
+    name: "طلب جديد (للأدمن)",
+    slug: "admin-new-order",
+    subject: "🛒 طلب خدمة جديد #{{orderNumber}} — {{siteName}}",
+    category: "admin",
+    channels: '["email","in_app"]',
+    variables: JSON.stringify(["siteName","siteUrl","userName","providerName","orderNumber","serviceName","amount","orderDate","adminUrl","year"]),
+    plainBody: "طلب جديد #{{orderNumber}}: {{userName}} طلب {{serviceName}} من {{providerName}} بمبلغ {{amount}} ج.م. راجع: {{adminUrl}}",
+    htmlBody: BASE_HTML(`
+      <h2 style="margin:0 0 8px;color:#0f172a;font-size:22px;font-weight:800;">🛒 طلب خدمة جديد</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;">تم تسجيل طلب خدمة جديد على المنصة.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:24px;">
+        <tr><td style="padding:24px 28px;">
+          <table width="100%">
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">رقم الطلب</td><td style="color:#0f172a;font-weight:700;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">#{{orderNumber}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">العميل</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{userName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">مقدم الخدمة</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{providerName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">الخدمة</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{serviceName}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:7px 0;border-bottom:1px solid #e2e8f0;">التاريخ</td><td style="color:#0f172a;font-weight:600;font-size:13px;text-align:left;border-bottom:1px solid #e2e8f0;">{{orderDate}}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:8px 0 0;font-weight:700;">المبلغ</td><td style="color:#0d9488;font-weight:900;font-size:18px;text-align:left;padding-top:8px;">{{amount}} ج.م</td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 0;">
+        <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
+          <a href="{{adminUrl}}" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">لوحة الإدارة →</a>
+        </td></tr>
+      </table>
+    `),
+  },
+
+  // ── SMS TEMPLATES ───────────────────────────────────────────────────────────
+
+  {
+    name: "رسالة SMS — تذكير الاشتراك",
+    slug: "sms-subscription-reminder",
+    subject: "تذكير اشتراك",
+    category: "sms",
+    channels: '["sms"]',
+    variables: JSON.stringify(["siteName","userName","planName","daysLeft","renewUrl"]),
+    plainBody: "{{siteName}}: مرحباً {{userName}}، اشتراكك في {{planName}} ينتهي بعد {{daysLeft}} يوم. جدده الآن: {{renewUrl}}",
+    htmlBody: "",
+  },
+  {
+    name: "رسالة SMS — تأكيد الدفع",
+    slug: "sms-payment-confirmed",
+    subject: "تأكيد الدفع",
+    category: "sms",
+    channels: '["sms"]',
+    variables: JSON.stringify(["siteName","userName","amount","transactionId"]),
+    plainBody: "{{siteName}}: تم استلام دفعتك {{amount}} ج.م. رقم المعاملة: {{transactionId}}. شكراً!",
+    htmlBody: "",
+  },
+  {
+    name: "رسالة SMS — طلب جديد لمزود الخدمة",
+    slug: "sms-provider-new-order",
+    subject: "طلب خدمة جديد",
+    category: "sms",
+    channels: '["sms"]',
+    variables: JSON.stringify(["siteName","providerName","orderNumber","serviceName","userName"]),
+    plainBody: "{{siteName}}: مرحباً {{providerName}}! طلب جديد #{{orderNumber}} — {{serviceName}} من {{userName}}. افتح التطبيق للرد.",
+    htmlBody: "",
+  },
+
+  // ── WHATSAPP TEMPLATES ──────────────────────────────────────────────────────
+
+  {
+    name: "واتساب — تأكيد الطلب",
+    slug: "whatsapp-order-confirmed",
+    subject: "تأكيد الطلب واتساب",
+    category: "whatsapp",
+    channels: '["whatsapp"]',
+    variables: JSON.stringify(["siteName","userName","orderNumber","serviceName","providerName","amount","siteUrl"]),
+    plainBody: "أهلاً {{userName}}! 👋\n\n✅ *تم تأكيد طلبك!*\n\n📋 رقم الطلب: *#{{orderNumber}}*\n🔧 الخدمة: {{serviceName}}\n👤 مقدم الخدمة: {{providerName}}\n💰 المبلغ: *{{amount}} ج.م*\n\nتابع طلبك: {{siteUrl}}/user/requests\n\n{{siteName}} 🌟",
+    htmlBody: "",
+  },
+  {
+    name: "واتساب — تذكير الاشتراك",
+    slug: "whatsapp-subscription-reminder",
+    subject: "تذكير اشتراك واتساب",
+    category: "whatsapp",
+    channels: '["whatsapp"]',
+    variables: JSON.stringify(["siteName","userName","planName","daysLeft","renewUrl"]),
+    plainBody: "مرحباً {{userName}} 👋\n\n⚠️ *تنبيه مهم*\n\nاشتراكك في *{{planName}}* ينتهي بعد *{{daysLeft}} يوم* فقط!\n\nجدد الآن للحفاظ على ظهور خدماتك:\n{{renewUrl}}\n\n{{siteName}}",
+    htmlBody: "",
+  },
+  {
+    name: "واتساب — إتمام الخدمة",
+    slug: "whatsapp-service-completed",
+    subject: "إتمام الخدمة واتساب",
+    category: "whatsapp",
+    channels: '["whatsapp"]',
+    variables: JSON.stringify(["siteName","userName","orderNumber","serviceName","providerName","siteUrl"]),
+    plainBody: "أهلاً {{userName}}! 🎉\n\n✅ *تم إتمام طلبك بنجاح!*\n\n📋 رقم الطلب: *#{{orderNumber}}*\n🔧 الخدمة: {{serviceName}}\n👤 مقدم الخدمة: {{providerName}}\n\n⭐ يسعدنا معرفة رأيك، قيّم الخدمة:\n{{siteUrl}}/user/requests\n\nشكراً لثقتك بنا! {{siteName}}",
+    htmlBody: "",
+  },
+
+  // ── PUSH NOTIFICATIONS ──────────────────────────────────────────────────────
+
+  {
+    name: "إشعار Push — طلب جديد",
+    slug: "push-new-order",
+    subject: "طلب جديد",
+    category: "notification",
+    channels: '["push","in_app"]',
+    variables: JSON.stringify(["userName","orderNumber","serviceName"]),
+    plainBody: "طلب جديد #{{orderNumber}} — {{serviceName}} من {{userName}}",
+    htmlBody: "",
+  },
+  {
+    name: "إشعار Push — تقييم جديد",
+    slug: "push-new-review",
+    subject: "تقييم جديد",
+    category: "notification",
+    channels: '["push","in_app"]',
+    variables: JSON.stringify(["userName","serviceName","rating"]),
+    plainBody: "قيّمك {{userName}} على {{serviceName}} بـ {{rating}} نجوم ⭐",
+    htmlBody: "",
+  },
+  {
+    name: "إشعار Push — اشتراك ينتهي",
+    slug: "push-subscription-expiring",
+    subject: "اشتراكك ينتهي قريباً",
+    category: "notification",
+    channels: '["push","in_app"]',
+    variables: JSON.stringify(["planName","daysLeft"]),
+    plainBody: "اشتراكك في {{planName}} ينتهي بعد {{daysLeft}} يوم — جدد الآن! ⚠️",
+    htmlBody: "",
+  },
 ];
 
 // ── routes ──────────────────────────────────────────────────────────────────
