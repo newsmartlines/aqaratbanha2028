@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { api, type Provider, type Category, type Subcategory, type SiteSettings, type Region, type FavoriteItem } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
+import { useInterpolate } from "@/lib/use-interpolate";
 import { useAuth } from "@/lib/auth-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
