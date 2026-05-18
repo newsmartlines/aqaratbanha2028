@@ -64,9 +64,9 @@ const CONTACT_METHODS = [
   { id: "email", label: "بريد إلكتروني", icon: Mail },
 ];
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 3;
 
-type StepId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+type StepId = 1 | 2 | 3;
 
 interface FormDraft {
   basicInfo: { name: string; phone: string; email: string; bio: string; avatar: string; cover: string };
@@ -190,7 +190,7 @@ export default function RealEstateOnboarding() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (step !== 9 && reviewConfirmed) setReviewConfirmed(false);
+    if (step !== 3 && reviewConfirmed) setReviewConfirmed(false);
   }, [step]);
 
   const needsRooms = ["residential"].includes(draft.mainCategory);
@@ -198,9 +198,9 @@ export default function RealEstateOnboarding() {
   const isLand = draft.mainCategory === "land";
 
   const stepLabels = [
-    "المعلومات الأساسية", "الموقع", "تصنيف العقار", "النوع الفرعي",
-    "تفاصيل العقار", "الوسائط", "المميزات والخدمات",
-    "التواصل والباقة", "المراجعة والإرسال",
+    "بيانات العقار والموقع",
+    "التفاصيل والوسائط",
+    "التواصل والإرسال",
   ];
 
   const validate = (s: number): boolean => {
@@ -209,16 +209,13 @@ export default function RealEstateOnboarding() {
       if (!draft.basicInfo.name.trim()) e.name = "الاسم مطلوب";
       if (!draft.basicInfo.phone.trim()) e.phone = "رقم الجوال مطلوب";
       if (!draft.basicInfo.email.trim()) e.email = "البريد الإلكتروني مطلوب";
-    } else if (s === 2) {
       if (!draft.locRegionId) e.region = "يرجى اختيار المنطقة";
       if (!draft.locCityId) e.city = "يرجى اختيار المدينة";
-    } else if (s === 3) {
       if (!draft.mainCategory) e.mainCategory = "يرجى اختيار التصنيف الرئيسي";
       if (!draft.listingType) e.listingType = "يرجى اختيار نوع القائمة";
-    } else if (s === 4) {
       if (!draft.subCategory) e.subCategory = "يرجى اختيار النوع الفرعي";
       if (!draft.propTitle.trim()) e.propTitle = "اسم العقار مطلوب";
-    } else if (s === 5) {
+    } else if (s === 2) {
       if (!draft.propPrice.trim()) e.propPrice = "السعر مطلوب";
       if (!draft.propArea.trim()) e.propArea = "المساحة مطلوبة";
     }
@@ -443,8 +440,9 @@ export default function RealEstateOnboarding() {
 
   const renderStep1 = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+      {/* ── بيانات المعلن ── */}
       <div>
-        <h2 className="text-2xl font-bold mb-1">المعلومات الأساسية</h2>
+        <h2 className="text-2xl font-bold mb-1">بيانات المعلن</h2>
         <p className="text-muted-foreground text-sm">أخبرنا عن نشاطك العقاري وكيف تُعرّف نفسك للعملاء</p>
       </div>
       <div className="relative mb-12">
@@ -496,171 +494,129 @@ export default function RealEstateOnboarding() {
           <Textarea id="re-bio" value={draft.basicInfo.bio} onChange={e => updateBasicInfo({ bio: e.target.value })} placeholder="اكتب نبذة مختصرة عن شركتك ونشاطها العقاري..." className="resize-none h-24 mt-1" />
         </div>
       </div>
-    </div>
-  );
 
-  const renderStep2 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">الموقع ومنطقة الخدمة</h2>
-        <p className="text-muted-foreground text-sm">حدد أين تعمل وأين تقع العقارات التي تتعامل بها</p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label>المنطقة *</Label>
-          <Select value={draft.locRegionId ? String(draft.locRegionId) : "__none__"} onValueChange={v => { if (v === "__none__") { updateDraft({ locRegionId: null, locCityId: null, locCityName: null }); return; } updateDraft({ locRegionId: parseInt(v), locCityId: null, locCityName: null }); }}>
-            <SelectTrigger className="h-11 mt-1"><SelectValue placeholder="اختر المنطقة" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">— اختر المنطقة —</SelectItem>
-              {(regionsList as Region[]).map(r => <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          {errors.region && <p className="text-xs text-destructive mt-1">{errors.region}</p>}
-        </div>
-        <div>
-          <Label>المدينة *</Label>
-          {!draft.locRegionId ? (
-            <p className="text-sm text-muted-foreground py-3 mt-1">اختر المنطقة أولاً</p>
-          ) : (
-            <Select value={draft.locCityId ? String(draft.locCityId) : "__none__"} onValueChange={v => { if (v === "__none__") { updateDraft({ locCityId: null, locCityName: null }); return; } const id = parseInt(v); const city = cityList.find((c: any) => c.id === id); updateDraft({ locCityId: id, locCityName: city?.nameAr ?? null }); }}>
-              <SelectTrigger className="h-11 mt-1"><SelectValue placeholder="اختر المدينة" /></SelectTrigger>
+      {/* ── الموقع ── */}
+      <div className="border-t border-border/40 pt-8">
+        <h3 className="text-lg font-bold mb-1">الموقع</h3>
+        <p className="text-muted-foreground text-sm mb-4">حدد أين يقع العقار</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label>المنطقة *</Label>
+            <Select value={draft.locRegionId ? String(draft.locRegionId) : "__none__"} onValueChange={v => { if (v === "__none__") { updateDraft({ locRegionId: null, locCityId: null, locCityName: null }); return; } updateDraft({ locRegionId: parseInt(v), locCityId: null, locCityName: null }); }}>
+              <SelectTrigger className="h-11 mt-1"><SelectValue placeholder="اختر المنطقة" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— اختر المدينة —</SelectItem>
-                {(cityList as any[]).map(c => <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>)}
+                <SelectItem value="__none__">— اختر المنطقة —</SelectItem>
+                {(regionsList as Region[]).map(r => <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>)}
               </SelectContent>
             </Select>
-          )}
-          {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="district">الحي / المنطقة</Label>
-          <Input id="district" value={draft.locDistrict} onChange={e => updateDraft({ locDistrict: e.target.value })} placeholder="مثال: حي النرجس" className="h-11 mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="address">العنوان التفصيلي</Label>
-          <Input id="address" value={draft.locAddress} onChange={e => updateDraft({ locAddress: e.target.value })} placeholder="الشارع والعنوان الكامل" className="h-11 mt-1" />
-        </div>
-      </div>
-      <div>
-        <Label className="mb-2 block">تحديد الموقع على الخريطة <span className="text-muted-foreground font-normal text-xs">(اختياري)</span></Label>
-        <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
-          <div className="flex items-center gap-3 mb-3">
-            <Button type="button" variant="outline" size="sm" className="gap-2" onClick={getGPS}>
-              <Navigation className="w-4 h-4" /> تحديد موقعي الحالي
-            </Button>
-            <span className="text-xs text-muted-foreground">أو أدخل الإحداثيات يدوياً</span>
+            {errors.region && <p className="text-xs text-destructive mt-1">{errors.region}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs text-muted-foreground">خط العرض (Latitude)</Label>
-              <Input value={draft.locLat} onChange={e => updateDraft({ locLat: e.target.value })} placeholder="24.7136" className="h-10 mt-1" dir="ltr" />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">خط الطول (Longitude)</Label>
-              <Input value={draft.locLng} onChange={e => updateDraft({ locLng: e.target.value })} placeholder="46.6753" className="h-10 mt-1" dir="ltr" />
-            </div>
+          <div>
+            <Label>المدينة *</Label>
+            {!draft.locRegionId ? (
+              <p className="text-sm text-muted-foreground py-3 mt-1">اختر المنطقة أولاً</p>
+            ) : (
+              <Select value={draft.locCityId ? String(draft.locCityId) : "__none__"} onValueChange={v => { if (v === "__none__") { updateDraft({ locCityId: null, locCityName: null }); return; } const id = parseInt(v); const city = (selectedRegion?.cities ?? []).find((c: any) => c.id === id); updateDraft({ locCityId: id, locCityName: city?.nameAr ?? null }); }}>
+                <SelectTrigger className="h-11 mt-1"><SelectValue placeholder="اختر المدينة" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">— اختر المدينة —</SelectItem>
+                  {(cityList as any[]).map(c => <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
           </div>
-          {draft.locLat && draft.locLng && (
-            <div className="mt-3 flex items-center gap-2 text-sm text-emerald-600">
-              <MapPin className="w-4 h-4" />
-              <span>الموقع: {draft.locLat}, {draft.locLng}</span>
-            </div>
-          )}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <Label htmlFor="district">الحي</Label>
+            <Input id="district" value={draft.locDistrict} onChange={e => updateDraft({ locDistrict: e.target.value })} placeholder="مثال: حي النرجس" className="h-11 mt-1" />
+          </div>
+          <div>
+            <Label htmlFor="address">العنوان التفصيلي</Label>
+            <Input id="address" value={draft.locAddress} onChange={e => updateDraft({ locAddress: e.target.value })} placeholder="الشارع والعنوان الكامل" className="h-11 mt-1" />
+          </div>
         </div>
       </div>
-    </div>
-  );
 
-  const renderStep3 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">تصنيف العقار</h2>
-        <p className="text-muted-foreground text-sm">اختر نوع العقار والغرض منه</p>
-      </div>
-      <div>
-        <Label className="text-base font-semibold mb-3 block">التصنيف الرئيسي *</Label>
-        {errors.mainCategory && <p className="text-sm text-destructive mb-2">{errors.mainCategory}</p>}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {MAIN_CATEGORIES.map(cat => {
-            const Icon = cat.icon;
-            const selected = draft.mainCategory === cat.id;
-            return (
-              <button key={cat.id} type="button" onClick={() => updateDraft({ mainCategory: cat.id, subCategory: "" })}
-                className={`relative p-5 rounded-2xl border-2 transition-all duration-300 text-center group ${selected ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-primary/40 hover:bg-secondary/30"}`}>
-                {selected && <div className="absolute top-3 left-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center"><Check className="w-3 h-3 text-white" /></div>}
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${cat.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform`}>
-                  <Icon className="w-7 h-7 text-white" />
-                </div>
-                <span className="font-bold text-lg">{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <div>
-        <Label className="text-base font-semibold mb-3 block">الغرض من العقار *</Label>
-        {errors.listingType && <p className="text-sm text-destructive mb-2">{errors.listingType}</p>}
-        <div className="grid grid-cols-2 gap-4">
-          {LISTING_TYPES.map(lt => {
-            const selected = draft.listingType === lt.id;
-            return (
-              <button key={lt.id} type="button" onClick={() => updateDraft({ listingType: lt.id })}
-                className={`p-5 rounded-2xl border-2 transition-all duration-300 text-center ${selected ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-primary/40 hover:bg-secondary/30"}`}>
-                <span className="text-3xl mb-2 block">{lt.emoji}</span>
-                <span className={`font-bold text-xl ${selected ? "text-primary" : ""}`}>{lt.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep4 = () => {
-    const subs = draft.mainCategory ? (SUB_CATEGORIES[draft.mainCategory] ?? []) : [];
-    return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+      {/* ── تصنيف العقار ── */}
+      <div className="border-t border-border/40 pt-8">
+        <h3 className="text-lg font-bold mb-1">تصنيف العقار</h3>
+        <p className="text-muted-foreground text-sm mb-4">اختر نوع العقار والغرض منه</p>
         <div>
-          <h2 className="text-2xl font-bold mb-1">النوع الفرعي وبيانات العقار</h2>
-          <p className="text-muted-foreground text-sm">حدد النوع التفصيلي وابدأ بكتابة بيانات العقار</p>
-        </div>
-        <div>
-          <Label className="text-base font-semibold mb-3 block">النوع الفرعي *</Label>
-          {errors.subCategory && <p className="text-sm text-destructive mb-2">{errors.subCategory}</p>}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {subs.map(sub => {
-              const selected = draft.subCategory === sub;
+          <Label className="text-sm font-semibold mb-3 block">التصنيف الرئيسي *</Label>
+          {errors.mainCategory && <p className="text-sm text-destructive mb-2">{errors.mainCategory}</p>}
+          <div className="grid grid-cols-3 gap-3">
+            {MAIN_CATEGORIES.map(cat => {
+              const Icon = cat.icon;
+              const selected = draft.mainCategory === cat.id;
               return (
-                <button key={sub} type="button" onClick={() => updateDraft({ subCategory: sub })}
-                  className={`px-4 py-3 rounded-xl border-2 font-medium transition-all text-sm ${selected ? "border-primary bg-primary/8 text-primary shadow-sm" : "border-border/50 hover:border-primary/40 hover:bg-secondary/30"}`}>
-                  {selected && <Check className="w-3.5 h-3.5 inline ml-1.5 text-primary" />}{sub}
+                <button key={cat.id} type="button" onClick={() => updateDraft({ mainCategory: cat.id, subCategory: "" })}
+                  className={`relative p-4 rounded-2xl border-2 transition-all text-center group ${selected ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-primary/40 hover:bg-secondary/30"}`}>
+                  {selected && <div className="absolute top-2 left-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></div>}
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center mx-auto mb-2`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-bold text-sm">{cat.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
-        <div className="space-y-4">
+        <div className="mt-4">
+          <Label className="text-sm font-semibold mb-3 block">الغرض من العقار *</Label>
+          {errors.listingType && <p className="text-sm text-destructive mb-2">{errors.listingType}</p>}
+          <div className="grid grid-cols-2 gap-3">
+            {LISTING_TYPES.map(lt => {
+              const selected = draft.listingType === lt.id;
+              return (
+                <button key={lt.id} type="button" onClick={() => updateDraft({ listingType: lt.id })}
+                  className={`p-4 rounded-2xl border-2 transition-all text-center ${selected ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-primary/40 hover:bg-secondary/30"}`}>
+                  <span className={`font-bold text-lg ${selected ? "text-primary" : ""}`}>{lt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {draft.mainCategory && (
+          <div className="mt-4">
+            <Label className="text-sm font-semibold mb-3 block">النوع الفرعي *</Label>
+            {errors.subCategory && <p className="text-sm text-destructive mb-2">{errors.subCategory}</p>}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {(SUB_CATEGORIES[draft.mainCategory] ?? []).map(sub => {
+                const selected = draft.subCategory === sub;
+                return (
+                  <button key={sub} type="button" onClick={() => updateDraft({ subCategory: sub })}
+                    className={`px-3 py-2.5 rounded-xl border-2 font-medium transition-all text-sm ${selected ? "border-primary bg-primary/8 text-primary shadow-sm" : "border-border/50 hover:border-primary/40 hover:bg-secondary/30"}`}>
+                    {selected && <Check className="w-3 h-3 inline ml-1 text-primary" />}{sub}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div className="mt-4 space-y-3">
           <div>
             <Label htmlFor="propTitle">اسم / عنوان العقار *</Label>
-            <Input id="propTitle" value={draft.propTitle} onChange={e => updateDraft({ propTitle: e.target.value })} className={`h-12 mt-1 ${errors.propTitle ? "border-destructive" : ""}`} placeholder="مثال: شقة فاخرة بحي النرجس — 3 غرف" />
+            <Input id="propTitle" value={draft.propTitle} onChange={e => updateDraft({ propTitle: e.target.value })} className={`h-12 mt-1 ${errors.propTitle ? "border-destructive" : ""}`} placeholder="مثال: شقة فاخرة 3 غرف — حي النرجس" />
             {errors.propTitle && <p className="text-xs text-destructive mt-1">{errors.propTitle}</p>}
           </div>
           <div>
             <Label htmlFor="propDesc">وصف احترافي للعقار</Label>
-            <Textarea id="propDesc" value={draft.propDesc} onChange={e => updateDraft({ propDesc: e.target.value })} placeholder="اكتب وصفاً تفصيلياً يُبرز مميزات العقار ويجذب المهتمين..." className="resize-none h-28 mt-1" />
+            <Textarea id="propDesc" value={draft.propDesc} onChange={e => updateDraft({ propDesc: e.target.value })} placeholder="اكتب وصفاً تفصيلياً يُبرز مميزات العقار..." className="resize-none h-24 mt-1" />
           </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 
-  const renderStep5 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
+
+  const renderStep2 = () => (
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+      {/* ── التفاصيل ── */}
       <div>
         <h2 className="text-2xl font-bold mb-1">تفاصيل العقار</h2>
-        <p className="text-muted-foreground text-sm">أضف المعلومات التفصيلية التي تُساعد في استقطاب المشترين والمستأجرين</p>
+        <p className="text-muted-foreground text-sm">السعر والمواصفات الأساسية</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -721,233 +677,118 @@ export default function RealEstateOnboarding() {
         </div>
       )}
       {!isLand && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <Label>التشطيب</Label>
-              <Select value={draft.propFinishing || "__none__"} onValueChange={v => updateDraft({ propFinishing: v === "__none__" ? "" : v })}>
-                <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
-                <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{FINISHING_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>حالة العقار</Label>
-              <Select value={draft.propCondition || "__none__"} onValueChange={v => updateDraft({ propCondition: v === "__none__" ? "" : v })}>
-                <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
-                <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{CONDITION_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>مفروش / غير مفروش</Label>
-              <Select value={draft.propFurnished || "__none__"} onValueChange={v => updateDraft({ propFurnished: v === "__none__" ? "" : v })}>
-                <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
-                <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{FURNISHED_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <Label>التشطيب</Label>
+            <Select value={draft.propFinishing || "__none__"} onValueChange={v => updateDraft({ propFinishing: v === "__none__" ? "" : v })}>
+              <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
+              <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{FINISHING_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label>اتجاه العقار</Label>
-              <Select value={draft.propDirection || "__none__"} onValueChange={v => updateDraft({ propDirection: v === "__none__" ? "" : v })}>
-                <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
-                <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{DIRECTION_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>حالة العقار</Label>
+            <Select value={draft.propCondition || "__none__"} onValueChange={v => updateDraft({ propCondition: v === "__none__" ? "" : v })}>
+              <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
+              <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{CONDITION_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
-        </>
+          <div>
+            <Label>مفروش</Label>
+            <Select value={draft.propFurnished || "__none__"} onValueChange={v => updateDraft({ propFurnished: v === "__none__" ? "" : v })}>
+              <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="اختر" /></SelectTrigger>
+              <SelectContent>{<SelectItem value="__none__">—</SelectItem>}{FURNISHED_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        </div>
       )}
-    </div>
-  );
 
-  const renderStep6 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">الوسائط والملفات</h2>
-        <p className="text-muted-foreground text-sm">أضف صور العقار والوسائط الداعمة لإبراز العقار بأفضل صورة</p>
-      </div>
-      <div>
-        <Label className="text-base font-semibold mb-2 block">صور العقار <span className="text-muted-foreground font-normal text-sm">(حتى 15 صورة)</span></Label>
-        <div className="border-2 border-dashed border-border/60 rounded-2xl p-8 text-center hover:bg-secondary/20 hover:border-primary/50 transition-colors cursor-pointer relative group">
-          <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={handlePropertyImages} disabled={draft.images.length >= 15} />
-          <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-            <ImageIcon className="w-7 h-7" />
-          </div>
-          <p className="font-semibold">اسحب الصور هنا أو اضغط للاختيار</p>
-          <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP — حتى 5MB لكل صورة ({draft.images.length}/15)</p>
-        </div>
-        {draft.images.length > 0 && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4">
-            {draft.images.map((img, i) => (
-              <div key={i} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group">
-                <img src={img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                <button onClick={() => removeImage(i)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors shadow-sm opacity-0 group-hover:opacity-100">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-                {i === 0 && <div className="absolute bottom-0 inset-x-0 bg-primary/80 text-primary-foreground text-[10px] text-center py-0.5 font-bold">الصورة الرئيسية</div>}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="videoUrl" className="text-base font-semibold mb-2 block">رابط الفيديو <span className="text-muted-foreground font-normal text-sm">(YouTube / Vimeo)</span></Label>
-        <div className="relative">
-          <Input id="videoUrl" value={draft.videoUrl} onChange={e => updateDraft({ videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=..." className="h-12 pl-11" dir="ltr" />
-          <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
-        </div>
-      </div>
-      <div>
-        <Label className="text-base font-semibold mb-2 block">بروشور / ملف PDF <span className="text-muted-foreground font-normal text-sm">(اختياري، حتى 10MB)</span></Label>
-        <div className={`border-2 border-dashed rounded-2xl p-6 transition-colors cursor-pointer relative group ${brochureFileRef.current ? "border-emerald-300 bg-emerald-50" : "border-border/60 hover:border-primary/50 hover:bg-secondary/20"}`}>
-          <input type="file" accept="application/pdf" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={handleBrochureUpload} />
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
-              <FileText className="w-6 h-6 text-red-500" />
+      {/* ── الوسائط ── */}
+      <div className="border-t border-border/40 pt-8">
+        <h3 className="text-lg font-bold mb-1">الوسائط</h3>
+        <p className="text-muted-foreground text-sm mb-4">صور العقار والملفات الداعمة</p>
+        <div>
+          <Label className="text-sm font-semibold mb-2 block">صور العقار <span className="text-muted-foreground font-normal text-sm">(حتى 15 صورة)</span></Label>
+          <div className="border-2 border-dashed border-border/60 rounded-2xl p-6 text-center hover:bg-secondary/20 hover:border-primary/50 transition-colors cursor-pointer relative group">
+            <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={handlePropertyImages} disabled={draft.images.length >= 15} />
+            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+              <Upload className="w-6 h-6" />
             </div>
-            {brochureFileRef.current ? (
-              <div>
-                <p className="font-semibold text-emerald-700">{brochureFileRef.current.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{(brochureFileRef.current.size / 1024 / 1024).toFixed(2)} MB</p>
-              </div>
-            ) : (
-              <div>
-                <p className="font-semibold">اضغط لرفع ملف PDF</p>
-                <p className="text-xs text-muted-foreground">بروشور العقار أو وثائق تفصيلية</p>
-              </div>
-            )}
+            <p className="font-semibold text-sm">اسحب الصور أو اضغط للاختيار</p>
+            <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG, WEBP — حتى 5MB ({draft.images.length}/15)</p>
           </div>
+          {draft.images.length > 0 && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4">
+              {draft.images.map((img, i) => (
+                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group">
+                  <img src={img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <button onClick={() => removeImage(i)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors shadow-sm opacity-0 group-hover:opacity-100">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                  {i === 0 && <div className="absolute bottom-0 inset-x-0 bg-primary/80 text-primary-foreground text-[10px] text-center py-0.5 font-bold">الرئيسية</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="mt-4">
+          <Label className="text-sm font-semibold mb-2 block">رابط فيديو <span className="text-muted-foreground font-normal text-sm">(YouTube)</span></Label>
+          <Input value={draft.videoUrl} onChange={e => updateDraft({ videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=..." className="h-11" dir="ltr" />
         </div>
       </div>
-    </div>
-  );
 
-  const renderStep7 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">مميزات وخدمات قريبة</h2>
-        <p className="text-muted-foreground text-sm">حدد ما يوفره العقار والخدمات المتاحة بالقرب منه</p>
-      </div>
-      <div>
-        <Label className="text-base font-semibold mb-3 block">مميزات العقار <span className="text-muted-foreground font-normal text-sm">({draft.features.length} مختار)</span></Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          {PROPERTY_FEATURES.map(f => {
-            const sel = draft.features.includes(f);
-            return (
-              <button key={f} type="button" onClick={() => toggleFeature(f)}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${sel ? "border-primary bg-primary/8 text-primary" : "border-border/50 hover:border-primary/30 hover:bg-secondary/30"}`}>
-                {sel ? <Check className="w-4 h-4 text-primary shrink-0" /> : <Plus className="w-4 h-4 text-muted-foreground shrink-0" />}
-                {f}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <div>
-        <Label className="text-base font-semibold mb-3 block">خدمات قريبة <span className="text-muted-foreground font-normal text-sm">({draft.nearbyServices.length} مختار)</span></Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          {NEARBY_SERVICES.map(s => {
-            const sel = draft.nearbyServices.includes(s);
-            return (
-              <button key={s} type="button" onClick={() => toggleNearby(s)}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${sel ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-border/50 hover:border-emerald-300 hover:bg-secondary/30"}`}>
-                {sel ? <Check className="w-4 h-4 text-emerald-600 shrink-0" /> : <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />}
-                {s}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep8 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">التواصل والباقة</h2>
-        <p className="text-muted-foreground text-sm">حدد طرق تواصل العملاء معك واختر الباقة المناسبة لنشاطك</p>
-      </div>
-      <Card className="border-border/60 shadow-sm">
-        <CardContent className="p-6 space-y-5">
-          <Label className="text-base font-bold block">طرق التواصل المتاحة</Label>
-          <div className="grid grid-cols-2 gap-3">
-            {CONTACT_METHODS.map(m => {
-              const sel = draft.contactMethods.includes(m.id);
+      {/* ── المميزات ── */}
+      <div className="border-t border-border/40 pt-8">
+        <h3 className="text-lg font-bold mb-1">المميزات والخدمات القريبة</h3>
+        <p className="text-muted-foreground text-sm mb-4">اختياري — يُساعد في جذب المشترين</p>
+        <div>
+          <Label className="text-sm font-semibold mb-3 block">مميزات العقار <span className="text-muted-foreground font-normal">({draft.features.length} مختار)</span></Label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {PROPERTY_FEATURES.map(f => {
+              const sel = draft.features.includes(f);
               return (
-                <button key={m.id} type="button" onClick={() => toggleContact(m.id)}
-                  className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${sel ? "border-primary bg-primary/8 text-primary" : "border-border/60 hover:border-primary/40 hover:bg-secondary/30"}`}>
-                  <m.icon className={`w-4 h-4 ${sel ? "text-primary" : "text-muted-foreground"}`} />
-                  {m.label}
-                  {sel && <Check className="w-3.5 h-3.5 mr-auto text-primary" />}
+                <button key={f} type="button" onClick={() => toggleFeature(f)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${sel ? "border-primary bg-primary/8 text-primary" : "border-border/50 hover:border-primary/30 hover:bg-secondary/30"}`}>
+                  {sel ? <Check className="w-3.5 h-3.5 text-primary shrink-0" /> : <Plus className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+                  {f}
                 </button>
               );
             })}
           </div>
-          {draft.contactMethods.includes("whatsapp") && (
-            <div className="animate-in fade-in slide-in-from-top-2">
-              <Label>رقم الواتساب</Label>
-              <Input value={draft.whatsapp} onChange={e => updateDraft({ whatsapp: e.target.value.replace(/\D/g, "") })} className="h-11 mt-1" dir="ltr" placeholder="+20...xxxxxx" inputMode="numeric" />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      <div>
-        <Label className="text-base font-bold mb-4 block">اختر باقتك</Label>
-        {packages.length === 0 ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-7 h-7 animate-spin text-primary" /></div>
-        ) : (() => {
-          const freePkg = packages.find(p => parseFloat(p.price) === 0) ?? packages[0];
-          const midIdx = Math.floor((packages.length - 1) / 2);
-          return (
-            <div className={`grid grid-cols-1 gap-4 ${packages.length === 2 ? "sm:grid-cols-2" : packages.length >= 3 ? "sm:grid-cols-3" : ""}`}>
-              {packages.map((pkg, idx) => {
-                const isFree = parseFloat(pkg.price) === 0;
-                const isRecommended = packages.length >= 3 && idx === midIdx && !isFree;
-                const isSelected = draft.plan === pkg.id || (draft.plan === null && pkg.id === freePkg?.id);
-                return (
-                  <Card key={pkg.id} onClick={() => updateDraft({ plan: isFree ? null : pkg.id })}
-                    className={`cursor-pointer transition-all duration-300 relative overflow-hidden ${isRecommended ? "md:-translate-y-2 md:scale-105" : ""} ${isSelected ? "border-primary shadow-lg ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40 hover:shadow-sm"}`}>
-                    {isRecommended && <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">موصى به</div>}
-                    <CardContent className={`p-5 ${isRecommended ? "pt-7 bg-primary/5" : ""}`}>
-                      <h3 className={`font-bold text-lg mb-1 ${isRecommended ? "text-primary" : ""}`}>{pkg.nameAr}</h3>
-                      <div className={`text-2xl font-black mb-3 ${isRecommended ? "text-primary" : ""}`}>
-                        {isFree ? "مجاناً" : `${pkg.price} ج.م/${pkg.durationDays <= 31 ? "شهر" : `${pkg.durationDays}ي`}`}
-                      </div>
-                      <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
-                        <div className="flex justify-between"><span>العمولة</span><span className="font-bold text-foreground">{pkg.commissionRate}%</span></div>
-                        <div className="flex justify-between"><span>أولوية البحث</span><span className="font-bold text-foreground">{pkg.priorityRank > 1 ? "مميزة" : "عادية"}</span></div>
-                        {pkg.maxListings && <div className="flex justify-between"><span>الحد الأقصى</span><span className="font-bold text-foreground">{pkg.maxListings} إعلان</span></div>}
-                      </div>
-                      <div className={`mt-4 text-center py-2.5 rounded-lg font-bold text-sm transition-colors ${isSelected ? "bg-primary text-primary-foreground" : isRecommended ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
-                        {isSelected ? "مختار" : "اختر"}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          );
-        })()}
+        </div>
+        <div className="mt-4">
+          <Label className="text-sm font-semibold mb-3 block">خدمات قريبة <span className="text-muted-foreground font-normal">({draft.nearbyServices.length} مختار)</span></Label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {NEARBY_SERVICES.map(s => {
+              const sel = draft.nearbyServices.includes(s);
+              return (
+                <button key={s} type="button" onClick={() => toggleNearby(s)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${sel ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-border/50 hover:border-emerald-300 hover:bg-secondary/30"}`}>
+                  {sel ? <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> : <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
 
-  const renderStep9 = () => {
+  const renderStep3 = () => {
     const mainCat = MAIN_CATEGORIES.find(c => c.id === draft.mainCategory);
     const listType = LISTING_TYPES.find(l => l.id === draft.listingType);
     const regionName = (regionsList as Region[]).find(r => r.id === draft.locRegionId)?.nameAr;
     const selectedPkg = packages.find(p => p.id === draft.plan);
     const freePkg = packages.find(p => parseFloat(p.price) === 0) ?? packages[0];
     const planLabel = selectedPkg
-      ? `${selectedPkg.nameAr} — ${selectedPkg.price} ج.م/${selectedPkg.durationDays <= 31 ? "شهر" : `${selectedPkg.durationDays} يوم`}`
+      ? `${selectedPkg.nameAr} — ${selectedPkg.price} ج.م`
       : freePkg ? `${freePkg.nameAr} — مجاناً` : "مجاني";
-
     const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
       <div className="grid grid-cols-3 gap-2 py-2 text-sm border-b border-border/30 last:border-0">
         <span className="text-muted-foreground">{label}</span>
         <span className="col-span-2 font-medium">{value || <span className="text-muted-foreground italic">— غير محدد</span>}</span>
       </div>
     );
-
     const Section = ({ title, onEdit, children }: { title: string; onEdit: () => void; children: React.ReactNode }) => (
       <Card className="border-border/60 shadow-sm">
         <CardContent className="p-5">
@@ -959,68 +800,119 @@ export default function RealEstateOnboarding() {
         </CardContent>
       </Card>
     );
-
     return (
-      <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-6 h-6 text-primary shrink-0 mt-0.5" />
-            <div>
-              <h2 className="text-2xl font-bold mb-1">مراجعة وإرسال</h2>
-              <p className="text-sm text-muted-foreground">راجع بياناتك قبل الإرسال النهائي. يمكنك العودة لتعديل أي قسم.</p>
-            </div>
-          </div>
+      <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
+        {/* ── التواصل والباقة ── */}
+        <div>
+          <h2 className="text-2xl font-bold mb-1">التواصل والباقة</h2>
+          <p className="text-muted-foreground text-sm">اختر طرق التواصل والباقة المناسبة</p>
         </div>
-        <Section title="المعلومات الأساسية" onEdit={() => setStep(1)}>
-          <Row label="الاسم" value={draft.basicInfo.name} />
-          <Row label="الجوال" value={<span dir="ltr">{draft.basicInfo.phone}</span>} />
-          <Row label="البريد" value={<span dir="ltr">{draft.basicInfo.email}</span>} />
-        </Section>
-        <Section title="الموقع" onEdit={() => setStep(2)}>
-          <Row label="المنطقة" value={regionName} />
-          <Row label="المدينة" value={draft.locCityName ?? ""} />
-          <Row label="الحي" value={draft.locDistrict} />
-          <Row label="العنوان" value={draft.locAddress} />
-          {draft.locLat && <Row label="الإحداثيات" value={<span dir="ltr">{draft.locLat}, {draft.locLng}</span>} />}
-        </Section>
-        <Section title="تصنيف العقار" onEdit={() => setStep(3)}>
-          <Row label="التصنيف" value={mainCat?.label} />
-          <Row label="الغرض" value={listType?.label} />
-        </Section>
-        <Section title="النوع والبيانات الأساسية" onEdit={() => setStep(4)}>
-          <Row label="النوع الفرعي" value={draft.subCategory} />
-          <Row label="العنوان" value={draft.propTitle} />
-        </Section>
-        <Section title="التفاصيل" onEdit={() => setStep(5)}>
-          <Row label="السعر" value={draft.propPrice ? `${draft.propPrice} ج.م` : ""} />
-          <Row label="المساحة" value={draft.propArea ? `${draft.propArea} م²` : ""} />
-          {draft.propRooms && <Row label="الغرف" value={draft.propRooms} />}
-          {draft.propBathrooms && <Row label="الحمامات" value={draft.propBathrooms} />}
-          {draft.propFinishing && <Row label="التشطيب" value={draft.propFinishing} />}
-          {draft.propCondition && <Row label="الحالة" value={draft.propCondition} />}
-          {draft.propFurnished && <Row label="الأثاث" value={draft.propFurnished} />}
-        </Section>
-        <Section title="الوسائط" onEdit={() => setStep(6)}>
-          <Row label="الصور" value={draft.images.length ? `${draft.images.length} صورة` : ""} />
-          {draft.videoUrl && <Row label="الفيديو" value="تم إضافة رابط" />}
-          {brochureFileRef.current && <Row label="PDF" value={brochureFileRef.current.name} />}
-        </Section>
-        <Section title="المميزات والخدمات" onEdit={() => setStep(7)}>
-          <Row label="المميزات" value={draft.features.length ? draft.features.join("، ") : ""} />
-          <Row label="الخدمات القريبة" value={draft.nearbyServices.length ? draft.nearbyServices.join("، ") : ""} />
-        </Section>
-        <Section title="التواصل والباقة" onEdit={() => setStep(8)}>
-          <Row label="طرق التواصل" value={draft.contactMethods.map(id => CONTACT_METHODS.find(m => m.id === id)?.label).filter(Boolean).join("، ")} />
-          <Row label="الباقة" value={planLabel} />
-        </Section>
-        <Card className="border-primary/30 bg-primary/5 shadow-sm">
-          <CardContent className="p-5">
-            <label className="flex items-start gap-3 cursor-pointer select-none">
-              <Checkbox checked={reviewConfirmed} onCheckedChange={c => setReviewConfirmed(c === true)} className="mt-0.5" />
-              <span className="text-sm font-medium leading-relaxed">لقد راجعت جميع البيانات أعلاه وأؤكد صحتها، وأوافق على إرسال العقار للمراجعة.</span>
-            </label>
+        <Card className="border-border/60 shadow-sm">
+          <CardContent className="p-5 space-y-4">
+            <Label className="text-base font-bold block">طرق التواصل</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {CONTACT_METHODS.map(m => {
+                const sel = draft.contactMethods.includes(m.id);
+                return (
+                  <button key={m.id} type="button" onClick={() => toggleContact(m.id)}
+                    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${sel ? "border-primary bg-primary/8 text-primary" : "border-border/60 hover:border-primary/40 hover:bg-secondary/30"}`}>
+                    <m.icon className={`w-4 h-4 ${sel ? "text-primary" : "text-muted-foreground"}`} />
+                    {m.label}
+                    {sel && <Check className="w-3.5 h-3.5 mr-auto text-primary" />}
+                  </button>
+                );
+              })}
+            </div>
+            {draft.contactMethods.includes("whatsapp") && (
+              <div>
+                <Label>رقم الواتساب</Label>
+                <Input value={draft.whatsapp} onChange={e => updateDraft({ whatsapp: e.target.value.replace(/\D/g, "") })} className="h-11 mt-1" dir="ltr" placeholder="+20...xxxxxx" inputMode="numeric" />
+              </div>
+            )}
           </CardContent>
         </Card>
+        {packages.length > 0 && (() => {
+          const midIdx = Math.floor((packages.length - 1) / 2);
+          return (
+            <div>
+              <Label className="text-base font-bold mb-4 block">اختر باقتك</Label>
+              <div className={`grid grid-cols-1 gap-4 ${packages.length >= 3 ? "sm:grid-cols-3" : packages.length === 2 ? "sm:grid-cols-2" : ""}`}>
+                {packages.map((pkg, idx) => {
+                  const isFree = parseFloat(pkg.price) === 0;
+                  const isRecommended = packages.length >= 3 && idx === midIdx && !isFree;
+                  const isSelected = draft.plan === pkg.id || (draft.plan === null && pkg.id === freePkg?.id);
+                  return (
+                    <Card key={pkg.id} onClick={() => updateDraft({ plan: isFree ? null : pkg.id })}
+                      className={`cursor-pointer transition-all relative overflow-hidden ${isRecommended ? "md:-translate-y-2 md:scale-105" : ""} ${isSelected ? "border-primary shadow-lg ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}>
+                      {isRecommended && <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">موصى به</div>}
+                      <CardContent className={`p-5 ${isRecommended ? "pt-7 bg-primary/5" : ""}`}>
+                        <h3 className={`font-bold text-lg mb-1 ${isRecommended ? "text-primary" : ""}`}>{pkg.nameAr}</h3>
+                        <div className={`text-2xl font-black mb-3 ${isRecommended ? "text-primary" : ""}`}>
+                          {isFree ? "مجاناً" : `${pkg.price} ج.م`}
+                        </div>
+                        <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+                          <div className="flex justify-between"><span>العمولة</span><span className="font-bold text-foreground">{pkg.commissionRate}%</span></div>
+                          <div className="flex justify-between"><span>أولوية البحث</span><span className="font-bold text-foreground">{pkg.priorityRank > 1 ? "مميزة" : "عادية"}</span></div>
+                        </div>
+                        <div className={`text-center py-2 rounded-lg font-bold text-sm ${isSelected ? "bg-primary text-primary-foreground" : isRecommended ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
+                          {isSelected ? "مختار" : "اختر"}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── المراجعة ── */}
+        <div className="border-t border-border/40 pt-6">
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-bold mb-0.5">مراجعة وإرسال</h3>
+                <p className="text-sm text-muted-foreground">راجع بياناتك قبل الإرسال النهائي</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <Section title="بيانات المعلن والموقع" onEdit={() => setStep(1)}>
+              <Row label="الاسم" value={draft.basicInfo.name} />
+              <Row label="الجوال" value={<span dir="ltr">{draft.basicInfo.phone}</span>} />
+              <Row label="المنطقة" value={regionName} />
+              <Row label="المدينة" value={draft.locCityName ?? ""} />
+              {draft.locDistrict && <Row label="الحي" value={draft.locDistrict} />}
+            </Section>
+            <Section title="تصنيف العقار" onEdit={() => setStep(1)}>
+              <Row label="التصنيف" value={mainCat?.label} />
+              <Row label="الغرض" value={listType?.label} />
+              <Row label="النوع" value={draft.subCategory} />
+              <Row label="العنوان" value={draft.propTitle} />
+            </Section>
+            <Section title="التفاصيل والوسائط" onEdit={() => setStep(2)}>
+              <Row label="السعر" value={draft.propPrice ? `${draft.propPrice} ج.م` : ""} />
+              <Row label="المساحة" value={draft.propArea ? `${draft.propArea} م²` : ""} />
+              {draft.propRooms && <Row label="الغرف" value={draft.propRooms} />}
+              {draft.propBathrooms && <Row label="الحمامات" value={draft.propBathrooms} />}
+              <Row label="الصور" value={draft.images.length ? `${draft.images.length} صورة` : ""} />
+              {draft.features.length > 0 && <Row label="المميزات" value={`${draft.features.length} مميزة`} />}
+            </Section>
+            <Section title="التواصل والباقة" onEdit={() => setStep(3)}>
+              <Row label="التواصل" value={draft.contactMethods.map(id => CONTACT_METHODS.find(m => m.id === id)?.label).filter(Boolean).join("، ")} />
+              <Row label="الباقة" value={planLabel} />
+            </Section>
+          </div>
+          <Card className="border-primary/30 bg-primary/5 shadow-sm mt-4">
+            <CardContent className="p-5">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <Checkbox checked={reviewConfirmed} onCheckedChange={c => setReviewConfirmed(c === true)} className="mt-0.5" />
+                <span className="text-sm font-medium leading-relaxed">لقد راجعت جميع البيانات وأؤكد صحتها، وأوافق على إرسال العقار للمراجعة.</span>
+              </label>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   };
@@ -1030,12 +922,6 @@ export default function RealEstateOnboarding() {
       case 1: return renderStep1();
       case 2: return renderStep2();
       case 3: return renderStep3();
-      case 4: return renderStep4();
-      case 5: return renderStep5();
-      case 6: return renderStep6();
-      case 7: return renderStep7();
-      case 8: return renderStep8();
-      case 9: return renderStep9();
       default: return null;
     }
   };
