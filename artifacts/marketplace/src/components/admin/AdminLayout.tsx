@@ -187,7 +187,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: ShoppingCart,    label: t("orders"),          href: "/admin/orders",           perm: "orders" },
     { icon: Ticket,          label: t("supportTickets"),  href: "/admin/support-tickets",  perm: "support" },
     { icon: CreditCard,      label: t("payments"),        href: "/admin/payments",         perm: "payments" },
-    { icon: Percent,         label: t("commission"),      href: "/admin/commission",       perm: "commission" },
     { icon: Package,         label: t("subscriptions"),   href: "/admin/subscriptions",    perm: "subscriptions" },
     { icon: BarChart3,       label: t("reports"),         href: "/admin/reports",          perm: "reports" },
     { icon: MessageSquare,   label: "الرسائل والقوالب",   href: "/admin/messages",         perm: "settings" },
