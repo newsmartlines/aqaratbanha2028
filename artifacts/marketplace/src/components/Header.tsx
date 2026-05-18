@@ -167,9 +167,9 @@ export function Header() {
               <Link href="/login">
                 <Button variant="ghost" className="text-sm font-medium hover:bg-secondary/50">تسجيل الدخول</Button>
               </Link>
-              <Link href="/provider/register">
+              <Link href="/add-property">
                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-5 shadow-sm">
-                  كن مقدم خدمة
+                  أضف عقارك
                 </Button>
               </Link>
             </>
@@ -224,8 +224,8 @@ export function Header() {
                   <Link href="/login" onClick={() => setMobileOpen(false)}>
                     <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/50 rounded-lg cursor-pointer">تسجيل الدخول</span>
                   </Link>
-                  <Link href="/provider/register" onClick={() => setMobileOpen(false)}>
-                    <span className="block px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg cursor-pointer text-center">كن مقدم خدمة</span>
+                  <Link href="/add-property" onClick={() => setMobileOpen(false)}>
+                    <span className="block px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg cursor-pointer text-center">أضف عقارك</span>
                   </Link>
                 </>
               )}

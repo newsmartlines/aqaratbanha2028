@@ -502,6 +502,10 @@ export default function Home() {
   const [heroCityName, setHeroCityName] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCat, setExpandedCat] = useState<number | null>(null);
+  /* ─── Real-estate hero search ─── */
+  const [listingType, setListingType] = useState<"للبيع" | "للإيجار">("للبيع");
+  const [heroSubcategoryId, setHeroSubcategoryId] = useState<string>("all");
+  const [priceRange, setPriceRange] = useState<string>("all");
   const [nearMeLoading, setNearMeLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showNearMeMap, setShowNearMeMap] = useState(false);
@@ -621,6 +625,9 @@ export default function Home() {
     if (heroRegionId != null) params.set("regionId", String(heroRegionId));
     if (heroCityName) params.set("city", heroCityName);
     if (selectedCategory && selectedCategory !== "all") params.set("category", selectedCategory);
+    if (heroSubcategoryId && heroSubcategoryId !== "all") params.set("sub", heroSubcategoryId);
+    if (listingType) params.set("type", listingType);
+    if (priceRange && priceRange !== "all") params.set("price", priceRange);
     setLocation(`/search?${params.toString()}`);
   };
 
@@ -693,48 +700,106 @@ export default function Home() {
                 {heroSubtitle || `سواء كنت تبحث عن طعام بيتي لذيذ، أو حرف يدوية متقنة، أو خدمات صيانة موثوقة، "${siteName}" يربطك بأفضل مقدمي الخدمات في منطقتك بسرعة وأمان.`}
               </p>
 
-              {/* Advanced Search Box */}
+              {/* ── Real-Estate Search Box ── */}
               <motion.div
                 layout
-                className="bg-card p-3 rounded-2xl shadow-xl border border-border/60 max-w-4xl transition-shadow hover:shadow-2xl duration-500"
+                className="bg-card rounded-2xl shadow-xl border border-border/60 max-w-4xl transition-shadow hover:shadow-2xl duration-500 overflow-hidden"
               >
-                <div className="flex flex-col md:flex-row gap-2">
-                  <div className="flex-1 relative">
-                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                {/* Sale / Rent Tabs */}
+                <div className="flex border-b border-border/40">
+                  {(["للبيع", "للإيجار"] as const).map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setListingType(tab)}
+                      className={`flex-1 py-3.5 text-sm font-bold transition-colors ${
+                        listingType === tab
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {tab === "للبيع" ? "🏷️ للبيع" : "🔑 للإيجار"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search fields row */}
+                <div className="p-3 flex flex-col md:flex-row gap-2 items-stretch">
+                  {/* Keyword / area text */}
+                  <div className="flex-1 relative min-w-0">
+                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                     <Input
-                      placeholder="عن ماذا تبحث؟ (مثال: كيك، صيانة مكيفات)"
-                      className="pr-12 h-14 bg-transparent border-none text-base focus-visible:ring-0 shadow-none placeholder:text-muted-foreground/70"
+                      placeholder="اسم الحي أو المنطقة أو الكلمة المفتاحية…"
+                      className="pr-12 h-12 bg-transparent border-none text-sm focus-visible:ring-0 shadow-none placeholder:text-muted-foreground/60"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleSearch()}
                     />
                   </div>
-                  <div className="w-px bg-border hidden md:block my-2" />
-                  <div className="md:w-44 relative">
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-4 font-medium text-foreground">
-                        <Grid className="w-4 h-4 ml-2 text-primary" />
-                        <SelectValue placeholder="التصنيف" />
+                  <div className="w-px bg-border hidden md:block my-1" />
+
+                  {/* Property type (categories from DB) */}
+                  <div className="md:w-44">
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={v => {
+                        setSelectedCategory(v);
+                        setHeroSubcategoryId("all");
+                      }}
+                    >
+                      <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
+                        <Building2 className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                        <SelectValue placeholder="نوع العقار" />
                       </SelectTrigger>
                       <SelectContent side="bottom" align="start" sideOffset={6}>
-                        <SelectItem value="all">كل التصنيفات</SelectItem>
+                        <SelectItem value="all">كل الأنواع</SelectItem>
                         {(categories as Category[] | undefined)?.map(c => (
                           <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="w-px bg-border hidden md:block my-2" />
-                  <div className="md:w-40 relative">
+
+                  {/* Subcategory — appears when a category with subs is selected */}
+                  <AnimatePresence>
+                    {selectedCategory !== "all" && ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === parseInt(selectedCategory, 10)).length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="md:w-40 overflow-hidden"
+                      >
+                        <div className="w-px bg-border hidden md:block my-1 ms-0 absolute" />
+                        <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
+                          <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
+                            <ChevronDown className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                            <SelectValue placeholder="النوع الفرعي" />
+                          </SelectTrigger>
+                          <SelectContent side="bottom" align="start" sideOffset={6}>
+                            <SelectItem value="all">كل الأنواع</SelectItem>
+                            {((allSubs as Subcategory[] | undefined) ?? [])
+                              .filter(s => s.categoryId === parseInt(selectedCategory, 10))
+                              .map(s => (
+                                <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="w-px bg-border hidden md:block my-1" />
+
+                  {/* Region */}
+                  <div className="md:w-36">
                     <Select
                       value={heroRegionId != null ? String(heroRegionId) : "__all_regions__"}
-                      onValueChange={(v) => {
-                        if (v === "__all_regions__") setHeroRegionId(null);
-                        else setHeroRegionId(parseInt(v, 10));
+                      onValueChange={v => {
+                        setHeroRegionId(v === "__all_regions__" ? null : parseInt(v, 10));
                       }}
                     >
-                      <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-4 font-medium text-foreground">
-                        <MapPin className="w-4 h-4 ml-2 text-primary" />
+                      <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
+                        <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
                         <SelectValue placeholder="المنطقة" />
                       </SelectTrigger>
                       <SelectContent side="bottom" align="start" sideOffset={6}>
@@ -745,46 +810,69 @@ export default function Home() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={heroRegionId ?? "all"}
-                      initial={{ opacity: 0, x: 8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -8 }}
-                      transition={{ duration: 0.2 }}
-                      className="md:w-40 relative w-full"
-                    >
-                      <Select
-                        value={heroCityName ?? "__all__"}
-                        onValueChange={(v) => setHeroCityName(v === "__all__" ? null : v)}
-                      >
-                        <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-4 font-medium text-foreground">
-                          <MapPin className="w-4 h-4 ml-2 text-teal-600" />
-                          <SelectValue placeholder="المدينة" />
-                        </SelectTrigger>
-                        <SelectContent side="bottom" align="start" sideOffset={6}>
-                          {heroCityOptions.map(c => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </motion.div>
-                  </AnimatePresence>
-                  <Button onClick={handleSearch} className="h-14 px-8 bg-primary hover:bg-primary/90 text-primary-foreground text-lg rounded-xl font-bold shadow-md transition-all hover:scale-[1.02]">
+
+                  {/* Price range */}
+                  <div className="md:w-40">
+                    <Select value={priceRange} onValueChange={setPriceRange}>
+                      <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
+                        <TrendingUp className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                        <SelectValue placeholder="نطاق السعر" />
+                      </SelectTrigger>
+                      <SelectContent side="bottom" align="start" sideOffset={6}>
+                        <SelectItem value="all">كل الأسعار</SelectItem>
+                        {listingType === "للبيع" ? (
+                          <>
+                            <SelectItem value="0-500000">أقل من ٥٠٠ ألف</SelectItem>
+                            <SelectItem value="500000-1000000">٥٠٠ ألف — مليون</SelectItem>
+                            <SelectItem value="1000000-2000000">١ — ٢ مليون</SelectItem>
+                            <SelectItem value="2000000-5000000">٢ — ٥ مليون</SelectItem>
+                            <SelectItem value="5000000-99999999">أكثر من ٥ مليون</SelectItem>
+                          </>
+                        ) : (
+                          <>
+                            <SelectItem value="0-20000">أقل من ٢٠ ألف / سنة</SelectItem>
+                            <SelectItem value="20000-50000">٢٠ — ٥٠ ألف / سنة</SelectItem>
+                            <SelectItem value="50000-100000">٥٠ — ١٠٠ ألف / سنة</SelectItem>
+                            <SelectItem value="100000-99999999">أكثر من ١٠٠ ألف / سنة</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Search button */}
+                  <Button
+                    onClick={handleSearch}
+                    className="h-12 px-7 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold shadow-md transition-all hover:scale-[1.02] shrink-0"
+                  >
+                    <Search className="w-4 h-4 me-1.5" />
                     ابحث الآن
                   </Button>
                 </div>
-                <div className="mt-2 pt-2 border-t border-border/30 flex items-center gap-3 px-1">
+
+                {/* Footer row */}
+                <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Button
+                      variant="ghost" size="sm"
+                      onClick={handleNearMe}
+                      disabled={nearMeLoading}
+                      className="text-primary hover:bg-primary/10 gap-1.5 rounded-full h-8 text-xs"
+                    >
+                      {nearMeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
+                      الأقرب لي
+                    </Button>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">اكتشف العقارات القريبة من موقعك</span>
+                  </div>
                   <Button
-                    variant="ghost" size="sm"
-                    onClick={handleNearMe}
-                    disabled={nearMeLoading}
-                    className="text-primary hover:bg-primary/10 gap-2 rounded-full"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-semibold"
+                    onClick={() => setLocation("/add-property")}
                   >
-                    {nearMeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
-                    الأقرب لي
+                    <Building2 className="w-3.5 h-3.5" />
+                    أضف عقارك
                   </Button>
-                  <span className="text-xs text-muted-foreground">اكتشف مقدمي الخدمات الأقرب إلى موقعك</span>
                 </div>
               </motion.div>
 
