@@ -149,14 +149,6 @@ export default function ProviderPayments() {
     refetchInterval: 5000,
   });
 
-  // Real wallet balance (running total) + ledger entries
-  const { data: wallet } = useQuery({
-    queryKey: ["provider-wallet", providerId],
-    queryFn: () => api.payments.walletMe(),
-    enabled: !!providerId,
-    refetchInterval: 5000,
-  });
-
   // Full incoming service-request payments history
   const { data: incoming, isLoading: incomingLoading } = useQuery({
     queryKey: ["provider-incoming-payments", providerId],
@@ -168,7 +160,6 @@ export default function ProviderPayments() {
   const sub = stats?.subscription ?? null;
   const incomingRows = incoming?.rows ?? [];
   const incomingTotals = incoming?.totals ?? { paid: 0, pending: 0, failed: 0, paidAmount: 0, pendingAmount: 0, failedAmount: 0, netEarnings: 0 };
-  const walletBalance = wallet?.balance ?? "0.00";
 
   const getStatusColor = (status: string) => {
     switch (status) {

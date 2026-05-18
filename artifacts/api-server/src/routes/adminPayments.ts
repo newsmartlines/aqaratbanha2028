@@ -35,10 +35,9 @@ function startOfDay(d: Date): Date {
 }
 
 /**
- * Unified payments view: combines paymentTransactionsTable (STC Pay sessions for
- * subscriptions and service requests) with paymentsTable (older subscription
- * invoice rows). Each row has the same shape so the admin UI can render them
- * uniformly with status badges (paid / pending / failed).
+ * Unified payments view: combines paymentTransactionsTable with paymentsTable
+ * (legacy subscription invoice rows). Each row has the same shape so the admin
+ * UI can render them uniformly with status badges (paid / pending / failed).
  */
 async function loadPayments(opts: { from?: Date | null; to?: Date | null; status?: string | null }) {
   const txConds = [];
@@ -46,7 +45,7 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
   if (opts.to) txConds.push(lte(paymentTransactionsTable.createdAt, endOfDay(opts.to)));
   if (opts.status) txConds.push(eq(paymentTransactionsTable.status, opts.status));
 
-  // 1) Payment transactions — full STC Pay history (subscriptions + service requests)
+  // 1) Payment transactions history
   const txRows = await db
     .select({
       id: paymentTransactionsTable.id,
@@ -159,7 +158,7 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
       amount: p.amount,
       commissionAmount: "0",
       status: p.status,
-      gateway: "stcpay",
+      gateway: "manual",
       gatewayRef: null,
       paidAt: p.status === "paid" ? p.createdAt.toISOString() : null,
       createdAt: p.createdAt.toISOString(),

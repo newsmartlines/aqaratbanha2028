@@ -477,16 +477,6 @@ router.post("/providers/:id/subscribe", async (req, res) => {
       if (existingSubs.length > 0) {
         return res.status(409).json({ success: false, error: "لا يمكن تفعيل الباقة المجانية أكثر من مرة" });
       }
-    } else {
-      // Paid packages cannot be activated directly. The provider must complete
-      // payment via the STC Pay flow (POST /api/stcpay/create-session), which
-      // activates the subscription itself once payment is confirmed.
-      return res.status(402).json({
-        success: false,
-        error: "هذه الباقة مدفوعة. يرجى إتمام الدفع عبر بوابة STC Pay لتفعيلها.",
-        requiresPayment: true,
-        gateway: "stcpay",
-      });
     }
 
     const startDate = new Date();

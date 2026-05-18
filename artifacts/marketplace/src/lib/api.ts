@@ -658,57 +658,6 @@ export const api = {
   },
 
   payments: {
-    stcpayCreateSession: (packageId: number, fromOnboarding?: boolean) =>
-      fetchJson<{ refId: string; redirectUrl: string; amount: number; currency: string; mode: "test" | "live" }>(
-        `/stcpay/create-session`,
-        {
-          method: "POST",
-          body: JSON.stringify({ packageId, fromOnboarding: !!fromOnboarding }),
-        },
-      ),
-    stcpayCreateRequestSession: (input: { providerId: number; serviceId?: number | null; amount: number }) =>
-      fetchJson<{
-        refId: string;
-        redirectUrl: string;
-        amount: number;
-        currency: string;
-        kind: "service_request";
-        mode: "test" | "live";
-      }>(
-        `/stcpay/create-request-session`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            providerId: input.providerId,
-            serviceId: input.serviceId ?? undefined,
-            amount: input.amount,
-          }),
-        },
-      ),
-    stcpayStatus: (refId: string) =>
-      fetchJson<{
-        refId: string;
-        status: "pending" | "paid" | "failed" | "cancelled";
-        amount: string;
-        currency: string;
-        kind: "subscription" | "service_request";
-        packageId: number | null;
-        packageName: string | null;
-        providerId: number;
-        serviceId: number | null;
-        commissionAmount: string | null;
-        paidAt: string | null;
-        createdAt: string;
-      }>(`/stcpay/status/${encodeURIComponent(refId)}`),
-    walletMe: () =>
-      fetchJson<{
-        balance: string;
-        currency: string;
-        transactions: Array<{
-          id: number; providerId: number | null; type: string;
-          amount: string; refId: string | null; note: string | null; createdAt: string;
-        }>;
-      }>(`/wallet/me`),
     /** Customer's payment transaction history (paid / pending / failed). */
     myPayments: () =>
       fetchJson<{
