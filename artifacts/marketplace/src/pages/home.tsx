@@ -678,223 +678,192 @@ export default function Home() {
 
       <main className="flex-1">
         {/* ── HERO ── */}
-        <section className="relative pt-16 pb-24 md:pt-24 md:pb-32 overflow-hidden border-b">
+        <section className="relative overflow-hidden border-b">
+          {/* Background */}
           <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-l from-background/95 via-background/80 to-background/40 z-10" />
             <img
               src={heroImage || "/images/hero.jpg"}
-              alt="Hero Background"
-              className="w-full h-full object-cover object-center"
-              onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=2000&q=80"; }}
+              alt=""
+              className="w-full h-full object-cover object-center scale-105"
+              onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=2000&q=80"; }}
             />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/75 via-slate-900/60 to-slate-900/80" />
           </div>
 
-          <div className="container relative z-10 mx-auto px-4">
-            <div className="max-w-3xl">
-              <Badge variant="secondary" className="mb-6 bg-secondary text-primary px-4 py-1.5 rounded-full text-sm font-medium border border-primary/10">
-                عقارات بنها — بيع وإيجار وخدمات
-              </Badge>
-              <h1 className="text-5xl md:text-7xl font-extrabold text-foreground leading-[1.15] mb-6 tracking-tight">
-                {heroTitle || (
-                  <>اعثر على <span className="text-primary relative inline-block">عقارك المثالي<div className="absolute -bottom-1 left-0 right-0 h-3 bg-accent/20 -z-10 rounded-full"></div></span><br />في بنها</>
-                )}
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-                {heroSubtitle || `سواء كنت تبحث عن شقة أو فيلا أو أرض للبيع أو الإيجار، "${siteName}" يربطك بأفضل العروض في القليوبية بسرعة وأمان.`}
-              </p>
+          {/* Content */}
+          <div className="relative z-10 flex flex-col items-center text-center px-4 pt-14 pb-10 md:pt-16 md:pb-12">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-semibold rounded-full px-4 py-1.5 mb-5">
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              بنها — القليوبية — مصر
+            </div>
 
-              {/* ── Real-Estate Search Box ── */}
-              <motion.div
-                layout
-                className="bg-card rounded-2xl shadow-xl border border-border/60 max-w-4xl transition-shadow hover:shadow-2xl duration-500 overflow-hidden"
-              >
-                {/* Sale / Rent Tabs */}
-                <div className="relative flex border-b border-border/40 overflow-hidden">
-                  {(["للبيع", "للإيجار"] as const).map(tab => (
-                    <button
-                      key={tab}
-                      onClick={() => setListingType(tab)}
-                      className={`relative flex-1 py-4 text-sm font-bold transition-colors z-10 ${
-                        listingType === tab ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {listingType === tab && (
-                        <motion.span
-                          layoutId="tab-indicator"
-                          className="absolute inset-0 bg-primary"
-                          transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-                        />
-                      )}
-                      <span className="relative z-10">{tab}</span>
-                    </button>
-                  ))}
-                </div>
+            {/* Headline */}
+            <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight mb-3 max-w-2xl drop-shadow">
+              {heroTitle || (
+                <>اعثر على <span className="text-primary">عقارك المثالي</span> في بنها</>
+              )}
+            </h1>
+            <p className="text-white/70 text-sm md:text-base mb-8 max-w-lg">
+              بيع وإيجار وخدمات عقارية — أسرع وأوثق
+            </p>
 
-                {/* Search fields row */}
-                <div className="p-3 flex flex-col md:flex-row gap-2 items-stretch">
-                  {/* Keyword / area text */}
-                  <div className="flex-1 relative min-w-0">
-                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-                    <Input
-                      placeholder="اسم الحي أو المنطقة أو الكلمة المفتاحية…"
-                      className="pr-12 h-12 bg-transparent border-none text-sm focus-visible:ring-0 shadow-none placeholder:text-muted-foreground/60"
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && handleSearch()}
-                    />
-                  </div>
-                  <div className="w-px bg-border hidden md:block my-1" />
-
-                  {/* Property type (categories from DB) */}
-                  <div className="md:w-44">
-                    <Select
-                      value={selectedCategory}
-                      onValueChange={v => {
-                        setSelectedCategory(v);
-                        setHeroSubcategoryId("all");
-                      }}
-                    >
-                      <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
-                        <Building2 className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                        <SelectValue placeholder="نوع العقار" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" align="start" sideOffset={6}>
-                        <SelectItem value="all">كل الأنواع</SelectItem>
-                        {(categories as Category[] | undefined)?.map(c => (
-                          <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Subcategory — appears when a category with subs is selected */}
-                  <AnimatePresence>
-                    {selectedCategory !== "all" && ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === parseInt(selectedCategory, 10)).length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="md:w-40 overflow-hidden"
-                      >
-                        <div className="w-px bg-border hidden md:block my-1 ms-0 absolute" />
-                        <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
-                          <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
-                            <ChevronDown className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                            <SelectValue placeholder="النوع الفرعي" />
-                          </SelectTrigger>
-                          <SelectContent side="bottom" align="start" sideOffset={6}>
-                            <SelectItem value="all">كل الأنواع</SelectItem>
-                            {((allSubs as Subcategory[] | undefined) ?? [])
-                              .filter(s => s.categoryId === parseInt(selectedCategory, 10))
-                              .map(s => (
-                                <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <div className="w-px bg-border hidden md:block my-1" />
-
-                  {/* Region */}
-                  <div className="md:w-36">
-                    <Select
-                      value={heroRegionId != null ? String(heroRegionId) : "__all_regions__"}
-                      onValueChange={v => {
-                        setHeroRegionId(v === "__all_regions__" ? null : parseInt(v, 10));
-                      }}
-                    >
-                      <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
-                        <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                        <SelectValue placeholder="المنطقة" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" align="start" sideOffset={6}>
-                        <SelectItem value="__all_regions__">كل المناطق</SelectItem>
-                        {regions.map(r => (
-                          <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Price range */}
-                  <div className="md:w-40">
-                    <Select value={priceRange} onValueChange={setPriceRange}>
-                      <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-foreground text-sm">
-                        <TrendingUp className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                        <SelectValue placeholder="نطاق السعر" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" align="start" sideOffset={6}>
-                        <SelectItem value="all">كل الأسعار</SelectItem>
-                        {listingType === "للبيع" ? (
-                          <>
-                            <SelectItem value="0-500000">أقل من ٥٠٠ ألف</SelectItem>
-                            <SelectItem value="500000-1000000">٥٠٠ ألف — مليون</SelectItem>
-                            <SelectItem value="1000000-2000000">١ — ٢ مليون</SelectItem>
-                            <SelectItem value="2000000-5000000">٢ — ٥ مليون</SelectItem>
-                            <SelectItem value="5000000-99999999">أكثر من ٥ مليون</SelectItem>
-                          </>
-                        ) : (
-                          <>
-                            <SelectItem value="0-20000">أقل من ٢٠ ألف / سنة</SelectItem>
-                            <SelectItem value="20000-50000">٢٠ — ٥٠ ألف / سنة</SelectItem>
-                            <SelectItem value="50000-100000">٥٠ — ١٠٠ ألف / سنة</SelectItem>
-                            <SelectItem value="100000-99999999">أكثر من ١٠٠ ألف / سنة</SelectItem>
-                          </>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Search button */}
-                  <Button
-                    onClick={handleSearch}
-                    className="h-12 px-7 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold shadow-md transition-all hover:scale-[1.02] shrink-0"
+            {/* ── Search Card ── */}
+            <motion.div
+              layout
+              className="w-full max-w-3xl bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/30 overflow-hidden"
+            >
+              {/* Tabs */}
+              <div className="relative flex border-b border-border/30 overflow-hidden">
+                {(["للبيع", "للإيجار"] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setListingType(tab)}
+                    className={`relative flex-1 py-3 text-sm font-bold transition-colors z-10 ${
+                      listingType === tab ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    <Search className="w-4 h-4 me-1.5" />
-                    ابحث الآن
-                  </Button>
-                </div>
-
-                {/* Footer row */}
-                <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center gap-2 flex-wrap">
-                  <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className="text-xs text-muted-foreground">بنها — القليوبية — مصر</span>
-                </div>
-              </motion.div>
-
-              {/* ── Platform Statistics ── */}
-              <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { icon: Briefcase,     label: "مزود خدمة",    value: platformStats?.providers },
-                  { icon: ShoppingBag,   label: "خدمة نشطة",    value: platformStats?.services  },
-                  { icon: Users,         label: "عميل مسجّل",   value: platformStats?.users     },
-                  { icon: ClipboardList, label: "طلب مُنجز",    value: platformStats?.requests  },
-                ].map((stat) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div
-                      key={stat.label}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-background/70 backdrop-blur-sm text-foreground transition-all hover:shadow-sm"
-                    >
-                      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Icon className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-lg font-black leading-none">
-                          {stat.value !== undefined
-                            ? stat.value.toLocaleString("ar-EG")
-                            : <span className="text-sm animate-pulse">...</span>}
-                          {stat.value !== undefined && <span className="text-xs font-semibold mr-0.5">+</span>}
-                        </p>
-                        <p className="text-[11px] font-medium text-muted-foreground mt-0.5 truncate">{stat.label}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                    {listingType === tab && (
+                      <motion.span
+                        layoutId="tab-indicator"
+                        className="absolute inset-0 bg-primary"
+                        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                      />
+                    )}
+                    <span className="relative z-10">{tab}</span>
+                  </button>
+                ))}
               </div>
+
+              {/* Fields row */}
+              <div className="flex flex-col md:flex-row gap-0 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-border/40">
+                {/* Keyword */}
+                <div className="flex-1 relative">
+                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    placeholder="اسم الحي أو المنطقة…"
+                    className="pr-10 h-12 bg-transparent border-none text-sm focus-visible:ring-0 shadow-none rounded-none"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  />
+                </div>
+
+                {/* Category */}
+                <div className="md:w-40">
+                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
+                    <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
+                      <Building2 className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                      <SelectValue placeholder="نوع العقار" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">كل الأنواع</SelectItem>
+                      {(categories as Category[] | undefined)?.map(c => (
+                        <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Subcategory */}
+                <AnimatePresence>
+                  {selectedCategory !== "all" && ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === parseInt(selectedCategory, 10)).length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="md:w-36 overflow-hidden"
+                    >
+                      <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
+                        <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
+                          <ChevronDown className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                          <SelectValue placeholder="النوع الفرعي" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">الكل</SelectItem>
+                          {((allSubs as Subcategory[] | undefined) ?? [])
+                            .filter(s => s.categoryId === parseInt(selectedCategory, 10))
+                            .map(s => <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Region */}
+                <div className="md:w-32">
+                  <Select
+                    value={heroRegionId != null ? String(heroRegionId) : "__all_regions__"}
+                    onValueChange={v => setHeroRegionId(v === "__all_regions__" ? null : parseInt(v, 10))}
+                  >
+                    <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
+                      <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                      <SelectValue placeholder="المنطقة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all_regions__">كل المناطق</SelectItem>
+                      {regions.map(r => <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Price */}
+                <div className="md:w-36">
+                  <Select value={priceRange} onValueChange={setPriceRange}>
+                    <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
+                      <TrendingUp className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                      <SelectValue placeholder="السعر" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">كل الأسعار</SelectItem>
+                      {listingType === "للبيع" ? (
+                        <>
+                          <SelectItem value="0-500000">أقل من ٥٠٠ ألف</SelectItem>
+                          <SelectItem value="500000-1000000">٥٠٠ ألف — مليون</SelectItem>
+                          <SelectItem value="1000000-2000000">١ — ٢ مليون</SelectItem>
+                          <SelectItem value="2000000-5000000">٢ — ٥ مليون</SelectItem>
+                          <SelectItem value="5000000-99999999">أكثر من ٥ مليون</SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="0-20000">أقل من ٢٠ ألف / سنة</SelectItem>
+                          <SelectItem value="20000-50000">٢٠ — ٥٠ ألف / سنة</SelectItem>
+                          <SelectItem value="50000-100000">٥٠ — ١٠٠ ألف / سنة</SelectItem>
+                          <SelectItem value="100000-99999999">أكثر من ١٠٠ ألف / سنة</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Search button */}
+                <Button
+                  onClick={handleSearch}
+                  className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-none md:rounded-e-none rounded-b-xl md:rounded-b-none shrink-0"
+                >
+                  <Search className="w-4 h-4 me-1.5" />
+                  بحث
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* ── Stats strip ── */}
+            <div className="mt-6 flex items-center gap-6 flex-wrap justify-center">
+              {[
+                { label: "عقار", value: platformStats?.providers },
+                { label: "خدمة نشطة", value: platformStats?.services },
+                { label: "مستخدم", value: platformStats?.users },
+                { label: "طلب مُنجز", value: platformStats?.requests },
+              ].map((s, i) => (
+                <div key={i} className="flex items-baseline gap-1.5 text-white/90">
+                  <span className="text-xl font-black text-white drop-shadow">
+                    {s.value !== undefined ? s.value.toLocaleString("ar-EG") : "—"}
+                    {s.value !== undefined && <span className="text-sm">+</span>}
+                  </span>
+                  <span className="text-xs text-white/60">{s.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
