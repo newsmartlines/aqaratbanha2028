@@ -60,7 +60,7 @@ router.post("/properties", async (req, res) => {
       finishing, condition, furnished, direction, paymentMethod,
       address, regionId, cityId, district, latitude, longitude,
       images, videoUrl, brochureUrl, logoUrl, phone, whatsapp,
-      features, nearbyServices, contactMethods,
+      features, nearbyServices, contactMethods, status,
     } = req.body;
 
     if (!title) return res.status(400).json({ success: false, error: "العنوان مطلوب" });
@@ -102,7 +102,7 @@ router.post("/properties", async (req, res) => {
       features: Array.isArray(features) ? JSON.stringify(features) : features,
       nearbyServices: Array.isArray(nearbyServices) ? JSON.stringify(nearbyServices) : nearbyServices,
       contactMethods: Array.isArray(contactMethods) ? JSON.stringify(contactMethods) : contactMethods,
-      status: "pending",
+      status: (status as string) || "pending",
     }).returning();
 
     res.json({ success: true, data: property });

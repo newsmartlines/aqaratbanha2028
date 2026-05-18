@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -10,9 +10,73 @@ import L from "leaflet";
 import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
   Heart, Star, Map, Grid3X3, X, ChevronDown, ChevronUp,
-  SlidersHorizontal, Phone, MessageCircle, TrendingUp, CheckCircle2,
+  SlidersHorizontal, TrendingUp, CheckCircle2, Loader2,
 } from "lucide-react";
-import { PROPERTIES } from "./home";
+import { api } from "@/lib/api";
+
+type DbProp = {
+  id: number;
+  title: string;
+  listingType: string;
+  mainCategory: string;
+  featured: boolean | null;
+  images: string | null;
+  address: string | null;
+  rooms: number | null;
+  bathrooms: number | null;
+  area: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  price: string | null;
+  status: string | null;
+};
+
+type DisplayProp = {
+  id: number;
+  title: string;
+  type: string;
+  kind: string;
+  featured: boolean;
+  img: string;
+  location: string;
+  beds: number;
+  baths: number;
+  area: number;
+  lat: number;
+  lng: number;
+  price: string;
+  priceNum: number;
+};
+
+function tryJsonArr(val: string | null | undefined): string[] {
+  if (!val) return [];
+  try {
+    const parsed = JSON.parse(val);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+  } catch {}
+  if (typeof val === "string" && val.startsWith("http")) return [val];
+  return [];
+}
+
+function mapDbProp(row: DbProp, fallback: string): DisplayProp {
+  const imgs = tryJsonArr(row.images);
+  return {
+    id: row.id,
+    title: row.title,
+    type: row.listingType,
+    kind: row.mainCategory,
+    featured: row.featured ?? false,
+    img: imgs[0] ?? fallback,
+    location: row.address ?? "",
+    beds: row.rooms ?? 0,
+    baths: row.bathrooms ?? 0,
+    area: row.area ? parseFloat(row.area) : 0,
+    lat: row.latitude ? parseFloat(row.latitude) : 24.7136,
+    lng: row.longitude ? parseFloat(row.longitude) : 46.6753,
+    price: row.price ? Number(row.price).toLocaleString("ar-EG") + " ج.م" : "السعر عند الطلب",
+    priceNum: row.price ? parseFloat(row.price) : 0,
+  };
+}
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -71,6 +135,8 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
 export default function PropertiesPage() {
   const [, setLocation] = useLocation();
 
+  const [allProps, setAllProps] = useState<DisplayProp[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedKind, setSelectedKind] = useState<string | null>(null);
@@ -83,8 +149,15 @@ export default function PropertiesPage() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "area">("default");
 
+  useEffect(() => {
+    api.properties.list({ status: "published" })
+      .then((rows) => setAllProps((rows as unknown as DbProp[]).map((r) => mapDbProp(r, FALLBACK))))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = useMemo(() => {
-    let list = PROPERTIES.filter((p) => {
+    let list = allProps.filter((p) => {
       if (search && !p.title.includes(search) && !p.location.includes(search)) return false;
       if (selectedType && p.type !== selectedType) return false;
       if (selectedKind && p.kind !== selectedKind) return false;
@@ -104,7 +177,7 @@ export default function PropertiesPage() {
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.priceNum - a.priceNum);
     if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
     return list;
-  }, [search, selectedType, selectedKind, selectedCity, selectedBeds, selectedPrice, selectedArea, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedCity, selectedBeds, selectedPrice, selectedArea, sortBy]);
 
   const activeCount = [selectedType, selectedKind, selectedCity, selectedBeds !== null ? 1 : null, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
 
@@ -117,6 +190,18 @@ export default function PropertiesPage() {
     e.stopPropagation();
     setLiked(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center" dir="rtl">
+        <Header />
+        <div className="flex flex-col items-center gap-3 text-gray-400 mt-20">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-sm">جارٍ تحميل العقارات...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]" dir="rtl">
@@ -390,7 +475,7 @@ export default function PropertiesPage() {
                         >
                           <div
                             className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer"
-                            onClick={() => setLocation(`/property/${p.id}`)}
+                            onClick={() => window.open(`/property/${p.id}`, "_blank")}
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
@@ -496,7 +581,7 @@ export default function PropertiesPage() {
                         <div
                           key={p.id}
                           className={`bg-white rounded-xl border overflow-hidden cursor-pointer transition-all ${hoveredId === p.id ? "border-primary shadow-md" : "border-gray-200 hover:border-primary/30 hover:shadow-sm"}`}
-                          onClick={() => setLocation(`/property/${p.id}`)}
+                          onClick={() => window.open(`/property/${p.id}`, "_blank")}
                           onMouseEnter={() => setHoveredId(p.id)}
                           onMouseLeave={() => setHoveredId(null)}
                         >
@@ -534,11 +619,11 @@ export default function PropertiesPage() {
                             eventHandlers={{
                               mouseover: () => setHoveredId(p.id),
                               mouseout: () => setHoveredId(null),
-                              click: () => setLocation(`/property/${p.id}`),
+                              click: () => window.open(`/property/${p.id}`, "_blank"),
                             }}
                           >
                             <Popup>
-                              <div className="text-right min-w-[180px]" dir="rtl" onClick={() => setLocation(`/property/${p.id}`)}>
+                              <div className="text-right min-w-[180px]" dir="rtl" onClick={() => window.open(`/property/${p.id}`, "_blank")}>
                                 <img src={p.img} alt={p.title} className="w-full h-20 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
                                 <p className="font-extrabold text-primary text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
                                 <p className="font-bold text-gray-900 text-xs mb-0.5">{p.title}</p>

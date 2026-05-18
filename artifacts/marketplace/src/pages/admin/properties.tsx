@@ -96,6 +96,7 @@ export default function AdminProperties() {
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
+  const [providers, setProviders] = useState<{ id: number; name: string }[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -109,7 +110,14 @@ export default function AdminProperties() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  const loadProviders = async () => {
+    try {
+      const data = await api.admin.providers.list();
+      setProviders((data as unknown as { id: number; name: string }[]).map(p => ({ id: p.id, name: p.name })));
+    } catch {}
+  };
+
+  useEffect(() => { load(); loadProviders(); }, []);
 
   const filtered = useMemo(() => properties.filter((p) => {
     const q = search.toLowerCase();
@@ -167,7 +175,7 @@ export default function AdminProperties() {
 
   const handleAddSave = async () => {
     if (!form.title || !form.providerId) {
-      toast.error("العنوان ومعرّف المزود مطلوبان");
+      toast.error("العنوان واختيار المزود مطلوبان");
       return;
     }
     setSaving(true);
@@ -185,7 +193,7 @@ export default function AdminProperties() {
         images: form.img ? JSON.stringify([form.img]) : null,
         featured: form.featured,
         providerId: parseInt(form.providerId),
-        status: "pending",
+        status: "published",
       });
       setProperties(prev => [newProp as unknown as DbProperty, ...prev]);
       setAddOpen(false);
@@ -244,8 +252,17 @@ export default function AdminProperties() {
           <Input value={f.img} onChange={e => setF({ ...f, img: e.target.value })} placeholder="https://..." />
         </div>
         <div className="col-span-2 grid gap-1.5">
-          <Label>معرّف المزود (providerId) <span className="text-red-500">*</span></Label>
-          <Input type="number" value={f.providerId} onChange={e => setF({ ...f, providerId: e.target.value })} placeholder="1" />
+          <Label>المزود (مالك العقار) <span className="text-red-500">*</span></Label>
+          <Select value={f.providerId} onValueChange={v => setF({ ...f, providerId: v })}>
+            <SelectTrigger>
+              <SelectValue placeholder="اختر المزود..." />
+            </SelectTrigger>
+            <SelectContent>
+              {providers.map(p => (
+                <SelectItem key={p.id} value={String(p.id)}>{p.name} (#{p.id})</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="col-span-2 grid gap-1.5">
           <Label>الوصف</Label>
