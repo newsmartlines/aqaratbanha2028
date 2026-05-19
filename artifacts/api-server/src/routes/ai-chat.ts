@@ -334,6 +334,17 @@ function buildSuggestions(intent: Intent, resultCount: number): string[] {
   return s.slice(0, 4);
 }
 
+function buildSearchUrl(intent: Intent): string {
+  const params = new URLSearchParams();
+  if (intent.listingType) params.set("type", intent.listingType === "sale" ? "للبيع" : "للإيجار");
+  if (intent.mainCategory) params.set("mainCategory", intent.mainCategory);
+  if (intent.subCategory) params.set("q", intent.subCategory);
+  if (intent.location) params.set("city", intent.location);
+  if (intent.minPrice && intent.maxPrice) params.set("price", `${intent.minPrice}-${intent.maxPrice}`);
+  const qs = params.toString();
+  return qs ? `/properties?${qs}` : "/properties";
+}
+
 // ── MAIN ROUTE POST /api/ai-chat ──────────────────────────────────────────────
 router.post("/ai-chat", async (req, res) => {
   const ip = String(req.ip ?? (req.socket as any)?.remoteAddress ?? "anon");
@@ -596,7 +607,8 @@ router.post("/ai-chat", async (req, res) => {
           : null;
 
       suggestions = buildSuggestions(enrichedIntent, properties.length);
-      return res.json({ reply, properties: mapped, intent: enrichedIntent, suggestions, whatsapp, pendingQuestion });
+      const searchUrl = buildSearchUrl(enrichedIntent);
+      return res.json({ reply, properties: mapped, intent: enrichedIntent, suggestions, whatsapp, pendingQuestion, searchUrl });
     }
 
     return res.json({ reply, properties: mapped, intent: enrichedIntent, suggestions, whatsapp });

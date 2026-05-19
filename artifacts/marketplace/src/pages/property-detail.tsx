@@ -595,7 +595,87 @@ export default function PropertyDetail() {
           {/* ── RIGHT COLUMN ── */}
           <div className="space-y-6">
 
-            {/* ── Price Card (TOP) ── */}
+            {/* ── Agent Info Card (TOP) ── */}
+            {(property.agentName || property.agentCity) && (
+              <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+                {/* Header strip */}
+                <div className="bg-gradient-to-l from-teal-600 to-teal-500 px-5 pt-5 pb-10 relative">
+                  <p className="text-white/80 text-xs font-medium mb-0.5">صاحب الإعلان</p>
+                  <p className="text-white font-extrabold text-lg leading-tight truncate">
+                    {property.agentName || "المعلن"}
+                  </p>
+                </div>
+
+                {/* Avatar — overlapping the header */}
+                <div className="px-5 pb-5">
+                  <div className="flex items-end justify-between -mt-8 mb-4">
+                    <div className="relative shrink-0">
+                      {(property.agentAvatar || property.agentLogo) ? (
+                        <img
+                          src={property.agentAvatar || property.agentLogo}
+                          alt={property.agentName}
+                          className="w-16 h-16 rounded-2xl object-cover border-3 border-white shadow-md"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(property.agentName)}&background=0d9488&color=fff&size=64`;
+                          }}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-2xl font-extrabold text-teal-600 border-2 border-white">
+                          {property.agentName ? property.agentName.charAt(0) : "م"}
+                        </div>
+                      )}
+                      <span className="absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-2 border-white bg-gray-400" title="غير متصل" />
+                    </div>
+                    <span className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 rounded-full px-3 py-1.5 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                      المستخدم غير متصل
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm mb-4">
+                    {property.agentMemberSince && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>عضو منذ:{" "}
+                          <span className="font-semibold text-gray-800">
+                            {(() => {
+                              const months = Math.max(1, Math.round((Date.now() - new Date(property.agentMemberSince).getTime()) / (1000 * 60 * 60 * 24 * 30)));
+                              return months < 12 ? `${months} شهر` : `${Math.round(months / 12)} سنة`;
+                            })()}
+                          </span>
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>نوع الحساب: <span className="font-semibold text-gray-800">قطاع الأعمال</span></span>
+                    </div>
+                    {(property.agentCity || property.agentDistrict) && (
+                      <div className="flex items-start gap-2 text-gray-600">
+                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                        <span className="font-semibold text-gray-800">
+                          {[property.agentCity, property.agentDistrict].filter(Boolean).join(" ـ ")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {property.providerId && (
+                    <a
+                      href={`/advertiser/${property.providerId}`}
+                      onClick={(e) => { e.preventDefault(); setLocation(`/advertiser/${property.providerId}`); }}
+                      className="flex items-center justify-between w-full border border-primary/30 text-primary text-sm font-bold rounded-xl px-4 py-2.5 hover:bg-primary/5 transition-colors"
+                    >
+                      <span>شاهد كل إعلاناتي</span>
+                      <ArrowLeft className="w-4 h-4 shrink-0" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Price Card ── */}
             <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
               <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-1">السعر</p>
@@ -678,92 +758,6 @@ export default function PropertyDetail() {
                 </Button>
               )}
             </div>
-
-            {/* ── Agent Info Card ── */}
-            {(property.agentName || property.agentCity) && (
-              <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
-                {/* Header strip */}
-                <div className="bg-gradient-to-l from-teal-600 to-teal-500 px-5 pt-5 pb-10 relative">
-                  <p className="text-white/80 text-xs font-medium mb-0.5">صاحب الإعلان</p>
-                  <p className="text-white font-extrabold text-lg leading-tight truncate">
-                    {property.agentName || "المعلن"}
-                  </p>
-                </div>
-
-                {/* Avatar — overlapping the header */}
-                <div className="px-5 pb-5">
-                  <div className="flex items-end justify-between -mt-8 mb-4">
-                    <div className="relative shrink-0">
-                      {(property.agentAvatar || property.agentLogo) ? (
-                        <img
-                          src={property.agentAvatar || property.agentLogo}
-                          alt={property.agentName}
-                          className="w-16 h-16 rounded-2xl object-cover border-3 border-white shadow-md"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src =
-                              `https://ui-avatars.com/api/?name=${encodeURIComponent(property.agentName)}&background=0d9488&color=fff&size=64`;
-                          }}
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-2xl font-extrabold text-teal-600 border-2 border-white">
-                          {property.agentName ? property.agentName.charAt(0) : "م"}
-                        </div>
-                      )}
-                      {/* Online indicator dot */}
-                      <span className="absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-2 border-white bg-gray-400" title="غير متصل" />
-                    </div>
-
-                    {/* Online status badge */}
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 rounded-full px-3 py-1.5 mb-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                      المستخدم غير متصل
-                    </span>
-                  </div>
-
-                  {/* Meta rows */}
-                  <div className="space-y-2 text-sm mb-4">
-                    {property.agentMemberSince && (
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>
-                          عضو منذ:{" "}
-                          <span className="font-semibold text-gray-800">
-                            {(() => {
-                              const months = Math.max(1, Math.round((Date.now() - new Date(property.agentMemberSince).getTime()) / (1000 * 60 * 60 * 24 * 30)));
-                              return months < 12 ? `${months} شهر` : `${Math.round(months / 12)} سنة`;
-                            })()}
-                          </span>
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span>نوع الحساب: <span className="font-semibold text-gray-800">قطاع الأعمال</span></span>
-                    </div>
-                    {(property.agentCity || property.agentDistrict) && (
-                      <div className="flex items-start gap-2 text-gray-600">
-                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
-                        <span className="font-semibold text-gray-800">
-                          {[property.agentCity, property.agentDistrict].filter(Boolean).join(" ـ ")}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* View all listings */}
-                  {property.providerId && (
-                    <a
-                      href={`/advertiser/${property.providerId}`}
-                      onClick={(e) => { e.preventDefault(); setLocation(`/advertiser/${property.providerId}`); }}
-                      className="flex items-center justify-between w-full border border-primary/30 text-primary text-sm font-bold rounded-xl px-4 py-2.5 hover:bg-primary/5 transition-colors"
-                    >
-                      <span>شاهد كل إعلاناتي</span>
-                      <ArrowLeft className="w-4 h-4 shrink-0" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Safety Tips Card */}
             <div className="bg-white rounded-3xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm">

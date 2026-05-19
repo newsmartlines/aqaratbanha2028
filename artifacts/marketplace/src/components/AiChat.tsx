@@ -24,7 +24,7 @@ type ChatMessage = {
   text: string; properties?: Property[];
   time: Date; isWizard?: boolean; intent?: any;
   suggestions?: string[]; pendingQuestion?: string;
-  showLead?: boolean;
+  showLead?: boolean; searchUrl?: string;
 };
 
 type WizardStep = "type" | "category" | "location" | "budget" | "rooms" | "done";
@@ -55,42 +55,57 @@ async function submitLead(data: { sessionId: string; name?: string; phone?: stri
 }
 
 // ── Markdown renderer ─────────────────────────────────────────────────────────
-function renderMarkdown(text: string): React.ReactNode[] {
-  const lines = text.split("\n");
-  return lines.map((line, li) => {
-    // Parse **bold** within each line
-    const parts: React.ReactNode[] = [];
-    const regex = /\*\*([^*]+)\*\*/g;
-    let last = 0, m: RegExpExecArray | null;
-    while ((m = regex.exec(line)) !== null) {
-      if (m.index > last) parts.push(line.slice(last, m.index));
-      parts.push(<strong key={`b${li}-${m.index}`} className="font-bold text-gray-900">{m[1]}</strong>);
-      last = m.index + m[0].length;
-    }
-    if (last < line.length) parts.push(line.slice(last));
-    // Handle italic _text_
-    const finalParts: React.ReactNode[] = parts.map((p, pi) => {
-      if (typeof p !== "string") return p;
-      const italicParts: React.ReactNode[] = [];
-      const ir = /_(.*?)_/g;
-      let il = 0, im: RegExpExecArray | null;
-      while ((im = ir.exec(p)) !== null) {
-        if (im.index > il) italicParts.push(p.slice(il, im.index));
-        italicParts.push(<em key={`i${pi}-${im.index}`} className="text-gray-500 not-italic text-xs">{im[1]}</em>);
-        il = im.index + im[0].length;
-      }
-      if (il < p.length) italicParts.push(p.slice(il));
-      return italicParts;
-    });
+function parseBold(text: string, keyPrefix: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*([^*]+)\*\*/g;
+  let last = 0, m: RegExpExecArray | null;
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    parts.push(<strong key={`${keyPrefix}-b${m.index}`} className="font-bold text-gray-900">{m[1]}</strong>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
 
-    // Bullet points
-    const isBullet = line.trim().startsWith("•") || line.trim().startsWith("-");
-    return (
-      <span key={li} className={`block ${isBullet ? "flex items-start gap-1.5" : ""} ${li > 0 ? "mt-1" : ""}`}>
-        {finalParts.flat()}
-      </span>
-    );
-  });
+function renderMarkdown(text: string): React.ReactNode {
+  const lines = text.split("\n");
+  return (
+    <span className="block space-y-0.5">
+      {lines.map((line, li) => {
+        const trimmed = line.trim();
+        // Italic note lines like _(text)_
+        if (trimmed.startsWith("_(") && trimmed.endsWith(")_")) {
+          const inner = trimmed.slice(2, -2);
+          return (
+            <span key={li} className="block text-[11px] text-gray-400 mt-1 italic">
+              {inner}
+            </span>
+          );
+        }
+        // Bullet point lines starting with •
+        if (trimmed.startsWith("•")) {
+          const content = trimmed.slice(1).trim();
+          return (
+            <span key={li} className="flex items-start gap-1.5 text-sm leading-snug">
+              <span className="text-primary mt-0.5 shrink-0 text-xs">•</span>
+              <span>{parseBold(content, `${li}`)}</span>
+            </span>
+          );
+        }
+        // Empty line → small spacer
+        if (!trimmed) {
+          return <span key={li} className="block h-1" />;
+        }
+        // Normal line
+        return (
+          <span key={li} className="block leading-relaxed">
+            {parseBold(line, `${li}`)}
+          </span>
+        );
+      })}
+    </span>
+  );
 }
 
 // ── Property Card ─────────────────────────────────────────────────────────────
@@ -422,6 +437,7 @@ export default function AiChat() {
         suggestions: data.suggestions ?? [],
         pendingQuestion: data.pendingQuestion,
         showLead: data.showLead,
+        searchUrl: data.searchUrl,
       };
       setMessages(prev => [...prev, botMsg]);
       if (!open) setUnread(n => n + 1);
@@ -597,20 +613,41 @@ export default function AiChat() {
                         {/* Properties — horizontal scroll */}
                         {msg.properties && msg.properties.length > 0 && (
                           <div className="mt-2">
-                            <div className="flex items-center gap-1.5 mb-1.5">
-                              <Layers className="w-3 h-3 text-primary/70" />
-                              <span className="text-[10px] font-bold text-gray-500">{msg.properties.length} عقار متاح</span>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <Layers className="w-3 h-3 text-primary/70" />
+                                <span className="text-[10px] font-bold text-gray-500">{msg.properties.length} عقار متاح</span>
+                              </div>
+                              {msg.searchUrl && (
+                                <button
+                                  onClick={() => { setOpen(false); setLocation(msg.searchUrl!); }}
+                                  className="text-[10px] text-primary font-bold flex items-center gap-0.5 hover:underline"
+                                >
+                                  عرض الكل
+                                  <ArrowLeft className="w-3 h-3" />
+                                </button>
+                              )}
                             </div>
-                            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+                            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                               {msg.properties.map(p => (
                                 <PropertyCard key={p.id} p={p} onContact={prop => { setLeadProperty(prop); setShowLead(true); }} />
                               ))}
                             </div>
-                            {/* WhatsApp CTA */}
-                            <button onClick={() => openWhatsApp()}
-                              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-green-500 text-white text-xs font-bold rounded-2xl py-2 hover:bg-green-600 transition-all shadow-sm">
-                              <Phone className="w-3.5 h-3.5" />تحدث مع مستشار عبر واتساب
-                            </button>
+                            {/* CTAs */}
+                            <div className="flex gap-2 mt-2">
+                              {msg.searchUrl && (
+                                <button
+                                  onClick={() => { setOpen(false); setLocation(msg.searchUrl!); }}
+                                  className="flex-1 flex items-center justify-center gap-1.5 bg-primary/10 text-primary text-xs font-bold rounded-2xl py-2 hover:bg-primary/20 transition-all"
+                                >
+                                  <Layers className="w-3 h-3" />عرض جميع النتائج
+                                </button>
+                              )}
+                              <button onClick={() => openWhatsApp()}
+                                className="flex-1 flex items-center justify-center gap-1.5 bg-green-500 text-white text-xs font-bold rounded-2xl py-2 hover:bg-green-600 transition-all shadow-sm">
+                                <Phone className="w-3.5 h-3.5" />واتساب
+                              </button>
+                            </div>
                           </div>
                         )}
 
