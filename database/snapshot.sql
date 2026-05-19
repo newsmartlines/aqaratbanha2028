@@ -2,6 +2,7 @@
 -- PostgreSQL database dump
 --
 
+\restrict Wndho7GFWIuPhehB4OPBzF81mxInizIpFp3pytgjfAtoVzvXwULfJJdZvOIZZA1
 
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.10
@@ -17,6 +18,201 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.wallet_transactions DROP CONSTRAINT IF EXISTS wallet_transactions_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.subscriptions DROP CONSTRAINT IF EXISTS subscriptions_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.subscriptions DROP CONSTRAINT IF EXISTS subscriptions_package_id_packages_id_fk;
+ALTER TABLE IF EXISTS ONLY public.subcategories DROP CONSTRAINT IF EXISTS subcategories_category_id_categories_id_fk;
+ALTER TABLE IF EXISTS ONLY public.sessions DROP CONSTRAINT IF EXISTS sessions_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.services DROP CONSTRAINT IF EXISTS services_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.services DROP CONSTRAINT IF EXISTS services_category_id_categories_id_fk;
+ALTER TABLE IF EXISTS ONLY public.service_items DROP CONSTRAINT IF EXISTS service_items_subcategory_id_subcategories_id_fk;
+ALTER TABLE IF EXISTS ONLY public.saved_searches DROP CONSTRAINT IF EXISTS saved_searches_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.reviews DROP CONSTRAINT IF EXISTS reviews_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.reviews DROP CONSTRAINT IF EXISTS reviews_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.reset_tokens DROP CONSTRAINT IF EXISTS reset_tokens_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.requests DROP CONSTRAINT IF EXISTS requests_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.requests DROP CONSTRAINT IF EXISTS requests_service_id_services_id_fk;
+ALTER TABLE IF EXISTS ONLY public.requests DROP CONSTRAINT IF EXISTS requests_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.requests DROP CONSTRAINT IF EXISTS requests_fault_id_faults_id_fk;
+ALTER TABLE IF EXISTS ONLY public.requests DROP CONSTRAINT IF EXISTS requests_assigned_company_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.providers DROP CONSTRAINT IF EXISTS providers_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.providers DROP CONSTRAINT IF EXISTS providers_category_id_categories_id_fk;
+ALTER TABLE IF EXISTS ONLY public.provider_service_areas DROP CONSTRAINT IF EXISTS provider_service_areas_region_id_regions_id_fk;
+ALTER TABLE IF EXISTS ONLY public.provider_service_areas DROP CONSTRAINT IF EXISTS provider_service_areas_city_id_cities_id_fk;
+ALTER TABLE IF EXISTS ONLY public.provider_service_areas DROP CONSTRAINT IF EXISTS provider_service_areas_area_id_areas_id_fk;
+ALTER TABLE IF EXISTS ONLY public.provider_balances DROP CONSTRAINT IF EXISTS provider_balances_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.property_favorites DROP CONSTRAINT IF EXISTS property_favorites_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.property_favorites DROP CONSTRAINT IF EXISTS property_favorites_property_id_properties_id_fk;
+ALTER TABLE IF EXISTS ONLY public.properties DROP CONSTRAINT IF EXISTS properties_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.payments DROP CONSTRAINT IF EXISTS payments_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.payment_transactions DROP CONSTRAINT IF EXISTS payment_transactions_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.payment_transactions DROP CONSTRAINT IF EXISTS payment_transactions_package_id_packages_id_fk;
+ALTER TABLE IF EXISTS ONLY public.notifications DROP CONSTRAINT IF EXISTS notifications_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.messages DROP CONSTRAINT IF EXISTS messages_sender_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.messages DROP CONSTRAINT IF EXISTS messages_receiver_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.interactions DROP CONSTRAINT IF EXISTS interactions_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.favorites DROP CONSTRAINT IF EXISTS favorites_user_id_users_id_fk;
+ALTER TABLE IF EXISTS ONLY public.favorites DROP CONSTRAINT IF EXISTS favorites_provider_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.faults DROP CONSTRAINT IF EXISTS faults_service_item_id_service_items_id_fk;
+ALTER TABLE IF EXISTS ONLY public.company_pricing DROP CONSTRAINT IF EXISTS company_pricing_service_item_id_service_items_id_fk;
+ALTER TABLE IF EXISTS ONLY public.company_pricing DROP CONSTRAINT IF EXISTS company_pricing_fault_id_faults_id_fk;
+ALTER TABLE IF EXISTS ONLY public.company_pricing DROP CONSTRAINT IF EXISTS company_pricing_company_id_providers_id_fk;
+ALTER TABLE IF EXISTS ONLY public.cities DROP CONSTRAINT IF EXISTS cities_region_id_regions_id_fk;
+ALTER TABLE IF EXISTS ONLY public.areas DROP CONSTRAINT IF EXISTS areas_city_id_cities_id_fk;
+ALTER TABLE IF EXISTS ONLY public.wallet_transactions DROP CONSTRAINT IF EXISTS wallet_transactions_pkey;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_pkey;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_google_id_unique;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_email_unique;
+ALTER TABLE IF EXISTS ONLY public.favorites DROP CONSTRAINT IF EXISTS uq_favorites_user_provider;
+ALTER TABLE IF EXISTS ONLY public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_public_id_unique;
+ALTER TABLE IF EXISTS ONLY public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_pkey;
+ALTER TABLE IF EXISTS ONLY public.subscriptions DROP CONSTRAINT IF EXISTS subscriptions_pkey;
+ALTER TABLE IF EXISTS ONLY public.subcategories DROP CONSTRAINT IF EXISTS subcategories_pkey;
+ALTER TABLE IF EXISTS ONLY public.site_settings DROP CONSTRAINT IF EXISTS site_settings_pkey;
+ALTER TABLE IF EXISTS ONLY public.site_settings DROP CONSTRAINT IF EXISTS site_settings_key_unique;
+ALTER TABLE IF EXISTS ONLY public.sessions DROP CONSTRAINT IF EXISTS sessions_pkey;
+ALTER TABLE IF EXISTS ONLY public.services DROP CONSTRAINT IF EXISTS services_pkey;
+ALTER TABLE IF EXISTS ONLY public.service_items DROP CONSTRAINT IF EXISTS service_items_pkey;
+ALTER TABLE IF EXISTS ONLY public.saved_searches DROP CONSTRAINT IF EXISTS saved_searches_pkey;
+ALTER TABLE IF EXISTS ONLY public.reviews DROP CONSTRAINT IF EXISTS reviews_pkey;
+ALTER TABLE IF EXISTS ONLY public.reset_tokens DROP CONSTRAINT IF EXISTS reset_tokens_pkey;
+ALTER TABLE IF EXISTS ONLY public.requests DROP CONSTRAINT IF EXISTS requests_pkey;
+ALTER TABLE IF EXISTS ONLY public.regions DROP CONSTRAINT IF EXISTS regions_pkey;
+ALTER TABLE IF EXISTS ONLY public.providers DROP CONSTRAINT IF EXISTS providers_pkey;
+ALTER TABLE IF EXISTS ONLY public.provider_service_areas DROP CONSTRAINT IF EXISTS provider_service_areas_pkey;
+ALTER TABLE IF EXISTS ONLY public.provider_balances DROP CONSTRAINT IF EXISTS provider_balances_pkey;
+ALTER TABLE IF EXISTS ONLY public.property_favorites DROP CONSTRAINT IF EXISTS property_favorites_user_prop;
+ALTER TABLE IF EXISTS ONLY public.property_favorites DROP CONSTRAINT IF EXISTS property_favorites_pkey;
+ALTER TABLE IF EXISTS ONLY public.properties DROP CONSTRAINT IF EXISTS properties_pkey;
+ALTER TABLE IF EXISTS ONLY public.payments DROP CONSTRAINT IF EXISTS payments_pkey;
+ALTER TABLE IF EXISTS ONLY public.payment_transactions DROP CONSTRAINT IF EXISTS payment_transactions_ref_id_unique;
+ALTER TABLE IF EXISTS ONLY public.payment_transactions DROP CONSTRAINT IF EXISTS payment_transactions_pkey;
+ALTER TABLE IF EXISTS ONLY public.packages DROP CONSTRAINT IF EXISTS packages_pkey;
+ALTER TABLE IF EXISTS ONLY public.notifications DROP CONSTRAINT IF EXISTS notifications_pkey;
+ALTER TABLE IF EXISTS ONLY public.messages DROP CONSTRAINT IF EXISTS messages_pkey;
+ALTER TABLE IF EXISTS ONLY public.interactions DROP CONSTRAINT IF EXISTS interactions_pkey;
+ALTER TABLE IF EXISTS ONLY public.favorites DROP CONSTRAINT IF EXISTS favorites_pkey;
+ALTER TABLE IF EXISTS ONLY public.faults DROP CONSTRAINT IF EXISTS faults_pkey;
+ALTER TABLE IF EXISTS ONLY public.email_templates DROP CONSTRAINT IF EXISTS email_templates_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.email_templates DROP CONSTRAINT IF EXISTS email_templates_pkey;
+ALTER TABLE IF EXISTS ONLY public.email_logs DROP CONSTRAINT IF EXISTS email_logs_pkey;
+ALTER TABLE IF EXISTS ONLY public.coupons DROP CONSTRAINT IF EXISTS coupons_pkey;
+ALTER TABLE IF EXISTS ONLY public.coupons DROP CONSTRAINT IF EXISTS coupons_code_unique;
+ALTER TABLE IF EXISTS ONLY public.company_pricing DROP CONSTRAINT IF EXISTS company_pricing_pkey;
+ALTER TABLE IF EXISTS ONLY public.commission_rules DROP CONSTRAINT IF EXISTS commission_rules_pkey;
+ALTER TABLE IF EXISTS ONLY public.cities DROP CONSTRAINT IF EXISTS cities_pkey;
+ALTER TABLE IF EXISTS ONLY public.categories DROP CONSTRAINT IF EXISTS categories_slug_unique;
+ALTER TABLE IF EXISTS ONLY public.categories DROP CONSTRAINT IF EXISTS categories_pkey;
+ALTER TABLE IF EXISTS ONLY public.billing_plans DROP CONSTRAINT IF EXISTS billing_plans_pkey;
+ALTER TABLE IF EXISTS ONLY public.areas DROP CONSTRAINT IF EXISTS areas_pkey;
+ALTER TABLE IF EXISTS ONLY public.admin_staff DROP CONSTRAINT IF EXISTS admin_staff_pkey;
+ALTER TABLE IF EXISTS ONLY public.admin_staff DROP CONSTRAINT IF EXISTS admin_staff_email_unique;
+ALTER TABLE IF EXISTS public.wallet_transactions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.users ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.support_tickets ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.subscriptions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.subcategories ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.site_settings ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.services ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.service_items ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.saved_searches ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.reviews ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.requests ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.regions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.providers ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.provider_service_areas ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.property_favorites ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.properties ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.payments ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.payment_transactions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.packages ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.notifications ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.messages ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.interactions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.favorites ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.faults ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.email_templates ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.email_logs ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.coupons ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.company_pricing ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.commission_rules ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.cities ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.categories ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.billing_plans ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.areas ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.admin_staff ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS public.wallet_transactions_id_seq;
+DROP TABLE IF EXISTS public.wallet_transactions;
+DROP SEQUENCE IF EXISTS public.users_id_seq;
+DROP TABLE IF EXISTS public.users;
+DROP SEQUENCE IF EXISTS public.support_tickets_id_seq;
+DROP TABLE IF EXISTS public.support_tickets;
+DROP SEQUENCE IF EXISTS public.subscriptions_id_seq;
+DROP TABLE IF EXISTS public.subscriptions;
+DROP SEQUENCE IF EXISTS public.subcategories_id_seq;
+DROP TABLE IF EXISTS public.subcategories;
+DROP SEQUENCE IF EXISTS public.site_settings_id_seq;
+DROP TABLE IF EXISTS public.site_settings;
+DROP TABLE IF EXISTS public.sessions;
+DROP SEQUENCE IF EXISTS public.services_id_seq;
+DROP TABLE IF EXISTS public.services;
+DROP SEQUENCE IF EXISTS public.service_items_id_seq;
+DROP TABLE IF EXISTS public.service_items;
+DROP SEQUENCE IF EXISTS public.saved_searches_id_seq;
+DROP TABLE IF EXISTS public.saved_searches;
+DROP SEQUENCE IF EXISTS public.reviews_id_seq;
+DROP TABLE IF EXISTS public.reviews;
+DROP TABLE IF EXISTS public.reset_tokens;
+DROP SEQUENCE IF EXISTS public.requests_id_seq;
+DROP TABLE IF EXISTS public.requests;
+DROP SEQUENCE IF EXISTS public.regions_id_seq;
+DROP TABLE IF EXISTS public.regions;
+DROP SEQUENCE IF EXISTS public.providers_id_seq;
+DROP TABLE IF EXISTS public.providers;
+DROP SEQUENCE IF EXISTS public.provider_service_areas_id_seq;
+DROP TABLE IF EXISTS public.provider_service_areas;
+DROP TABLE IF EXISTS public.provider_balances;
+DROP SEQUENCE IF EXISTS public.property_favorites_id_seq;
+DROP TABLE IF EXISTS public.property_favorites;
+DROP SEQUENCE IF EXISTS public.properties_id_seq;
+DROP TABLE IF EXISTS public.properties;
+DROP SEQUENCE IF EXISTS public.payments_id_seq;
+DROP TABLE IF EXISTS public.payments;
+DROP SEQUENCE IF EXISTS public.payment_transactions_id_seq;
+DROP TABLE IF EXISTS public.payment_transactions;
+DROP SEQUENCE IF EXISTS public.packages_id_seq;
+DROP TABLE IF EXISTS public.packages;
+DROP SEQUENCE IF EXISTS public.notifications_id_seq;
+DROP TABLE IF EXISTS public.notifications;
+DROP SEQUENCE IF EXISTS public.messages_id_seq;
+DROP TABLE IF EXISTS public.messages;
+DROP SEQUENCE IF EXISTS public.interactions_id_seq;
+DROP TABLE IF EXISTS public.interactions;
+DROP SEQUENCE IF EXISTS public.favorites_id_seq;
+DROP TABLE IF EXISTS public.favorites;
+DROP SEQUENCE IF EXISTS public.faults_id_seq;
+DROP TABLE IF EXISTS public.faults;
+DROP SEQUENCE IF EXISTS public.email_templates_id_seq;
+DROP TABLE IF EXISTS public.email_templates;
+DROP SEQUENCE IF EXISTS public.email_logs_id_seq;
+DROP TABLE IF EXISTS public.email_logs;
+DROP SEQUENCE IF EXISTS public.coupons_id_seq;
+DROP TABLE IF EXISTS public.coupons;
+DROP SEQUENCE IF EXISTS public.company_pricing_id_seq;
+DROP TABLE IF EXISTS public.company_pricing;
+DROP SEQUENCE IF EXISTS public.commission_rules_id_seq;
+DROP TABLE IF EXISTS public.commission_rules;
+DROP SEQUENCE IF EXISTS public.cities_id_seq;
+DROP TABLE IF EXISTS public.cities;
+DROP SEQUENCE IF EXISTS public.categories_id_seq;
+DROP TABLE IF EXISTS public.categories;
+DROP SEQUENCE IF EXISTS public.billing_plans_id_seq;
+DROP TABLE IF EXISTS public.billing_plans;
+DROP SEQUENCE IF EXISTS public.areas_id_seq;
+DROP TABLE IF EXISTS public.areas;
+DROP SEQUENCE IF EXISTS public.admin_staff_id_seq;
+DROP TABLE IF EXISTS public.admin_staff;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -1599,474 +1795,386 @@ ALTER TABLE ONLY public.wallet_transactions ALTER COLUMN id SET DEFAULT nextval(
 -- Data for Name: admin_staff; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.admin_staff (id, name, email, password_hash, role, permissions, status, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: areas; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.areas VALUES (1, 1, 'النخيل', 'النخيل', true);
-INSERT INTO public.areas VALUES (2, 1, 'الياسمين', 'الياسمين', true);
-INSERT INTO public.areas VALUES (3, 1, 'الملقا', 'الملقا', true);
-INSERT INTO public.areas VALUES (4, 1, 'حي الملك فهد', 'حي الملك فهد', true);
-INSERT INTO public.areas VALUES (5, 1, 'العليا', 'العليا', true);
-INSERT INTO public.areas VALUES (6, 1, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (7, 1, 'العزيزية', 'العزيزية', true);
-INSERT INTO public.areas VALUES (8, 1, 'الشميسي', 'الشميسي', true);
-INSERT INTO public.areas VALUES (9, 1, 'المرسلات', 'المرسلات', true);
-INSERT INTO public.areas VALUES (10, 1, 'قرطبة', 'قرطبة', true);
-INSERT INTO public.areas VALUES (11, 1, 'غرناطة', 'غرناطة', true);
-INSERT INTO public.areas VALUES (12, 1, 'المربع', 'المربع', true);
-INSERT INTO public.areas VALUES (13, 1, 'الصحافة', 'الصحافة', true);
-INSERT INTO public.areas VALUES (14, 1, 'الربيع', 'الربيع', true);
-INSERT INTO public.areas VALUES (15, 1, 'الورود', 'الورود', true);
-INSERT INTO public.areas VALUES (16, 1, 'التعاون', 'التعاون', true);
-INSERT INTO public.areas VALUES (17, 1, 'الاندلس', 'الاندلس', true);
-INSERT INTO public.areas VALUES (18, 1, 'السليمانية', 'السليمانية', true);
-INSERT INTO public.areas VALUES (19, 1, 'النرجس', 'النرجس', true);
-INSERT INTO public.areas VALUES (20, 7, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (21, 7, 'الصفا', 'الصفا', true);
-INSERT INTO public.areas VALUES (22, 7, 'الحمراء', 'الحمراء', true);
-INSERT INTO public.areas VALUES (23, 7, 'البوادي', 'البوادي', true);
-INSERT INTO public.areas VALUES (24, 7, 'أبحر الشمالية', 'أبحر الشمالية', true);
-INSERT INTO public.areas VALUES (25, 7, 'الزهراء', 'الزهراء', true);
-INSERT INTO public.areas VALUES (26, 7, 'المروة', 'المروة', true);
-INSERT INTO public.areas VALUES (27, 7, 'الربوة', 'الربوة', true);
-INSERT INTO public.areas VALUES (28, 7, 'النزهة', 'النزهة', true);
-INSERT INTO public.areas VALUES (29, 7, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (30, 7, 'الشاطئ', 'الشاطئ', true);
-INSERT INTO public.areas VALUES (31, 7, 'التضامن', 'التضامن', true);
-INSERT INTO public.areas VALUES (32, 7, 'الفيحاء', 'الفيحاء', true);
-INSERT INTO public.areas VALUES (33, 7, 'العزيزية', 'العزيزية', true);
-INSERT INTO public.areas VALUES (34, 7, 'الصواري', 'الصواري', true);
-INSERT INTO public.areas VALUES (35, 7, 'النسيم', 'النسيم', true);
-INSERT INTO public.areas VALUES (36, 7, 'السلامة', 'السلامة', true);
-INSERT INTO public.areas VALUES (37, 8, 'العزيزية', 'العزيزية', true);
-INSERT INTO public.areas VALUES (38, 8, 'الزاهر', 'الزاهر', true);
-INSERT INTO public.areas VALUES (39, 8, 'العتيبية', 'العتيبية', true);
-INSERT INTO public.areas VALUES (40, 8, 'الشرائع', 'الشرائع', true);
-INSERT INTO public.areas VALUES (41, 8, 'أجياد', 'أجياد', true);
-INSERT INTO public.areas VALUES (42, 8, 'الشيشة', 'الشيشة', true);
-INSERT INTO public.areas VALUES (43, 8, 'المعابدة', 'المعابدة', true);
-INSERT INTO public.areas VALUES (44, 9, 'الحوية', 'الحوية', true);
-INSERT INTO public.areas VALUES (45, 9, 'الشهداء', 'الشهداء', true);
-INSERT INTO public.areas VALUES (46, 9, 'القزاز', 'القزاز', true);
-INSERT INTO public.areas VALUES (47, 9, 'المثناه', 'المثناه', true);
-INSERT INTO public.areas VALUES (48, 9, 'الربوة', 'الربوة', true);
-INSERT INTO public.areas VALUES (49, 9, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (50, 11, 'قباء', 'قباء', true);
-INSERT INTO public.areas VALUES (51, 11, 'شوران', 'شوران', true);
-INSERT INTO public.areas VALUES (52, 11, 'العزيزية', 'العزيزية', true);
-INSERT INTO public.areas VALUES (53, 11, 'الفيحاء', 'الفيحاء', true);
-INSERT INTO public.areas VALUES (54, 11, 'وادي العقيق', 'وادي العقيق', true);
-INSERT INTO public.areas VALUES (55, 11, 'سلطانة', 'سلطانة', true);
-INSERT INTO public.areas VALUES (56, 11, 'المطار', 'المطار', true);
-INSERT INTO public.areas VALUES (57, 14, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (58, 14, 'الفيحاء', 'الفيحاء', true);
-INSERT INTO public.areas VALUES (59, 14, 'الاندلس', 'الاندلس', true);
-INSERT INTO public.areas VALUES (60, 14, 'النزهة', 'النزهة', true);
-INSERT INTO public.areas VALUES (61, 14, 'السلام', 'السلام', true);
-INSERT INTO public.areas VALUES (62, 17, 'الشاطئ', 'الشاطئ', true);
-INSERT INTO public.areas VALUES (63, 17, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (64, 17, 'العدامة', 'العدامة', true);
-INSERT INTO public.areas VALUES (65, 17, 'النزهة', 'النزهة', true);
-INSERT INTO public.areas VALUES (66, 17, 'المريكبات', 'المريكبات', true);
-INSERT INTO public.areas VALUES (67, 17, 'العنود', 'العنود', true);
-INSERT INTO public.areas VALUES (68, 17, 'الجامعيين', 'الجامعيين', true);
-INSERT INTO public.areas VALUES (69, 17, 'البادية', 'البادية', true);
-INSERT INTO public.areas VALUES (70, 18, 'العقربية', 'العقربية', true);
-INSERT INTO public.areas VALUES (71, 18, 'الراكة', 'الراكة', true);
-INSERT INTO public.areas VALUES (72, 18, 'الكورنيش', 'الكورنيش', true);
-INSERT INTO public.areas VALUES (73, 18, 'الإسكان', 'الإسكان', true);
-INSERT INTO public.areas VALUES (74, 18, 'اليرموك', 'اليرموك', true);
-INSERT INTO public.areas VALUES (75, 19, 'الدانة', 'الدانة', true);
-INSERT INTO public.areas VALUES (76, 19, 'الدوحة الجنوبية', 'الدوحة الجنوبية', true);
-INSERT INTO public.areas VALUES (77, 19, 'الدوحة الشمالية', 'الدوحة الشمالية', true);
-INSERT INTO public.areas VALUES (78, 19, 'الأنوار', 'الأنوار', true);
-INSERT INTO public.areas VALUES (79, 20, 'الهفوف', 'الهفوف', true);
-INSERT INTO public.areas VALUES (80, 20, 'المبرز', 'المبرز', true);
-INSERT INTO public.areas VALUES (81, 20, 'العيون', 'العيون', true);
-INSERT INTO public.areas VALUES (82, 20, 'الجفر', 'الجفر', true);
-INSERT INTO public.areas VALUES (83, 20, 'العمران', 'العمران', true);
-INSERT INTO public.areas VALUES (84, 21, 'سيهات', 'سيهات', true);
-INSERT INTO public.areas VALUES (85, 21, 'صفوى', 'صفوى', true);
-INSERT INTO public.areas VALUES (86, 21, 'تاروت', 'تاروت', true);
-INSERT INTO public.areas VALUES (87, 21, 'العوامية', 'العوامية', true);
-INSERT INTO public.areas VALUES (88, 21, 'الجش', 'الجش', true);
-INSERT INTO public.areas VALUES (89, 26, 'المنهل', 'المنهل', true);
-INSERT INTO public.areas VALUES (90, 26, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (91, 26, 'مدينة العمال', 'مدينة العمال', true);
-INSERT INTO public.areas VALUES (92, 26, 'الورود', 'الورود', true);
-INSERT INTO public.areas VALUES (93, 26, 'الأندلس', 'الأندلس', true);
-INSERT INTO public.areas VALUES (94, 27, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (95, 27, 'الطائفية', 'الطائفية', true);
-INSERT INTO public.areas VALUES (96, 27, 'الصالحية', 'الصالحية', true);
-INSERT INTO public.areas VALUES (97, 29, 'الاندلس', 'الاندلس', true);
-INSERT INTO public.areas VALUES (98, 29, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (99, 29, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (100, 29, 'العزيزية', 'العزيزية', true);
-INSERT INTO public.areas VALUES (101, 31, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (102, 31, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (103, 31, 'الخزام', 'الخزام', true);
-INSERT INTO public.areas VALUES (104, 31, 'النزهة', 'النزهة', true);
-INSERT INTO public.areas VALUES (105, 33, 'الصالحية', 'الصالحية', true);
-INSERT INTO public.areas VALUES (106, 33, 'النزهة', 'النزهة', true);
-INSERT INTO public.areas VALUES (107, 33, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (108, 35, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (109, 35, 'السلام', 'السلام', true);
-INSERT INTO public.areas VALUES (110, 35, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (111, 35, 'الكورنيش', 'الكورنيش', true);
-INSERT INTO public.areas VALUES (112, 38, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (113, 38, 'الأمير فيصل', 'الأمير فيصل', true);
-INSERT INTO public.areas VALUES (114, 38, 'سدير', 'سدير', true);
-INSERT INTO public.areas VALUES (115, 40, 'العقيق', 'العقيق', true);
-INSERT INTO public.areas VALUES (116, 40, 'المخواة', 'المخواة', true);
-INSERT INTO public.areas VALUES (117, 40, 'الحجرة', 'الحجرة', true);
-INSERT INTO public.areas VALUES (118, 42, 'الروضة', 'الروضة', true);
-INSERT INTO public.areas VALUES (119, 42, 'الفيصلية', 'الفيصلية', true);
-INSERT INTO public.areas VALUES (120, 42, 'الاندلس', 'الاندلس', true);
+COPY public.areas (id, city_id, name_ar, name_en, enabled) FROM stdin;
+121	45	أتريب	أتريب	t
+122	45	الفلل	الفلل	t
+\.
 
 
 --
 -- Data for Name: billing_plans; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.billing_plans VALUES (1, 'Free', 'مجاني', NULL, 'الباقة المجانية - ابدأ مجاناً', 0.00, 0.00, 'EGP', 30, 'monthly', 'all', 'active', false, false, 0, 0, '#64748b', '{"properties":3,"photos":10,"videos":0,"featuredAds":0,"pinnedAds":0,"messages":20,"leads":10}', '{"homepageDisplay":false,"topSearch":false,"verifiedBadge":false,"premiumBadge":false,"prioritySupport":false,"analytics":false,"seo":false,"aiTools":false,"autoBoost":false}', 10.00, '2026-05-19 14:18:24.109577', '2026-05-19 14:18:24.109577');
-INSERT INTO public.billing_plans VALUES (2, 'Bronze', 'برونز', NULL, 'باقة البرونز للمبتدئين', 99.00, 999.00, 'EGP', 30, 'monthly', 'all', 'active', false, true, 7, 1, '#b45309', '{"properties":10,"photos":20,"videos":2,"featuredAds":3,"pinnedAds":1,"messages":100,"leads":50}', '{"homepageDisplay":true,"topSearch":false,"verifiedBadge":false,"premiumBadge":false,"prioritySupport":false,"analytics":true,"seo":false,"aiTools":false,"autoBoost":false}', 7.00, '2026-05-19 14:18:24.115836', '2026-05-19 14:18:24.115836');
-INSERT INTO public.billing_plans VALUES (3, 'Silver', 'فضي', NULL, 'الباقة الفضية للسماسرة', 199.00, 1999.00, 'EGP', 30, 'monthly', 'all', 'active', true, false, 7, 2, '#475569', '{"properties":30,"photos":30,"videos":5,"featuredAds":10,"pinnedAds":3,"messages":500,"leads":200}', '{"homepageDisplay":true,"topSearch":true,"verifiedBadge":true,"premiumBadge":false,"prioritySupport":false,"analytics":true,"seo":true,"aiTools":false,"autoBoost":false}', 5.00, '2026-05-19 14:18:24.120179', '2026-05-19 14:18:24.120179');
-INSERT INTO public.billing_plans VALUES (4, 'Gold', 'ذهبي', NULL, 'الباقة الذهبية للشركات', 399.00, 3999.00, 'EGP', 30, 'monthly', 'all', 'active', false, false, 14, 3, '#ca8a04', '{"properties":100,"photos":50,"videos":10,"featuredAds":30,"pinnedAds":10,"messages":-1,"leads":-1}', '{"homepageDisplay":true,"topSearch":true,"verifiedBadge":true,"premiumBadge":true,"prioritySupport":true,"analytics":true,"seo":true,"aiTools":true,"autoBoost":false}', 3.00, '2026-05-19 14:18:24.123301', '2026-05-19 14:18:24.123301');
-INSERT INTO public.billing_plans VALUES (5, 'VIP', 'VIP', NULL, 'باقة VIP - صلاحيات غير محدودة', 799.00, 7999.00, 'EGP', 30, 'monthly', 'all', 'active', false, false, 14, 4, '#7c3aed', '{"properties":-1,"photos":-1,"videos":-1,"featuredAds":-1,"pinnedAds":-1,"messages":-1,"leads":-1}', '{"homepageDisplay":true,"topSearch":true,"verifiedBadge":true,"premiumBadge":true,"prioritySupport":true,"analytics":true,"seo":true,"aiTools":true,"autoBoost":true}', 2.00, '2026-05-19 14:18:24.126698', '2026-05-19 14:18:24.126698');
+COPY public.billing_plans (id, name, name_ar, description, description_ar, price, yearly_price, currency, duration_days, duration_type, user_type, status, is_recommended, is_most_popular, trial_days, sort_order, color, limits, features, commission_percent, created_at, updated_at) FROM stdin;
+1	Free	مجاني	\N	الباقة المجانية - ابدأ مجاناً	0.00	0.00	EGP	30	monthly	all	active	f	f	0	0	#64748b	{"properties":3,"photos":10,"videos":0,"featuredAds":0,"pinnedAds":0,"messages":20,"leads":10}	{"homepageDisplay":false,"topSearch":false,"verifiedBadge":false,"premiumBadge":false,"prioritySupport":false,"analytics":false,"seo":false,"aiTools":false,"autoBoost":false}	10.00	2026-05-19 14:18:24.109577	2026-05-19 14:18:24.109577
+2	Bronze	برونز	\N	باقة البرونز للمبتدئين	99.00	999.00	EGP	30	monthly	all	active	f	t	7	1	#b45309	{"properties":10,"photos":20,"videos":2,"featuredAds":3,"pinnedAds":1,"messages":100,"leads":50}	{"homepageDisplay":true,"topSearch":false,"verifiedBadge":false,"premiumBadge":false,"prioritySupport":false,"analytics":true,"seo":false,"aiTools":false,"autoBoost":false}	7.00	2026-05-19 14:18:24.115836	2026-05-19 14:18:24.115836
+3	Silver	فضي	\N	الباقة الفضية للسماسرة	199.00	1999.00	EGP	30	monthly	all	active	t	f	7	2	#475569	{"properties":30,"photos":30,"videos":5,"featuredAds":10,"pinnedAds":3,"messages":500,"leads":200}	{"homepageDisplay":true,"topSearch":true,"verifiedBadge":true,"premiumBadge":false,"prioritySupport":false,"analytics":true,"seo":true,"aiTools":false,"autoBoost":false}	5.00	2026-05-19 14:18:24.120179	2026-05-19 14:18:24.120179
+4	Gold	ذهبي	\N	الباقة الذهبية للشركات	399.00	3999.00	EGP	30	monthly	all	active	f	f	14	3	#ca8a04	{"properties":100,"photos":50,"videos":10,"featuredAds":30,"pinnedAds":10,"messages":-1,"leads":-1}	{"homepageDisplay":true,"topSearch":true,"verifiedBadge":true,"premiumBadge":true,"prioritySupport":true,"analytics":true,"seo":true,"aiTools":true,"autoBoost":false}	3.00	2026-05-19 14:18:24.123301	2026-05-19 14:18:24.123301
+5	VIP	VIP	\N	باقة VIP - صلاحيات غير محدودة	799.00	7999.00	EGP	30	monthly	all	active	f	f	14	4	#7c3aed	{"properties":-1,"photos":-1,"videos":-1,"featuredAds":-1,"pinnedAds":-1,"messages":-1,"leads":-1}	{"homepageDisplay":true,"topSearch":true,"verifiedBadge":true,"premiumBadge":true,"prioritySupport":true,"analytics":true,"seo":true,"aiTools":true,"autoBoost":true}	2.00	2026-05-19 14:18:24.126698	2026-05-19 14:18:24.126698
+\.
 
 
 --
 -- Data for Name: categories; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.categories VALUES (1, 'طعام منزلي', 'Home Food', 'ChefHat', 'food', NULL, NULL, 'active', 'service', '2026-05-19 14:18:24.146836');
-INSERT INTO public.categories VALUES (2, 'صيانة', 'Maintenance', 'Wrench', 'maintenance', NULL, NULL, 'active', 'service', '2026-05-19 14:18:24.146836');
-INSERT INTO public.categories VALUES (3, 'تصميم', 'Design', 'Palette', 'design', NULL, NULL, 'active', 'service', '2026-05-19 14:18:24.146836');
-INSERT INTO public.categories VALUES (4, 'تعليم', 'Education', 'BookOpen', 'education', NULL, NULL, 'active', 'service', '2026-05-19 14:18:24.146836');
-INSERT INTO public.categories VALUES (5, 'فعاليات', 'Events', 'Calendar', 'events', NULL, NULL, 'active', 'service', '2026-05-19 14:18:24.146836');
-INSERT INTO public.categories VALUES (6, 'جمال', 'Beauty', 'Sparkles', 'beauty', NULL, NULL, 'active', 'service', '2026-05-19 14:18:24.146836');
-INSERT INTO public.categories VALUES (7, 'سكني', 'Residential', 'Home', 'residential', 'العقارات السكنية', NULL, 'active', 'real_estate', '2026-05-19 14:18:24.877775');
-INSERT INTO public.categories VALUES (8, 'تجاري', 'Commercial', 'Store', 'commercial', 'العقارات التجارية', NULL, 'active', 'real_estate', '2026-05-19 14:18:24.877775');
-INSERT INTO public.categories VALUES (9, 'أراضي', 'Land', 'MapPin', 'land', 'الأراضي والقطع', NULL, 'active', 'real_estate', '2026-05-19 14:18:24.877775');
-INSERT INTO public.categories VALUES (10, 'صناعي', 'Industrial', 'Factory', 'industrial', 'العقارات الصناعية', NULL, 'active', 'real_estate', '2026-05-19 14:18:24.877775');
+COPY public.categories (id, name_ar, name_en, icon, slug, description, image, status, type, created_at) FROM stdin;
+1	طعام منزلي	Home Food	ChefHat	food	\N	\N	active	service	2026-05-19 14:18:24.146836
+2	صيانة	Maintenance	Wrench	maintenance	\N	\N	active	service	2026-05-19 14:18:24.146836
+3	تصميم	Design	Palette	design	\N	\N	active	service	2026-05-19 14:18:24.146836
+4	تعليم	Education	BookOpen	education	\N	\N	active	service	2026-05-19 14:18:24.146836
+5	فعاليات	Events	Calendar	events	\N	\N	active	service	2026-05-19 14:18:24.146836
+6	جمال	Beauty	Sparkles	beauty	\N	\N	active	service	2026-05-19 14:18:24.146836
+7	سكني	Residential	Home	residential	العقارات السكنية	\N	active	real_estate	2026-05-19 14:18:24.877775
+8	تجاري	Commercial	Store	commercial	العقارات التجارية	\N	active	real_estate	2026-05-19 14:18:24.877775
+9	أراضي	Land	MapPin	land	الأراضي والقطع	\N	active	real_estate	2026-05-19 14:18:24.877775
+10	صناعي	Industrial	Factory	industrial	العقارات الصناعية	\N	active	real_estate	2026-05-19 14:18:24.877775
+\.
 
 
 --
 -- Data for Name: cities; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.cities VALUES (1, 1, 'الرياض', 'الرياض', true);
-INSERT INTO public.cities VALUES (2, 1, 'الخرج', 'الخرج', true);
-INSERT INTO public.cities VALUES (3, 1, 'الدوادمي', 'الدوادمي', true);
-INSERT INTO public.cities VALUES (4, 1, 'الزلفي', 'الزلفي', true);
-INSERT INTO public.cities VALUES (5, 1, 'شقراء', 'شقراء', true);
-INSERT INTO public.cities VALUES (6, 1, 'المجمعة', 'المجمعة', true);
-INSERT INTO public.cities VALUES (7, 2, 'جدة', 'جدة', true);
-INSERT INTO public.cities VALUES (8, 2, 'مكة المكرمة', 'مكة المكرمة', true);
-INSERT INTO public.cities VALUES (9, 2, 'الطائف', 'الطائف', true);
-INSERT INTO public.cities VALUES (10, 2, 'رابغ', 'رابغ', true);
-INSERT INTO public.cities VALUES (11, 3, 'المدينة المنورة', 'المدينة المنورة', true);
-INSERT INTO public.cities VALUES (12, 3, 'ينبع', 'ينبع', true);
-INSERT INTO public.cities VALUES (13, 3, 'العلا', 'العلا', true);
-INSERT INTO public.cities VALUES (14, 4, 'بريدة', 'بريدة', true);
-INSERT INTO public.cities VALUES (15, 4, 'عنيزة', 'عنيزة', true);
-INSERT INTO public.cities VALUES (16, 4, 'الرس', 'الرس', true);
-INSERT INTO public.cities VALUES (17, 5, 'الدمام', 'الدمام', true);
-INSERT INTO public.cities VALUES (18, 5, 'الخبر', 'الخبر', true);
-INSERT INTO public.cities VALUES (19, 5, 'الظهران', 'الظهران', true);
-INSERT INTO public.cities VALUES (20, 5, 'الأحساء', 'الأحساء', true);
-INSERT INTO public.cities VALUES (21, 5, 'القطيف', 'القطيف', true);
-INSERT INTO public.cities VALUES (22, 5, 'الجبيل', 'الجبيل', true);
-INSERT INTO public.cities VALUES (23, 5, 'حفر الباطن', 'حفر الباطن', true);
-INSERT INTO public.cities VALUES (24, 5, 'الخفجي', 'الخفجي', true);
-INSERT INTO public.cities VALUES (25, 5, 'رأس تنورة', 'رأس تنورة', true);
-INSERT INTO public.cities VALUES (26, 6, 'أبها', 'أبها', true);
-INSERT INTO public.cities VALUES (27, 6, 'خميس مشيط', 'خميس مشيط', true);
-INSERT INTO public.cities VALUES (28, 6, 'بيشة', 'بيشة', true);
-INSERT INTO public.cities VALUES (29, 7, 'تبوك', 'تبوك', true);
-INSERT INTO public.cities VALUES (30, 7, 'الوجه', 'الوجه', true);
-INSERT INTO public.cities VALUES (31, 8, 'حائل', 'حائل', true);
-INSERT INTO public.cities VALUES (32, 8, 'بقعاء', 'بقعاء', true);
-INSERT INTO public.cities VALUES (33, 9, 'عرعر', 'عرعر', true);
-INSERT INTO public.cities VALUES (34, 9, 'رفحاء', 'رفحاء', true);
-INSERT INTO public.cities VALUES (35, 10, 'جازان', 'جازان', true);
-INSERT INTO public.cities VALUES (36, 10, 'أبو عريش', 'أبو عريش', true);
-INSERT INTO public.cities VALUES (37, 10, 'صبيا', 'صبيا', true);
-INSERT INTO public.cities VALUES (38, 11, 'نجران', 'نجران', true);
-INSERT INTO public.cities VALUES (39, 11, 'شرورة', 'شرورة', true);
-INSERT INTO public.cities VALUES (40, 12, 'الباحة', 'الباحة', true);
-INSERT INTO public.cities VALUES (41, 12, 'بلجرشي', 'بلجرشي', true);
-INSERT INTO public.cities VALUES (42, 13, 'سكاكا', 'سكاكا', true);
-INSERT INTO public.cities VALUES (43, 13, 'القريات', 'القريات', true);
-INSERT INTO public.cities VALUES (44, 13, 'دومة الجندل', 'دومة الجندل', true);
+COPY public.cities (id, region_id, name_ar, name_en, enabled) FROM stdin;
+45	14	بنها	بنها	t
+\.
 
 
 --
 -- Data for Name: commission_rules; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.commission_rules VALUES (1, 'عمولة البيع', 'percentage', 5.00, true, 'sale', 'all', NULL, 1, true, 'عمولة على صفقات البيع', '2026-05-19 14:18:24.130489', '2026-05-19 14:18:24.130489');
-INSERT INTO public.commission_rules VALUES (2, 'عمولة الإيجار', 'percentage', 3.00, true, 'rent', 'all', NULL, 2, true, 'عمولة على صفقات الإيجار', '2026-05-19 14:18:24.134693', '2026-05-19 14:18:24.134693');
-INSERT INTO public.commission_rules VALUES (3, 'عمولة الإعلانات المميزة', 'percentage', 2.00, true, 'featured', 'all', NULL, 3, true, 'عمولة الإعلانات المدفوعة', '2026-05-19 14:18:24.139026', '2026-05-19 14:18:24.139026');
+COPY public.commission_rules (id, name, type, value, is_percentage, applies_to, user_type, plan_id, priority, is_active, notes, created_at, updated_at) FROM stdin;
+1	عمولة البيع	percentage	5.00	t	sale	all	\N	1	t	عمولة على صفقات البيع	2026-05-19 14:18:24.130489	2026-05-19 14:18:24.130489
+2	عمولة الإيجار	percentage	3.00	t	rent	all	\N	2	t	عمولة على صفقات الإيجار	2026-05-19 14:18:24.134693	2026-05-19 14:18:24.134693
+3	عمولة الإعلانات المميزة	percentage	2.00	t	featured	all	\N	3	t	عمولة الإعلانات المدفوعة	2026-05-19 14:18:24.139026	2026-05-19 14:18:24.139026
+\.
 
 
 --
 -- Data for Name: company_pricing; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.company_pricing (id, company_id, service_item_id, fault_id, custom_price, created_at, updated_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: coupons; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.coupons (id, code, name, discount_type, discount_value, max_uses, used_count, min_amount, applicable_plans, expires_at, is_active, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: email_logs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.email_logs (id, template_id, template_name, to_email, to_name, subject, status, error, metadata, sent_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: email_templates; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.email_templates (id, name, slug, subject, html_body, plain_body, category, channels, variables, is_active, created_at, updated_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: faults; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.faults (id, service_item_id, name_ar, name_en, description, default_price, status, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: favorites; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.favorites (id, user_id, provider_id, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: interactions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.interactions (id, provider_id, type, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.messages (id, sender_id, receiver_id, content, is_read, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: notifications; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.notifications VALUES (1, NULL, 'info', 'تسجيل جديد: a', 'نوع الحساب: مقدم خدمة — ١٩‏/٥‏/٢٠٢٦، ٢:٢٤:٣٤ م', false, '/admin/users', '2026-05-19 14:24:34.328896');
-INSERT INTO public.notifications VALUES (2, NULL, 'info', 'تسجيل جديد: a', 'نوع الحساب: مقدم خدمة — ١٩‏/٥‏/٢٠٢٦، ٢:٢٧:٠٥ م', false, '/admin/users', '2026-05-19 14:27:05.737801');
+COPY public.notifications (id, user_id, type, title, message, read, link, created_at) FROM stdin;
+1	\N	info	تسجيل جديد: a	نوع الحساب: مقدم خدمة — ١٩‏/٥‏/٢٠٢٦، ٢:٢٤:٣٤ م	f	/admin/users	2026-05-19 14:24:34.328896
+2	\N	info	تسجيل جديد: a	نوع الحساب: مقدم خدمة — ١٩‏/٥‏/٢٠٢٦، ٢:٢٧:٠٥ م	f	/admin/users	2026-05-19 14:27:05.737801
+3	\N	info	تسجيل جديد: rt	نوع الحساب: مقدم خدمة — ١٩‏/٥‏/٢٠٢٦، ٢:٤١:١٤ م	f	/admin/users	2026-05-19 14:41:14.315815
+\.
 
 
 --
 -- Data for Name: packages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.packages VALUES (1, 'مجاني', 'Free', 0.00, 30, 3, 15.00, 0, false, 0, '2026-05-19 14:18:24.15191');
-INSERT INTO public.packages VALUES (2, 'برونزي', 'Bronze', 99.00, 30, 10, 10.00, 3, false, 1, '2026-05-19 14:18:24.15191');
-INSERT INTO public.packages VALUES (3, 'بريميوم', 'Premium', 249.00, 30, NULL, 7.00, NULL, true, 2, '2026-05-19 14:18:24.15191');
+COPY public.packages (id, name_ar, name_en, price, duration_days, max_listings, commission_rate, featured_allowed, top_badge, priority_rank, created_at) FROM stdin;
+1	مجاني	Free	0.00	30	3	15.00	0	f	0	2026-05-19 14:18:24.15191
+2	برونزي	Bronze	99.00	30	10	10.00	3	f	1	2026-05-19 14:18:24.15191
+3	بريميوم	Premium	249.00	30	\N	7.00	\N	t	2	2026-05-19 14:18:24.15191
+\.
 
 
 --
 -- Data for Name: payment_transactions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.payment_transactions (id, ref_id, provider_id, package_id, kind, user_id, service_id, amount, commission_amount, currency, gateway, gateway_ref, gateway_payload, status, from_onboarding, paid_at, created_at, updated_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.payments (id, provider_id, type, amount, status, invoice_id, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: properties; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.properties VALUES (3, 8, '3333asd', '333sadasdads', 'residential', 'sale', 'فيلا', 77.00, 22.00, 22, 2, 2, 2, 22, 'سوبر لوكس', 'ممتاز', 'مفروش بالكامل', NULL, NULL, '333', 7, 30, '33', NULL, NULL, '["/uploads/properties/f0f46ff579be169db61e28d7f9c2bc4b.png","/uploads/properties/9c2698463cdef8e6933ff9b4b734abc5.jpg","/uploads/properties/a3c9e71fdd4e4b7ca54abfcdee908696.png","/uploads/properties/a09028107ac240ba8706b806b496a10d.png","/uploads/properties/d82a72078d634d450c03bf6ad27b4ab9.jpg"]', NULL, NULL, '/uploads/avatars/a956f212d5981871f72d4b837cc4e149.png', '12', '1', '["غرفة خادمة"]', '["حدائق عامة"]', '[]', 'published', false, 0, 0, '2026-05-19 14:29:09.030365');
-INSERT INTO public.properties VALUES (2, 1, 'شقة فاخرة 3 غرف - سيدي جابر', 'شقة رائعة في موقع مميز بالقرب من شاطئ سيدي جابر، تشطيب سوبر لوكس، إطلالة بحرية جزئية، مطبخ حديث مجهز، كل الخدمات والمرافق متوفرة.', 'شقة', 'للبيع', NULL, 2500000.00, 150.00, 3, 2, NULL, NULL, 2020, NULL, NULL, NULL, NULL, NULL, 'سيدي جابر، الإسكندرية', NULL, NULL, NULL, 31.2001000, 29.9187000, '["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=85","https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80"]', NULL, NULL, NULL, NULL, NULL, '["تكييف مركزي","حديقة خاصة","جراج","أمن 24 ساعة","مصعد","إنترنت فائق السرعة"]', NULL, NULL, 'published', true, 2, 0, '2026-05-19 14:24:50.768082');
+COPY public.properties (id, provider_id, title, description, main_category, listing_type, sub_category, price, area, rooms, bathrooms, floor, total_floors, build_year, finishing, condition, furnished, direction, payment_method, address, region_id, city_id, district, latitude, longitude, images, video_url, brochure_url, logo_url, phone, whatsapp, features, nearby_services, contact_methods, status, featured, view_count, phone_click_count, created_at) FROM stdin;
+3	8	3333asd	333sadasdads	residential	sale	فيلا	77.00	22.00	22	2	2	2	22	سوبر لوكس	ممتاز	مفروش بالكامل	\N	\N	333	7	30	33	\N	\N	["/uploads/properties/f0f46ff579be169db61e28d7f9c2bc4b.png","/uploads/properties/9c2698463cdef8e6933ff9b4b734abc5.jpg","/uploads/properties/a3c9e71fdd4e4b7ca54abfcdee908696.png","/uploads/properties/a09028107ac240ba8706b806b496a10d.png","/uploads/properties/d82a72078d634d450c03bf6ad27b4ab9.jpg"]	\N	\N	/uploads/avatars/a956f212d5981871f72d4b837cc4e149.png	12	1	["غرفة خادمة"]	["حدائق عامة"]	[]	published	f	3	3	2026-05-19 14:29:09.030365
+2	1	شقة فاخرة 3 غرف - سيدي جابر	شقة رائعة في موقع مميز بالقرب من شاطئ سيدي جابر، تشطيب سوبر لوكس، إطلالة بحرية جزئية، مطبخ حديث مجهز، كل الخدمات والمرافق متوفرة.	شقة	للبيع	\N	2500000.00	150.00	3	2	\N	\N	2020	\N	\N	\N	\N	\N	سيدي جابر، الإسكندرية	\N	\N	\N	31.2001000	29.9187000	["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=85","https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80"]	\N	\N	\N	\N	\N	["تكييف مركزي","حديقة خاصة","جراج","أمن 24 ساعة","مصعد","إنترنت فائق السرعة"]	\N	\N	published	t	11	0	2026-05-19 14:24:50.768082
+\.
 
 
 --
 -- Data for Name: property_favorites; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.property_favorites (id, user_id, property_id, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: provider_balances; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.provider_balances (provider_id, balance, updated_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: provider_service_areas; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.provider_service_areas (id, provider_id, region_id, city_id, area_id) FROM stdin;
+\.
 
 
 --
 -- Data for Name: providers; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.providers VALUES (1, 2, 'مصمم جرافيك محترف بخبرة 5 سنوات', NULL, NULL, NULL, NULL, 'الرياض', NULL, NULL, NULL, '[]', 3, '[]', true, 4.90, 75, true, true, true, false, NULL, NULL, '2026-05-19 14:18:24.41133');
-INSERT INTO public.providers VALUES (2, 3, 'مصورة منتجات احترافية', NULL, NULL, NULL, NULL, 'جدة', NULL, NULL, NULL, '[]', 3, '[]', true, 4.80, 11, true, true, true, false, NULL, NULL, '2026-05-19 14:18:24.433697');
-INSERT INTO public.providers VALUES (3, 4, 'فني صيانة تكييفات', NULL, NULL, NULL, NULL, 'الدمام', NULL, NULL, NULL, '[]', 2, '[]', true, 4.70, 77, true, false, true, false, NULL, NULL, '2026-05-19 14:18:24.460695');
-INSERT INTO public.providers VALUES (4, 5, 'طبخ منزلي أصيل', NULL, NULL, NULL, NULL, 'الرياض', NULL, NULL, NULL, '[]', 1, '[]', true, 4.90, 17, true, true, true, false, NULL, NULL, '2026-05-19 14:18:24.485265');
-INSERT INTO public.providers VALUES (5, 6, 'تنظيم حفلات وأعراس', NULL, NULL, NULL, NULL, 'الطائف', NULL, NULL, NULL, '[]', 5, '[]', true, 4.60, 75, true, false, true, false, NULL, NULL, '2026-05-19 14:18:24.515228');
-INSERT INTO public.providers VALUES (6, 7, 'خبيرة تجميل ومكياج', NULL, NULL, NULL, NULL, 'الرياض', NULL, NULL, NULL, '[]', 6, '[]', true, 4.80, 48, true, true, true, false, NULL, NULL, '2026-05-19 14:18:24.543332');
-INSERT INTO public.providers VALUES (7, 8, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '[]', NULL, '[]', true, 0.00, 0, false, false, false, false, NULL, NULL, '2026-05-19 14:24:34.298511');
-INSERT INTO public.providers VALUES (8, 9, 'ed', '/uploads/banners/3d57c5ff63f2d148b03545fbfc531d2b.jpg', '/uploads/avatars/a956f212d5981871f72d4b837cc4e149.png', NULL, NULL, 'الوجه', NULL, '12', '1', '[]', NULL, '[]', true, 0.00, 0, false, false, false, false, NULL, NULL, '2026-05-19 14:27:05.729947');
+COPY public.providers (id, user_id, bio, banner, avatar, logo, address, city, district, phone, whatsapp, contact_methods, category_id, covered_areas, active, rating, reviews_count, verified, featured, approved, suspended, latitude, longitude, created_at) FROM stdin;
+1	2	مصمم جرافيك محترف بخبرة 5 سنوات	\N	\N	\N	\N	الرياض	\N	\N	\N	[]	3	[]	t	4.90	75	t	t	t	f	\N	\N	2026-05-19 14:18:24.41133
+2	3	مصورة منتجات احترافية	\N	\N	\N	\N	جدة	\N	\N	\N	[]	3	[]	t	4.80	11	t	t	t	f	\N	\N	2026-05-19 14:18:24.433697
+3	4	فني صيانة تكييفات	\N	\N	\N	\N	الدمام	\N	\N	\N	[]	2	[]	t	4.70	77	t	f	t	f	\N	\N	2026-05-19 14:18:24.460695
+4	5	طبخ منزلي أصيل	\N	\N	\N	\N	الرياض	\N	\N	\N	[]	1	[]	t	4.90	17	t	t	t	f	\N	\N	2026-05-19 14:18:24.485265
+5	6	تنظيم حفلات وأعراس	\N	\N	\N	\N	الطائف	\N	\N	\N	[]	5	[]	t	4.60	75	t	f	t	f	\N	\N	2026-05-19 14:18:24.515228
+6	7	خبيرة تجميل ومكياج	\N	\N	\N	\N	الرياض	\N	\N	\N	[]	6	[]	t	4.80	48	t	t	t	f	\N	\N	2026-05-19 14:18:24.543332
+7	8	\N	\N	\N	\N	\N	\N	\N	\N	\N	[]	\N	[]	t	0.00	0	f	f	f	f	\N	\N	2026-05-19 14:24:34.298511
+8	9	ed	/uploads/banners/3d57c5ff63f2d148b03545fbfc531d2b.jpg	/uploads/avatars/a956f212d5981871f72d4b837cc4e149.png	\N	\N	الوجه	\N	12	1	[]	\N	[]	t	0.00	0	f	f	f	f	\N	\N	2026-05-19 14:27:05.729947
+9	10	\N	\N	\N	\N	\N	\N	\N	\N	\N	[]	\N	[]	t	0.00	0	f	f	f	f	\N	\N	2026-05-19 14:41:14.306249
+\.
 
 
 --
 -- Data for Name: regions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.regions VALUES (1, 'منطقة الرياض', 'Riyadh Region', 1, true);
-INSERT INTO public.regions VALUES (2, 'منطقة مكة المكرمة', 'Mecca Region', 2, true);
-INSERT INTO public.regions VALUES (3, 'منطقة المدينة المنورة', 'Madinah Region', 3, true);
-INSERT INTO public.regions VALUES (4, 'منطقة القصيم', 'Qassim Region', 4, true);
-INSERT INTO public.regions VALUES (5, 'المنطقة الشرقية', 'Eastern Province', 5, true);
-INSERT INTO public.regions VALUES (6, 'منطقة عسير', 'Asir Region', 6, true);
-INSERT INTO public.regions VALUES (7, 'منطقة تبوك', 'Tabuk Region', 7, true);
-INSERT INTO public.regions VALUES (8, 'منطقة حائل', 'Hail Region', 8, true);
-INSERT INTO public.regions VALUES (9, 'منطقة الحدود الشمالية', 'Northern Borders Region', 9, true);
-INSERT INTO public.regions VALUES (10, 'منطقة جازان', 'Jizan Region', 10, true);
-INSERT INTO public.regions VALUES (11, 'منطقة نجران', 'Najran Region', 11, true);
-INSERT INTO public.regions VALUES (12, 'منطقة الباحة', 'Al-Baha Region', 12, true);
-INSERT INTO public.regions VALUES (13, 'منطقة الجوف', 'Al-Jouf Region', 13, true);
+COPY public.regions (id, name_ar, name_en, "order", enabled) FROM stdin;
+14	القليوبية	القليوبية	0	t
+\.
 
 
 --
 -- Data for Name: requests; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.requests (id, user_id, provider_id, assigned_company_id, service_id, fault_id, effective_price, message, notes, status, payment_ref, paid_amount, paid_at, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: reset_tokens; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.reset_tokens (token, user_id, email, expires_at, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: reviews; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.reviews VALUES (1, 1, 1, 5, 'خدمة ممتازة ومحترفة', NULL, '2026-05-19 14:18:24.425369');
-INSERT INTO public.reviews VALUES (2, 1, 1, 4, 'عمل جيد وسريع', NULL, '2026-05-19 14:18:24.425369');
-INSERT INTO public.reviews VALUES (3, 1, 2, 5, 'خدمة ممتازة ومحترفة', NULL, '2026-05-19 14:18:24.448455');
-INSERT INTO public.reviews VALUES (4, 1, 2, 4, 'عمل جيد وسريع', NULL, '2026-05-19 14:18:24.448455');
-INSERT INTO public.reviews VALUES (5, 1, 3, 5, 'خدمة ممتازة ومحترفة', NULL, '2026-05-19 14:18:24.472651');
-INSERT INTO public.reviews VALUES (6, 1, 3, 4, 'عمل جيد وسريع', NULL, '2026-05-19 14:18:24.472651');
-INSERT INTO public.reviews VALUES (7, 1, 4, 5, 'خدمة ممتازة ومحترفة', NULL, '2026-05-19 14:18:24.508748');
-INSERT INTO public.reviews VALUES (8, 1, 4, 4, 'عمل جيد وسريع', NULL, '2026-05-19 14:18:24.508748');
-INSERT INTO public.reviews VALUES (9, 1, 5, 5, 'خدمة ممتازة ومحترفة', NULL, '2026-05-19 14:18:24.535108');
-INSERT INTO public.reviews VALUES (10, 1, 5, 4, 'عمل جيد وسريع', NULL, '2026-05-19 14:18:24.535108');
-INSERT INTO public.reviews VALUES (11, 1, 6, 5, 'خدمة ممتازة ومحترفة', NULL, '2026-05-19 14:18:24.559621');
-INSERT INTO public.reviews VALUES (12, 1, 6, 4, 'عمل جيد وسريع', NULL, '2026-05-19 14:18:24.559621');
+COPY public.reviews (id, user_id, provider_id, rating, text, reply, created_at) FROM stdin;
+1	1	1	5	خدمة ممتازة ومحترفة	\N	2026-05-19 14:18:24.425369
+2	1	1	4	عمل جيد وسريع	\N	2026-05-19 14:18:24.425369
+3	1	2	5	خدمة ممتازة ومحترفة	\N	2026-05-19 14:18:24.448455
+4	1	2	4	عمل جيد وسريع	\N	2026-05-19 14:18:24.448455
+5	1	3	5	خدمة ممتازة ومحترفة	\N	2026-05-19 14:18:24.472651
+6	1	3	4	عمل جيد وسريع	\N	2026-05-19 14:18:24.472651
+7	1	4	5	خدمة ممتازة ومحترفة	\N	2026-05-19 14:18:24.508748
+8	1	4	4	عمل جيد وسريع	\N	2026-05-19 14:18:24.508748
+9	1	5	5	خدمة ممتازة ومحترفة	\N	2026-05-19 14:18:24.535108
+10	1	5	4	عمل جيد وسريع	\N	2026-05-19 14:18:24.535108
+11	1	6	5	خدمة ممتازة ومحترفة	\N	2026-05-19 14:18:24.559621
+12	1	6	4	عمل جيد وسريع	\N	2026-05-19 14:18:24.559621
+\.
 
 
 --
 -- Data for Name: saved_searches; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.saved_searches (id, user_id, name, email, filters, notify_email, notify_app, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: service_items; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.service_items (id, subcategory_id, name_ar, name_en, description, status, created_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: services; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.services VALUES (1, 1, 3, 'خدمة أحمد عبدالله الأساسية', 'مصمم جرافيك محترف بخبرة 5 سنوات', 211.00, NULL, NULL, 'active', '2026-05-19 14:18:24.416752');
-INSERT INTO public.services VALUES (2, 1, 3, 'خدمة أحمد عبدالله المتميزة', 'خدمة متميزة من أحمد عبدالله', 151.00, NULL, NULL, 'active', '2026-05-19 14:18:24.416752');
-INSERT INTO public.services VALUES (3, 2, 3, 'خدمة سارة الغامدي الأساسية', 'مصورة منتجات احترافية', 186.00, NULL, NULL, 'active', '2026-05-19 14:18:24.438959');
-INSERT INTO public.services VALUES (4, 2, 3, 'خدمة سارة الغامدي المتميزة', 'خدمة متميزة من سارة الغامدي', 207.00, NULL, NULL, 'active', '2026-05-19 14:18:24.438959');
-INSERT INTO public.services VALUES (5, 3, 2, 'خدمة نواف العتيبي الأساسية', 'فني صيانة تكييفات', 104.00, NULL, NULL, 'active', '2026-05-19 14:18:24.46455');
-INSERT INTO public.services VALUES (6, 3, 2, 'خدمة نواف العتيبي المتميزة', 'خدمة متميزة من نواف العتيبي', 444.00, NULL, NULL, 'active', '2026-05-19 14:18:24.46455');
-INSERT INTO public.services VALUES (7, 4, 1, 'خدمة أم خالد الأساسية', 'طبخ منزلي أصيل', 193.00, NULL, NULL, 'active', '2026-05-19 14:18:24.498059');
-INSERT INTO public.services VALUES (8, 4, 1, 'خدمة أم خالد المتميزة', 'خدمة متميزة من أم خالد', 432.00, NULL, NULL, 'active', '2026-05-19 14:18:24.498059');
-INSERT INTO public.services VALUES (9, 5, 5, 'خدمة منى الشهري الأساسية', 'تنظيم حفلات وأعراس', 53.00, NULL, NULL, 'active', '2026-05-19 14:18:24.523016');
-INSERT INTO public.services VALUES (10, 5, 5, 'خدمة منى الشهري المتميزة', 'خدمة متميزة من منى الشهري', 439.00, NULL, NULL, 'active', '2026-05-19 14:18:24.523016');
-INSERT INTO public.services VALUES (11, 6, 6, 'خدمة هنود القرني الأساسية', 'خبيرة تجميل ومكياج', 244.00, NULL, NULL, 'active', '2026-05-19 14:18:24.551936');
-INSERT INTO public.services VALUES (12, 6, 6, 'خدمة هنود القرني المتميزة', 'خدمة متميزة من هنود القرني', 545.00, NULL, NULL, 'active', '2026-05-19 14:18:24.551936');
+COPY public.services (id, provider_id, category_id, title, description, price, subcategory, img, status, created_at) FROM stdin;
+1	1	3	خدمة أحمد عبدالله الأساسية	مصمم جرافيك محترف بخبرة 5 سنوات	211.00	\N	\N	active	2026-05-19 14:18:24.416752
+2	1	3	خدمة أحمد عبدالله المتميزة	خدمة متميزة من أحمد عبدالله	151.00	\N	\N	active	2026-05-19 14:18:24.416752
+3	2	3	خدمة سارة الغامدي الأساسية	مصورة منتجات احترافية	186.00	\N	\N	active	2026-05-19 14:18:24.438959
+4	2	3	خدمة سارة الغامدي المتميزة	خدمة متميزة من سارة الغامدي	207.00	\N	\N	active	2026-05-19 14:18:24.438959
+5	3	2	خدمة نواف العتيبي الأساسية	فني صيانة تكييفات	104.00	\N	\N	active	2026-05-19 14:18:24.46455
+6	3	2	خدمة نواف العتيبي المتميزة	خدمة متميزة من نواف العتيبي	444.00	\N	\N	active	2026-05-19 14:18:24.46455
+7	4	1	خدمة أم خالد الأساسية	طبخ منزلي أصيل	193.00	\N	\N	active	2026-05-19 14:18:24.498059
+8	4	1	خدمة أم خالد المتميزة	خدمة متميزة من أم خالد	432.00	\N	\N	active	2026-05-19 14:18:24.498059
+9	5	5	خدمة منى الشهري الأساسية	تنظيم حفلات وأعراس	53.00	\N	\N	active	2026-05-19 14:18:24.523016
+10	5	5	خدمة منى الشهري المتميزة	خدمة متميزة من منى الشهري	439.00	\N	\N	active	2026-05-19 14:18:24.523016
+11	6	6	خدمة هنود القرني الأساسية	خبيرة تجميل ومكياج	244.00	\N	\N	active	2026-05-19 14:18:24.551936
+12	6	6	خدمة هنود القرني المتميزة	خدمة متميزة من هنود القرني	545.00	\N	\N	active	2026-05-19 14:18:24.551936
+\.
 
 
 --
 -- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.sessions VALUES ('91a572c7391c886eabce05dc652149ba56b0d771333be540e2fb74438eb5ebdc', 1, 'admin', NULL, '2026-05-19 14:33:37.346058', '2026-06-18 14:33:37.345');
+COPY public.sessions (token, user_id, role, provider_id, created_at, expires_at) FROM stdin;
+91a572c7391c886eabce05dc652149ba56b0d771333be540e2fb74438eb5ebdc	1	admin	\N	2026-05-19 14:33:37.346058	2026-06-18 14:33:37.345
+0da6ef256f805aa228a3809c14454553a494e31de7cace0ba2af299e17e9725e	10	provider	9	2026-05-19 14:41:14.310623	2026-06-18 14:41:14.31
+\.
 
 
 --
 -- Data for Name: site_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.site_settings VALUES (1, 'allowRegistration', 'false', '2026-05-19 14:36:25.338322');
-INSERT INTO public.site_settings VALUES (2, 'servicesModuleEnabled', 'false', '2026-05-19 14:40:00.352989');
+COPY public.site_settings (id, key, value, updated_at) FROM stdin;
+1	allowRegistration	false	2026-05-19 14:36:25.338322
+2	servicesModuleEnabled	false	2026-05-19 14:40:00.352989
+3	themePreset	slate	2026-05-19 14:41:56.340397
+4	primaryColorHsl	215 25% 35%	2026-05-19 14:41:56.34541
+5	secondaryColorHsl	215 20% 90%	2026-05-19 14:41:56.350063
+6	accentColorHsl	180 65% 38%	2026-05-19 14:41:56.355997
+7	fontFamily	Tajawal	2026-05-19 14:41:56.359822
+8	borderRadius	0.75rem	2026-05-19 14:41:56.363091
+\.
 
 
 --
 -- Data for Name: subcategories; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.subcategories (id, category_id, name_ar, name_en, icon, slug, status, created_at) FROM stdin;
+1	7	شقة	قق	Tag	ق	active	2026-05-19 14:45:30.758996
+\.
 
 
 --
 -- Data for Name: subscriptions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.subscriptions VALUES (1, 1, 2, NULL, NULL, NULL, NULL, '2026-05-19 14:18:24.421', '2026-06-06 14:18:24.421', 'active', '2026-05-19 14:18:24.421916');
-INSERT INTO public.subscriptions VALUES (2, 2, 2, NULL, NULL, NULL, NULL, '2026-05-19 14:18:24.443', '2026-06-06 14:18:24.443', 'active', '2026-05-19 14:18:24.443771');
-INSERT INTO public.subscriptions VALUES (3, 3, 2, NULL, NULL, NULL, NULL, '2026-05-19 14:18:24.468', '2026-06-06 14:18:24.468', 'active', '2026-05-19 14:18:24.468789');
-INSERT INTO public.subscriptions VALUES (4, 4, 2, NULL, NULL, NULL, NULL, '2026-05-19 14:18:24.501', '2026-06-06 14:18:24.501', 'active', '2026-05-19 14:18:24.50157');
-INSERT INTO public.subscriptions VALUES (5, 5, 2, NULL, NULL, NULL, NULL, '2026-05-19 14:18:24.527', '2026-06-06 14:18:24.527', 'active', '2026-05-19 14:18:24.527545');
-INSERT INTO public.subscriptions VALUES (6, 6, 2, NULL, NULL, NULL, NULL, '2026-05-19 14:18:24.554', '2026-06-06 14:18:24.554', 'active', '2026-05-19 14:18:24.554806');
+COPY public.subscriptions (id, provider_id, package_id, billing_plan_id, plan_name, plan_name_ar, plan_price, start_date, end_date, status, created_at) FROM stdin;
+1	1	2	\N	\N	\N	\N	2026-05-19 14:18:24.421	2026-06-06 14:18:24.421	active	2026-05-19 14:18:24.421916
+2	2	2	\N	\N	\N	\N	2026-05-19 14:18:24.443	2026-06-06 14:18:24.443	active	2026-05-19 14:18:24.443771
+3	3	2	\N	\N	\N	\N	2026-05-19 14:18:24.468	2026-06-06 14:18:24.468	active	2026-05-19 14:18:24.468789
+4	4	2	\N	\N	\N	\N	2026-05-19 14:18:24.501	2026-06-06 14:18:24.501	active	2026-05-19 14:18:24.50157
+5	5	2	\N	\N	\N	\N	2026-05-19 14:18:24.527	2026-06-06 14:18:24.527	active	2026-05-19 14:18:24.527545
+6	6	2	\N	\N	\N	\N	2026-05-19 14:18:24.554	2026-06-06 14:18:24.554	active	2026-05-19 14:18:24.554806
+\.
 
 
 --
 -- Data for Name: support_tickets; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.support_tickets (id, public_id, provider_id, subject, category, status, message, admin_reply, created_at, updated_at) FROM stdin;
+\.
 
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.users VALUES (1, 'Admin', 'admin@dalilsmartlines.com', NULL, '$2b$10$ScWATbOdIl7SxsLs.CYgUuAMRGAvK4eUpVJhSK3wx74aS/kG5BfKG', 'admin', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.307627');
-INSERT INTO public.users VALUES (2, 'أحمد عبدالله', 'ahmed@dalilsmartlines.com', NULL, '$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.402522');
-INSERT INTO public.users VALUES (3, 'سارة الغامدي', 'sara@dalilsmartlines.com', NULL, '$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.430092');
-INSERT INTO public.users VALUES (4, 'نواف العتيبي', 'nawaf@dalilsmartlines.com', NULL, '$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.45438');
-INSERT INTO public.users VALUES (5, 'أم خالد', 'oumkhalid@dalilsmartlines.com', NULL, '$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.477454');
-INSERT INTO public.users VALUES (6, 'منى الشهري', 'mona@dalilsmartlines.com', NULL, '$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.511807');
-INSERT INTO public.users VALUES (7, 'هنود القرني', 'hanood@dalilsmartlines.com', NULL, '$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:18:24.5394');
-INSERT INTO public.users VALUES (8, 'a', 'a@a.com', NULL, '$2b$10$dydyxkQdCAuNvWv87a1MBOzvU3kd6MGuHFE9TbGkMQ1kat0d1uauu', 'provider', NULL, 'active', NULL, NULL, NULL, 'email', '2026-05-19 14:24:34.291529');
-INSERT INTO public.users VALUES (9, '3edsw', 'aa@a.com', '12', '$2b$10$uedVabpzSVdt5zW./gEiweyqlGhgflL0.gR9UpHwQFO2XggYsz6AC', 'provider', NULL, 'active', 7, 30, NULL, 'email', '2026-05-19 14:27:05.697436');
+COPY public.users (id, name, email, phone, password_hash, role, avatar, status, region_id, city_id, google_id, auth_provider, created_at) FROM stdin;
+1	Admin	admin@dalilsmartlines.com	\N	$2b$10$ScWATbOdIl7SxsLs.CYgUuAMRGAvK4eUpVJhSK3wx74aS/kG5BfKG	admin	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.307627
+2	أحمد عبدالله	ahmed@dalilsmartlines.com	\N	$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS	provider	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.402522
+3	سارة الغامدي	sara@dalilsmartlines.com	\N	$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS	provider	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.430092
+4	نواف العتيبي	nawaf@dalilsmartlines.com	\N	$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS	provider	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.45438
+5	أم خالد	oumkhalid@dalilsmartlines.com	\N	$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS	provider	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.477454
+6	منى الشهري	mona@dalilsmartlines.com	\N	$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS	provider	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.511807
+7	هنود القرني	hanood@dalilsmartlines.com	\N	$2b$10$ZlTdPl3ifFa471VPUNuj7OXVF8inn0.NM8tgBLOsT52PiwGNCNttS	provider	\N	active	\N	\N	\N	email	2026-05-19 14:18:24.5394
+8	a	a@a.com	\N	$2b$10$dydyxkQdCAuNvWv87a1MBOzvU3kd6MGuHFE9TbGkMQ1kat0d1uauu	provider	\N	active	\N	\N	\N	email	2026-05-19 14:24:34.291529
+9	3edsw	aa@a.com	12	$2b$10$uedVabpzSVdt5zW./gEiweyqlGhgflL0.gR9UpHwQFO2XggYsz6AC	provider	\N	active	7	30	\N	email	2026-05-19 14:27:05.697436
+10	rt	aaa@a.com	\N	$2b$10$6332oGDoNOCI9mrip8URg.uzX1lnxrE2lrJUTkm.KAGeMXGtV2eSe	provider	\N	active	\N	\N	\N	email	2026-05-19 14:41:14.26992
+\.
 
 
 --
 -- Data for Name: wallet_transactions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+COPY public.wallet_transactions (id, provider_id, type, amount, ref_id, note, created_at) FROM stdin;
+\.
 
 
 --
@@ -2080,7 +2188,7 @@ SELECT pg_catalog.setval('public.admin_staff_id_seq', 1, false);
 -- Name: areas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.areas_id_seq', 120, true);
+SELECT pg_catalog.setval('public.areas_id_seq', 122, true);
 
 
 --
@@ -2101,7 +2209,7 @@ SELECT pg_catalog.setval('public.categories_id_seq', 10, true);
 -- Name: cities_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.cities_id_seq', 44, true);
+SELECT pg_catalog.setval('public.cities_id_seq', 45, true);
 
 
 --
@@ -2171,7 +2279,7 @@ SELECT pg_catalog.setval('public.messages_id_seq', 1, false);
 -- Name: notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.notifications_id_seq', 2, true);
+SELECT pg_catalog.setval('public.notifications_id_seq', 3, true);
 
 
 --
@@ -2220,14 +2328,14 @@ SELECT pg_catalog.setval('public.provider_service_areas_id_seq', 1, false);
 -- Name: providers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.providers_id_seq', 8, true);
+SELECT pg_catalog.setval('public.providers_id_seq', 9, true);
 
 
 --
 -- Name: regions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.regions_id_seq', 13, true);
+SELECT pg_catalog.setval('public.regions_id_seq', 14, true);
 
 
 --
@@ -2269,14 +2377,14 @@ SELECT pg_catalog.setval('public.services_id_seq', 12, true);
 -- Name: site_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.site_settings_id_seq', 2, true);
+SELECT pg_catalog.setval('public.site_settings_id_seq', 8, true);
 
 
 --
 -- Name: subcategories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.subcategories_id_seq', 1, false);
+SELECT pg_catalog.setval('public.subcategories_id_seq', 1, true);
 
 
 --
@@ -2297,7 +2405,7 @@ SELECT pg_catalog.setval('public.support_tickets_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 9, true);
+SELECT pg_catalog.setval('public.users_id_seq', 10, true);
 
 
 --
@@ -3031,5 +3139,5 @@ ALTER TABLE ONLY public.wallet_transactions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict B7CIbcXEN3pVRaF62jHkFgYc1HMYHyugqrwdOeh8ziTno0GaBCSgmtlWksYjR4n
+\unrestrict Wndho7GFWIuPhehB4OPBzF81mxInizIpFp3pytgjfAtoVzvXwULfJJdZvOIZZA1
 
