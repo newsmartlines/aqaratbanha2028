@@ -23,6 +23,7 @@ import supportTicketsRouter from "./supportTickets";
 import propertiesRouter from "./properties";
 import emailRouter from "./email";
 import billingPlansRouter from "./billingPlans";
+import aiChatRouter from "./ai-chat";
 
 const router: IRouter = Router();
 
@@ -50,5 +51,6 @@ router.use(supportTicketsRouter);
 router.use(propertiesRouter);
 router.use(emailRouter);
 router.use(billingPlansRouter);
+router.use(aiChatRouter);
 
 export default router;

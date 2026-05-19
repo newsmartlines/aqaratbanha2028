@@ -18,13 +18,15 @@ import {
   Loader2, Phone, Mail, Map, Heart, MessageCircle,
   Users, Briefcase, ShoppingBag, ClipboardList,
   BedDouble, Bath, Maximize2, Building2, TrendingUp,
-  Store, Trees,
+  Store, Trees, Scale, GitCompare, X as XIcon,
 } from "lucide-react";
 import { api, type Provider, type Category, type Subcategory, type SiteSettings, type Region, type FavoriteItem } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { useInterpolate } from "@/lib/use-interpolate";
 import { useAuth } from "@/lib/auth-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
+import toast from "react-hot-toast";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 
@@ -516,6 +518,7 @@ export default function Home() {
   const nearMeRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
+  const { items: compareItems, isIn: isInCompare } = useCompare();
 
   const { data: categories } = useApi(() => api.categories.list(), []);
   const { data: allSubs } = useApi(() => api.subcategories.list(), []);
@@ -1068,7 +1071,21 @@ export default function Home() {
                         )}
                       </div>
 
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          className={`text-xs font-semibold border rounded-full px-3 py-1.5 flex items-center gap-1 transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+                            const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.bedrooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                            if (r === "added") toast.success("أُضيف للمقارنة ✓");
+                            else if (r === "already") toast("موجود بالفعل في المقارنة");
+                            else toast.error("المقارنة ممتلئة (٤ عقارات)");
+                          }}
+                        >
+                          <GitCompare className="w-3 h-3" />
+                          {isInCompare(property.id) ? "في المقارنة" : "قارن"}
+                        </button>
                         <button
                           className="text-xs font-semibold text-primary border border-primary/30 rounded-full px-4 py-1.5 hover:bg-primary hover:text-white transition-all"
                           onClick={(e) => { e.stopPropagation(); setLocation(`/property/${property.id}`); }}
@@ -1279,6 +1296,42 @@ export default function Home() {
             </div>
           </div>
         </footer>
+      {/* ── Floating Compare Bar ── */}
+      <AnimatePresence>
+        {compareItems.length > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border shadow-2xl"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-1 overflow-x-auto">
+                <Scale className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-bold text-gray-900 shrink-0">مقارنة ({compareItems.length}/4)</span>
+                <div className="flex items-center gap-2 mr-2">
+                  {compareItems.map(item => (
+                    <div key={item.id} className="flex items-center gap-1.5 bg-primary/10 rounded-xl px-3 py-1.5 shrink-0">
+                      <img src={item.image} alt="" className="w-7 h-7 rounded-lg object-cover" onError={e => { e.currentTarget.style.display = "none"; }} />
+                      <span className="text-xs font-semibold text-gray-800 max-w-[100px] truncate">{item.title}</span>
+                      <button onClick={() => removeFromCompare(item.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                        <XIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => setLocation("/compare")} disabled={compareItems.length < 2} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 disabled:opacity-40 transition-all">
+                  قارن الآن
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       </main>
     </div>
   );
