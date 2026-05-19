@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { db, chatLeadsTable, notificationsTable } from "@workspace/db";
+import { db, chatLeadsTable, notificationsTable, chatSessionsTable, chatbotQueriesTable } from "@workspace/db";
 import { eq, desc, sql, count } from "drizzle-orm";
 
 const router = Router();
 
 // POST /api/chat-leads — submit a lead from chatbot
-router.post("/api/chat-leads", async (req, res) => {
+router.post("/chat-leads", async (req, res) => {
   try {
     const { sessionId, name, phone, whatsapp, email, propertyId, propertyTitle, intent } = req.body;
     if (!sessionId) return res.status(400).json({ error: "sessionId required" });
@@ -39,7 +39,7 @@ router.post("/api/chat-leads", async (req, res) => {
 });
 
 // GET /api/chat-leads — admin list leads
-router.get("/api/chat-leads", async (req, res) => {
+router.get("/chat-leads", async (req, res) => {
   try {
     const leads = await db
       .select()
@@ -54,7 +54,7 @@ router.get("/api/chat-leads", async (req, res) => {
 });
 
 // PATCH /api/chat-leads/:id — update lead status
-router.patch("/api/chat-leads/:id", async (req, res) => {
+router.patch("/chat-leads/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status, notes } = req.body;
@@ -70,42 +70,39 @@ router.patch("/api/chat-leads/:id", async (req, res) => {
 });
 
 // GET /api/chat-analytics — summary stats
-router.get("/api/chat-analytics", async (req, res) => {
+router.get("/chat-analytics", async (req, res) => {
   try {
-    const [leadsTotal] = await db.select({ count: count() }).from(chatLeadsTable);
-    const [leadsNew] = await db.select({ count: count() }).from(chatLeadsTable).where(eq(chatLeadsTable.status, "new"));
-    const [leadsContacted] = await db.select({ count: count() }).from(chatLeadsTable).where(eq(chatLeadsTable.status, "contacted"));
-    const [leadsQualified] = await db.select({ count: count() }).from(chatLeadsTable).where(eq(chatLeadsTable.status, "qualified"));
-
-    // Recent leads last 7 days
-    const recentLeads = await db
-      .select()
-      .from(chatLeadsTable)
-      .orderBy(desc(chatLeadsTable.createdAt))
-      .limit(10);
-
-    // Top requested property titles
-    const topProperties = await db
-      .select({
-        title: chatLeadsTable.propertyTitle,
-        total: count(),
-      })
-      .from(chatLeadsTable)
-      .where(sql`${chatLeadsTable.propertyTitle} is not null`)
-      .groupBy(chatLeadsTable.propertyTitle)
-      .orderBy(desc(count()))
-      .limit(5);
+    const [
+      [leadsTotal], [leadsNew], [leadsContacted], [leadsQualified],
+      [sessionsTotal], recentLeads, topProperties, popularQueries,
+    ] = await Promise.all([
+      db.select({ count: count() }).from(chatLeadsTable),
+      db.select({ count: count() }).from(chatLeadsTable).where(eq(chatLeadsTable.status, "new")),
+      db.select({ count: count() }).from(chatLeadsTable).where(eq(chatLeadsTable.status, "contacted")),
+      db.select({ count: count() }).from(chatLeadsTable).where(eq(chatLeadsTable.status, "qualified")),
+      db.select({ count: count() }).from(chatSessionsTable),
+      db.select().from(chatLeadsTable).orderBy(desc(chatLeadsTable.createdAt)).limit(10),
+      db.select({ title: chatLeadsTable.propertyTitle, total: count() })
+        .from(chatLeadsTable)
+        .where(sql`${chatLeadsTable.propertyTitle} is not null`)
+        .groupBy(chatLeadsTable.propertyTitle)
+        .orderBy(desc(count()))
+        .limit(5),
+      db.select().from(chatbotQueriesTable).orderBy(desc(chatbotQueriesTable.count)).limit(10),
+    ]);
 
     return res.json({
       totalLeads: leadsTotal.count,
       newLeads: leadsNew.count,
       contacted: leadsContacted.count,
       qualified: leadsQualified.count,
+      totalSessions: sessionsTotal.count,
       conversionRate: leadsTotal.count > 0
         ? Math.round((Number(leadsQualified.count) / Number(leadsTotal.count)) * 100)
         : 0,
       recentLeads,
       topProperties,
+      popularQueries,
     });
   } catch (err) {
     console.error("[chat-analytics]", err);

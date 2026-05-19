@@ -5,7 +5,7 @@ import { eq, desc } from "drizzle-orm";
 const router = Router();
 
 // POST /api/chat-sessions — save or update session
-router.post("/api/chat-sessions", async (req, res) => {
+router.post("/chat-sessions", async (req, res) => {
   try {
     const { sessionId, messages, metadata } = req.body;
     if (!sessionId) return res.status(400).json({ error: "sessionId required" });
@@ -45,7 +45,7 @@ router.post("/api/chat-sessions", async (req, res) => {
 });
 
 // GET /api/chat-sessions — admin view all sessions
-router.get("/api/chat-sessions", async (req, res) => {
+router.get("/chat-sessions", async (req, res) => {
   try {
     const sessions = await db
       .select()
@@ -59,7 +59,7 @@ router.get("/api/chat-sessions", async (req, res) => {
 });
 
 // DELETE /api/chat-sessions/:id
-router.delete("/api/chat-sessions/:id", async (req, res) => {
+router.delete("/chat-sessions/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(chatSessionsTable).where(eq(chatSessionsTable.id, id));
