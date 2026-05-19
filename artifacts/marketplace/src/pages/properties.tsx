@@ -62,12 +62,14 @@ function tryJsonArr(val: string | null | undefined): string[] {
   return [];
 }
 
+const LISTING_TYPE_AR: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
+
 function mapDbProp(row: DbProp, fallback: string): DisplayProp {
   const imgs = tryJsonArr(row.images);
   return {
     id: row.id,
     title: row.title,
-    type: row.listingType,
+    type: LISTING_TYPE_AR[row.listingType] ?? row.listingType,
     kind: row.mainCategory,
     featured: row.featured ?? false,
     img: imgs[0] ?? fallback,
@@ -138,10 +140,13 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
 
 function getUrlParams() {
   const sp = new URLSearchParams(window.location.search);
+  const listingTypeMap: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
+  const rawListingType = sp.get("listingType");
+  const typeFromListing = rawListingType ? (listingTypeMap[rawListingType] ?? null) : null;
   return {
     q: sp.get("q") ?? "",
     mainCategory: sp.get("mainCategory") ?? null,
-    type: sp.get("type") ?? null,
+    type: typeFromListing ?? sp.get("type") ?? null,
     price: sp.get("price") ?? null,
     city: sp.get("city") ?? null,
   };
