@@ -97,8 +97,8 @@ export default function MyPropertiesPage() {
   // fetch my properties
   const { data: raw, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["my-properties", user?.id],
-    queryFn: () => (api.properties as any).list({ providerId: user?.id }),
-    enabled: !!user?.id,
+    queryFn: () => (api.properties as any).list({ providerId: user?.providerId }),
+    enabled: !!user?.providerId,
     staleTime: 10_000,
   });
 
