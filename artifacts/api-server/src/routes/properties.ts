@@ -135,9 +135,10 @@ async function triggerSavedSearchAlerts(property: any) {
         await db.insert(notificationsTable).values({
           userId: ss.userId,
           title: "عقار جديد يطابق بحثك",
-          body: `تم إضافة عقار جديد: ${property.title}`,
+          message: `تم إضافة عقار جديد: ${property.title}`,
           type: "saved_search",
           read: false,
+          link: `/property/${property.id}`,
         }).catch(() => {});
       }
 

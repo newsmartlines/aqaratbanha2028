@@ -16,6 +16,7 @@ import {
   X,
   CreditCard,
   MessageCircle as MessageCircleIcon,
+  BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -53,6 +54,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "الرئيسية", href: "/user/dashboard", icon: LayoutDashboard },
     { name: "المفضلة", href: "/user/favorites", icon: Heart },
     { name: "طلباتي", href: "/user/requests", icon: Bell },
+    { name: "تنبيهات البحث", href: "/user/saved-searches", icon: BellRing },
     { name: "مدفوعاتي", href: "/user/payments", icon: CreditCard },
     { name: "رسائلي", href: "/user/inbox", icon: MessageCircleIcon },
     { name: "تقييماتي", href: "/user/reviews", icon: Star },

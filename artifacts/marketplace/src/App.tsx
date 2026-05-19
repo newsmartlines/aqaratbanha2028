@@ -86,6 +86,7 @@ import ProviderSupport from "@/pages/dashboard/support";
 import ProviderSupportTicketsPage from "@/pages/dashboard/support-tickets";
 import UserInbox from "@/pages/user/inbox";
 import UserSupport from "@/pages/user/support";
+import UserSavedSearches from "@/pages/user/saved-searches";
 import AddPropertyPage from "@/pages/add-property";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
 import MapSearchPage from "@/pages/map-search";
@@ -289,6 +290,9 @@ function Router() {
       </Route>
       <Route path="/user/support">
         {() => <RoleProtectedRoute component={UserSupport} roles={["user"]} />}
+      </Route>
+      <Route path="/user/saved-searches">
+        {() => <RoleProtectedRoute component={UserSavedSearches} roles={["user"]} />}
       </Route>
 
       {/* Admin routes — accessible to main admin OR any staff member with staffRole */}
