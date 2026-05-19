@@ -90,6 +90,11 @@ export default function AdminLocations() {
     onSuccess: () => { invalidate(); setGovModal({ open: false }); toast({ title: "تم تحديث المحافظة" }); },
     onError: () => toast({ title: "خطأ", variant: "destructive" }),
   });
+  const deleteGov = useMutation({
+    mutationFn: api.locations.admin.deleteRegion,
+    onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "تم حذف المحافظة وكل مدنها ومناطقها" }); },
+    onError: () => toast({ title: "فشل الحذف", variant: "destructive" }),
+  });
 
   // ── City mutations ─────────────────────────────────────────────────────────
   const createCity = useMutation({
@@ -169,7 +174,8 @@ export default function AdminLocations() {
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
-    if (deleteTarget.type === "city") deleteCity.mutate(deleteTarget.id);
+    if (deleteTarget.type === "gov") deleteGov.mutate(deleteTarget.id);
+    else if (deleteTarget.type === "city") deleteCity.mutate(deleteTarget.id);
     else if (deleteTarget.type === "area") deleteArea.mutate(deleteTarget.id);
   };
 
@@ -286,6 +292,13 @@ export default function AdminLocations() {
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openGovEdit(r)}>
                             <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost" size="icon"
+                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => setDeleteTarget({ type: "gov", id: r.id, name: r.nameAr })}
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -636,7 +649,13 @@ export default function AdminLocations() {
           <ADH>
             <ADT>تأكيد الحذف</ADT>
             <ADD>
-              هل أنت متأكد من حذف "{deleteTarget?.name}"؟ سيتم حذف جميع البيانات المرتبطة به.
+              هل أنت متأكد من حذف "{deleteTarget?.name}"؟{" "}
+              {deleteTarget?.type === "gov"
+                ? "سيتم حذف المحافظة وجميع مدنها ومناطقها نهائياً."
+                : deleteTarget?.type === "city"
+                ? "سيتم حذف المدينة وجميع مناطقها نهائياً."
+                : "سيتم حذف المنطقة نهائياً."}
+              {" "}لا يمكن التراجع عن هذا الإجراء.
             </ADD>
           </ADH>
           <ADF>

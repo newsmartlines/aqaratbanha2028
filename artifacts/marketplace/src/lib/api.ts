@@ -446,6 +446,7 @@ export const api = {
       updateRegion: (id: number, data: unknown) =>
         fetchJson<Region>(`/admin/regions/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
       toggleRegion: (id: number) => fetchJson<Region>(`/admin/regions/${id}/toggle`, { method: "PATCH" }),
+      deleteRegion: (id: number) => fetchJson(`/admin/regions/${id}`, { method: "DELETE" }),
       allCities: async () => ensureArray<City>(await fetchJson(`/admin/cities`)),
       allAreas: async (cityId?: number) =>
         ensureArray<Area>(await fetchJson(`/admin/areas${cityId != null ? `?cityId=${cityId}` : ""}`)),

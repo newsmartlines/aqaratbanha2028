@@ -108,6 +108,23 @@ router.patch("/admin/regions/:id", async (req, res) => {
   }
 });
 
+router.delete("/admin/regions/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isFinite(id)) return res.status(400).json({ success: false, error: "Invalid id" });
+    // cascade: delete areas → cities → region
+    const regionCities = await db.select().from(citiesTable).where(eq(citiesTable.regionId, id));
+    for (const city of regionCities) {
+      await db.delete(areasTable).where(eq(areasTable.cityId, city.id));
+    }
+    await db.delete(citiesTable).where(eq(citiesTable.regionId, id));
+    await db.delete(regionsTable).where(eq(regionsTable.id, id));
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: "Failed to delete region" });
+  }
+});
+
 router.patch("/admin/regions/:id/toggle", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
