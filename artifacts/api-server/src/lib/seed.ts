@@ -3,6 +3,7 @@ import {
   categoriesTable, usersTable, packagesTable, providersTable,
   servicesTable, subscriptionsTable, reviewsTable,
   regionsTable, citiesTable, areasTable, billingPlansTable, commissionRulesTable,
+  propertiesTable,
 } from "@workspace/db";
 import bcrypt from "bcryptjs";
 
@@ -98,8 +99,81 @@ export async function seed() {
 
   await seedRegions();
   await seedRealEstateCategories();
+  await seedProperties();
 
   console.log("Database seeded successfully!");
+}
+
+async function seedProperties() {
+  const existing = await db.select({ id: propertiesTable.id }).from(propertiesTable).limit(1);
+  if (existing.length > 0) {
+    console.log("Properties already seeded, skipping.");
+    return;
+  }
+
+  // Get first provider
+  const providers = await db.select({ id: providersTable.id }).from(providersTable).limit(6);
+  if (providers.length === 0) {
+    console.log("No providers found, skipping property seed.");
+    return;
+  }
+  const pid = (i: number) => providers[i % providers.length].id;
+
+  console.log("Seeding properties...");
+  const IMGS_APT = JSON.stringify(["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80","https://images.unsplash.com/photo-1502005097973-6a7082348e28?w=800&q=80"]);
+  const IMGS_VILLA = JSON.stringify(["https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80","https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"]);
+  const IMGS_LAND = JSON.stringify(["https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80"]);
+  const IMGS_COMM = JSON.stringify(["https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"]);
+  const IMGS_DUPLEX = JSON.stringify(["https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80"]);
+
+  await db.insert(propertiesTable).values([
+    // ── شقق للبيع ──────────────────────────────────────────────────────────
+    { providerId: pid(0), title: "شقة 3 غرف للبيع في بنها", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "850000", area: "120", rooms: 3, bathrooms: 2, floor: 3, finishing: "مشطب", district: "وسط البلد", address: "بنها", images: IMGS_APT, status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567" },
+    { providerId: pid(1), title: "شقة 2 غرف سوبر لوكس للبيع", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "650000", area: "95", rooms: 2, bathrooms: 1, floor: 5, finishing: "مشطب", district: "شارع الجمهورية", address: "بنها", images: IMGS_APT, status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "شقة 4 غرف بموقع مميز بنها", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "1200000", area: "170", rooms: 4, bathrooms: 2, floor: 2, finishing: "مشطب", district: "الحي العاشر", address: "بنها", images: IMGS_APT, status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789" },
+    { providerId: pid(0), title: "شقة 3 غرف تشطيب كامل - القناطر الخيرية", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "720000", area: "130", rooms: 3, bathrooms: 2, floor: 1, finishing: "مشطب", district: "القناطر الجديدة", address: "القناطر الخيرية", images: IMGS_APT, status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567" },
+    { providerId: pid(1), title: "شقة غرفتين ريسيبشن للبيع - قليوب", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "550000", area: "85", rooms: 2, bathrooms: 1, floor: 4, finishing: "مشطب", district: "وسط قليوب", address: "قليوب", images: IMGS_APT, status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "شقة استوديو مفروشة للبيع", mainCategory: "residential", listingType: "sale", subCategory: "ستوديو", price: "380000", area: "55", rooms: 1, bathrooms: 1, floor: 6, finishing: "مشطب", furnished: "مفروش", district: "شارع الجيش", address: "بنها", images: IMGS_APT, status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789" },
+    { providerId: pid(3), title: "شقة 3 غرف - الخانكة", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "680000", area: "115", rooms: 3, bathrooms: 2, floor: 2, finishing: "نص تشطيب", district: "مركز الخانكة", address: "الخانكة", images: IMGS_APT, status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890" },
+    { providerId: pid(4), title: "شقة خام 3 غرف للبيع - طوخ", mainCategory: "residential", listingType: "sale", subCategory: "شقة", price: "480000", area: "110", rooms: 3, bathrooms: 2, floor: 1, finishing: "خام", district: "مركز طوخ", address: "طوخ", images: IMGS_APT, status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901" },
+
+    // ── شقق للإيجار ────────────────────────────────────────────────────────
+    { providerId: pid(0), title: "شقة للإيجار 3 غرف مفروشة بنها", mainCategory: "residential", listingType: "rent", subCategory: "شقة", price: "5000", area: "120", rooms: 3, bathrooms: 2, floor: 3, finishing: "مشطب", furnished: "مفروش", district: "الحي الثامن", address: "بنها", images: IMGS_APT, status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567" },
+    { providerId: pid(1), title: "شقة للإيجار 2 غرفة غير مفروشة", mainCategory: "residential", listingType: "rent", subCategory: "شقة", price: "2800", area: "90", rooms: 2, bathrooms: 1, floor: 2, finishing: "مشطب", furnished: "غير مفروش", district: "شارع الرياضة", address: "بنها", images: IMGS_APT, status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "شقة للإيجار 4 غرف - فيلتس بنها", mainCategory: "residential", listingType: "rent", subCategory: "شقة", price: "7500", area: "165", rooms: 4, bathrooms: 3, floor: 5, finishing: "مشطب", furnished: "مفروش", district: "فيلتس", address: "بنها", images: IMGS_APT, status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789" },
+    { providerId: pid(3), title: "شقة إيجار غرفة وصالة - قليوب", mainCategory: "residential", listingType: "rent", subCategory: "شقة", price: "1800", area: "65", rooms: 1, bathrooms: 1, floor: 3, finishing: "مشطب", furnished: "غير مفروش", district: "قليوب الجديدة", address: "قليوب", images: IMGS_APT, status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890" },
+    { providerId: pid(4), title: "شقة للإيجار 3 غرف - القناطر", mainCategory: "residential", listingType: "rent", subCategory: "شقة", price: "3500", area: "105", rooms: 3, bathrooms: 2, floor: 4, finishing: "مشطب", furnished: "غير مفروش", district: "كورنيش القناطر", address: "القناطر الخيرية", images: IMGS_APT, status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901" },
+
+    // ── فيلات للبيع ────────────────────────────────────────────────────────
+    { providerId: pid(0), title: "فيلا 5 غرف للبيع - العبور", mainCategory: "residential", listingType: "sale", subCategory: "فيلا", price: "4500000", area: "350", rooms: 5, bathrooms: 4, floor: 0, finishing: "مشطب", furnished: "غير مفروش", district: "العبور", address: "العبور", images: IMGS_VILLA, status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567" },
+    { providerId: pid(1), title: "فيلا توين هاوس للبيع - بنها الجديدة", mainCategory: "residential", listingType: "sale", subCategory: "توين هاوس", price: "3200000", area: "280", rooms: 4, bathrooms: 3, floor: 0, finishing: "نص تشطيب", district: "بنها الجديدة", address: "بنها", images: IMGS_VILLA, status: "active", featured: true, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "فيلا دوبلكس 6 غرف - مدينة بدر", mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس", price: "5800000", area: "420", rooms: 6, bathrooms: 5, floor: 0, finishing: "مشطب", furnished: "غير مفروش", district: "مدينة بدر", address: "مدينة بدر", images: IMGS_DUPLEX, status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789" },
+    { providerId: pid(3), title: "فيلا 4 غرف بحديقة - القناطر", mainCategory: "residential", listingType: "sale", subCategory: "فيلا", price: "2800000", area: "300", rooms: 4, bathrooms: 3, floor: 0, finishing: "مشطب", district: "القناطر الخيرية", address: "القناطر الخيرية", images: IMGS_VILLA, status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890" },
+
+    // ── دوبلكس وروف ───────────────────────────────────────────────────────
+    { providerId: pid(4), title: "دوبلكس 4 غرف للبيع - بنها", mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس", price: "1800000", area: "200", rooms: 4, bathrooms: 3, floor: 5, finishing: "مشطب", district: "الحي التاسع", address: "بنها", images: IMGS_DUPLEX, status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901" },
+    { providerId: pid(0), title: "روف 3 غرف بتراس واسع - بنها", mainCategory: "residential", listingType: "sale", subCategory: "روف", price: "1100000", area: "140", rooms: 3, bathrooms: 2, floor: 7, finishing: "مشطب", district: "شارع سعد زغلول", address: "بنها", images: IMGS_DUPLEX, status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567" },
+
+    // ── أراضي للبيع ────────────────────────────────────────────────────────
+    { providerId: pid(1), title: "أرض للبيع 300 متر - بنها", mainCategory: "land", listingType: "sale", subCategory: "أرض", price: "600000", area: "300", district: "المنطقة الصناعية", address: "بنها", images: IMGS_LAND, status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "قطعة أرض 500م للبيع - القناطر", mainCategory: "land", listingType: "sale", subCategory: "أرض", price: "900000", area: "500", district: "القناطر الجديدة", address: "القناطر الخيرية", images: IMGS_LAND, status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789" },
+    { providerId: pid(3), title: "أرض 750م للبيع - طوخ", mainCategory: "land", listingType: "sale", subCategory: "أرض", price: "1200000", area: "750", district: "طوخ الصناعية", address: "طوخ", images: IMGS_LAND, status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890" },
+    { providerId: pid(4), title: "أرض زراعية 2 فدان - الخانكة", mainCategory: "land", listingType: "sale", subCategory: "أرض", price: "2500000", area: "8400", district: "ريف الخانكة", address: "الخانكة", images: IMGS_LAND, status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901" },
+    { providerId: pid(0), title: "أرض سكنية 200م - شبين القناطر", mainCategory: "land", listingType: "sale", subCategory: "أرض", price: "350000", area: "200", district: "شبين القناطر", address: "شبين القناطر", images: IMGS_LAND, status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567" },
+
+    // ── عقارات تجارية ─────────────────────────────────────────────────────
+    { providerId: pid(1), title: "محل تجاري للبيع شارع رئيسي - بنها", mainCategory: "commercial", listingType: "sale", subCategory: "محل", price: "1500000", area: "80", district: "السوق التجاري", address: "بنها", images: IMGS_COMM, status: "active", featured: true, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "مكتب للبيع 120م - بنها", mainCategory: "commercial", listingType: "sale", subCategory: "مكتب", price: "900000", area: "120", floor: 4, district: "شارع التحرير", address: "بنها", images: IMGS_COMM, status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789" },
+    { providerId: pid(3), title: "محل للإيجار - الشارع الرئيسي بنها", mainCategory: "commercial", listingType: "rent", subCategory: "محل", price: "8000", area: "60", district: "وسط البلد", address: "بنها", images: IMGS_COMM, status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890" },
+    { providerId: pid(4), title: "مستودع للإيجار - المنطقة الصناعية", mainCategory: "commercial", listingType: "rent", subCategory: "مستودع / مخزن", price: "12000", area: "300", district: "المنطقة الصناعية", address: "بنها", images: IMGS_COMM, status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901" },
+    { providerId: pid(0), title: "مكتب للإيجار 90م - القناطر", mainCategory: "commercial", listingType: "rent", subCategory: "مكتب", price: "4500", area: "90", floor: 2, district: "القناطر الجديدة", address: "القناطر الخيرية", images: IMGS_COMM, status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567" },
+
+    // ── دور أرضي ──────────────────────────────────────────────────────────
+    { providerId: pid(1), title: "دور أرضي 4 غرف بحديقة - كفر شكر", mainCategory: "residential", listingType: "sale", subCategory: "دور أرضي", price: "950000", area: "180", rooms: 4, bathrooms: 2, floor: 0, finishing: "مشطب", district: "كفر شكر", address: "كفر شكر", images: IMGS_APT, status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678" },
+    { providerId: pid(2), title: "دور أرضي 3 غرف للإيجار - بنها", mainCategory: "residential", listingType: "rent", subCategory: "دور أرضي", price: "4000", area: "150", rooms: 3, bathrooms: 2, floor: 0, finishing: "مشطب", furnished: "غير مفروش", district: "حي الزهور", address: "بنها", images: IMGS_APT, status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789" },
+  ]);
+
+  console.log("Properties seeded successfully!");
 }
 
 async function seedRealEstateCategories() {
