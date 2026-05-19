@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -10,10 +10,12 @@ import L from "leaflet";
 import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
   Heart, Star, Map, Grid3X3, X, ChevronDown, ChevronUp,
-  SlidersHorizontal, TrendingUp, CheckCircle2, Loader2,
+  SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
 } from "lucide-react";
 import { api, type Category } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth-context";
+import toast from "react-hot-toast";
 
 type DbProp = {
   id: number;
@@ -167,6 +169,11 @@ export default function PropertiesPage() {
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "area">("default");
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [saveSearchName, setSaveSearchName] = useState("بحث محفوظ");
+  const [saveSearchEmail, setSaveSearchEmail] = useState("");
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: reCategories = [] } = useQuery<Category[]>({
     queryKey: ["re-categories"],
@@ -174,12 +181,54 @@ export default function PropertiesPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: myFavIds = [] } = useQuery<number[]>({
+    queryKey: ["property-favorites-ids"],
+    queryFn: async () => {
+      if (!user) return [];
+      const rows = await api.propertyFavorites.list();
+      return (rows as any[]).map((r: any) => r.propertyId);
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (myFavIds.length) setLiked(new Set(myFavIds));
+  }, [myFavIds]);
+
   useEffect(() => {
     api.properties.list({ status: "published" })
       .then((rows) => setAllProps((rows as unknown as DbProp[]).map((r) => mapDbProp(r, FALLBACK))))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const toggleFavMut = useMutation({
+    mutationFn: async ({ id, add }: { id: number; add: boolean }) => {
+      if (!user) { toast.error("سجّل الدخول أولاً لإضافة للمفضلة"); return; }
+      if (add) await api.propertyFavorites.add(id);
+      else await api.propertyFavorites.remove(id);
+    },
+    onSuccess: (_, { id, add }) => {
+      setLiked(prev => { const s = new Set(prev); add ? s.add(id) : s.delete(id); return s; });
+      queryClient.invalidateQueries({ queryKey: ["property-favorites-ids"] });
+      toast.success(add ? "أُضيف للمفضلة" : "حُذف من المفضلة");
+    },
+    onError: () => toast.error("حدث خطأ، حاول مرة أخرى"),
+  });
+
+  const saveSearchMut = useMutation({
+    mutationFn: () => {
+      if (!user) { toast.error("سجّل الدخول لحفظ البحث"); throw new Error(""); }
+      const filters: Record<string, any> = {};
+      if (selectedKind) filters.mainCategory = selectedKind;
+      if (selectedType) filters.listingType = selectedType;
+      if (selectedCity) filters.city = selectedCity;
+      if (selectedPrice !== null) filters.maxPrice = PRICE_RANGES[selectedPrice].max;
+      return api.savedSearches.create({ name: saveSearchName, email: saveSearchEmail || undefined, filters, notifyEmail: true, notifyApp: true });
+    },
+    onSuccess: () => { setSaveSearchOpen(false); toast.success("تم حفظ البحث! سنُعلمك عند توفر عقارات تطابقه"); },
+    onError: () => toast.error("حدث خطأ أثناء حفظ البحث"),
+  });
 
   const filtered = useMemo(() => {
     let list = allProps.filter((p) => {
@@ -213,7 +262,8 @@ export default function PropertiesPage() {
 
   const toggleLike = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setLiked(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    const add = !liked.has(id);
+    toggleFavMut.mutate({ id, add });
   };
 
   if (loading) {
@@ -281,6 +331,16 @@ export default function PropertiesPage() {
               <option value="area">المساحة: الأكبر أولاً</option>
             </select>
 
+            {/* Save search button */}
+            <button
+              onClick={() => setSaveSearchOpen(v => !v)}
+              className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary flex items-center gap-1.5 transition-all whitespace-nowrap"
+              title="احفظ هذا البحث"
+            >
+              <Bell className="w-4 h-4" />
+              حفظ البحث
+            </button>
+
             {/* View toggle */}
             <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
               <button
@@ -299,6 +359,47 @@ export default function PropertiesPage() {
               </button>
             </div>
           </div>
+
+          {/* ── Save Search Panel ── */}
+          <AnimatePresence>
+            {saveSearchOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-3 items-center py-3 border-t border-gray-100 mt-3">
+                  <Bell className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-sm font-semibold text-gray-700">احفظ هذا البحث وسنُعلمك عند إضافة عقارات تطابقه:</span>
+                  <Input
+                    value={saveSearchName}
+                    onChange={e => setSaveSearchName(e.target.value)}
+                    placeholder="اسم البحث"
+                    className="h-9 rounded-xl text-sm w-40"
+                  />
+                  <Input
+                    value={saveSearchEmail}
+                    onChange={e => setSaveSearchEmail(e.target.value)}
+                    placeholder="بريدك الإلكتروني (اختياري)"
+                    type="email"
+                    className="h-9 rounded-xl text-sm w-56"
+                  />
+                  <button
+                    onClick={() => saveSearchMut.mutate()}
+                    disabled={saveSearchMut.isPending}
+                    className="h-9 px-4 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-all flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    {saveSearchMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
+                    حفظ
+                  </button>
+                  <button onClick={() => setSaveSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

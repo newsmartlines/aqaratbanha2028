@@ -40,6 +40,8 @@ export const propertiesTable = pgTable("properties", {
   contactMethods: text("contact_methods"),
   status: text("status").default("pending"),
   featured: boolean("featured").default(false),
+  viewCount: integer("view_count").default(0).notNull(),
+  phoneClickCount: integer("phone_click_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

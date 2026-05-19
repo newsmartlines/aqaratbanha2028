@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { propertiesTable } from "@workspace/db";
+import {
+  propertiesTable, propertyFavoritesTable, savedSearchesTable,
+  notificationsTable, usersTable, siteSettingsTable,
+} from "@workspace/db";
 import { eq, desc, and, or, ilike, sql } from "drizzle-orm";
 import { getSession } from "./auth";
 
@@ -43,6 +46,113 @@ async function sendWhatsAppNotification(property: any) {
   }
 }
 
+// ── Email helper (uses nodemailer via site settings) ──────────────────────
+async function getSetting(key: string): Promise<string | null> {
+  const [row] = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, key));
+  return row?.value ?? null;
+}
+
+async function sendSavedSearchEmail(toEmail: string, toName: string, property: any) {
+  try {
+    const cfg: Record<string, string> = {};
+    for (const k of ["smtpHost", "smtpPort", "smtpSecure", "smtpUser", "smtpPass", "smtpFromName", "smtpFromEmail"]) {
+      cfg[k] = (await getSetting(k)) ?? "";
+    }
+    if (!(cfg.smtpHost && cfg.smtpUser && cfg.smtpPass)) return;
+    const nodemailer = await import("nodemailer");
+    const tr = nodemailer.default.createTransport({
+      host: cfg.smtpHost, port: Number(cfg.smtpPort) || 587,
+      secure: cfg.smtpSecure === "true", auth: { user: cfg.smtpUser, pass: cfg.smtpPass },
+    } as any);
+    const siteName = (await getSetting("siteName")) ?? "عقارات بنها";
+    const siteUrl = (await getSetting("siteUrl")) ?? "";
+    const price = property.price ? `${Number(property.price).toLocaleString("ar-EG")} جنيه` : "السعر عند التواصل";
+    const propLink = siteUrl ? `${siteUrl}/property/${property.id}` : `/property/${property.id}`;
+    const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;direction:rtl;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;padding:40px 0;">
+<tr><td align="center">
+<table width="580" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:linear-gradient(135deg,#12B5D0,#0060A0);padding:32px;text-align:center;">
+<p style="margin:0;color:#fff;font-size:22px;font-weight:800;">${siteName}</p>
+<p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">عقار يطابق بحثك المحفوظ!</p>
+</td></tr>
+<tr><td style="padding:32px;">
+<p style="color:#1e293b;font-size:16px;margin:0 0 8px;">مرحباً ${toName}،</p>
+<p style="color:#475569;font-size:14px;margin:0 0 24px;">وجدنا عقاراً جديداً يتطابق مع بحثك المحفوظ:</p>
+<div style="border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:24px;">
+<p style="margin:0 0 8px;color:#1e293b;font-size:18px;font-weight:700;">${property.title}</p>
+<p style="margin:0 0 4px;color:#0060A0;font-size:20px;font-weight:800;">${price}</p>
+<p style="margin:0;color:#64748b;font-size:13px;">${property.address ?? property.district ?? ""}</p>
+</div>
+<a href="${propLink}" style="display:inline-block;background:linear-gradient(135deg,#12B5D0,#0060A0);color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;">عرض العقار</a>
+</td></tr>
+</table></td></tr></table>
+</body></html>`;
+    await tr.sendMail({
+      from: `"${cfg.smtpFromName || siteName}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
+      to: `"${toName}" <${toEmail}>`,
+      subject: `🏠 عقار جديد يطابق بحثك: ${property.title}`,
+      html,
+    });
+  } catch (e) {
+    console.warn("[SavedSearch] Email failed:", e);
+  }
+}
+
+// ── Match a property against saved search filters ─────────────────────────
+function matchesFilters(property: any, filters: Record<string, any>): boolean {
+  if (filters.mainCategory && filters.mainCategory !== property.mainCategory) return false;
+  if (filters.listingType && filters.listingType !== property.listingType) return false;
+  if (filters.city && property.address && !property.address.toLowerCase().includes(filters.city.toLowerCase())) return false;
+  if (filters.maxPrice && property.price && Number(property.price) > Number(filters.maxPrice)) return false;
+  if (filters.minArea && property.area && Number(property.area) < Number(filters.minArea)) return false;
+  return true;
+}
+
+// ── Trigger saved search alerts ────────────────────────────────────────────
+async function triggerSavedSearchAlerts(property: any) {
+  try {
+    const searches = await db.select({
+      id: savedSearchesTable.id,
+      userId: savedSearchesTable.userId,
+      filters: savedSearchesTable.filters,
+      email: savedSearchesTable.email,
+      notifyEmail: savedSearchesTable.notifyEmail,
+      notifyApp: savedSearchesTable.notifyApp,
+    }).from(savedSearchesTable);
+
+    for (const ss of searches) {
+      let filters: Record<string, any> = {};
+      try { filters = JSON.parse(ss.filters ?? "{}"); } catch { /* */ }
+      if (!matchesFilters(property, filters)) continue;
+
+      const [user] = await db.select({ name: usersTable.name, email: usersTable.email })
+        .from(usersTable).where(eq(usersTable.id, ss.userId));
+      if (!user) continue;
+
+      if (ss.notifyApp) {
+        await db.insert(notificationsTable).values({
+          userId: ss.userId,
+          title: "عقار جديد يطابق بحثك",
+          body: `تم إضافة عقار جديد: ${property.title}`,
+          type: "saved_search",
+          read: false,
+        }).catch(() => {});
+      }
+
+      if (ss.notifyEmail) {
+        const email = ss.email || user.email;
+        if (email) {
+          sendSavedSearchEmail(email, user.name, property).catch(() => {});
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[SavedSearch] Alert trigger failed:", e);
+  }
+}
+
 async function requireAuth(req: any): Promise<{ userId: number; providerId?: number } | null> {
   const token = req.cookies?.session ?? req.headers.authorization?.replace("Bearer ", "");
   if (!token) return null;
@@ -51,23 +161,33 @@ async function requireAuth(req: any): Promise<{ userId: number; providerId?: num
   return session as any;
 }
 
+// ── GET /api/properties ────────────────────────────────────────────────────
 router.get("/properties", async (req, res) => {
   try {
-    const { providerId, mainCategory, listingType, status, search, limit = "50", offset = "0" } = req.query as Record<string, string>;
+    const { search, category, city, status, providerId, featured, listingType } = req.query as Record<string, string>;
+    const conditions: any[] = [];
+    if (status) conditions.push(eq(propertiesTable.status, status));
+    if (category) conditions.push(eq(propertiesTable.mainCategory, category));
+    if (providerId) conditions.push(eq(propertiesTable.providerId, parseInt(providerId)));
+    if (featured === "true") conditions.push(eq(propertiesTable.featured, true));
+    if (listingType) conditions.push(eq(propertiesTable.listingType, listingType));
+    if (search) {
+      conditions.push(or(
+        ilike(propertiesTable.title, `%${search}%`),
+        ilike(propertiesTable.description, `%${search}%`),
+        ilike(propertiesTable.address, `%${search}%`),
+      ));
+    }
+    if (city) {
+      conditions.push(or(
+        ilike(propertiesTable.district, `%${city}%`),
+        ilike(propertiesTable.address, `%${city}%`),
+      ));
+    }
 
-    let query = db.select().from(propertiesTable).$dynamic();
-    const conds: any[] = [];
-    if (providerId) conds.push(eq(propertiesTable.providerId, parseInt(providerId)));
-    if (mainCategory) conds.push(eq(propertiesTable.mainCategory, mainCategory));
-    if (listingType) conds.push(eq(propertiesTable.listingType, listingType));
-    if (status) conds.push(eq(propertiesTable.status, status));
-    if (search) conds.push(or(ilike(propertiesTable.title, `%${search}%`), ilike(propertiesTable.description, `%${search}%`)));
-    if (conds.length) query = query.where(and(...conds));
-
-    const rows = await query
-      .orderBy(desc(propertiesTable.createdAt))
-      .limit(parseInt(limit))
-      .offset(parseInt(offset));
+    const rows = await db.select().from(propertiesTable)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(propertiesTable.createdAt));
 
     res.json({ success: true, data: rows });
   } catch (err: any) {
@@ -75,17 +195,45 @@ router.get("/properties", async (req, res) => {
   }
 });
 
+// ── GET /api/properties/:id ────────────────────────────────────────────────
 router.get("/properties/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const [row] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
-    if (!row) return res.status(404).json({ success: false, error: "Property not found" });
-    res.json({ success: true, data: row });
+    const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
+    if (!property) return res.status(404).json({ success: false, error: "Not found" });
+    res.json({ success: true, data: property });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to fetch property" });
   }
 });
 
+// ── POST /api/properties/:id/view — increment view count ──────────────────
+router.post("/properties/:id/view", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.update(propertiesTable)
+      .set({ viewCount: sql`${propertiesTable.viewCount} + 1` })
+      .where(eq(propertiesTable.id, id));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// ── POST /api/properties/:id/phone-click — increment phone click count ────
+router.post("/properties/:id/phone-click", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.update(propertiesTable)
+      .set({ phoneClickCount: sql`${propertiesTable.phoneClickCount} + 1` })
+      .where(eq(propertiesTable.id, id));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// ── POST /api/properties ──────────────────────────────────────────────────
 router.post("/properties", async (req, res) => {
   try {
     const session = await requireAuth(req);
@@ -142,8 +290,8 @@ router.post("/properties", async (req, res) => {
       status: (status as string) || "pending",
     }).returning();
 
-    // ── WhatsApp notification via CallMeBot ────────────────────────────────
-    sendWhatsAppNotification(property).catch(() => {/* silent — don't block response */});
+    sendWhatsAppNotification(property).catch(() => {});
+    triggerSavedSearchAlerts(property).catch(() => {});
 
     res.json({ success: true, data: property });
   } catch (err: any) {
@@ -151,6 +299,7 @@ router.post("/properties", async (req, res) => {
   }
 });
 
+// ── PUT /api/properties/:id ────────────────────────────────────────────────
 router.put("/properties/:id", async (req, res) => {
   try {
     const session = await requireAuth(req);
@@ -165,6 +314,8 @@ router.put("/properties/:id", async (req, res) => {
     if (Array.isArray(updateData.features)) updateData.features = JSON.stringify(updateData.features);
     if (Array.isArray(updateData.nearbyServices)) updateData.nearbyServices = JSON.stringify(updateData.nearbyServices);
     if (Array.isArray(updateData.contactMethods)) updateData.contactMethods = JSON.stringify(updateData.contactMethods);
+    delete updateData.viewCount;
+    delete updateData.phoneClickCount;
 
     const [updated] = await db.update(propertiesTable).set(updateData).where(eq(propertiesTable.id, id)).returning();
     res.json({ success: true, data: updated });
@@ -173,6 +324,7 @@ router.put("/properties/:id", async (req, res) => {
   }
 });
 
+// ── DELETE /api/properties/:id ─────────────────────────────────────────────
 router.delete("/properties/:id", async (req, res) => {
   try {
     const session = await requireAuth(req);
@@ -186,6 +338,7 @@ router.delete("/properties/:id", async (req, res) => {
   }
 });
 
+// ── PATCH /api/properties/:id/status ──────────────────────────────────────
 router.patch("/properties/:id/status", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -194,6 +347,117 @@ router.patch("/properties/:id/status", async (req, res) => {
     res.json({ success: true, data: updated });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to update status" });
+  }
+});
+
+// ── Property Favorites ─────────────────────────────────────────────────────
+// GET /api/property-favorites?userId=…
+router.get("/property-favorites", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const userId = session.userId;
+    const rows = await db.select({
+      id: propertyFavoritesTable.id,
+      propertyId: propertyFavoritesTable.propertyId,
+      createdAt: propertyFavoritesTable.createdAt,
+      title: propertiesTable.title,
+      price: propertiesTable.price,
+      images: propertiesTable.images,
+      mainCategory: propertiesTable.mainCategory,
+      listingType: propertiesTable.listingType,
+      address: propertiesTable.address,
+      district: propertiesTable.district,
+      status: propertiesTable.status,
+    }).from(propertyFavoritesTable)
+      .leftJoin(propertiesTable, eq(propertyFavoritesTable.propertyId, propertiesTable.id))
+      .where(eq(propertyFavoritesTable.userId, userId))
+      .orderBy(desc(propertyFavoritesTable.createdAt));
+    res.json({ success: true, data: rows });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// POST /api/property-favorites  { propertyId }
+router.post("/property-favorites", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const userId = session.userId;
+    const { propertyId } = req.body;
+    if (!propertyId) return res.status(400).json({ success: false, error: "propertyId required" });
+    const [row] = await db.insert(propertyFavoritesTable)
+      .values({ userId, propertyId: parseInt(propertyId) })
+      .onConflictDoNothing()
+      .returning();
+    res.json({ success: true, data: row ?? { userId, propertyId } });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// DELETE /api/property-favorites/:propertyId
+router.delete("/property-favorites/:propertyId", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const userId = session.userId;
+    const propertyId = parseInt(req.params.propertyId);
+    await db.delete(propertyFavoritesTable)
+      .where(and(eq(propertyFavoritesTable.userId, userId), eq(propertyFavoritesTable.propertyId, propertyId)));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// ── Saved Searches ─────────────────────────────────────────────────────────
+// GET /api/saved-searches
+router.get("/saved-searches", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const rows = await db.select().from(savedSearchesTable)
+      .where(eq(savedSearchesTable.userId, session.userId))
+      .orderBy(desc(savedSearchesTable.createdAt));
+    res.json({ success: true, data: rows });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// POST /api/saved-searches  { name, email, filters, notifyEmail, notifyApp }
+router.post("/saved-searches", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const { name, email, filters, notifyEmail, notifyApp } = req.body;
+    const [row] = await db.insert(savedSearchesTable).values({
+      userId: session.userId,
+      name: name || "بحث محفوظ",
+      email: email || null,
+      filters: typeof filters === "object" ? JSON.stringify(filters) : (filters ?? "{}"),
+      notifyEmail: notifyEmail !== false,
+      notifyApp: notifyApp !== false,
+    }).returning();
+    res.json({ success: true, data: row });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// DELETE /api/saved-searches/:id
+router.delete("/saved-searches/:id", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const id = parseInt(req.params.id);
+    await db.delete(savedSearchesTable)
+      .where(and(eq(savedSearchesTable.id, id), eq(savedSearchesTable.userId, session.userId)));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
   }
 });
 

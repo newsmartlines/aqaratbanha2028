@@ -41,6 +41,8 @@ interface Property {
   images?: string[];
   status: string;
   featured?: boolean;
+  viewCount?: number;
+  phoneClickCount?: number;
   createdAt?: string;
 }
 
@@ -315,6 +317,7 @@ export default function MyPropertiesPage() {
                       <th className="text-right px-4 py-3 font-semibold text-muted-foreground">النوع</th>
                       <th className="text-right px-4 py-3 font-semibold text-muted-foreground">التفاصيل</th>
                       <th className="text-right px-4 py-3 font-semibold text-muted-foreground">السعر</th>
+                      <th className="text-right px-4 py-3 font-semibold text-muted-foreground">📊 إحصائيات</th>
                       <th className="text-right px-4 py-3 font-semibold text-muted-foreground">مميز</th>
                       <th className="text-right px-4 py-3 font-semibold text-muted-foreground">الحالة</th>
                       <th className="text-right px-4 py-3 font-semibold text-muted-foreground">الإجراءات</th>
@@ -380,6 +383,20 @@ export default function MyPropertiesPage() {
                             {prop.price
                               ? `${Number(prop.price).toLocaleString("ar-EG")} ج.م`
                               : <span className="text-muted-foreground text-xs">—</span>}
+                          </td>
+
+                          {/* Stats */}
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col gap-1 text-xs">
+                              <span className="flex items-center gap-1 text-blue-600">
+                                <Eye className="w-3 h-3" />
+                                {(prop.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                              </span>
+                              <span className="flex items-center gap-1 text-teal-600">
+                                <TrendingUp className="w-3 h-3" />
+                                {(prop.phoneClickCount ?? 0).toLocaleString("ar-EG")} ضغطة اتصال
+                              </span>
+                            </div>
                           </td>
 
                           {/* Featured toggle */}

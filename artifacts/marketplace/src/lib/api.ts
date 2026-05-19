@@ -829,5 +829,27 @@ export const api = {
         headers: userId ? { "x-user-id": String(userId) } : undefined,
       }),
   },
+  propertyFavorites: {
+    list: () => fetchJson<any[]>(`/property-favorites`),
+    add: (propertyId: number) =>
+      fetchJson(`/property-favorites`, { method: "POST", body: JSON.stringify({ propertyId }) }),
+    remove: (propertyId: number) =>
+      fetchJson(`/property-favorites/${propertyId}`, { method: "DELETE" }),
+  },
+
+  savedSearches: {
+    list: () => fetchJson<any[]>(`/saved-searches`),
+    create: (data: { name?: string; email?: string; filters: Record<string, any>; notifyEmail?: boolean; notifyApp?: boolean }) =>
+      fetchJson(`/saved-searches`, { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/saved-searches/${id}`, { method: "DELETE" }),
+  },
+
+  propertyStats: {
+    view: (propertyId: number) =>
+      fetchJson(`/properties/${propertyId}/view`, { method: "POST" }),
+    phoneClick: (propertyId: number) =>
+      fetchJson(`/properties/${propertyId}/phone-click`, { method: "POST" }),
+  },
+
   fetchJson,
 };

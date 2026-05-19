@@ -542,6 +542,25 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: homeFavIds = [] } = useQuery<number[]>({
+    queryKey: ["property-favorites-ids"],
+    queryFn: async () => {
+      if (!user) return [];
+      const rows = await api.propertyFavorites.list();
+      return (rows as any[]).map((r: any) => r.propertyId);
+    },
+    enabled: !!user,
+  });
+
+  const toggleHomeFavMut = useMutation({
+    mutationFn: async ({ id, add }: { id: number; add: boolean }) => {
+      if (!user) return;
+      if (add) await api.propertyFavorites.add(id);
+      else await api.propertyFavorites.remove(id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["property-favorites-ids"] }),
+  });
+
   const heroCityOptions = useMemo(() => {
     const opts: { value: string; label: string }[] = [{ value: "__all__", label: "كل المدن" }];
     const addCity = (nameAr: string) => {
@@ -938,8 +957,8 @@ export default function Home() {
                 <p className="font-medium">لا توجد عقارات متاحة حالياً</p>
               </div>
             ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {homePropsRaw.slice(0, 6).map((property, idx) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {homePropsRaw.slice(0, 12).map((property, idx) => {
                 const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
                 const thumb = imgs[0] ?? DEFAULT_IMG;
                 const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
@@ -988,10 +1007,14 @@ export default function Home() {
 
                       {/* Fav button */}
                       <button
-                        className="absolute top-3 left-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-rose-500 hover:border-rose-400 transition-all"
-                        onClick={(e) => e.stopPropagation()}
+                        className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${homeFavIds.includes(property.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500 hover:border-rose-400"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const add = !homeFavIds.includes(property.id);
+                          toggleHomeFavMut.mutate({ id: property.id, add });
+                        }}
                       >
-                        <Heart className="w-3.5 h-3.5" />
+                        <Heart className={`w-3.5 h-3.5 ${homeFavIds.includes(property.id) ? "fill-white" : ""}`} />
                       </button>
                     </div>
 

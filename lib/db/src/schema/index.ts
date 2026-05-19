@@ -24,5 +24,7 @@ export * from "./supportTickets";
 export * from "./sessions";
 export * from "./resetTokens";
 export * from "./properties";
+export * from "./propertyFavorites";
+export * from "./savedSearches";
 export * from "./emailTemplates";
 export * from "./billingPlans";

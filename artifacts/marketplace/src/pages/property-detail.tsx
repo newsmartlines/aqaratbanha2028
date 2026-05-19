@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -112,11 +112,13 @@ export default function PropertyDetail() {
   const [showVideo, setShowVideo] = useState(false);
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const viewTracked = useRef(false);
 
   useEffect(() => {
     if (!id) { setNotFound(true); setLoading(false); return; }
     setLoading(true);
     setActiveImg(0);
+    viewTracked.current = false;
     window.scrollTo({ top: 0 });
 
     api.properties.get(id)
@@ -126,6 +128,13 @@ export default function PropertyDetail() {
         if (!raw || !raw.id) { setNotFound(true); return; }
         const mapped = mapDbToView(raw);
         setProperty(mapped);
+
+        // Track view once
+        if (!viewTracked.current) {
+          viewTracked.current = true;
+          api.propertyStats.view(id).catch(() => {});
+        }
+
         // Fetch similar
         if (mapped.mainCategory) {
           api.properties.list({ mainCategory: mapped.mainCategory, limit: 4 })
@@ -451,11 +460,12 @@ export default function PropertyDetail() {
               </div>
 
               {property.agentPhone && (
-                <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20" asChild>
-                  <a href={`tel:${property.agentPhone}`}>
-                    <Phone className="w-4 h-4 ml-2" />
-                    اتصل الآن
-                  </a>
+                <Button
+                  className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20"
+                  onClick={() => { api.propertyStats.phoneClick(id).catch(() => {}); window.location.href = `tel:${property.agentPhone}`; }}
+                >
+                  <Phone className="w-4 h-4 ml-2" />
+                  اتصل الآن
                 </Button>
               )}
               {property.agentWhatsapp && (
