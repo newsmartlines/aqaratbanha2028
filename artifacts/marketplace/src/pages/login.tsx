@@ -17,7 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
-import { useServicesEnabled } from "@/App";
+import { useServicesEnabled, useSiteSettings } from "@/App";
 
 interface AuthProps {
   defaultTab?: "login" | "register";
@@ -43,6 +43,8 @@ function safeReturnTo(path: string | null, role: string): string | null {
 
 export default function AuthPage({ defaultTab = "login" }: AuthProps) {
   const servicesEnabled = useServicesEnabled();
+  const siteSettings = useSiteSettings();
+  const registrationEnabled = siteSettings ? siteSettings.allowRegistration !== "false" : true;
   const [view, setView] = useState<View>(defaultTab === "register" ? "register" : "login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -305,7 +307,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
               </Link>
             ))}
           </nav>
-          {servicesEnabled && (
+          {servicesEnabled && registrationEnabled && (
             <Link href="/provider/register">
               <span className="hidden sm:inline-flex px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer transition-colors shadow-sm">
                 كن مقدم خدمة
@@ -473,7 +475,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                     </div>
                   </Card>
 
-                  {servicesEnabled && (
+                  {servicesEnabled && registrationEnabled && (
                     <Card
                       className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-200 relative overflow-hidden"
                       onClick={() => setAccountType("provider")}
