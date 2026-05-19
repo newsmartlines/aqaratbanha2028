@@ -43,6 +43,7 @@ type SidebarCounts = {
   suspendedUsers: number;
   pendingOrders: number;
   openTickets: number;
+  pendingProperties: number;
 };
 
 function pendingForHref(href: string, c: SidebarCounts | undefined): number {
@@ -51,6 +52,7 @@ function pendingForHref(href: string, c: SidebarCounts | undefined): number {
   if (href === "/admin/users") return c.suspendedUsers;
   if (href === "/admin/orders") return c.pendingOrders;
   if (href === "/admin/support-tickets") return c.openTickets;
+  if (href === "/admin/properties") return c.pendingProperties;
   return 0;
 }
 

@@ -11,7 +11,7 @@ import {
   requestsTable,
   servicesTable,
 } from "@workspace/db";
-import { supportTicketsTable, regionsTable, citiesTable } from "@workspace/db/schema";
+import { supportTicketsTable, regionsTable, citiesTable, propertiesTable } from "@workspace/db/schema";
 import { eq, desc, and, sql, gte, or } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
 
@@ -42,6 +42,10 @@ router.get("/admin/sidebar-counts", async (_req, res) => {
       .select({ openTickets: sql<number>`count(*)::int` })
       .from(supportTicketsTable)
       .where(eq(supportTicketsTable.status, "Pending"));
+    const [{ pendingProperties } = { pendingProperties: 0 }] = await db
+      .select({ pendingProperties: sql<number>`count(*)::int` })
+      .from(propertiesTable)
+      .where(eq(propertiesTable.status, "pending"));
     res.json({
       success: true,
       data: {
@@ -49,6 +53,7 @@ router.get("/admin/sidebar-counts", async (_req, res) => {
         suspendedUsers: suspendedUsers ?? 0,
         pendingOrders: pendingOrders ?? 0,
         openTickets: openTickets ?? 0,
+        pendingProperties: pendingProperties ?? 0,
       },
     });
   } catch (e) {
