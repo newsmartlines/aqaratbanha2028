@@ -736,14 +736,6 @@ export default function PropertyDetail() {
               </div>
             </div>
 
-            {/* Scroll to top */}
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-border text-sm font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all"
-            >
-              <ChevronLeft className="w-4 h-4 rotate-90" />
-              العودة للأعلى
-            </button>
           </div>
         </div>
 
