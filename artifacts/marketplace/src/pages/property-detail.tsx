@@ -595,7 +595,91 @@ export default function PropertyDetail() {
           {/* ── RIGHT COLUMN ── */}
           <div className="space-y-6">
 
-            {/* ── Agent Info Card (TOP) ── */}
+            {/* ── Price Card (TOP) ── */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <div className="mb-6">
+                <p className="text-xs text-muted-foreground mb-1">السعر</p>
+                <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">جنيه مصري</p>
+                {property.area > 0 && property.priceNum > 0 && (
+                  <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
+                    ≈ {Math.round(property.priceNum / property.area).toLocaleString("ar-EG")} ج.م / م²
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3 mb-6">
+                <div className="flex items-center gap-1 text-amber-500">
+                  {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
+                </div>
+                <span className="text-sm text-muted-foreground">(12 تقييم)</span>
+              </div>
+
+              <div className="space-y-2 mb-6 text-sm">
+                {[
+                  { icon: Home, label: "نوع العقار", value: property.kind },
+                  { icon: MapPin, label: "الموقع", value: property.location },
+                  { icon: TrendingUp, label: "الحالة", value: property.type },
+                  { icon: Eye, label: "المشاهدات", value: "١,٢٤٧ مشاهدة" },
+                  { icon: Clock, label: "تاريخ النشر", value: "منذ ٣ أيام" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
+                    <item.icon className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-semibold text-gray-900 mr-auto truncate">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Phone reveal row — full row is clickable */}
+              {property.agentPhone && (
+                <button
+                  onClick={() => {
+                    if (!phoneRevealed) {
+                      setPhoneRevealed(true);
+                      api.propertyStats.phoneClick(id).catch(() => {});
+                    } else {
+                      window.location.href = `tel:${property.agentPhone}`;
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 mb-3 bg-gray-50 hover:bg-primary/5 rounded-2xl px-4 py-3 border border-gray-200 hover:border-primary/40 transition-all group cursor-pointer"
+                >
+                  <div className="w-9 h-9 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0">
+                    {phoneRevealed
+                      ? <Phone className="w-4 h-4 text-primary" />
+                      : <Eye className="w-4 h-4 text-primary" />}
+                  </div>
+                  <div className="flex-1 text-right">
+                    {phoneRevealed ? (
+                      <span dir="ltr" className="block font-mono text-base font-bold tracking-widest text-gray-900">{property.agentPhone}</span>
+                    ) : (
+                      <>
+                        <span className="block text-xs text-muted-foreground mb-0.5">اضغط لإظهار رقم التليفون</span>
+                        <span dir="ltr" className="block font-mono text-sm font-bold tracking-widest text-gray-500">{property.agentPhone.slice(0, 3) + " *** *** ***"}</span>
+                      </>
+                    )}
+                  </div>
+                  {phoneRevealed && <span className="text-xs text-primary font-semibold">اتصل الآن</span>}
+                </button>
+              )}
+
+              {property.agentWhatsapp && (
+                <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50" asChild>
+                  <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                    <MessageCircle className="w-4 h-4 ml-2" />
+                    واتساب
+                  </a>
+                </Button>
+              )}
+              {!property.agentPhone && !property.agentWhatsapp && (
+                <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
+                  <Phone className="w-4 h-4 ml-2" />
+                  تواصل مع المعلن
+                </Button>
+              )}
+            </div>
+
+            {/* ── Agent Info Card ── */}
             {(property.agentName || property.agentCity) && (
               <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
                 {/* Header strip */}
@@ -680,90 +764,6 @@ export default function PropertyDetail() {
                 </div>
               </div>
             )}
-
-            {/* Price Card */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-              <div className="mb-6">
-                <p className="text-xs text-muted-foreground mb-1">السعر</p>
-                <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">جنيه مصري</p>
-                {property.area > 0 && property.priceNum > 0 && (
-                  <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
-                    ≈ {Math.round(property.priceNum / property.area).toLocaleString("ar-EG")} ج.م / م²
-                  </p>
-                )}
-              </div>
-
-              <div className="flex gap-3 mb-6">
-                <div className="flex items-center gap-1 text-amber-500">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
-                </div>
-                <span className="text-sm text-muted-foreground">(12 تقييم)</span>
-              </div>
-
-              <div className="space-y-2 mb-6 text-sm">
-                {[
-                  { icon: Home, label: "نوع العقار", value: property.kind },
-                  { icon: MapPin, label: "الموقع", value: property.location },
-                  { icon: TrendingUp, label: "الحالة", value: property.type },
-                  { icon: Eye, label: "المشاهدات", value: "١,٢٤٧ مشاهدة" },
-                  { icon: Clock, label: "تاريخ النشر", value: "منذ ٣ أيام" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
-                    <item.icon className="w-4 h-4 text-primary shrink-0" />
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-semibold text-gray-900 mr-auto truncate">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Phone reveal row — full row is clickable */}
-              {property.agentPhone && (
-                <button
-                  onClick={() => {
-                    if (!phoneRevealed) {
-                      setPhoneRevealed(true);
-                      api.propertyStats.phoneClick(id).catch(() => {});
-                    } else {
-                      window.location.href = `tel:${property.agentPhone}`;
-                    }
-                  }}
-                  className="w-full flex items-center gap-3 mb-3 bg-gray-50 hover:bg-primary/5 rounded-2xl px-4 py-3 border border-gray-200 hover:border-primary/40 transition-all group cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0">
-                    {phoneRevealed
-                      ? <Phone className="w-4 h-4 text-primary" />
-                      : <Eye className="w-4 h-4 text-primary" />}
-                  </div>
-                  <div className="flex-1 text-right">
-                    {phoneRevealed ? (
-                      <span dir="ltr" className="block font-mono text-base font-bold tracking-widest text-gray-900">{property.agentPhone}</span>
-                    ) : (
-                      <>
-                        <span className="block text-xs text-muted-foreground mb-0.5">اضغط لإظهار رقم التليفون</span>
-                        <span dir="ltr" className="block font-mono text-sm font-bold tracking-widest text-gray-500">{property.agentPhone.slice(0, 3) + " *** *** ***"}</span>
-                      </>
-                    )}
-                  </div>
-                  {phoneRevealed && <span className="text-xs text-primary font-semibold">اتصل الآن</span>}
-                </button>
-              )}
-
-              {property.agentWhatsapp && (
-                <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50" asChild>
-                  <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                    <MessageCircle className="w-4 h-4 ml-2" />
-                    واتساب
-                  </a>
-                </Button>
-              )}
-              {!property.agentPhone && !property.agentWhatsapp && (
-                <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
-                  <Phone className="w-4 h-4 ml-2" />
-                  تواصل مع المعلن
-                </Button>
-              )}
-            </div>
 
             {/* Safety Tips Card */}
             <div className="bg-white rounded-3xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm">

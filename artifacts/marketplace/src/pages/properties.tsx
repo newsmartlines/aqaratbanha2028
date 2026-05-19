@@ -13,7 +13,7 @@ import {
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
   LayoutList, Scale, GitCompare, Eye, Clock,
 } from "lucide-react";
-import { api, type Category, type Area } from "@/lib/api";
+import { api, type Category, type Area, type Subcategory } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 import { useAuth } from "@/lib/auth-context";
@@ -199,6 +199,7 @@ export default function PropertiesPage() {
   const [search, setSearch] = useState(initParams.q);
   const [selectedType, setSelectedType] = useState<string | null>(initParams.type);
   const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
+  const [selectedSubKind, setSelectedSubKind] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(initParams.city);
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(initParams.district);
   const [selectedFinishing, setSelectedFinishing] = useState<string | null>(null);
@@ -226,6 +227,14 @@ export default function PropertiesPage() {
   const { data: reCategories = [] } = useQuery<Category[]>({
     queryKey: ["re-categories"],
     queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const selectedCatObj = reCategories.find((c) => (c.slug ?? String(c.id)) === selectedKind);
+  const { data: subCategories = [] } = useQuery<Subcategory[]>({
+    queryKey: ["re-subcategories", selectedCatObj?.id],
+    queryFn: () => api.subcategories.listByCategory(selectedCatObj!.id),
+    enabled: !!selectedCatObj,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -288,7 +297,8 @@ export default function PropertiesPage() {
     let list = allProps.filter((p) => {
       if (search && !p.title.includes(search) && !p.location.includes(search)) return false;
       if (selectedType && p.type !== selectedType) return false;
-      if (selectedKind && p.kind !== selectedKind) return false;
+      if (selectedKind && !selectedSubKind && p.kind !== selectedKind) return false;
+      if (selectedSubKind && p.kind !== selectedSubKind) return false;
       if (selectedCity && !p.location.includes(selectedCity)) return false;
       if (selectedDistrict && p.district !== selectedDistrict && !p.location.includes(selectedDistrict)) return false;
       if (selectedFinishing && p.finishing !== selectedFinishing) return false;
@@ -309,12 +319,12 @@ export default function PropertiesPage() {
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.priceNum - a.priceNum);
     if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
     return list;
-  }, [allProps, search, selectedType, selectedKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedPrice, selectedArea, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedPrice, selectedArea, sortBy]);
 
-  const activeCount = [selectedType, selectedKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds !== null ? 1 : null, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
+  const activeCount = [selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds !== null ? 1 : null, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
 
   const clearAll = () => {
-    setSelectedType(null); setSelectedKind(null); setSelectedCity(null); setSelectedDistrict(null);
+    setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistrict(null);
     setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
     setSelectedBeds(null); setSelectedPrice(null); setSelectedArea(null); setSearch("");
   };
@@ -523,15 +533,35 @@ export default function PropertiesPage() {
                             key={slug}
                             label={c.nameAr}
                             active={selectedKind === slug}
-                            onClick={() => setSelectedKind(selectedKind === slug ? null : slug)}
+                            onClick={() => {
+                              const next = selectedKind === slug ? null : slug;
+                              setSelectedKind(next);
+                              setSelectedSubKind(null);
+                            }}
                           />
                         );
                       })
                     : KINDS.map((k) => (
-                        <Chip key={k} label={k} active={selectedKind === k} onClick={() => setSelectedKind(selectedKind === k ? null : k)} />
+                        <Chip key={k} label={k} active={selectedKind === k} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
                       ))
                   }
                 </div>
+                {/* Subcategory chips — appear when a main category is selected */}
+                {selectedKind && subCategories.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-xs text-gray-400 mb-2 font-semibold">تخصيص أكثر:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {subCategories.map((s) => (
+                        <Chip
+                          key={s.id}
+                          label={s.nameAr}
+                          active={selectedSubKind === s.nameAr}
+                          onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </FilterSection>
 
               {/* Price Range */}
@@ -570,7 +600,7 @@ export default function PropertiesPage() {
               </FilterSection>
 
               {/* Area */}
-              <FilterSection title="المساحة" defaultOpen={false}>
+              <FilterSection title="المساحة" defaultOpen={true}>
                 <div className="flex flex-col gap-2">
                   {AREA_RANGES.map((r, i) => (
                     <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
@@ -612,7 +642,7 @@ export default function PropertiesPage() {
               )}
 
               {/* Finishing / التشطيب */}
-              <FilterSection title="التشطيب" defaultOpen={false}>
+              <FilterSection title="التشطيب" defaultOpen={true}>
                 <div className="flex flex-wrap gap-2">
                   {["سوبر لوكس", "لوكس", "عادي", "نص تشطيب", "بدون تشطيب"].map((v) => (
                     <Chip key={v} label={v} active={selectedFinishing === v} onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
@@ -621,7 +651,7 @@ export default function PropertiesPage() {
               </FilterSection>
 
               {/* Furnished / التأثيث */}
-              <FilterSection title="التأثيث" defaultOpen={false}>
+              <FilterSection title="التأثيث" defaultOpen={true}>
                 <div className="flex flex-wrap gap-2">
                   {["مفروش بالكامل", "نص تشطيب", "غير مفروش"].map((v) => (
                     <Chip key={v} label={v} active={selectedFurnished === v} onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
@@ -630,7 +660,7 @@ export default function PropertiesPage() {
               </FilterSection>
 
               {/* Payment / نظام الدفع */}
-              <FilterSection title="نظام الدفع" defaultOpen={false}>
+              <FilterSection title="نظام الدفع" defaultOpen={true}>
                 <div className="flex flex-wrap gap-2">
                   {["كاش", "تقسيط", "كاش أو تقسيط"].map((v) => (
                     <Chip key={v} label={v} active={selectedPayment === v} onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
@@ -665,8 +695,13 @@ export default function PropertiesPage() {
                   </span>
                 )}
                 {selectedKind && (
-                  <span onClick={() => setSelectedKind(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
-                    {selectedKind} <X className="w-3 h-3" />
+                  <span onClick={() => { setSelectedKind(null); setSelectedSubKind(null); }} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedCatObj?.nameAr ?? selectedKind} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedSubKind && (
+                  <span onClick={() => setSelectedSubKind(null)} className="inline-flex items-center gap-1 bg-teal-100 text-teal-700 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-teal-200">
+                    {selectedSubKind} <X className="w-3 h-3" />
                   </span>
                 )}
                 {selectedCity && (
