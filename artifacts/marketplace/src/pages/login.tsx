@@ -314,12 +314,12 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
       {/* ── Split-screen content ── */}
       <div className="flex flex-1">
       {/* Left Decorative Panel */}
-      <div className="hidden lg:flex w-[40%] bg-primary relative flex-col justify-center items-center text-primary-foreground p-12 overflow-hidden">
+      <div className="hidden lg:flex w-[40%] relative flex-col justify-center items-center text-white p-12 overflow-hidden" style={{background: 'linear-gradient(135deg, #12B5D0 0%, #0E8CB5 50%, #0060A0 100%)'}}>
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
         <div className="relative z-10 text-center flex flex-col items-center">
           <Link href="/" className="flex items-center gap-3 mb-8 cursor-pointer hover:opacity-90 transition-opacity">
             <div className="w-14 h-14 rounded-2xl bg-background flex items-center justify-center text-primary font-bold text-3xl shadow-lg">✦</div>
-            <span className="font-bold text-5xl tracking-tight text-primary-foreground">عقارات بنها</span>
+            <span className="font-bold text-5xl tracking-tight text-white">عقارات بنها</span>
           </Link>
           <h1 className="text-3xl font-bold leading-tight mb-4 max-w-sm">اعثر على عقارك المثالي في بنها والقليوبية</h1>
           <p className="text-primary-foreground/80 text-lg max-w-sm">بيع وشراء وإيجار العقارات مع خدمات التشطيبات والديكور ومواد البناء.</p>
