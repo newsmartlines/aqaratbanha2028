@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   MessageCircle, X, Send, Bot, User, BedDouble, Bath,
   Maximize2, MapPin, ChevronRight, Sparkles, RefreshCw,
 } from "lucide-react";
+import { api, type SiteSettings } from "@/lib/api";
 
 type Property = {
   id: number;
@@ -30,19 +32,19 @@ type Message = {
   time: Date;
 };
 
-const QUICK_REPLIES = [
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80";
+const TYPE_LABELS: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
+
+// ── Default values (overridden by DB settings) ───────────────────────────────
+const DEFAULT_BOT_NAME = "مساعد عقارات بنها";
+const DEFAULT_WELCOME =
+  "أهلاً! أنا مساعدك الذكي لعقارات بنها 🏠\nأخبرني إيه اللي بتدور عليه — نوع العقار، المنطقة، السعر، أو عدد الغرف — وأنا هجيبلك أفضل الخيارات من قاعدة البيانات!";
+const DEFAULT_QUICK_REPLIES = [
   "شقة للبيع في بنها",
   "أرض للبيع",
   "شقة للإيجار",
   "فيلا للبيع",
 ];
-
-const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80";
-
-const TYPE_LABELS: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
-const KIND_LABELS: Record<string, string> = {
-  residential: "سكني", commercial: "تجاري", land: "أراضي",
-};
 
 function PropertyCard({ p }: { p: Property }) {
   const [, setLocation] = useLocation();
@@ -127,21 +129,53 @@ function TypingIndicator() {
   );
 }
 
-const WELCOME_MSG: Message = {
-  id: "welcome",
-  role: "bot",
-  text: "أهلاً! أنا مساعدك الذكي لعقارات بنها 🏠\nأخبرني إيه اللي بتدور عليه — نوع العقار، المنطقة، السعر، أو عدد الغرف — وأنا هجيبلك أفضل الخيارات من قاعدة البيانات!",
-  time: new Date(),
-};
-
 export default function AiChat() {
+  // ── Load settings from backend ──────────────────────────────────────────
+  const { data: settings } = useQuery<SiteSettings>({
+    queryKey: ["site-settings"],
+    queryFn: api.settings.list,
+    staleTime: 60_000,
+  });
+
+  const s = settings as any;
+  const chatEnabled = s?.chatbotEnabled !== "false";
+  const botName = s?.chatbotBotName || DEFAULT_BOT_NAME;
+  const welcomeText = s?.chatbotWelcomeMessage || DEFAULT_WELCOME;
+  const quickReplies: string[] = (() => {
+    try {
+      const parsed = JSON.parse(s?.chatbotQuickReplies ?? "[]");
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_QUICK_REPLIES;
+    } catch {
+      return DEFAULT_QUICK_REPLIES;
+    }
+  })();
+
+  // Build welcome message from DB settings
+  const welcomeMsg: Message = {
+    id: "welcome",
+    role: "bot",
+    text: welcomeText,
+    time: new Date(),
+  };
+
+  // ── Component state ──────────────────────────────────────────────────────
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
+  const [messages, setMessages] = useState<Message[]>([welcomeMsg]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [unread, setUnread] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Update welcome message when settings load
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length === 1 && prev[0].id === "welcome") {
+        return [{ ...prev[0], text: welcomeText }];
+      }
+      return prev;
+    });
+  }, [welcomeText]);
 
   useEffect(() => {
     if (open) {
@@ -200,9 +234,13 @@ export default function AiChat() {
   };
 
   const reset = () => {
-    setMessages([WELCOME_MSG]);
+    setMessages([welcomeMsg]);
     setInput("");
   };
+
+  // ── Don't render if disabled from admin ──────────────────────────────────
+  // Only hide after settings have loaded (to avoid flash)
+  if (settings !== undefined && !chatEnabled) return null;
 
   return (
     <>
@@ -251,13 +289,17 @@ export default function AiChat() {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-white">مساعد عقارات بنها</p>
+                <p className="text-sm font-bold text-white">{botName}</p>
                 <p className="text-[11px] text-white/70 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-green-300 rounded-full inline-block" />
                   متاح دائماً
                 </p>
               </div>
-              <button onClick={reset} className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors" title="محادثة جديدة">
+              <button
+                onClick={reset}
+                className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                title="محادثة جديدة"
+              >
                 <RefreshCw className="w-4 h-4" />
               </button>
             </div>
@@ -313,10 +355,10 @@ export default function AiChat() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Quick replies (show only after welcome) */}
-            {messages.length <= 1 && (
+            {/* Quick replies (show only when on first message) */}
+            {messages.length <= 1 && quickReplies.length > 0 && (
               <div className="px-3 pb-2 flex flex-wrap gap-1.5 shrink-0">
-                {QUICK_REPLIES.map(qr => (
+                {quickReplies.map(qr => (
                   <button
                     key={qr}
                     onClick={() => sendMessage(qr)}
