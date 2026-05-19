@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LanguageProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { api, mediaUrl, type SiteSettings } from "@/lib/api";
+import { ScrollRestorer, ScrollToTopButton } from "@/components/ScrollToTop";
 
 // ── Site-settings context ───────────────────────────────────────────────────
 export const SiteSettingsContext = createContext<SiteSettings | null>(null);
@@ -411,8 +412,10 @@ function App() {
               <FaviconUpdater />
               <ThemeProvider />
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <ScrollRestorer />
                 <Router />
               </WouterRouter>
+              <ScrollToTopButton />
               <Toaster />
               <HotToaster position="top-center" />
             </TooltipProvider>
