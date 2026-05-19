@@ -828,7 +828,7 @@ export default function PropertiesPage() {
                                 {/* Price + rating */}
                                 <div className="flex items-start justify-between mb-2">
                                   <div>
-                                    <p className="text-primary font-extrabold text-xl leading-none">{p.price}</p>
+                                    <p className="text-gray-900 font-extrabold text-xl leading-none">{p.price}</p>
                                     <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
                                   </div>
                                   <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
@@ -972,7 +972,7 @@ export default function PropertiesPage() {
                               {/* Price */}
                               <div className="flex items-start justify-between mb-1.5">
                                 <div>
-                                  <p className="text-primary font-extrabold text-lg leading-none">{p.price}</p>
+                                  <p className="text-gray-900 font-extrabold text-lg leading-none">{p.price}</p>
                                   <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -1069,7 +1069,7 @@ export default function PropertiesPage() {
                               <img src={p.img} alt={p.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
                             </div>
                             <div className="p-2.5 flex-1 min-w-0">
-                              <p className="text-primary font-extrabold text-sm leading-none mb-0.5">{p.price}</p>
+                              <p className="text-gray-900 font-extrabold text-sm leading-none mb-0.5">{p.price}</p>
                               <p className="font-semibold text-gray-900 text-xs leading-snug mb-1 line-clamp-1">{p.title}</p>
                               <div className="flex items-center gap-1 text-gray-400 text-[10px] mb-1">
                                 <MapPin className="w-2.5 h-2.5 text-primary" /><span className="truncate">{p.location}</span>
@@ -1104,7 +1104,7 @@ export default function PropertiesPage() {
                             <Popup>
                               <div className="text-right min-w-[180px]" dir="rtl" onClick={() => setLocation(`/property/${p.id}`)}>
                                 <img src={p.img} alt={p.title} className="w-full h-20 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
-                                <p className="font-extrabold text-primary text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
+                                <p className="font-extrabold text-gray-900 text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
                                 <p className="font-bold text-gray-900 text-xs mb-0.5">{p.title}</p>
                                 <p className="text-xs text-gray-500">{p.location}</p>
                                 <p className="text-xs text-primary font-semibold mt-1.5 cursor-pointer">عرض التفاصيل ←</p>

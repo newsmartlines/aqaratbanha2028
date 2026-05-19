@@ -110,7 +110,7 @@ function PropCard({ p, liked, onLike, onClick }: {
       <div className="p-4">
         <div className="flex items-start justify-between mb-1.5">
           <div>
-            <p className="text-primary font-extrabold text-lg leading-none">{p.price}</p>
+            <p className="text-gray-900 font-extrabold text-lg leading-none">{p.price}</p>
             <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
           </div>
           <div className="flex items-center gap-1">

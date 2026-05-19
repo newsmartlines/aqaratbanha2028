@@ -288,7 +288,7 @@ export default function AdvertiserPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-primary font-extrabold text-base">{p.price}</p>
+                  <p className="text-gray-900 font-extrabold text-base">{p.price}</p>
                 </div>
               </motion.div>
             ))}

@@ -136,7 +136,7 @@ function PropertyCard({ p, onContact }: { p: Property; onContact: (p: Property) 
       {/* Body */}
       <div className="p-2.5">
         <p className="text-xs font-bold text-gray-900 line-clamp-1 mb-0.5 cursor-pointer hover:text-primary transition-colors leading-tight" onClick={() => setLocation(`/property/${p.id}`)}>{p.title}</p>
-        <p className="text-sm font-extrabold text-primary mb-1.5 leading-none">{p.price}</p>
+        <p className="text-sm font-extrabold text-gray-900 mb-1.5 leading-none">{p.price}</p>
 
         {/* Stats row */}
         <div className="flex items-center gap-2 text-[10px] text-gray-400 mb-2 flex-wrap">
@@ -176,7 +176,7 @@ function MiniPropertyCard({ p }: { p: Property }) {
       <img src={img} alt={p.title} className="w-11 h-11 rounded-xl object-cover shrink-0 group-hover:scale-105 transition-transform" onError={e => { e.currentTarget.src = FALLBACK_IMG; }} />
       <div className="flex-1 min-w-0 text-right">
         <p className="text-xs font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">{p.title}</p>
-        <p className="text-[11px] font-extrabold text-primary">{p.price}</p>
+        <p className="text-[11px] font-extrabold text-gray-900">{p.price}</p>
         {p.location && <p className="text-[10px] text-gray-400 truncate">{p.location}</p>}
       </div>
       <ArrowLeft className="w-3.5 h-3.5 text-gray-300 group-hover:text-primary transition-colors shrink-0" />

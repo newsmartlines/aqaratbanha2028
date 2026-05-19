@@ -188,7 +188,7 @@ function PropCard({ p, active, onClick }: { p: Property; active: boolean; onClic
       {/* Info */}
       <div className="p-2.5" dir="rtl">
         <p className="font-bold text-sm text-foreground truncate">{p.title}</p>
-        <p className="text-primary font-extrabold text-sm mt-0.5">{formatPrice(p.price)}</p>
+        <p className="text-gray-900 font-extrabold text-sm mt-0.5">{formatPrice(p.price)}</p>
         <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground flex-wrap">
           {p.rooms && <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{p.rooms}</span>}
           {p.bathrooms && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{p.bathrooms}</span>}

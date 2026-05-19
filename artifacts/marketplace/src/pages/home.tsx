@@ -1045,7 +1045,7 @@ export default function Home() {
                     <div className="p-5">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <p className="text-primary font-extrabold text-xl leading-none">{priceStr}</p>
+                          <p className="text-gray-900 font-extrabold text-xl leading-none">{priceStr}</p>
                           <p className="text-muted-foreground text-xs mt-0.5">جنيه مصري</p>
                         </div>
                       </div>
@@ -1170,7 +1170,7 @@ export default function Home() {
                   )}
                 </div>
                 <div className="p-3.5">
-                  <p className="text-primary font-extrabold text-base leading-none">{priceStr} <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
+                  <p className="text-gray-900 font-extrabold text-base leading-none">{priceStr} <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
                   <h3 className="font-semibold text-gray-900 text-sm mt-1 mb-1.5 line-clamp-1 group-hover:text-primary transition-colors">{property.title}</h3>
                   <div className="flex items-center gap-1 text-muted-foreground text-xs">
                     <MapPin className="w-3 h-3 text-primary shrink-0" />
