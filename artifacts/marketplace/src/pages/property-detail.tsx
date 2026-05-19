@@ -10,10 +10,11 @@ import {
   BedDouble, Bath, Maximize2, Building2, ArrowLeft, ArrowRight,
   MapPin, Phone, MessageCircle, Share2, Heart, CheckCircle2,
   Star, ChevronLeft, Play, X, Calendar,
-  Layers, Car, Home, TrendingUp, Eye, Clock, Loader2,
+  Layers, Car, Home, TrendingUp, Eye, Clock, Loader2, Scale, ShieldCheck,
 } from "lucide-react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { api } from "@/lib/api";
+import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -127,7 +128,9 @@ export default function PropertyDetail() {
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const [compareMsg, setCompareMsg] = useState<"added" | "already" | "full" | null>(null);
   const viewTracked = useRef(false);
+  const { items: compareItems, isIn: isInCompare } = useCompare();
 
   useEffect(() => {
     if (!id) { setNotFound(true); setLoading(false); return; }
@@ -234,6 +237,57 @@ export default function PropertyDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* Compare button */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  const result = addToCompare({
+                    id: property.id,
+                    title: property.title,
+                    price: property.price,
+                    priceNum: property.priceNum,
+                    image: property.gallery[0],
+                    location: property.location,
+                    beds: property.beds,
+                    baths: property.baths,
+                    area: property.area,
+                    type: property.type,
+                    kind: property.kind,
+                    year: property.year,
+                    finishing: "",
+                  });
+                  setCompareMsg(result);
+                  setTimeout(() => setCompareMsg(null), 2500);
+                }}
+                className={`h-10 px-3 rounded-full border flex items-center gap-1.5 text-sm font-semibold transition-all ${
+                  isInCompare(property.id)
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+                }`}
+              >
+                <Scale className="w-4 h-4" />
+                <span className="hidden sm:inline">مقارنة</span>
+              </button>
+              <AnimatePresence>
+                {compareMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                    className={`absolute top-12 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap text-xs font-bold px-3 py-1.5 rounded-full shadow-md ${
+                      compareMsg === "added" ? "bg-primary text-white" :
+                      compareMsg === "already" ? "bg-amber-500 text-white" :
+                      "bg-red-500 text-white"
+                    }`}
+                  >
+                    {compareMsg === "added" && "✓ أُضيف للمقارنة"}
+                    {compareMsg === "already" && "موجود بالفعل"}
+                    {compareMsg === "full" && "الحد الأقصى 4 عقارات"}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <button
               onClick={() => setLiked(!liked)}
               className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${liked ? "bg-rose-50 border-rose-300 text-rose-500" : "bg-white border-border text-muted-foreground hover:border-rose-300 hover:text-rose-400"}`}
@@ -628,7 +682,7 @@ export default function PropertyDetail() {
             )}
 
             {/* Price Card */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm sticky top-20">
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
               <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-1">السعر</p>
                 <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
@@ -663,35 +717,36 @@ export default function PropertyDetail() {
                 ))}
               </div>
 
-              {/* Phone reveal row */}
+              {/* Phone reveal row — full row is clickable */}
               {property.agentPhone && (
-                <div className="flex items-center gap-2 mb-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200">
-                  <Phone className="w-5 h-5 text-gray-400 shrink-0" />
-                  <span dir="ltr" className="flex-1 text-center font-mono text-base font-bold tracking-widest text-gray-800">
-                    {phoneRevealed
-                      ? property.agentPhone
-                      : (property.agentPhone.slice(0, 3) + " * * * * * * * *")}
-                  </span>
-                  <button
-                    onClick={() => {
-                      if (!phoneRevealed) {
-                        setPhoneRevealed(true);
-                        api.propertyStats.phoneClick(id).catch(() => {});
-                      } else {
-                        window.location.href = `tel:${property.agentPhone}`;
-                      }
-                    }}
-                    className="w-9 h-9 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0"
-                    title={phoneRevealed ? "اتصل الآن" : "أظهر رقم التليفون"}
-                  >
+                <button
+                  onClick={() => {
+                    if (!phoneRevealed) {
+                      setPhoneRevealed(true);
+                      api.propertyStats.phoneClick(id).catch(() => {});
+                    } else {
+                      window.location.href = `tel:${property.agentPhone}`;
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 mb-3 bg-gray-50 hover:bg-primary/5 rounded-2xl px-4 py-3 border border-gray-200 hover:border-primary/40 transition-all group cursor-pointer"
+                >
+                  <div className="w-9 h-9 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0">
                     {phoneRevealed
                       ? <Phone className="w-4 h-4 text-primary" />
                       : <Eye className="w-4 h-4 text-primary" />}
-                  </button>
-                </div>
-              )}
-              {!phoneRevealed && property.agentPhone && (
-                <p className="text-center text-xs text-muted-foreground mb-3">اضغط على الزر لإظهار رقم التليفون</p>
+                  </div>
+                  <div className="flex-1 text-right">
+                    {phoneRevealed ? (
+                      <span dir="ltr" className="block font-mono text-base font-bold tracking-widest text-gray-900">{property.agentPhone}</span>
+                    ) : (
+                      <>
+                        <span className="block text-xs text-muted-foreground mb-0.5">اضغط لإظهار رقم التليفون</span>
+                        <span dir="ltr" className="block font-mono text-sm font-bold tracking-widest text-gray-500">{property.agentPhone.slice(0, 3) + " *** *** ***"}</span>
+                      </>
+                    )}
+                  </div>
+                  {phoneRevealed && <span className="text-xs text-primary font-semibold">اتصل الآن</span>}
+                </button>
               )}
 
               {property.agentWhatsapp && (
@@ -711,8 +766,11 @@ export default function PropertyDetail() {
             </div>
 
             {/* Safety Tips Card */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-              <h3 className="text-base font-extrabold text-gray-900 mb-4 text-right">سلامتك تهمنا</h3>
+            <div className="bg-white rounded-3xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
+                <h3 className="text-base font-extrabold text-gray-900">سلامتك تهمنا</h3>
+              </div>
               <ul className="space-y-3 text-sm text-gray-700 text-right list-none">
                 {[
                   "قابل السمسار أو المالك في مكان معروف وآمن داخل بنها",
@@ -857,6 +915,47 @@ export default function PropertyDetail() {
         )}
       </AnimatePresence>
 
+
+      {/* ── Floating Compare Bar ── */}
+      <AnimatePresence>
+        {compareItems.length > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border shadow-2xl"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-1 overflow-x-auto">
+                <Scale className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-bold text-gray-900 shrink-0">مقارنة ({compareItems.length}/4)</span>
+                <div className="flex items-center gap-2 mr-2">
+                  {compareItems.map(item => (
+                    <div key={item.id} className="flex items-center gap-1.5 bg-primary/8 rounded-xl px-3 py-1.5 shrink-0">
+                      <img src={item.image} alt="" className="w-7 h-7 rounded-lg object-cover" />
+                      <span className="text-xs font-semibold text-gray-800 max-w-[100px] truncate">{item.title}</span>
+                      <button onClick={() => removeFromCompare(item.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  onClick={() => setLocation("/compare")}
+                  disabled={compareItems.length < 2}
+                  className="rounded-xl"
+                >
+                  قارن الآن
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <RealEstateFooter />
     </div>
