@@ -80,32 +80,34 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between" dir="rtl">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <img
-            src="/logo.png"
-            alt="عقارات بنها"
-            className="h-10 w-auto object-contain"
-            onError={e => {
-              e.currentTarget.style.display = "none";
-              if (logoUrl) {
-                const img = document.createElement("img");
-                img.src = mediaUrl(logoUrl);
-                img.className = "h-10 w-auto object-contain rounded";
-                e.currentTarget.parentNode?.appendChild(img);
-              }
-            }}
-          />
-        </Link>
+        {/* Logo + Nav grouped */}
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <img
+              src="/logo.png"
+              alt="عقارات بنها"
+              className="h-10 w-auto object-contain"
+              onError={e => {
+                e.currentTarget.style.display = "none";
+                if (logoUrl) {
+                  const img = document.createElement("img");
+                  img.src = mediaUrl(logoUrl);
+                  img.className = "h-10 w-auto object-contain rounded";
+                  e.currentTarget.parentNode?.appendChild(img);
+                }
+              }}
+            />
+          </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-5">
-          {navLinks.map(l => (
-            <Link key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-6">
+            {navLinks.map(l => (
+              <Link key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-2">
