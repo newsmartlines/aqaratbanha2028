@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import {
   propertiesTable, propertyFavoritesTable, savedSearchesTable,
-  notificationsTable, usersTable, siteSettingsTable,
+  notificationsTable, usersTable, siteSettingsTable, providersTable,
 } from "@workspace/db";
 import { eq, desc, and, or, ilike, sql } from "drizzle-orm";
 import { getSession } from "./auth";
@@ -201,7 +201,52 @@ router.get("/properties/:id", async (req, res) => {
     const id = parseInt(req.params.id);
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!property) return res.status(404).json({ success: false, error: "Not found" });
-    res.json({ success: true, data: property });
+
+    let agentName = "";
+    let agentAvatar = "";
+    let agentLogo = "";
+    let agentCity = "";
+    let agentDistrict = "";
+    let agentMemberSince: string | null = null;
+    let providerIdForAgent: number | null = property.providerId;
+
+    try {
+      const [prov] = await db.select({
+        id: providersTable.id,
+        avatar: providersTable.avatar,
+        logo: providersTable.logo,
+        city: providersTable.city,
+        district: providersTable.district,
+        createdAt: providersTable.createdAt,
+        userId: providersTable.userId,
+      }).from(providersTable).where(eq(providersTable.id, property.providerId));
+
+      if (prov) {
+        agentAvatar = prov.avatar ?? "";
+        agentLogo = prov.logo ?? "";
+        agentCity = prov.city ?? "";
+        agentDistrict = prov.district ?? "";
+        agentMemberSince = prov.createdAt?.toISOString() ?? null;
+
+        const [usr] = await db.select({ name: usersTable.name })
+          .from(usersTable).where(eq(usersTable.id, prov.userId));
+        if (usr) agentName = usr.name ?? "";
+      }
+    } catch {}
+
+    res.json({
+      success: true,
+      data: {
+        ...property,
+        agentName,
+        agentAvatar,
+        agentLogo,
+        agentCity,
+        agentDistrict,
+        agentMemberSince,
+        providerId: providerIdForAgent,
+      },
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to fetch property" });
   }

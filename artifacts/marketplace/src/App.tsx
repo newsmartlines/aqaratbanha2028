@@ -71,6 +71,7 @@ import AdminEmailTemplates from "@/pages/admin/email-templates";
 import AdminMessages from "@/pages/admin/messages";
 import AdminPlansCommissions from "@/pages/admin/plans-commissions";
 import PropertyDetail from "@/pages/property-detail";
+import AdvertiserPage from "@/pages/advertiser";
 import PropertiesPage from "@/pages/properties";
 import ServicesPage from "@/pages/services";
 import CategoriesPage from "@/pages/categories";
@@ -187,6 +188,7 @@ function Router() {
       <Route path="/map-search" component={MapSearchPage} />
       <Route path="/properties" component={PropertiesPage} />
       <Route path="/property/:id" component={PropertyDetail} />
+      <Route path="/advertiser/:id" component={AdvertiserPage} />
       <Route path="/services">
         {() => <ServicesGate component={ServicesPage} />}
       </Route>

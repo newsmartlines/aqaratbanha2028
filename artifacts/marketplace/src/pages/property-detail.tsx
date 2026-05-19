@@ -60,6 +60,13 @@ type PropertyView = {
   agentPhone: string;
   agentWhatsapp: string;
   mainCategory: string;
+  agentName: string;
+  agentAvatar: string;
+  agentLogo: string;
+  agentCity: string;
+  agentDistrict: string;
+  agentMemberSince: string | null;
+  providerId: number | null;
 };
 
 function mapDbToView(p: Record<string, unknown>): PropertyView {
@@ -93,6 +100,13 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     agentPhone: (p.phone as string) ?? "",
     agentWhatsapp: (p.whatsapp as string) ?? "",
     mainCategory: (p.mainCategory as string) ?? "",
+    agentName: (p.agentName as string) ?? "",
+    agentAvatar: (p.agentAvatar as string) ?? "",
+    agentLogo: (p.agentLogo as string) ?? "",
+    agentCity: (p.agentCity as string) ?? "",
+    agentDistrict: (p.agentDistrict as string) ?? "",
+    agentMemberSince: (p.agentMemberSince as string) ?? null,
+    providerId: (p.providerId as number) ?? null,
   };
 }
 
@@ -112,6 +126,7 @@ export default function PropertyDetail() {
   const [showVideo, setShowVideo] = useState(false);
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const viewTracked = useRef(false);
 
   useEffect(() => {
@@ -561,15 +576,37 @@ export default function PropertyDetail() {
                 ))}
               </div>
 
+              {/* Phone reveal row */}
               {property.agentPhone && (
-                <Button
-                  className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20"
-                  onClick={() => { api.propertyStats.phoneClick(id).catch(() => {}); window.location.href = `tel:${property.agentPhone}`; }}
-                >
-                  <Phone className="w-4 h-4 ml-2" />
-                  اتصل الآن
-                </Button>
+                <div className="flex items-center gap-2 mb-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200">
+                  <Phone className="w-5 h-5 text-gray-400 shrink-0" />
+                  <span dir="ltr" className="flex-1 text-center font-mono text-base font-bold tracking-widest text-gray-800">
+                    {phoneRevealed
+                      ? property.agentPhone
+                      : (property.agentPhone.slice(0, 3) + " * * * * * * * *")}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (!phoneRevealed) {
+                        setPhoneRevealed(true);
+                        api.propertyStats.phoneClick(id).catch(() => {});
+                      } else {
+                        window.location.href = `tel:${property.agentPhone}`;
+                      }
+                    }}
+                    className="w-9 h-9 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0"
+                    title={phoneRevealed ? "اتصل الآن" : "أظهر رقم التليفون"}
+                  >
+                    {phoneRevealed
+                      ? <Phone className="w-4 h-4 text-primary" />
+                      : <Eye className="w-4 h-4 text-primary" />}
+                  </button>
+                </div>
               )}
+              {!phoneRevealed && property.agentPhone && (
+                <p className="text-center text-xs text-muted-foreground mb-3">اضغط على الزر لإظهار رقم التليفون</p>
+              )}
+
               {property.agentWhatsapp && (
                 <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50" asChild>
                   <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
@@ -585,6 +622,70 @@ export default function PropertyDetail() {
                 </Button>
               )}
             </div>
+
+            {/* Agent Info Card */}
+            {(property.agentName || property.agentCity) && (
+              <div className="bg-white rounded-3xl border border-border p-5 shadow-sm">
+                {/* Avatar + Name */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="relative shrink-0">
+                    {(property.agentAvatar || property.agentLogo) ? (
+                      <img
+                        src={property.agentAvatar || property.agentLogo}
+                        alt={property.agentName}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-primary/20"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(property.agentName)}&background=0d9488&color=fff&size=56`; }}
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-xl font-extrabold text-primary">
+                        {property.agentName ? property.agentName[0] : "م"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-extrabold text-gray-900 text-base leading-tight truncate">{property.agentName || "المعلن"}</p>
+                    {property.agentMemberSince && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        عضو منذ:{" "}
+                        {(() => {
+                          const months = Math.max(1, Math.round((Date.now() - new Date(property.agentMemberSince).getTime()) / (1000 * 60 * 60 * 24 * 30)));
+                          return months < 12 ? `${months} شهر` : `${Math.round(months / 12)} سنة`;
+                        })()}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">نوع الحساب: <span className="font-medium text-gray-700">قطاع الأعمال</span></p>
+                  </div>
+                </div>
+
+                {/* Online status */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-2 h-2 rounded-full bg-gray-400 shrink-0" />
+                  <span className="text-xs text-gray-500">المستخدم غير متصل</span>
+                </div>
+
+                {/* Location */}
+                {(property.agentCity || property.agentDistrict) && (
+                  <div className="flex items-start gap-2 mb-4">
+                    <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-700">
+                      {[property.agentCity, property.agentDistrict].filter(Boolean).join(" ـ ")}
+                    </span>
+                  </div>
+                )}
+
+                {/* View all listings */}
+                {property.providerId && (
+                  <a
+                    href={`/advertiser/${property.providerId}`}
+                    onClick={(e) => { e.preventDefault(); setLocation(`/advertiser/${property.providerId}`); }}
+                    className="text-primary text-sm font-bold hover:underline flex items-center gap-1"
+                  >
+                    شاهد كل إعلاناتي
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Safety Tips Card */}
             <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
