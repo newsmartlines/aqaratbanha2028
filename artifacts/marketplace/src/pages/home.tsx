@@ -830,19 +830,20 @@ export default function Home() {
                   })()}
                 </AnimatePresence>
 
-                {/* Region */}
-                <div className="md:w-32">
+                {/* City — dynamic from admin regions */}
+                <div className="md:w-36">
                   <Select
-                    value={heroAreaName ?? "__all_areas__"}
-                    onValueChange={v => setHeroAreaName(v === "__all_areas__" ? null : v)}
+                    value={heroCityName ?? "__all__"}
+                    onValueChange={v => setHeroCityName(v === "__all__" ? null : v)}
                   >
                     <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
                       <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                      <SelectValue placeholder="المنطقة" />
+                      <SelectValue placeholder="كل المدن" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__all_areas__">كل المناطق</SelectItem>
-                      {banhaAreas.map(a => <SelectItem key={a.id} value={a.nameAr}>{a.nameAr}</SelectItem>)}
+                      {heroCityOptions.map(o => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
