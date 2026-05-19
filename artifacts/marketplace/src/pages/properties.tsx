@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type DbProp = {
   id: number;
@@ -220,6 +221,7 @@ export default function PropertiesPage() {
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
   const [saveSearchName, setSaveSearchName] = useState("بحث محفوظ");
   const [saveSearchEmail, setSaveSearchEmail] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { items: compareItems, isIn: isInCompare } = useCompare();
@@ -352,7 +354,7 @@ export default function PropertiesPage() {
       <Header />
 
       {/* ── Top Search Bar (Dubizzle-style) ── */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-16 z-30">
         <div className="container mx-auto px-4 py-4">
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
@@ -408,6 +410,15 @@ export default function PropertiesPage() {
             >
               <Bell className="w-4 h-4" />
               حفظ البحث
+            </button>
+
+            {/* Mobile filter button — shown on tablet/mobile only */}
+            <button
+              onClick={() => setMobileFiltersOpen(true)}
+              className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary flex items-center gap-1.5 transition-all lg:hidden whitespace-nowrap"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              فلاتر{activeCount > 0 && ` (${activeCount})`}
             </button>
 
             {/* View toggle */}
@@ -481,15 +492,15 @@ export default function PropertiesPage() {
 
       {/* ── Main Layout ── */}
       <div className="container mx-auto px-4 py-6">
-        <div className="flex gap-6 items-start">
+        <div className="flex gap-6">
 
           {/* ═══════════════════════════════════════
               RIGHT SIDEBAR — Filters (Dubizzle style)
           ═══════════════════════════════════════ */}
           <aside className="w-64 shrink-0 hidden lg:block">
             <div
-              className="bg-white rounded-2xl border border-gray-200 shadow-sm sticky top-20 flex flex-col overflow-hidden"
-              style={{ maxHeight: "calc(100vh - 5.5rem)" }}
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden"
+              style={{ position: "sticky", top: "9.5rem", height: "calc(100vh - 9.5rem)" }}
             >
               {/* Header — pinned, never scrolls */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
@@ -688,7 +699,7 @@ export default function PropertiesPage() {
           {/* ═══════════════════════════════════════
               LEFT — Results
           ═══════════════════════════════════════ */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 results-scroll-area">
             {/* Results header */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1110,6 +1121,154 @@ export default function PropertiesPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Mobile Filters Sheet ── */}
+      <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+        <SheetContent side="right" className="w-80 max-w-full p-0 flex flex-col overflow-hidden" dir="rtl">
+          <SheetHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
+            <SheetTitle className="flex items-center gap-2 text-sm font-extrabold text-gray-900 m-0">
+              <SlidersHorizontal className="w-4 h-4 text-primary" />
+              الفلاتر
+              {activeCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">{activeCount}</span>
+              )}
+            </SheetTitle>
+            {activeCount > 0 && (
+              <button onClick={clearAll} className="text-xs text-primary hover:underline font-semibold">مسح الكل</button>
+            )}
+          </SheetHeader>
+
+          <div className="filters-scroll-area flex-1 overflow-y-auto px-5 pt-4 pb-5">
+            {/* Transaction Type */}
+            <FilterSection title="نوع الصفقة">
+              <div className="flex flex-col gap-2">
+                {TYPES.map((t) => (
+                  <label key={t} className="flex items-center gap-2.5 cursor-pointer group">
+                    <div onClick={() => setSelectedType(selectedType === t ? null : t)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedType === t ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                      {selectedType === t && <div className="w-2 h-2 rounded-sm bg-white" />}
+                    </div>
+                    <span onClick={() => setSelectedType(selectedType === t ? null : t)} className={`text-sm transition-colors ${selectedType === t ? "text-primary font-semibold" : "text-gray-600"}`}>{t}</span>
+                  </label>
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* Property Kind */}
+            <FilterSection title="نوع العقار">
+              <div className="flex flex-wrap gap-2">
+                {reCategories.length > 0
+                  ? reCategories.map((c) => {
+                      const slug = c.slug ?? String(c.id);
+                      return <Chip key={slug} label={c.nameAr} active={selectedKind === slug} onClick={() => { const next = selectedKind === slug ? null : slug; setSelectedKind(next); setSelectedSubKind(null); }} />;
+                    })
+                  : KINDS.map((k) => <Chip key={k} label={k} active={selectedKind === k} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />)
+                }
+              </div>
+              {selectedKind && subCategories.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 mb-2 font-semibold">تخصيص أكثر:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {subCategories.map((s) => <Chip key={s.id} label={s.nameAr} active={selectedSubKind === s.nameAr} onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)} />)}
+                  </div>
+                </div>
+              )}
+            </FilterSection>
+
+            {/* Price Range */}
+            <FilterSection title="نطاق السعر (جنيه)">
+              <div className="flex flex-col gap-2">
+                {PRICE_RANGES.map((r, i) => (
+                  <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
+                    <div onClick={() => setSelectedPrice(selectedPrice === i ? null : i)} className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedPrice === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                      {selectedPrice === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <span onClick={() => setSelectedPrice(selectedPrice === i ? null : i)} className={`text-sm transition-colors ${selectedPrice === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
+                  </label>
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* Bedrooms */}
+            <FilterSection title="عدد غرف النوم">
+              <div className="flex flex-wrap gap-1.5">
+                {BEDS_OPTIONS.map((b) => (
+                  <button key={b} onClick={() => setSelectedBeds(selectedBeds === b ? null : b)} className={`w-10 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBeds === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>{b}+</button>
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* Area */}
+            <FilterSection title="المساحة" defaultOpen={true}>
+              <div className="flex flex-col gap-2">
+                {AREA_RANGES.map((r, i) => (
+                  <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
+                    <div onClick={() => setSelectedArea(selectedArea === i ? null : i)} className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedArea === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                      {selectedArea === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <span onClick={() => setSelectedArea(selectedArea === i ? null : i)} className={`text-sm transition-colors ${selectedArea === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
+                  </label>
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* District */}
+            {banhaAreas.length > 0 && (
+              <FilterSection title="المنطقة">
+                <div className="flex flex-col gap-2">
+                  {banhaAreas.map((a) => (
+                    <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
+                      <div onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                        {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
+                      </div>
+                      <span onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)} className={`text-sm transition-colors ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
+                    </label>
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* Finishing */}
+            <FilterSection title="التشطيب" defaultOpen={true}>
+              <div className="flex flex-wrap gap-2">
+                {["سوبر لوكس", "لوكس", "عادي", "نص تشطيب", "بدون تشطيب"].map((v) => (
+                  <Chip key={v} label={v} active={selectedFinishing === v} onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* Furnished */}
+            <FilterSection title="التأثيث" defaultOpen={true}>
+              <div className="flex flex-wrap gap-2">
+                {["مفروش بالكامل", "نص تشطيب", "غير مفروش"].map((v) => (
+                  <Chip key={v} label={v} active={selectedFurnished === v} onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* Payment */}
+            <FilterSection title="نظام الدفع" defaultOpen={true}>
+              <div className="flex flex-wrap gap-2">
+                {["كاش", "تقسيط", "كاش أو تقسيط"].map((v) => (
+                  <Chip key={v} label={v} active={selectedPayment === v} onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
+                ))}
+              </div>
+            </FilterSection>
+          </div>
+
+          {/* Mobile Sheet footer */}
+          <div className="shrink-0 px-5 pt-3 pb-5 border-t border-gray-100 flex gap-2">
+            {activeCount > 0 && (
+              <Button onClick={() => { clearAll(); }} variant="outline" className="flex-1 rounded-xl text-sm border-primary/30 text-primary hover:bg-primary/5">
+                <X className="w-3.5 h-3.5 ml-1" />
+                مسح الفلاتر
+              </Button>
+            )}
+            <Button onClick={() => setMobileFiltersOpen(false)} className="flex-1 rounded-xl text-sm bg-primary hover:bg-primary/90 text-white">
+              عرض {filtered.length} عقار
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* ── Stats Strip ── */}
       <div className="bg-white border-t border-gray-200 mt-10 py-8">

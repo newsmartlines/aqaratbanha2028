@@ -2,18 +2,40 @@
 @import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
 
-/* ── Scroll-isolated sidebar (filters panel) ─────────────────────── */
+/* ── Scroll-isolated filters sidebar ────────────────────────────── */
 .filters-scroll-area {
   overscroll-behavior: contain;
   scroll-behavior: smooth;
-  /* hide scrollbar — Firefox */
   scrollbar-width: none;
-  /* hide scrollbar — IE / Edge legacy */
   -ms-overflow-style: none;
 }
-/* hide scrollbar — WebKit (Chrome, Safari, new Edge) */
 .filters-scroll-area::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Results area — smooth, isolated overscroll ──────────────────── */
+.results-scroll-area {
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+}
+/* thin styled scrollbar for results (visible but minimal) */
+.results-scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+.results-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.results-scroll-area::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 99px;
+}
+.results-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+/* Firefox */
+.results-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 }
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
