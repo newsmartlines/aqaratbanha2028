@@ -1,6 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 @import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
+
+/* ── Scroll-isolated sidebar (filters panel) ─────────────────────── */
+.filters-scroll-area {
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  /* hide scrollbar — Firefox */
+  scrollbar-width: none;
+  /* hide scrollbar — IE / Edge legacy */
+  -ms-overflow-style: none;
+}
+/* hide scrollbar — WebKit (Chrome, Safari, new Edge) */
+.filters-scroll-area::-webkit-scrollbar {
+  display: none;
+}
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 

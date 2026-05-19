@@ -487,9 +487,12 @@ export default function PropertiesPage() {
               RIGHT SIDEBAR — Filters (Dubizzle style)
           ═══════════════════════════════════════ */}
           <aside className="w-64 shrink-0 hidden lg:block">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sticky top-20">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-5">
+            <div
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm sticky top-20 flex flex-col overflow-hidden"
+              style={{ maxHeight: "calc(100vh - 5.5rem)" }}
+            >
+              {/* Header — pinned, never scrolls */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
                 <div className="flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-primary" />
                   <span className="font-extrabold text-gray-900 text-sm">الفلاتر</span>
@@ -501,6 +504,9 @@ export default function PropertiesPage() {
                   <button onClick={clearAll} className="text-xs text-primary hover:underline font-semibold">مسح الكل</button>
                 )}
               </div>
+
+              {/* Scrollable filter body — isolated from page scroll */}
+              <div className="filters-scroll-area flex-1 overflow-y-auto px-5 pt-4 pb-5">
 
               {/* Transaction Type */}
               <FilterSection title="نوع الصفقة">
@@ -675,6 +681,7 @@ export default function PropertiesPage() {
                   إزالة كل الفلاتر
                 </Button>
               )}
+              </div>{/* end .filters-scroll-area */}
             </div>
           </aside>
 
