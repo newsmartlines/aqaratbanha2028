@@ -1,0 +1,110 @@
+اعمل صفحة وإدارة كاملة للـ SEO داخل لوحة تحكم الأدمن الرئيسية، وأضف لينك جديد في الـ Navbar باسم SEO Management أو إدارة السيو.
+المطلوب يكون احترافي جدًا وحديث ويدعم التحكم اليدوي + التلقائي بالكامل.
+
+المطلوب الأساسي:
+نظام SEO ذكي وأوتوماتيك بالكامل لأي عقار يتم إضافته.
+بمجرد إضافة أي عقار جديد:
+يتولد تلقائيًا:
+Meta Title
+Meta Description
+Slug URL
+Open Graph Tags
+Twitter Cards
+Keywords
+Structured Data Schema JSON-LD
+يعتمد على:
+عنوان العقار
+المدينة
+نوع العقار
+السعر
+الوصف
+المميزات والصور
+لو المستخدم لم يكتب وصف:
+النظام يولد Description احترافي تلقائي.
+تحسين تلقائي للصور:
+ALT Text
+Image Title
+Lazy Loading
+WebP Support
+توليد Sitemap تلقائي وتحديثه مع أي عقار جديد.
+إنشاء robots.txt تلقائي مع إعدادات قابلة للتعديل.
+Canonical URLs تلقائيًا.
+منع الصفحات المكررة Duplicate Content.
+دعم Index / NoIndex لكل صفحة.
+دعم SEO للمدن والمناطق وصفحات التصنيفات.
+داخل لوحة تحكم SEO:
+
+اعمل Dashboard احترافي يحتوي على:
+
+Cards:
+عدد الصفحات المؤرشفة
+العقارات بدون SEO
+مشاكل SEO
+سرعة الموقع
+Core Web Vitals
+الصفحات الأكثر زيارة
+Tabs:
+General SEO
+Property SEO
+Sitemap
+Robots.txt
+Schema Generator
+Redirect Manager
+Broken Links
+Analytics
+AI SEO Generator
+AI SEO System:
+
+اعمل AI Helper ذكي:
+
+يولد Titles احترافية.
+يولد Descriptions قوية.
+يقترح Keywords.
+يحسن المحتوى تلقائيًا.
+يحلل كثافة الكلمات.
+يعطي SEO Score لكل عقار من 100.
+يقترح تحسينات مباشرة.
+داخل صفحة إضافة العقار:
+
+أضف قسم SEO قابل للطي:
+
+Preview لمحرك البحث Google.
+Preview للسوشيال ميديا.
+Editable Slug.
+Focus Keyword.
+SEO Score Live.
+Suggestions Live.
+
+لكن:
+
+لو المستخدم تجاهل القسم،
+النظام يكمل كل شيء تلقائيًا بدون أي مشاكل.
+Technical SEO:
+Dynamic Meta Tags
+Server Side Rendering Ready
+Automatic Structured Data
+Open Graph
+Twitter Meta
+Performance Optimization
+Clean URLs
+Breadcrumb Schema
+FAQ Schema
+Property Schema
+XML Sitemap Generator
+التصميم:
+تصميم Admin حديث جدًا.
+UI احترافي مشابه:
+Airbnb Admin
+Vercel Dashboard
+Stripe Dashboard
+Dark/Light Mode.
+Charts & Analytics.
+Responsive 100%.
+Animations خفيفة واحترافية.
+استخدم Cards وTables وCharts بشكل أنيق.
+مهم جدًا:
+لا تفسد التصميم الحالي.
+أضف النظام بشكل Modular ومنظم.
+استخدم أفضل Architecture ممكنة.
+اجعل النظام قابل للتوسع مستقبلًا.
+اربط صفحة SEO في الـ Navbar بجوار Dashboard.

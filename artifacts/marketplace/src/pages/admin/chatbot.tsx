@@ -18,12 +18,34 @@ import {
   BedDouble, Maximize2, X, BarChart3, Users, TrendingUp,
   Phone, MessageSquare, CheckCircle2, Clock, AlertCircle,
   ChevronDown, ChevronUp, RefreshCw, Inbox, Star, Search,
-  Hash, Flame,
+  Hash, Flame, Key, Globe, Cpu, Lock, ChevronRight,
 } from "lucide-react";
 
 const DEFAULT_BOT_NAME = "مساعد عقارات بنها";
 const DEFAULT_WELCOME = "أهلاً! أنا مساعدك الذكي لعقارات بنها 🏠\nأخبرني إيه اللي بتدور عليه — أو استخدم الأسئلة السريعة أدناه.";
 const DEFAULT_QUICK_REPLIES = ["شقة للبيع في بنها", "أرض للبيع", "شقة للإيجار", "فيلا للبيع"];
+
+const DEFAULT_SYSTEM_PROMPT = `أنت مساعد ذكي متخصص في العقارات في منطقة بنها وقليوبية، مصر.
+مهمتك مساعدة المستخدمين في إيجاد العقار المناسب من خلال البيانات المتاحة.
+
+القواعد:
+- رد دائماً بالعربية المصرية بأسلوب ودود ومختصر
+- عند ذكر عقار: اذكر اسمه وسعره وموقعه ومساحته
+- لو سُئلت عن موضوع خارج نطاق العقارات: أعد توجيه المحادثة بلطف
+- لا تخترع أسعاراً أو بيانات غير موجودة في القائمة أدناه
+
+العقارات المتاحة حالياً:
+{{PROPERTIES}}`;
+
+type AiProvider = { id: string; name: string; desc: string; flag: string; models: string[]; defaultModel: string; baseUrl?: string };
+const AI_PROVIDERS: AiProvider[] = [
+  { id: "openai",     name: "OpenAI",         flag: "🟢", desc: "GPT-4o / GPT-4 / GPT-3.5",     models: ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],                                defaultModel: "gpt-4o-mini" },
+  { id: "anthropic",  name: "Anthropic",       flag: "🟠", desc: "Claude 3.5 Sonnet / Haiku",     models: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-haiku-20240307"],    defaultModel: "claude-3-5-haiku-20241022" },
+  { id: "gemini",     name: "Google Gemini",   flag: "🔵", desc: "Gemini 2.0 / 1.5 Pro / Flash",  models: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],                               defaultModel: "gemini-2.0-flash" },
+  { id: "groq",       name: "Groq",            flag: "⚡", desc: "Llama 3 / Mixtral (سريع جداً)", models: ["llama-3.3-70b-versatile", "llama3-8b-8192", "mixtral-8x7b-32768"],                       defaultModel: "llama-3.3-70b-versatile", baseUrl: "https://api.groq.com/openai/v1" },
+  { id: "openrouter", name: "OpenRouter",      flag: "🌐", desc: "مئات النماذج بـ API واحد",       models: ["openai/gpt-4o-mini", "anthropic/claude-3.5-sonnet", "google/gemini-flash-1.5", "meta-llama/llama-3.3-70b-instruct"], defaultModel: "openai/gpt-4o-mini", baseUrl: "https://openrouter.ai/api/v1" },
+  { id: "custom",     name: "Custom API",      flag: "⚙️", desc: "أي endpoint متوافق مع OpenAI",   models: [],                                                                                        defaultModel: "" },
+];
 
 // ── Lead status colors ────────────────────────────────────────────────────────
 const LEAD_STATUS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -509,6 +531,17 @@ export default function AdminChatbot() {
   const [fallbackMsg, setFallbackMsg] = useState("");
   const [workingHours, setWorkingHours] = useState("");
 
+  // ── AI model state ──────────────────────────────────────────────────────────
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [aiProvider, setAiProvider] = useState("openai");
+  const [aiApiKey, setAiApiKey] = useState("");
+  const [aiModel, setAiModel] = useState("gpt-4o-mini");
+  const [aiBaseUrl, setAiBaseUrl] = useState("");
+  const [aiSystemPrompt, setAiSystemPrompt] = useState("");
+  const [aiTemperature, setAiTemperature] = useState("0.7");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showSysPrompt, setShowSysPrompt] = useState(false);
+
   useEffect(() => {
     if (!settings) return;
     const s = settings as any;
@@ -518,6 +551,13 @@ export default function AdminChatbot() {
     setWhatsapp(s.chatbotWhatsapp ?? "");
     setFallbackMsg(s.chatbotFallbackMsg ?? "");
     setWorkingHours(s.chatbotWorkingHours ?? "");
+    setAiEnabled(s.chatbotAiEnabled === "true");
+    setAiProvider(s.chatbotAiProvider || "openai");
+    setAiApiKey(s.chatbotAiApiKey || "");
+    setAiModel(s.chatbotAiModel || "gpt-4o-mini");
+    setAiBaseUrl(s.chatbotAiBaseUrl || "");
+    setAiSystemPrompt(s.chatbotAiSystemPrompt || "");
+    setAiTemperature(s.chatbotAiTemperature || "0.7");
     try {
       const parsed = JSON.parse(s.chatbotQuickReplies ?? "[]");
       setQuickReplies(Array.isArray(parsed) ? parsed : DEFAULT_QUICK_REPLIES);
@@ -533,6 +573,13 @@ export default function AdminChatbot() {
       chatbotWhatsapp: whatsapp.trim(),
       chatbotFallbackMsg: fallbackMsg.trim(),
       chatbotWorkingHours: workingHours.trim(),
+      chatbotAiEnabled: aiEnabled ? "true" : "false",
+      chatbotAiProvider: aiProvider,
+      chatbotAiApiKey: aiApiKey.trim(),
+      chatbotAiModel: aiModel.trim(),
+      chatbotAiBaseUrl: aiBaseUrl.trim(),
+      chatbotAiSystemPrompt: aiSystemPrompt.trim(),
+      chatbotAiTemperature: aiTemperature,
     }),
     onSuccess: () => { toast.success("تم حفظ إعدادات المساعد الذكي ✓"); qc.invalidateQueries({ queryKey: ["site-settings"] }); },
     onError: () => toast.error("فشل الحفظ، حاول مرة أخرى"),
