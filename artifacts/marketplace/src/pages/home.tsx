@@ -946,7 +946,7 @@ export default function Home() {
                 >
                   <div
                     className="group relative bg-white border border-border rounded-3xl overflow-hidden hover:border-primary/30 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    onClick={() => window.open(`/property/${property.id}`, "_blank")}
+                    onClick={() => setLocation(`/property/${property.id}`)}
                   >
                     {/* Image */}
                     <div className="relative h-52 overflow-hidden">
@@ -1029,7 +1029,7 @@ export default function Home() {
                       <div className="flex items-center justify-end">
                         <button
                           className="text-xs font-semibold text-primary border border-primary/30 rounded-full px-4 py-1.5 hover:bg-primary hover:text-white transition-all"
-                          onClick={(e) => { e.stopPropagation(); window.open(`/property/${property.id}`, "_blank"); }}
+                          onClick={(e) => { e.stopPropagation(); setLocation(`/property/${property.id}`); }}
                         >
                           تفاصيل
                         </button>

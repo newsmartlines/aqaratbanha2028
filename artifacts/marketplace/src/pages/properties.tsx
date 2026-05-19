@@ -455,7 +455,7 @@ export default function PropertiesPage() {
                         >
                           <div
                             className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer"
-                            onClick={() => window.open(`/property/${p.id}`, "_blank")}
+                            onClick={() => setLocation(`/property/${p.id}`)}
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
@@ -561,7 +561,7 @@ export default function PropertiesPage() {
                         <div
                           key={p.id}
                           className={`bg-white rounded-xl border overflow-hidden cursor-pointer transition-all ${hoveredId === p.id ? "border-primary shadow-md" : "border-gray-200 hover:border-primary/30 hover:shadow-sm"}`}
-                          onClick={() => window.open(`/property/${p.id}`, "_blank")}
+                          onClick={() => setLocation(`/property/${p.id}`)}
                           onMouseEnter={() => setHoveredId(p.id)}
                           onMouseLeave={() => setHoveredId(null)}
                         >
@@ -599,11 +599,11 @@ export default function PropertiesPage() {
                             eventHandlers={{
                               mouseover: () => setHoveredId(p.id),
                               mouseout: () => setHoveredId(null),
-                              click: () => window.open(`/property/${p.id}`, "_blank"),
+                              click: () => setLocation(`/property/${p.id}`),
                             }}
                           >
                             <Popup>
-                              <div className="text-right min-w-[180px]" dir="rtl" onClick={() => window.open(`/property/${p.id}`, "_blank")}>
+                              <div className="text-right min-w-[180px]" dir="rtl" onClick={() => setLocation(`/property/${p.id}`)}>
                                 <img src={p.img} alt={p.title} className="w-full h-20 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
                                 <p className="font-extrabold text-primary text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
                                 <p className="font-bold text-gray-900 text-xs mb-0.5">{p.title}</p>
