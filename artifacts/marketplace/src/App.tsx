@@ -74,6 +74,7 @@ import ProviderSupportTicketsPage from "@/pages/dashboard/support-tickets";
 import UserInbox from "@/pages/user/inbox";
 import UserSupport from "@/pages/user/support";
 import AddPropertyPage from "@/pages/add-property";
+import MyPropertiesPage from "@/pages/dashboard/my-properties";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -199,6 +200,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/checkout/result">
         {() => <RoleProtectedRoute component={CheckoutResult} roles={["provider"]} />}
+      </Route>
+      <Route path="/dashboard/my-properties">
+        {() => <RoleProtectedRoute component={MyPropertiesPage} roles={["provider"]} />}
       </Route>
       <Route path="/dashboard/services">
         {() => <RoleProtectedRoute component={ProviderServices} roles={["provider"]} />}

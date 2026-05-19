@@ -6,7 +6,7 @@ import {
   CreditCard, Settings, LogOut, Menu, X,
   Briefcase, Home, Grid3X3, Info, Phone,
   HelpCircle, AlertTriangle, MessageCircle as MessageCircleIcon,
-  Ticket,
+  Ticket, Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -58,6 +58,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   const dashboardNav = [
     { name: "لوحة التحكم",   href: "/provider/dashboard",       icon: LayoutDashboard, badge: 0 },
     { name: "الاشتراك",      href: "/provider/subscription",    icon: Crown,           badge: 0 },
+    { name: "عقاراتي",        href: "/dashboard/my-properties",  icon: Building2,       badge: 0 },
     { name: "خدماتي",        href: "/dashboard/services",       icon: List,            badge: 0 },
     { name: "الطلبات",       href: "/dashboard/orders",         icon: Bell,            badge: 0 },
     { name: "الإشعارات",     href: "/dashboard/notifications",  icon: Bell,            badge: unreadCount },
