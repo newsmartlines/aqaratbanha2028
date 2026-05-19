@@ -500,6 +500,8 @@ export default function Home() {
   const [heroRegionId, setHeroRegionId] = useState<number | null>(null);
   /** null = كل المدن ضمن نطاق المنطقة */
   const [heroCityName, setHeroCityName] = useState<string | null>(null);
+  /** اسم الحي / المنطقة المختارة في بنها */
+  const [heroAreaName, setHeroAreaName] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCat, setExpandedCat] = useState<number | null>(null);
   /* ─── Real-estate hero search ─── */
@@ -528,6 +530,12 @@ export default function Home() {
   const { data: regions = [] } = useQuery<Region[]>({
     queryKey: ["regions"],
     queryFn: () => api.regions.list(),
+  });
+
+  const { data: banhaAreas = [] } = useQuery({
+    queryKey: ["areas", 45],
+    queryFn: () => api.regions.getAreasByCity(45),
+    staleTime: 5 * 60_000,
   });
 
   const { data: platformStats } = useQuery<{ providers: number; users: number; services: number; requests: number }>({
@@ -658,6 +666,7 @@ export default function Home() {
     if (priceRange && priceRange !== "all") params.set("price", priceRange);
     if (heroRegionId != null) params.set("regionId", String(heroRegionId));
     if (heroCityName && heroCityName !== "__all__") params.set("city", heroCityName);
+    if (heroAreaName) params.set("district", heroAreaName);
     setLocation(`/properties?${params.toString()}`);
   };
 
@@ -823,16 +832,16 @@ export default function Home() {
                 {/* Region */}
                 <div className="md:w-32">
                   <Select
-                    value={heroRegionId != null ? String(heroRegionId) : "__all_regions__"}
-                    onValueChange={v => setHeroRegionId(v === "__all_regions__" ? null : parseInt(v, 10))}
+                    value={heroAreaName ?? "__all_areas__"}
+                    onValueChange={v => setHeroAreaName(v === "__all_areas__" ? null : v)}
                   >
                     <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
                       <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                      <SelectValue placeholder="المنطقة" />
+                      <SelectValue placeholder="الحي / المنطقة" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__all_regions__">كل المناطق</SelectItem>
-                      {regions.map(r => <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>)}
+                      <SelectItem value="__all_areas__">كل الأحياء</SelectItem>
+                      {banhaAreas.map(a => <SelectItem key={a.id} value={a.nameAr}>{a.nameAr}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>

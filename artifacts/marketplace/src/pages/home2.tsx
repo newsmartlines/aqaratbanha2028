@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Button } from "@/components/ui/button";
@@ -157,6 +159,8 @@ function SectionHead({ title, sub, href, linkLabel = "عرض الكل" }: {
 /* ══════════════════════════════════════════════
    PAGE
 ══════════════════════════════════════════════ */
+const BANHA_CITY_ID = 45;
+
 export default function Home2() {
   const [, setLocation] = useLocation();
   const [tab,        setTab]        = useState<"sale" | "rent">("sale");
@@ -164,6 +168,12 @@ export default function Home2() {
   const [kind,       setKind]       = useState("");
   const [region,     setRegion]     = useState("");
   const [price,      setPrice]      = useState("");
+
+  const { data: banhaAreas = [] } = useQuery({
+    queryKey: ["areas", BANHA_CITY_ID],
+    queryFn: () => api.regions.getAreasByCity(BANHA_CITY_ID),
+    staleTime: 5 * 60_000,
+  });
   const [liked,      setLiked]      = useState<Set<number>>(new Set());
 
   const toggleLike = (uid: number, e: React.MouseEvent) => {
@@ -258,14 +268,17 @@ export default function Home2() {
                 <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
 
-              {/* Region */}
+              {/* Area / District */}
               <div className="relative">
                 <select
                   value={region}
                   onChange={e => setRegion(e.target.value)}
                   className="w-full h-12 rounded-xl bg-white text-gray-700 border-0 shadow text-sm px-4 appearance-none cursor-pointer focus:outline-none"
                 >
-                  {REGIONS_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  <option value="">الحي / المنطقة</option>
+                  {banhaAreas.map(a => (
+                    <option key={a.id} value={a.nameAr}>{a.nameAr}</option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>

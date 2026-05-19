@@ -149,6 +149,7 @@ function getUrlParams() {
     type: typeFromListing ?? sp.get("type") ?? null,
     price: sp.get("price") ?? null,
     city: sp.get("city") ?? null,
+    district: sp.get("district") ?? null,
   };
 }
 
@@ -163,6 +164,7 @@ export default function PropertiesPage() {
   const [selectedType, setSelectedType] = useState<string | null>(initParams.type);
   const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
   const [selectedCity, setSelectedCity] = useState<string | null>(initParams.city);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(initParams.district);
   const [selectedBeds, setSelectedBeds] = useState<number | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<number | null>(() => {
     if (!initParams.price) return null;
@@ -242,6 +244,7 @@ export default function PropertiesPage() {
       if (selectedType && p.type !== selectedType) return false;
       if (selectedKind && p.kind !== selectedKind) return false;
       if (selectedCity && !p.location.includes(selectedCity)) return false;
+      if (selectedDistrict && !p.location.includes(selectedDistrict)) return false;
       if (selectedBeds && p.beds < selectedBeds) return false;
       if (selectedPrice !== null) {
         const r = PRICE_RANGES[selectedPrice];
