@@ -20,6 +20,8 @@ type ChatMessage = {
   text: string; followUp?: string;
   properties?: Property[]; time: Date;
   isWizard?: boolean;
+  intent?: any;
+  suggestions?: string[];
 };
 
 type WizardStep = "type" | "category" | "location" | "budget" | "rooms" | "area" | "done";
@@ -313,10 +315,27 @@ export default function AiChat() {
   const doSearch = async (text: string, meta?: Record<string, string>) => {
     setLoading(true); setWizardStep(null); setShowAutocomplete(false);
     try {
-      const data = await fetch("/api/ai-chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) }).then(r => r.json());
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: "bot", text: data.reply ?? "جرّب بطريقة مختلفة.", followUp: data.followUp, properties: data.properties ?? [], time: new Date() }]);
+      // Build history for multi-turn context (last 6 turns)
+      const historyForApi = messages.slice(-6).map(m => ({
+        role: m.role,
+        text: m.text,
+        intent: m.intent,
+      }));
+      const data = await fetch("/api/ai-chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: historyForApi }),
+      }).then(r => r.json());
+      const reply = data.reply || "جرّب بطريقة مختلفة.";
+      const botMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(), role: "bot",
+        text: reply, followUp: data.followUp,
+        properties: data.properties ?? [], time: new Date(),
+        intent: data.intent,
+        suggestions: data.suggestions ?? [],
+      };
+      setMessages(prev => [...prev, botMsg]);
       if (!open) setUnread(n => n + 1);
-      saveSession(sessionId, [...messages], { lastIntent: data.intent, wizardData: meta });
+      saveSession(sessionId, [...messages, botMsg], { lastIntent: data.intent, wizardData: meta });
     } catch { addBotMsg("معنديش اتصال. جرب بعد ثانية."); }
     finally { setLoading(false); }
   };
@@ -449,6 +468,17 @@ export default function AiChat() {
                               <Phone className="w-3.5 h-3.5" />تحدث مع مستشار عبر واتساب
                             </button>
                           </>
+                        )}
+                        {msg.suggestions && msg.suggestions.length > 0 && idx === messages.length - 1 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            <p className="w-full text-[10px] text-gray-400 mb-0.5">اقتراحات للتضييق:</p>
+                            {msg.suggestions.map((s, si) => (
+                              <button key={si} onClick={() => sendMessage(s)}
+                                className="text-[11px] bg-primary/8 text-primary border border-primary/20 rounded-full px-2.5 py-1 font-semibold hover:bg-primary hover:text-white transition-all">
+                                {s}
+                              </button>
+                            ))}
+                          </div>
                         )}
                         <p className="text-[10px] text-gray-400 mt-1 mr-1">{msg.time.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}</p>
                       </div>

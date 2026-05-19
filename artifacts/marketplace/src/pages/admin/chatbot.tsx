@@ -17,7 +17,8 @@ import {
   Eye, EyeOff, ToggleLeft, ToggleRight, Zap, Settings2,
   BedDouble, Maximize2, X, BarChart3, Users, TrendingUp,
   Phone, MessageSquare, CheckCircle2, Clock, AlertCircle,
-  ChevronDown, ChevronUp, RefreshCw, Inbox, Star,
+  ChevronDown, ChevronUp, RefreshCw, Inbox, Star, Search,
+  Hash, Flame,
 } from "lucide-react";
 
 const DEFAULT_BOT_NAME = "مساعد عقارات بنها";
@@ -391,6 +392,102 @@ function ChatPreview({ botName, welcome, quickReplies, enabled }: { botName: str
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+// ── Queries Management Tab ─────────────────────────────────────────────────
+function QueriesTab() {
+  const qc = useQueryClient();
+
+  const { data: queries = [], isLoading, refetch } = useQuery<any[]>({
+    queryKey: ["chatbot-queries"],
+    queryFn: () => fetch("/api/chatbot-queries").then(r => r.json()),
+    staleTime: 10_000,
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => fetch(`/api/chatbot-queries/${id}`, { method: "DELETE" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["chatbot-queries"] }); toast.success("تم الحذف"); },
+  });
+
+  const [search, setSearch] = useState("");
+  const filtered = search
+    ? queries.filter((q: any) => q.query?.includes(search))
+    : queries;
+
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-4" dir="rtl">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-bold text-gray-900">استفسارات المستخدمين ({queries.length})</h2>
+          <p className="text-xs text-gray-500">الاستفسارات التي يكتبها الزوار في المساعد الذكي</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-1.5">
+          <RefreshCw className="w-4 h-4" />تحديث
+        </Button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="بحث في الاستفسارات..." dir="rtl"
+          className="w-full border border-gray-200 rounded-xl pr-9 pl-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
+      </div>
+
+      {/* Top 3 highlight */}
+      {!search && queries.length >= 3 && (
+        <div className="grid grid-cols-3 gap-3">
+          {queries.slice(0, 3).map((q: any, i: number) => (
+            <Card key={q.id} className={`border-2 ${i === 0 ? "border-yellow-300 bg-yellow-50" : i === 1 ? "border-gray-200 bg-gray-50" : "border-orange-200 bg-orange-50"}`}>
+              <CardContent className="pt-4 pb-3 text-center">
+                <div className={`text-2xl font-black mb-1 ${i === 0 ? "text-yellow-600" : i === 1 ? "text-gray-500" : "text-orange-500"}`}>
+                  #{i + 1}
+                </div>
+                <p className="text-xs font-bold text-gray-800 truncate">{q.query}</p>
+                <p className="text-lg font-black text-primary mt-1">{q.count} <span className="text-[10px] font-normal text-gray-500">مرة</span></p>
+                <p className="text-[10px] text-gray-400">{q.resultCount ?? 0} نتيجة</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <Hash className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">لا توجد استفسارات بعد</p>
+          <p className="text-xs mt-1">تظهر هنا عند تفاعل الزوار مع المساعد</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((q: any, i: number) => (
+            <div key={q.id} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:border-primary/20 transition-colors group">
+              <span className="text-sm font-black text-gray-300 w-6 text-center shrink-0">{i + 1}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800 truncate">{q.query}</p>
+                <div className="flex items-center gap-3 text-[11px] text-gray-400 mt-0.5">
+                  <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-orange-400" />{q.count} بحث</span>
+                  <span>{q.resultCount ?? 0} نتيجة</span>
+                  {q.updatedAt && <span>{new Date(q.updatedAt).toLocaleDateString("ar-EG")}</span>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="h-2 w-20 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-primary rounded-full transition-all"
+                    style={{ width: `${Math.min(100, (q.count / (queries[0]?.count || 1)) * 100)}%` }} />
+                </div>
+                <button onClick={() => deleteMut.mutate(q.id)}
+                  className="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminChatbot() {
   const qc = useQueryClient();
   const search = useSearch();
@@ -408,6 +505,9 @@ export default function AdminChatbot() {
   const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const [newReply, setNewReply] = useState("");
   const [previewOpen, setPreviewOpen] = useState(true);
+  const [whatsapp, setWhatsapp] = useState("");
+  const [fallbackMsg, setFallbackMsg] = useState("");
+  const [workingHours, setWorkingHours] = useState("");
 
   useEffect(() => {
     if (!settings) return;
@@ -415,6 +515,9 @@ export default function AdminChatbot() {
     setEnabled(s.chatbotEnabled !== "false");
     setBotName(s.chatbotBotName ?? "");
     setWelcome(s.chatbotWelcomeMessage ?? "");
+    setWhatsapp(s.chatbotWhatsapp ?? "");
+    setFallbackMsg(s.chatbotFallbackMsg ?? "");
+    setWorkingHours(s.chatbotWorkingHours ?? "");
     try {
       const parsed = JSON.parse(s.chatbotQuickReplies ?? "[]");
       setQuickReplies(Array.isArray(parsed) ? parsed : DEFAULT_QUICK_REPLIES);
@@ -427,6 +530,9 @@ export default function AdminChatbot() {
       chatbotBotName: botName || DEFAULT_BOT_NAME,
       chatbotWelcomeMessage: welcome || DEFAULT_WELCOME,
       chatbotQuickReplies: JSON.stringify(quickReplies),
+      chatbotWhatsapp: whatsapp.trim(),
+      chatbotFallbackMsg: fallbackMsg.trim(),
+      chatbotWorkingHours: workingHours.trim(),
     }),
     onSuccess: () => { toast.success("تم حفظ إعدادات المساعد الذكي ✓"); qc.invalidateQueries({ queryKey: ["site-settings"] }); },
     onError: () => toast.error("فشل الحفظ، حاول مرة أخرى"),
@@ -461,11 +567,12 @@ export default function AdminChatbot() {
         </div>
 
         <Tabs defaultValue={defaultTab}>
-          <TabsList className="grid grid-cols-4 w-full max-w-lg">
+          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
             <TabsTrigger value="settings" className="text-xs gap-1"><Settings2 className="w-3.5 h-3.5" />الإعدادات</TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs gap-1"><BarChart3 className="w-3.5 h-3.5" />الإحصائيات</TabsTrigger>
             <TabsTrigger value="leads" className="text-xs gap-1"><Users className="w-3.5 h-3.5" />العملاء</TabsTrigger>
             <TabsTrigger value="conversations" className="text-xs gap-1"><MessageSquare className="w-3.5 h-3.5" />المحادثات</TabsTrigger>
+            <TabsTrigger value="queries" className="text-xs gap-1"><Flame className="w-3.5 h-3.5" />الاستفسارات</TabsTrigger>
           </TabsList>
 
           {/* ── SETTINGS TAB ── */}
@@ -557,6 +664,43 @@ export default function AdminChatbot() {
                   </CardContent>
                 </Card>
 
+                {/* WhatsApp */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><Phone className="w-4 h-4 text-green-600" />رقم واتساب للتواصل</CardTitle>
+                    <CardDescription>يُستخدم في زر "تحدث مع مستشار" داخل المساعد الذكي</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Input value={whatsapp} onChange={e => setWhatsapp(e.target.value)}
+                      placeholder="مثال: 201012345678" dir="ltr" className="text-sm text-left" />
+                    <p className="text-xs text-gray-400 mt-1">أدخل الرقم بصيغة دولية بدون + (مثال: 201012345678)</p>
+                  </CardContent>
+                </Card>
+
+                {/* Fallback Message */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><MessageCircle className="w-4 h-4 text-orange-500" />رسالة عدم العثور على نتائج</CardTitle>
+                    <CardDescription>تظهر عندما لا يجد المساعد عقارات مطابقة</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea value={fallbackMsg} onChange={e => setFallbackMsg(e.target.value)}
+                      placeholder="معنديش نتائج مطابقة تماماً، بس هحاول أعرضلك أقرب الخيارات." dir="rtl" rows={2} className="text-sm resize-none" />
+                  </CardContent>
+                </Card>
+
+                {/* Working Hours */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4 text-blue-500" />نص ساعات العمل</CardTitle>
+                    <CardDescription>يظهر في ترويسة المساعد تحت اسمه</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Input value={workingHours} onChange={e => setWorkingHours(e.target.value)}
+                      placeholder="مثال: متاح الآن • مساعد ذكي 24/7" dir="rtl" className="text-sm" />
+                  </CardContent>
+                </Card>
+
                 <div className="flex justify-end">
                   <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} size="lg" className="gap-2 px-8">
                     {saveMut.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
@@ -608,6 +752,11 @@ export default function AdminChatbot() {
           {/* ── CONVERSATIONS TAB ── */}
           <TabsContent value="conversations" className="mt-6">
             <ConversationsTab />
+          </TabsContent>
+
+          {/* ── QUERIES TAB ── */}
+          <TabsContent value="queries" className="mt-6">
+            <QueriesTab />
           </TabsContent>
         </Tabs>
       </div>
