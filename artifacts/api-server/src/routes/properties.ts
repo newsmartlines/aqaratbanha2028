@@ -6,6 +6,43 @@ import { getSession } from "./auth";
 
 const router = Router();
 
+// ── WhatsApp Notification via CallMeBot ────────────────────────────────────
+const NOTIFY_PHONE = process.env.NOTIFY_WHATSAPP_PHONE ?? "00201066638523";
+const CALLMEBOT_KEY = process.env.CALLMEBOT_API_KEY ?? "";
+
+async function sendWhatsAppNotification(property: any) {
+  if (!CALLMEBOT_KEY) {
+    console.log("[WhatsApp] CALLMEBOT_API_KEY not set — skipping notification");
+    return;
+  }
+  const categoryMap: Record<string, string> = {
+    residential: "سكني", commercial: "تجاري", land: "أراضي",
+  };
+  const typeMap: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
+
+  const cat = categoryMap[property.mainCategory] ?? property.mainCategory;
+  const type = typeMap[property.listingType] ?? property.listingType;
+  const price = property.price ? `${Number(property.price).toLocaleString("ar-EG")} ج.م` : "بدون سعر";
+
+  const text = [
+    "🏠 عقار جديد تم إضافته على الموقع",
+    `📋 العنوان: ${property.title}`,
+    `🏷 النوع: ${cat} - ${type}`,
+    `💰 السعر: ${price}`,
+    `📍 العنوان: ${property.address ?? "—"}`,
+    `⏳ الحالة: قيد المراجعة`,
+  ].join("\n");
+
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(NOTIFY_PHONE)}&text=${encodeURIComponent(text)}&apikey=${encodeURIComponent(CALLMEBOT_KEY)}`;
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.warn("[WhatsApp] CallMeBot returned:", res.status, await res.text().catch(() => ""));
+  } else {
+    console.log("[WhatsApp] Notification sent for property:", property.id);
+  }
+}
+
 async function requireAuth(req: any): Promise<{ userId: number; providerId?: number } | null> {
   const token = req.cookies?.session ?? req.headers.authorization?.replace("Bearer ", "");
   if (!token) return null;
@@ -104,6 +141,9 @@ router.post("/properties", async (req, res) => {
       contactMethods: Array.isArray(contactMethods) ? JSON.stringify(contactMethods) : contactMethods,
       status: (status as string) || "pending",
     }).returning();
+
+    // ── WhatsApp notification via CallMeBot ────────────────────────────────
+    sendWhatsAppNotification(property).catch(() => {/* silent — don't block response */});
 
     res.json({ success: true, data: property });
   } catch (err: any) {
