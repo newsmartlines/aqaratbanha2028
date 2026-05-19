@@ -404,8 +404,7 @@ export default function MyPropertiesPage() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  onClick={() => featureMut.mutate({ id: prop.id, featured: !prop.featured })}
-                                  disabled={featureMut.isPending}
+                                  onClick={() => setLocation("/dashboard/subscription")}
                                   className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                                     prop.featured
                                       ? "bg-amber-100 text-amber-500 hover:bg-amber-200"
@@ -415,7 +414,7 @@ export default function MyPropertiesPage() {
                                   <Star className={`w-4 h-4 ${prop.featured ? "fill-amber-400" : ""}`} />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent>{prop.featured ? "إلغاء التمييز" : "تمييز العقار"}</TooltipContent>
+                              <TooltipContent>{prop.featured ? "أنت مميز — عدّل باقتك" : "تميّز عقارك — اشترك الآن"}</TooltipContent>
                             </Tooltip>
                           </td>
 
