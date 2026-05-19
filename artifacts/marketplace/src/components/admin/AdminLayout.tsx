@@ -31,6 +31,7 @@ import {
   Search,
   KeyRound,
   Bot,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -188,6 +189,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Building2,       label: "التصنيفات العقارية", href: "/admin/real-estate-categories", perm: "categories" },
     { icon: MapPin,          label: t("locations"),       href: "/admin/locations",        perm: "locations" },
     { icon: MapPin,          label: "أهم المناطق",        href: "/admin/featured-areas",   perm: null },
+    { icon: Star,            label: "عقار مميز",           href: "/admin/settings?tab=spotlight", perm: "settings" },
     { icon: ShoppingCart,    label: t("orders"),          href: "/admin/orders",           perm: "orders" },
     { icon: Ticket,          label: t("supportTickets"),  href: "/admin/support-tickets",  perm: "support" },
     { icon: CreditCard,      label: t("payments"),        href: "/admin/payments",         perm: "payments" },

@@ -560,6 +560,19 @@ export default function Home() {
     staleTime: 5 * 60_000,
   });
 
+  const spotlightEnabled = settings?.spotlightEnabled === "true";
+  const spotlightPropertyId = settings?.spotlightPropertyId ? Number(settings.spotlightPropertyId) : null;
+  const spotlightBadge = settings?.spotlightBadge || "عرض حصري";
+  const spotlightCtaText = settings?.spotlightCtaText || "عرض التفاصيل";
+  const spotlightCustomLink = settings?.spotlightCustomLink || "";
+
+  const { data: spotlightProperty } = useQuery<any>({
+    queryKey: ["spotlight-property", spotlightPropertyId],
+    queryFn: () => api.properties.get(spotlightPropertyId!),
+    enabled: spotlightEnabled && !!spotlightPropertyId,
+    staleTime: 5 * 60_000,
+  });
+
   const { data: platformStats } = useQuery<{ providers: number; users: number; services: number; requests: number; properties: number }>({
     queryKey: ["platform-stats"],
     queryFn: () => api.stats.platform(),
@@ -1253,6 +1266,160 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* ── SPOTLIGHT PROPERTY ── */}
+        {spotlightEnabled && spotlightProperty && (() => {
+          const sp = spotlightProperty as any;
+          const imgs: string[] = (() => { try { return JSON.parse(sp.images ?? "[]"); } catch { return []; } })();
+          const thumb = imgs[0] ?? DEFAULT_IMG;
+          const priceNum = Number(sp.price);
+          const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "";
+          const location = [sp.district, sp.city].filter(Boolean).join("، ") || "بنها";
+          const beds = Number(sp.bedrooms ?? 0);
+          const baths = Number(sp.bathrooms ?? 0);
+          const area = Number(sp.area ?? 0);
+          const targetLink = spotlightCustomLink || `/property/${sp.id}`;
+
+          return (
+            <section className="relative overflow-hidden py-0" style={{ background: "linear-gradient(145deg, #0c1121 0%, #1a1040 40%, #0c1121 100%)" }}>
+              {/* Decorative background orbs */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-80px] right-[-80px] w-[360px] h-[360px] rounded-full bg-primary/10 blur-[100px]" />
+                <div className="absolute bottom-[-60px] left-[-60px] w-[280px] h-[280px] rounded-full bg-amber-500/10 blur-[80px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full bg-primary/5 blur-[120px]" />
+              </div>
+
+              <div className="container mx-auto px-4 py-16 relative z-10">
+                {/* Section label */}
+                <motion.div
+                  initial={{ opacity: 0, y: -12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                  className="flex justify-center mb-10"
+                >
+                  <div className="inline-flex items-center gap-2.5 bg-amber-500/15 border border-amber-500/30 text-amber-400 rounded-full px-5 py-2 text-sm font-extrabold backdrop-blur-sm">
+                    <Sparkles className="w-4 h-4 fill-amber-400" />
+                    {spotlightBadge}
+                    <Sparkles className="w-4 h-4 fill-amber-400" />
+                  </div>
+                </motion.div>
+
+                {/* Main card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  className="max-w-5xl mx-auto"
+                >
+                  <div
+                    className="group relative bg-white/[0.04] border border-white/10 rounded-3xl overflow-hidden backdrop-blur-md shadow-[0_0_100px_rgba(0,0,0,0.5)] cursor-pointer flex flex-col md:flex-row"
+                    onClick={() => setLocation(targetLink)}
+                  >
+                    {/* ── Image side ── */}
+                    <div className="relative md:w-[45%] h-64 md:h-auto overflow-hidden shrink-0">
+                      <img
+                        src={thumb}
+                        alt={sp.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={e => { (e.target as HTMLImageElement).src = DEFAULT_IMG; }}
+                      />
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/30 hidden md:block" />
+
+                      {/* Badges on image */}
+                      <div className="absolute top-4 right-4 flex flex-col gap-2">
+                        {sp.listingType && (
+                          <span className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                            {sp.listingType}
+                          </span>
+                        )}
+                        {sp.mainCategory && (
+                          <span className="bg-white/90 text-gray-800 text-xs font-bold px-3 py-1.5 rounded-full shadow">
+                            {sp.mainCategory}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Bottom image text (mobile) */}
+                      <div className="md:hidden absolute bottom-0 inset-x-0 p-4">
+                        <h2 className="text-xl font-extrabold text-white leading-snug drop-shadow-lg">{sp.title}</h2>
+                      </div>
+                    </div>
+
+                    {/* ── Content side ── */}
+                    <div className="flex-1 flex flex-col justify-center p-8 md:p-10" dir="rtl">
+                      {/* Gold accent label */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                        <span className="text-amber-400 text-xs font-extrabold tracking-widest uppercase">{spotlightBadge}</span>
+                      </div>
+
+                      {/* Title (desktop) */}
+                      <h2 className="hidden md:block text-2xl md:text-3xl font-extrabold text-white leading-snug mb-4">
+                        {sp.title}
+                      </h2>
+
+                      {/* Feature pills */}
+                      {(beds > 0 || baths > 0 || area > 0) && (
+                        <div className="flex flex-wrap gap-3 mb-5">
+                          {beds > 0 && (
+                            <div className="flex items-center gap-1.5 bg-white/10 border border-white/10 text-white/90 text-sm px-3 py-1.5 rounded-full">
+                              <BedDouble className="w-3.5 h-3.5 text-primary" />
+                              {beds} غرف
+                            </div>
+                          )}
+                          {baths > 0 && (
+                            <div className="flex items-center gap-1.5 bg-white/10 border border-white/10 text-white/90 text-sm px-3 py-1.5 rounded-full">
+                              <Bath className="w-3.5 h-3.5 text-primary" />
+                              {baths} حمام
+                            </div>
+                          )}
+                          {area > 0 && (
+                            <div className="flex items-center gap-1.5 bg-white/10 border border-white/10 text-white/90 text-sm px-3 py-1.5 rounded-full">
+                              <Maximize2 className="w-3.5 h-3.5 text-primary" />
+                              {area} م²
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Location */}
+                      <div className="flex items-center gap-1.5 text-white/60 text-sm mb-5">
+                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                        {location}
+                      </div>
+
+                      {/* Price */}
+                      {priceStr && (
+                        <div className="mb-7">
+                          <div className="text-4xl md:text-5xl font-black text-white leading-none">
+                            {priceStr}
+                          </div>
+                          <div className="text-white/40 text-sm mt-1.5">جنيه مصري</div>
+                        </div>
+                      )}
+
+                      {/* CTA */}
+                      <div>
+                        <Button
+                          size="lg"
+                          className="rounded-xl px-8 font-bold gap-2 shadow-xl shadow-primary/30 group-hover:shadow-primary/50 transition-shadow"
+                          onClick={e => { e.stopPropagation(); setLocation(targetLink); }}
+                        >
+                          {spotlightCtaText}
+                          <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </section>
+          );
+        })()}
 
         {/* ── COMMERCIAL & LANDS ── */}
         {(() => {

@@ -14,7 +14,8 @@ import { api, mediaUrl, type SiteSettings } from "@/lib/api";
 import {
   Save, Globe, Phone, FileText, HelpCircle, Lock, Loader2, CheckCircle2, Upload,
   ImageIcon, Palette, KeyRound, Mail, Share2, Search, AlertTriangle, Eye, EyeOff,
-  Send, Wifi, WifiOff, Instagram, Youtube, Facebook, Twitter, Linkedin, Shield
+  Send, Wifi, WifiOff, Instagram, Youtube, Facebook, Twitter, Linkedin, Shield,
+  Star, MapPin, BedDouble, Bath, Maximize2, ArrowLeft, Link2, ToggleRight, ExternalLink,
 } from "lucide-react";
 import { AppearanceTab } from "./settings-appearance";
 import { useToast } from "@/hooks/use-toast";
@@ -240,6 +241,22 @@ export default function AdminSettings() {
   const allowRegistration = form.allowRegistration !== "false";
   const servicesEnabled = form.servicesModuleEnabled !== "false";
 
+  const [spotlightSearch, setSpotlightSearch] = useState("");
+
+  const { data: allPropertiesRaw = [] } = useQuery<any[]>({
+    queryKey: ["admin-all-properties-spotlight"],
+    queryFn: () => api.properties.list({ status: "active" }),
+    staleTime: 2 * 60_000,
+  });
+
+  const filteredSpotlightProps = allPropertiesRaw.filter(p =>
+    !spotlightSearch || (p.title ?? "").includes(spotlightSearch) || String(p.id).includes(spotlightSearch)
+  ).slice(0, 30);
+
+  const selectedSpotlightProp = allPropertiesRaw.find(p => String(p.id) === form.spotlightPropertyId);
+
+  const DEFAULT_IMG_SETTINGS = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop";
+
   return (
     <AdminLayout title={t("pageTitle")}>
       <Tabs defaultValue={initialTab} className="space-y-6">
@@ -273,6 +290,9 @@ export default function AdminSettings() {
           </TabsTrigger>
           <TabsTrigger value="google" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <KeyRound className="w-4 h-4 me-1.5" />{t("googleOAuth")}
+          </TabsTrigger>
+          <TabsTrigger value="spotlight" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold text-amber-600 data-[state=active]:text-amber-700">
+            <Star className="w-4 h-4 me-1.5 fill-amber-400" />عقار مميز
           </TabsTrigger>
           <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold">
             <Palette className="w-4 h-4 me-1.5" />{t("appearance")}
@@ -1113,6 +1133,169 @@ export default function AdminSettings() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ── Spotlight Property ─────────────────────────────────── */}
+        <TabsContent value="spotlight">
+          <div className="space-y-5" dir="rtl">
+            {/* Enable toggle */}
+            <Card className="border-amber-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-amber-700">
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                  قسم العقار المميز
+                </CardTitle>
+                <CardDescription>يظهر في منتصف الصفحة الرئيسية كعرض مميز بتصميم احترافي</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* Toggle */}
+                <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                  <div>
+                    <p className="font-semibold text-gray-800">تفعيل القسم</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {form.spotlightEnabled === "true" ? "القسم ظاهر في الصفحة الرئيسية" : "القسم مخفي حالياً"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.spotlightEnabled === "true"}
+                    onCheckedChange={v => setForm(f => ({ ...f, spotlightEnabled: v ? "true" : "false" }))}
+                  />
+                </div>
+
+                {/* Property picker */}
+                <div className="space-y-2">
+                  <Label className="font-semibold">اختر العقار المميز</Label>
+                  <div className="relative">
+                    <Search className="absolute top-1/2 -translate-y-1/2 right-3 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={spotlightSearch}
+                      onChange={e => setSpotlightSearch(e.target.value)}
+                      placeholder="ابحث باسم العقار أو رقمه..."
+                      className="w-full h-10 pr-9 pl-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary/50 bg-gray-50"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
+                    {filteredSpotlightProps.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-gray-400">لا توجد عقارات مطابقة</div>
+                    ) : filteredSpotlightProps.map((p: any) => {
+                      const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
+                      const isSelected = form.spotlightPropertyId === String(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => setForm(f => ({ ...f, spotlightPropertyId: String(p.id) }))}
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-right transition-colors ${isSelected ? "bg-amber-50 border-r-2 border-amber-500" : "hover:bg-gray-50"}`}
+                        >
+                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                            {imgs[0] && <img src={imgs[0]} alt="" className="w-full h-full object-cover" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-semibold truncate ${isSelected ? "text-amber-700" : "text-gray-800"}`}>{p.title}</p>
+                            <p className="text-xs text-gray-400">{p.listingType} · {p.mainCategory} · {p.city}</p>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Selected property preview */}
+                {selectedSpotlightProp && (() => {
+                  const p = selectedSpotlightProp as any;
+                  const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
+                  const priceNum = Number(p.price);
+                  return (
+                    <div className="border-2 border-amber-200 rounded-2xl overflow-hidden bg-amber-50/50">
+                      <div className="px-4 py-2 bg-amber-100 border-b border-amber-200 flex items-center gap-2">
+                        <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                        <span className="text-xs font-bold text-amber-700">معاينة العقار المختار</span>
+                      </div>
+                      <div className="flex gap-3 p-3">
+                        <div className="w-20 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                          {imgs[0] ? <img src={imgs[0]} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-5 h-5 text-gray-300" /></div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-gray-900 truncate">{p.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{p.listingType} · {p.mainCategory}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" />{[p.district, p.city].filter(Boolean).join("، ")}</p>
+                          {priceNum > 0 && <p className="text-sm font-bold text-primary mt-1">{priceNum.toLocaleString("ar-EG")} جنيه</p>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
+            {/* Appearance settings */}
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">إعدادات الشكل والنص</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">نص الشارة المميزة</Label>
+                    <Input
+                      value={form.spotlightBadge ?? "عرض حصري"}
+                      onChange={e => setForm(f => ({ ...f, spotlightBadge: e.target.value }))}
+                      placeholder="عرض حصري"
+                    />
+                    <p className="text-xs text-gray-400">يظهر فوق الكارت كشارة ذهبية</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">نص زر التفاصيل</Label>
+                    <Input
+                      value={form.spotlightCtaText ?? "عرض التفاصيل"}
+                      onChange={e => setForm(f => ({ ...f, spotlightCtaText: e.target.value }))}
+                      placeholder="عرض التفاصيل"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold flex items-center gap-2">
+                    <Link2 className="w-4 h-4 text-gray-400" />
+                    رابط مخصص (اختياري)
+                  </Label>
+                  <Input
+                    dir="ltr"
+                    value={form.spotlightCustomLink ?? ""}
+                    onChange={e => setForm(f => ({ ...f, spotlightCustomLink: e.target.value }))}
+                    placeholder="https://... أو /property/123"
+                  />
+                  <p className="text-xs text-gray-400">إذا تركته فارغاً سيفتح صفحة العقار تلقائياً</p>
+                </div>
+
+                {/* Direct link hint */}
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700">
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold mb-0.5">رابط الإدارة المباشر</p>
+                    <p className="text-blue-600 font-mono select-all">/admin/settings?tab=spotlight</p>
+                    <p className="mt-1">يمكنك حفظ هذا الرابط للوصول السريع لإعدادات العقار المميز</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={() => handleSave({
+                spotlightEnabled: form.spotlightEnabled,
+                spotlightPropertyId: form.spotlightPropertyId,
+                spotlightBadge: form.spotlightBadge,
+                spotlightCtaText: form.spotlightCtaText,
+                spotlightCustomLink: form.spotlightCustomLink,
+              })}
+              disabled={saveMutation.isPending}
+              className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
+            >
+              {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              حفظ إعدادات العقار المميز
+            </Button>
+          </div>
         </TabsContent>
 
         {/* ── Appearance ──────────────────────────────────────────── */}
