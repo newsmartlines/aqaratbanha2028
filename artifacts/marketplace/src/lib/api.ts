@@ -876,6 +876,17 @@ export const api = {
     delete: (id: number) => fetchJson(`/admin/billing/plans/${id}`, { method: "DELETE" }),
   },
 
+  search: {
+    suggestions: (q: string) =>
+      fetchJson<{
+        trending: Array<{ text: string }>;
+        cities: Array<{ id: number; nameAr: string; type: string }>;
+        areas: Array<{ id: number; nameAr: string; type: string }>;
+        categories: Array<{ id: number; nameAr: string; slug: string; categoryType?: string; type: string }>;
+        properties: Array<{ id: number; title: string; listingType: string; mainCategory: string; type: string }>;
+      }>(`/search/suggestions${qs({ q })}`),
+  },
+
   fetchJson,
 };
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SmartSearch } from "@/components/SmartSearch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -788,17 +789,14 @@ export default function Home() {
 
               {/* Fields row */}
               <div className="flex flex-col md:flex-row gap-0 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-border/40">
-                {/* Keyword */}
-                <div className="flex-1 relative">
-                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input
-                    placeholder="اسم الحي أو المنطقة…"
-                    className="pr-10 h-12 bg-transparent border-none text-sm focus-visible:ring-0 shadow-none rounded-none"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSearch()}
-                  />
-                </div>
+                {/* Keyword — Smart Search */}
+                <SmartSearch
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onSearch={handleSearch}
+                  placeholder="اسم الحي أو المنطقة…"
+                  variant="hero"
+                />
 
                 {/* Category — real estate categories from admin */}
                 <div className="md:w-44">

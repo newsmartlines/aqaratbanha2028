@@ -26,6 +26,7 @@ import billingPlansRouter from "./billingPlans";
 import aiChatRouter from "./ai-chat";
 import chatLeadsRouter from "./chat-leads";
 import chatSessionsRouter from "./chat-sessions";
+import searchRouter from "./search";
 
 const router: IRouter = Router();
 
@@ -56,5 +57,6 @@ router.use(billingPlansRouter);
 router.use(aiChatRouter);
 router.use(chatLeadsRouter);
 router.use(chatSessionsRouter);
+router.use(searchRouter);
 
 export default router;

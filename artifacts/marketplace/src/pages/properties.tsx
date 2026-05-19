@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SmartSearch } from "@/components/SmartSearch";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import {
@@ -379,16 +380,13 @@ export default function PropertiesPage() {
               )}
             </div>
 
-            {/* Search input */}
-            <div className="relative flex-1 min-w-52">
-              <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="ابحث بالمدينة أو الحي أو العقار..."
-                className="pr-10 h-10 rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white"
-              />
-            </div>
+            {/* Smart Search */}
+            <SmartSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="ابحث بالمدينة أو الحي أو العقار..."
+              variant="bar"
+            />
 
             {/* Sort */}
             <select
