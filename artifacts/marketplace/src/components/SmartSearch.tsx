@@ -261,9 +261,9 @@ export function SmartSearch({
       {/* Dropdown */}
       {showDropdown && (
         <div
-          className={`absolute z-50 bg-white border border-gray-200/80 rounded-2xl shadow-2xl overflow-hidden
+          className={`absolute bg-white border border-gray-200 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] overflow-hidden
             ${isHero ? "top-full mt-2 left-0 right-0" : "top-[calc(100%+6px)] left-0 right-0"}`}
-          style={{ maxHeight: 460 }}
+          style={{ maxHeight: 460, zIndex: 99999 }}
         >
           {/* Loading */}
           {isLoading && !data && (

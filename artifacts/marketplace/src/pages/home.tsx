@@ -769,7 +769,7 @@ export default function Home() {
             {/* ── Search Card ── */}
             <motion.div
               layout
-              className="w-full max-w-3xl bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/30"
+              className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-white/20"
             >
               {/* Tabs */}
               <div className="relative flex border-b border-border/30 overflow-hidden">
@@ -793,83 +793,22 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Fields row */}
+              {/* ── Fields row ── */}
               <div className="flex flex-col md:flex-row gap-0 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-border/40">
-                {/* Keyword — Smart Search */}
-                <SmartSearch
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  onSearch={handleSearch}
-                  placeholder="اسم الحي أو المنطقة…"
-                  variant="hero"
-                />
 
-                {/* Category — real estate categories from admin */}
-                <div className="md:w-44">
-                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
-                    <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
-                      <Building2 className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                      <SelectValue placeholder="نوع العقار" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">كل الأنواع</SelectItem>
-                      {reCategories.map(c => (
-                        <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Subcategory — subcategories of the selected real estate category */}
-                <AnimatePresence>
-                  {(() => {
-                    const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
-                    const subs = selCat ? ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === selCat.id) : [];
-                    return selectedCategory !== "all" && subs.length > 0 ? (
-                      <motion.div
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="md:w-36 overflow-hidden"
-                      >
-                        <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
-                          <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
-                            <ChevronDown className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                            <SelectValue placeholder="النوع الفرعي" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">الكل</SelectItem>
-                            {subs.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </motion.div>
-                    ) : null;
-                  })()}
-                </AnimatePresence>
-
-                {/* City — dynamic from admin regions */}
-                <div className="md:w-36">
-                  <Select
-                    value={heroCityName ?? "__all__"}
-                    onValueChange={v => setHeroCityName(v === "__all__" ? null : v)}
-                  >
-                    <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
-                      <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                      <SelectValue placeholder="كل المدن" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {heroCityOptions.map(o => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Search button — leftmost in RTL layout */}
+                <Button
+                  onClick={handleSearch}
+                  className="h-14 px-7 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base rounded-none md:rounded-es-2xl rounded-b-2xl md:rounded-b-none shrink-0 order-last md:order-none"
+                >
+                  <Search className="w-4 h-4 me-1.5" />
+                  بحث
+                </Button>
 
                 {/* Price */}
-                <div className="md:w-36">
+                <div className="md:w-32 shrink-0">
                   <Select value={priceRange} onValueChange={setPriceRange}>
-                    <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
+                    <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none w-full">
                       <TrendingUp className="w-4 h-4 ml-1.5 text-primary shrink-0" />
                       <SelectValue placeholder="السعر" />
                     </SelectTrigger>
@@ -895,15 +834,94 @@ export default function Home() {
                   </Select>
                 </div>
 
-                {/* Search button */}
-                <Button
-                  onClick={handleSearch}
-                  className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-none md:rounded-e-none rounded-b-xl md:rounded-b-none shrink-0"
-                >
-                  <Search className="w-4 h-4 me-1.5" />
-                  بحث
-                </Button>
+                {/* City */}
+                <div className="md:w-32 shrink-0">
+                  <Select
+                    value={heroCityName ?? "__all__"}
+                    onValueChange={v => setHeroCityName(v === "__all__" ? null : v)}
+                  >
+                    <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none w-full">
+                      <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                      <SelectValue placeholder="كل المدن" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {heroCityOptions.map(o => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Category */}
+                <div className="md:w-36 shrink-0">
+                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
+                    <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none w-full">
+                      <Building2 className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                      <SelectValue placeholder="نوع العقار" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">كل الأنواع</SelectItem>
+                      {reCategories.map(c => (
+                        <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Keyword — Smart Search (widest, right-most in RTL) */}
+                <SmartSearch
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onSearch={handleSearch}
+                  placeholder="ابحث عن حي أو منطقة أو مشروع…"
+                  variant="hero"
+                />
               </div>
+
+              {/* ── Subcategory pills row — appears below when a category is chosen ── */}
+              {(() => {
+                const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
+                const subs = selCat ? ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === selCat.id) : [];
+                if (selectedCategory === "all" || subs.length === 0) return null;
+                return (
+                  <motion.div
+                    key={selectedCategory}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    className="border-t border-border/30 px-4 py-3 overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 flex-wrap" dir="rtl">
+                      <span className="text-xs font-semibold text-gray-400 ml-1 shrink-0">النوع:</span>
+                      {/* "الكل" pill */}
+                      <button
+                        onClick={() => setHeroSubcategoryId("all")}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 shrink-0
+                          ${heroSubcategoryId === "all"
+                            ? "bg-primary text-white border-primary shadow-sm"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"
+                          }`}
+                      >
+                        الكل
+                      </button>
+                      {subs.map(s => (
+                        <button
+                          key={s.id}
+                          onClick={() => setHeroSubcategoryId(heroSubcategoryId === String(s.id) ? "all" : String(s.id))}
+                          className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 shrink-0
+                            ${heroSubcategoryId === String(s.id)
+                              ? "bg-primary text-white border-primary shadow-sm"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"
+                            }`}
+                        >
+                          {s.nameAr}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })()}
             </motion.div>
 
             {/* ── Stats strip ── */}
