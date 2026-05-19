@@ -7,7 +7,11 @@ import { packagesTable } from "./packages";
 export const subscriptionsTable = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
   providerId: integer("provider_id").notNull().references(() => providersTable.id, { onDelete: "cascade" }),
-  packageId: integer("package_id").notNull().references(() => packagesTable.id, { onDelete: "restrict" }),
+  packageId: integer("package_id").references(() => packagesTable.id, { onDelete: "restrict" }),
+  billingPlanId: integer("billing_plan_id"),
+  planName: text("plan_name"),
+  planNameAr: text("plan_name_ar"),
+  planPrice: text("plan_price"),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   status: text("status").notNull().default("active"),

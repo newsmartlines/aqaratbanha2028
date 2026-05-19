@@ -667,10 +667,15 @@ export const api = {
   },
 
   subscriptions: {
-    subscribe: (providerId: number, packageId: number, opts?: { simulated?: boolean }) =>
+    /** Subscribe using old packageId OR new billingPlanId (pass isBillingPlan=true) */
+    subscribe: (providerId: number, planOrPackageId: number, isBillingPlan?: boolean, opts?: { simulated?: boolean }) =>
       fetchJson(`/providers/${providerId}/subscribe`, {
         method: "POST",
-        body: JSON.stringify({ packageId, ...(opts?.simulated ? { simulated: true } : {}) }),
+        body: JSON.stringify(
+          isBillingPlan
+            ? { billingPlanId: planOrPackageId, ...(opts?.simulated ? { simulated: true } : {}) }
+            : { packageId: planOrPackageId, ...(opts?.simulated ? { simulated: true } : {}) }
+        ),
       }),
     /** @deprecated No dedicated route; use `api.providers.stats` subscription field */
     current: async () => null,
@@ -851,5 +856,48 @@ export const api = {
       fetchJson(`/properties/${propertyId}/phone-click`, { method: "POST" }),
   },
 
+  billingPlans: {
+    publicList: async () => {
+      const res = await fetchJson<any>(`/billing/plans`);
+      if (res && typeof res === "object" && "data" in res) return res.data as BillingPlan[];
+      if (Array.isArray(res)) return res as BillingPlan[];
+      return [] as BillingPlan[];
+    },
+    adminList: async () => {
+      const res = await fetchJson<any>(`/admin/billing/plans`);
+      if (res && typeof res === "object" && "data" in res) return res.data as BillingPlan[];
+      if (Array.isArray(res)) return res as BillingPlan[];
+      return [] as BillingPlan[];
+    },
+    seed: () => fetchJson(`/admin/billing/seed`, { method: "POST" }),
+    toggle: (id: number) => fetchJson(`/admin/billing/plans/${id}/toggle`, { method: "PATCH" }),
+    create: (data: any) => fetchJson(`/admin/billing/plans`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: any) => fetchJson(`/admin/billing/plans/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: number) => fetchJson(`/admin/billing/plans/${id}`, { method: "DELETE" }),
+  },
+
   fetchJson,
+};
+
+export type BillingPlan = {
+  id: number;
+  name: string;
+  nameAr: string | null;
+  descriptionAr: string | null;
+  price: string;
+  yearlyPrice: string | null;
+  currency: string;
+  durationDays: number;
+  durationType: string;
+  userType: string;
+  status: string;
+  isRecommended: boolean;
+  isMostPopular: boolean;
+  trialDays: number;
+  sortOrder: number;
+  color: string;
+  limits: string;
+  features: string;
+  commissionPercent: string;
+  createdAt: string;
 };

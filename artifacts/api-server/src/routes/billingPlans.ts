@@ -8,6 +8,19 @@ import { eq, desc, sum, count } from "drizzle-orm";
 
 const router = Router();
 
+// ── Public endpoint: active plans for providers ───────────────────────────────
+
+router.get("/billing/plans", async (_req, res) => {
+  try {
+    const plans = await db
+      .select()
+      .from(billingPlansTable)
+      .where(eq(billingPlansTable.status, "active"))
+      .orderBy(billingPlansTable.sortOrder);
+    res.json({ success: true, data: plans });
+  } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
+});
+
 // ── Plans ────────────────────────────────────────────────────────────────────
 
 router.get("/admin/billing/plans", async (_req, res) => {

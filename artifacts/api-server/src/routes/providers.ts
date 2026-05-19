@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { providersTable, usersTable, servicesTable, reviewsTable, categoriesTable, packagesTable, subscriptionsTable, requestsTable, interactionsTable, paymentsTable, notificationsTable } from "@workspace/db";
+import { providersTable, usersTable, servicesTable, reviewsTable, categoriesTable, packagesTable, subscriptionsTable, requestsTable, interactionsTable, paymentsTable, notificationsTable, billingPlansTable } from "@workspace/db";
 import { citiesTable, regionsTable } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
@@ -365,12 +365,21 @@ router.get("/providers/:id/stats", async (req, res) => {
           startDate: subscriptionsTable.startDate,
           endDate: subscriptionsTable.endDate,
           packageId: subscriptionsTable.packageId,
+          billingPlanId: subscriptionsTable.billingPlanId,
           packageNameAr: packagesTable.nameAr,
           packagePrice: packagesTable.price,
           durationDays: packagesTable.durationDays,
+          planNameAr: subscriptionsTable.planNameAr,
+          planPrice: subscriptionsTable.planPrice,
+          bpDurationDays: billingPlansTable.durationDays,
+          bpCommissionPercent: billingPlansTable.commissionPercent,
+          bpLimits: billingPlansTable.limits,
+          bpFeatures: billingPlansTable.features,
+          bpColor: billingPlansTable.color,
         })
         .from(subscriptionsTable)
         .leftJoin(packagesTable, eq(subscriptionsTable.packageId, packagesTable.id))
+        .leftJoin(billingPlansTable, eq(subscriptionsTable.billingPlanId, billingPlansTable.id))
         .where(eq(subscriptionsTable.providerId, id))
         .orderBy(desc(subscriptionsTable.startDate))
         .limit(1),
@@ -393,6 +402,17 @@ router.get("/providers/:id/stats", async (req, res) => {
       isActive = daysLeft > 0;
     }
 
+    // Resolve display name/price from billing plan or old package
+    const resolvedNameAr = subscription?.billingPlanId
+      ? (subscription.planNameAr ?? subscription.planNameAr)
+      : (subscription?.packageNameAr ?? subscription?.planNameAr ?? null);
+    const resolvedPrice = subscription?.billingPlanId
+      ? subscription.planPrice
+      : (subscription?.packagePrice ?? subscription?.planPrice ?? null);
+    const resolvedDurationDays = subscription?.billingPlanId
+      ? (subscription.bpDurationDays ?? 30)
+      : (subscription?.durationDays ?? 30);
+
     res.json({
       success: true,
       data: {
@@ -404,7 +424,14 @@ router.get("/providers/:id/stats", async (req, res) => {
         reviewsCount: reviewsResult.length,
         avgRating,
         subscription: subscription
-          ? { ...subscription, daysLeft, isActive }
+          ? {
+              ...subscription,
+              daysLeft,
+              isActive,
+              packageNameAr: resolvedNameAr,
+              packagePrice: resolvedPrice,
+              durationDays: resolvedDurationDays,
+            }
           : null,
       },
     });
@@ -451,14 +478,82 @@ router.get("/providers/:id/interactions", async (req, res) => {
   }
 });
 
-// Provider self-subscribe — create or replace active subscription
+// Provider self-subscribe — supports both old packageId and new billingPlanId
 router.post("/providers/:id/subscribe", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (!Number.isFinite(id) || id < 1) {
       return res.status(400).json({ success: false, error: "معرّف مقدم الخدمة غير صالح" });
     }
-    const { packageId } = req.body;
+
+    const { packageId, billingPlanId } = req.body;
+
+    // ── Billing Plan path (new system) ──────────────────────────────────────
+    if (billingPlanId) {
+      const bpId = parseInt(String(billingPlanId), 10);
+      if (!Number.isFinite(bpId)) return res.status(400).json({ success: false, error: "معرّف الباقة غير صالح" });
+
+      const [bp] = await db.select().from(billingPlansTable).where(eq(billingPlansTable.id, bpId));
+      if (!bp) return res.status(404).json({ success: false, error: "الباقة غير موجودة" });
+
+      const requestedPrice = parseFloat(String(bp.price ?? "0"));
+
+      if (requestedPrice === 0) {
+        const existingSubs = await db
+          .select({ id: subscriptionsTable.id })
+          .from(subscriptionsTable)
+          .where(eq(subscriptionsTable.providerId, id))
+          .limit(1);
+        if (existingSubs.length > 0) {
+          return res.status(409).json({ success: false, error: "لا يمكن تفعيل الباقة المجانية أكثر من مرة" });
+        }
+      }
+
+      const startDate = new Date();
+      const endDate = new Date(startDate.getTime() + (bp.durationDays ?? 30) * 24 * 60 * 60 * 1000);
+
+      const [sub] = await db
+        .insert(subscriptionsTable)
+        .values({
+          providerId: id,
+          billingPlanId: bp.id,
+          planName: bp.name,
+          planNameAr: bp.nameAr ?? bp.name,
+          planPrice: String(bp.price ?? "0"),
+          startDate,
+          endDate,
+          status: "active",
+        })
+        .returning();
+
+      await db.update(providersTable).set({ verified: requestedPrice > 0 }).where(eq(providersTable.id, id));
+
+      const [providerRow] = await db
+        .select({ name: usersTable.name, userId: providersTable.userId })
+        .from(providersTable).leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
+        .where(eq(providersTable.id, id));
+      const ownerUserId = providerRow?.userId ?? null;
+      const providerName = providerRow?.name ?? "مزود خدمة";
+
+      if (requestedPrice > 0 && ownerUserId) {
+        await db.insert(notificationsTable).values({
+          userId: ownerUserId,
+          title: "تم تفعيل الاشتراك",
+          message: `تم تفعيل باقة ${bp.nameAr ?? bp.name} بنجاح لمدة ${bp.durationDays} يوم.`,
+          type: "subscription",
+        }).catch(() => {});
+        await db.insert(notificationsTable).values({
+          userId: null,
+          title: "اشتراك جديد",
+          message: `المزود "${providerName}" اشترك في باقة ${bp.nameAr ?? bp.name}.`,
+          type: "subscription",
+        }).catch(() => {});
+      }
+
+      return res.json({ success: true, data: sub });
+    }
+
+    // ── Old Packages path (legacy) ───────────────────────────────────────────
     if (!packageId) return res.status(400).json({ success: false, error: "يجب اختيار باقة الاشتراك" });
 
     const pkgId = parseInt(String(packageId), 10);
@@ -484,7 +579,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
 
     const [sub] = await db
       .insert(subscriptionsTable)
-      .values({ providerId: id, packageId: pkg.id, startDate, endDate, status: "active" })
+      .values({ providerId: id, packageId: pkg.id, planName: pkg.nameEn, planNameAr: pkg.nameAr, planPrice: String(pkg.price), startDate, endDate, status: "active" })
       .returning();
 
     await db

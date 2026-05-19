@@ -88,7 +88,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-teal-900 text-white">
+    <div className="flex h-full flex-col bg-teal-900 text-white overflow-hidden">
 
       {/* Mobile header — hidden on desktop */}
       <div className="flex h-14 shrink-0 items-center px-5 border-b border-white/10 lg:hidden">
@@ -120,7 +120,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
       </div>
 
       {/* Dashboard navigation */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 hide-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto py-4 px-3 hide-scrollbar">
         <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-teal-300/50">لوحة التحكم</p>
         <nav className="space-y-0.5">
           {dashboardNav.map((item) => {
@@ -246,7 +246,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
                   لوحتي
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-teal-900 border-none text-white">
+              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-teal-900 border-none text-white h-full overflow-hidden">
                 <SidebarContent />
               </SheetContent>
             </Sheet>
@@ -299,7 +299,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-teal-900 border-none text-white">
+              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-teal-900 border-none text-white h-full overflow-hidden">
                 <SidebarContent />
               </SheetContent>
             </Sheet>
