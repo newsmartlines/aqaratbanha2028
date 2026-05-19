@@ -18,6 +18,7 @@ import {
   Loader2, Phone, Mail, Map, Heart, MessageCircle,
   Users, Briefcase, ShoppingBag, ClipboardList,
   BedDouble, Bath, Maximize2, Building2, TrendingUp,
+  Store, Trees,
 } from "lucide-react";
 import { api, type Provider, type Category, type Subcategory, type SiteSettings, type Region, type FavoriteItem } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
@@ -890,8 +891,6 @@ export default function Home() {
             <div className="mt-6 flex items-center gap-6 flex-wrap justify-center">
               {[
                 { label: "عقار متاح", value: platformStats?.properties },
-                { label: "مزود خدمة", value: platformStats?.providers },
-                { label: "خدمة نشطة", value: platformStats?.services },
                 { label: "مستخدم مسجل", value: platformStats?.users },
               ].map((s, i) => (
                 <div key={i} className="flex items-baseline gap-1.5 text-white/90">
@@ -1098,6 +1097,96 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ── COMMERCIAL & LANDS ── */}
+        {(() => {
+          const commercial = homePropsRaw.filter(p => p.mainCategory === "تجاري");
+          const lands = homePropsRaw.filter(p => p.mainCategory === "أراضي");
+          if (commercial.length === 0 && lands.length === 0) return null;
+
+          const MiniCard = ({ property }: { property: any }) => {
+            const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+            const thumb = imgs[0] ?? DEFAULT_IMG;
+            const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
+            const priceNum = Number(property.price);
+            const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "غير محدد";
+            const listType = property.listingType ?? "";
+            return (
+              <div
+                className="group shrink-0 w-64 bg-white border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => setLocation(`/property/${property.id}`)}
+              >
+                <div className="relative h-40 overflow-hidden">
+                  <img src={thumb} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e => { e.currentTarget.src = DEFAULT_IMG; }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  {listType && (
+                    <span className={`absolute top-2 right-2 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${listType === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{listType}</span>
+                  )}
+                  {(property.area ?? 0) > 0 && (
+                    <span className="absolute bottom-2 left-2 text-[11px] font-semibold bg-black/40 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{property.area} م²</span>
+                  )}
+                </div>
+                <div className="p-3.5">
+                  <p className="text-primary font-extrabold text-base leading-none">{priceStr} <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
+                  <h3 className="font-semibold text-gray-900 text-sm mt-1 mb-1.5 line-clamp-1 group-hover:text-primary transition-colors">{property.title}</h3>
+                  <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                    <MapPin className="w-3 h-3 text-primary shrink-0" />
+                    <span className="truncate">{location}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          };
+
+          return (
+            <section className="py-14 bg-white border-y border-border/50">
+              <div className="container mx-auto px-4 space-y-12">
+                {commercial.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
+                          <Store className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-extrabold text-gray-900">محلات ومكاتب تجارية</h2>
+                          <p className="text-xs text-muted-foreground">{commercial.length} عقار تجاري متاح</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setLocation("/properties?category=تجاري")} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">
+                        عرض الكل <ArrowLeft className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+                      {commercial.map(p => <MiniCard key={p.id} property={p} />)}
+                    </div>
+                  </div>
+                )}
+                {lands.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
+                          <Trees className="w-4 h-4 text-amber-700" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-extrabold text-gray-900">أراضي للبيع</h2>
+                          <p className="text-xs text-muted-foreground">{lands.length} قطعة أرض متاحة</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setLocation("/properties?category=أراضي")} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">
+                        عرض الكل <ArrowLeft className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+                      {lands.map(p => <MiniCard key={p.id} property={p} />)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* ── HOW IT WORKS ── */}
         <section className="py-24 bg-secondary/30">
