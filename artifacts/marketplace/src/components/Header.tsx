@@ -108,13 +108,6 @@ export function Header() {
               {l.label}
             </Link>
           ))}
-          {/* Add Property CTA — end of nav */}
-          <Link href="/add-property">
-            <Button className="flex items-center gap-1.5 font-bold text-sm px-5 rounded-full text-white shadow-sm bg-primary hover:bg-primary/90">
-              <span className="text-base leading-none">+</span>
-              <span>أضف عقارك</span>
-            </Button>
-          </Link>
         </nav>
 
         {/* Desktop Actions */}
@@ -183,6 +176,13 @@ export function Header() {
               <span className="text-border mx-1">|</span>
               <Link href="/register">
                 <span className="cursor-pointer hover:text-primary transition-colors text-foreground">مستخدم جديد</span>
+              </Link>
+              <span className="text-border mx-1">|</span>
+              <Link href="/add-property">
+                <Button className="flex items-center gap-1 font-bold text-sm px-4 py-1.5 rounded-full text-white shadow-sm bg-primary hover:bg-primary/90 h-auto">
+                  <span className="text-base leading-none">+</span>
+                  <span>أضف عقارك</span>
+                </Button>
               </Link>
             </div>
           )}
