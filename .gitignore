@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Keep database snapshot tracked
+!database/snapshot.sql

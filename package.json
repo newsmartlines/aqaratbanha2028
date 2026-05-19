@@ -8,7 +8,9 @@
     "build:deploy": "pnpm --filter @workspace/marketplace run build && pnpm --filter @workspace/api-server run build",
     "start:deploy": "cross-env NODE_ENV=production node --enable-source-maps artifacts/api-server/dist/index.mjs",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "db:export": "bash database/export.sh",
+    "db:restore": "bash database/restore.sh"
   },
   "private": true,
   "devDependencies": {
