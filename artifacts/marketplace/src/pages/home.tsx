@@ -554,6 +554,12 @@ export default function Home() {
     staleTime: 5 * 60_000,
   });
 
+  const { data: featuredAreas = [] } = useQuery<Array<{ id: number; nameAr: string; image: string | null; cityName: string | null; displayOrder: number; enabled: boolean; propertyCount: number }>>({
+    queryKey: ["featured-areas"],
+    queryFn: api.featuredAreas.list,
+    staleTime: 5 * 60_000,
+  });
+
   const { data: platformStats } = useQuery<{ providers: number; users: number; services: number; requests: number; properties: number }>({
     queryKey: ["platform-stats"],
     queryFn: () => api.stats.platform(),
@@ -1138,6 +1144,97 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ── FEATURED AREAS ── */}
+        {featuredAreas.length > 0 && (
+          <section className="py-14 bg-gradient-to-b from-white to-gray-50/60">
+            <div className="container mx-auto px-4">
+              {/* Section header */}
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-semibold mb-3">
+                    <MapPin className="w-3.5 h-3.5" />
+                    تصفح بالمنطقة
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-[#0a0a0a] leading-tight">
+                    أهم المناطق
+                  </h2>
+                  <p className="text-gray-500 text-sm mt-1.5">اختر منطقتك وتصفح العقارات المتاحة</p>
+                </div>
+                <button
+                  onClick={() => setLocation("/properties")}
+                  className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                  عرض الكل
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Horizontal scroll strip */}
+              <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory">
+                {featuredAreas.map((area) => (
+                  <motion.button
+                    key={area.id}
+                    onClick={() => setLocation(`/properties?district=${encodeURIComponent(area.nameAr)}`)}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    className="group relative shrink-0 w-44 sm:w-52 md:w-60 h-60 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow snap-start cursor-pointer"
+                  >
+                    {/* Background image */}
+                    {area.image ? (
+                      <img
+                        src={area.image}
+                        alt={area.nameAr}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-teal-200" />
+                    )}
+
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+                    {/* Property count badge top-right */}
+                    <div className="absolute top-3 right-3">
+                      <span className="bg-white/90 backdrop-blur-sm text-primary text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        {area.propertyCount > 0 ? `${area.propertyCount} عقار` : "عقارات"}
+                      </span>
+                    </div>
+
+                    {/* Bottom text */}
+                    <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
+                      <p className="text-white font-bold text-lg leading-tight drop-shadow-md">
+                        {area.nameAr}
+                      </p>
+                      {area.cityName && (
+                        <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 justify-end">
+                          <MapPin className="w-3 h-3" />
+                          {area.cityName}
+                        </p>
+                      )}
+                      <p className="mt-2 text-xs text-white/60 flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        عرض العقارات
+                        <ArrowLeft className="w-3 h-3" />
+                      </p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Mobile show all */}
+              <div className="mt-5 flex justify-center sm:hidden">
+                <button
+                  onClick={() => setLocation("/properties")}
+                  className="text-sm font-semibold text-primary flex items-center gap-1.5"
+                >
+                  عرض جميع العقارات
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ── COMMERCIAL & LANDS ── */}
         {(() => {

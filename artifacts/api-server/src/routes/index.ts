@@ -27,6 +27,7 @@ import aiChatRouter from "./ai-chat";
 import chatLeadsRouter from "./chat-leads";
 import chatSessionsRouter from "./chat-sessions";
 import searchRouter from "./search";
+import featuredAreasRouter from "./featured-areas";
 
 const router: IRouter = Router();
 
@@ -58,5 +59,6 @@ router.use(aiChatRouter);
 router.use(chatLeadsRouter);
 router.use(chatSessionsRouter);
 router.use(searchRouter);
+router.use(featuredAreasRouter);
 
 export default router;

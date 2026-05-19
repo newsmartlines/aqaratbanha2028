@@ -876,6 +876,17 @@ export const api = {
     delete: (id: number) => fetchJson(`/admin/billing/plans/${id}`, { method: "DELETE" }),
   },
 
+  featuredAreas: {
+    list: () => fetchJson<Array<{ id: number; nameAr: string; image: string | null; cityName: string | null; displayOrder: number; enabled: boolean; propertyCount: number }>>("/featured-areas"),
+    adminList: () => fetchJson<Array<{ id: number; nameAr: string; image: string | null; cityName: string | null; displayOrder: number; enabled: boolean; propertyCount: number }>>("/admin/featured-areas"),
+    create: (data: { nameAr: string; image?: string; cityName?: string; displayOrder?: number; enabled?: boolean }) =>
+      fetchJson("/admin/featured-areas", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: { nameAr: string; image?: string; cityName?: string; displayOrder?: number; enabled?: boolean }) =>
+      fetchJson(`/admin/featured-areas/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    toggle: (id: number) => fetchJson(`/admin/featured-areas/${id}/toggle`, { method: "PATCH" }),
+    delete: (id: number) => fetchJson(`/admin/featured-areas/${id}`, { method: "DELETE" }),
+  },
+
   search: {
     suggestions: (q: string) =>
       fetchJson<{

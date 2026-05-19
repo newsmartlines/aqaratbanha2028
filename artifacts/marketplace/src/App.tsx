@@ -72,6 +72,7 @@ import AdminEmailTemplates from "@/pages/admin/email-templates";
 import AdminMessages from "@/pages/admin/messages";
 import AdminPlansCommissions from "@/pages/admin/plans-commissions";
 import AdminChatbot from "@/pages/admin/chatbot";
+import AdminFeaturedAreas from "@/pages/admin/featured-areas";
 import PropertyDetail from "@/pages/property-detail";
 import ComparePage from "@/pages/compare";
 import AdvertiserPage from "@/pages/advertiser";
@@ -370,6 +371,9 @@ function Router() {
       </Route>
       <Route path="/admin/chatbot">
         {() => <AdminProtectedRoute component={AdminChatbot} />}
+      </Route>
+      <Route path="/admin/featured-areas">
+        {() => <AdminProtectedRoute component={AdminFeaturedAreas} />}
       </Route>
 
       <Route component={NotFound} />
