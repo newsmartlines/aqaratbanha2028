@@ -11,7 +11,7 @@ import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
   Heart, Star, Map, Grid3X3, X, ChevronDown, ChevronUp,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
-  LayoutList, Scale, GitCompare,
+  LayoutList, Scale, GitCompare, Eye, Clock,
 } from "lucide-react";
 import { api, type Category, type Area } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -40,6 +40,8 @@ type DbProp = {
   paymentMethod: string | null;
   features: string | null;
   floor: number | null;
+  createdAt: string | null;
+  viewCount: number | null;
 };
 
 type DisplayProp = {
@@ -63,6 +65,8 @@ type DisplayProp = {
   paymentMethod: string;
   features: string[];
   floor: number | null;
+  createdAt: string | null;
+  viewCount: number;
 };
 
 function tryJsonArr(val: string | null | undefined): string[] {
@@ -100,7 +104,20 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     paymentMethod: row.paymentMethod ?? "",
     features: tryJsonArr(row.features),
     floor: row.floor ?? null,
+    createdAt: row.createdAt ?? null,
+    viewCount: row.viewCount ?? 0,
   };
+}
+
+function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return "الآن";
+  if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+  if (diff < 604800) return `منذ ${Math.floor(diff / 86400)} ${Math.floor(diff / 86400) === 1 ? "يوم" : "أيام"}`;
+  if (diff < 2592000) return `منذ ${Math.floor(diff / 604800)} ${Math.floor(diff / 604800) === 1 ? "أسبوع" : "أسابيع"}`;
+  return `منذ ${Math.floor(diff / 2592000)} شهر`;
 }
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -777,6 +794,20 @@ export default function PropertiesPage() {
                                 </div>
                               </div>
 
+                              {/* Date + Views strip */}
+                              <div className="flex items-center gap-3 mb-2.5">
+                                {p.createdAt && (
+                                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                                    <Clock className="w-3 h-3 text-gray-300" />
+                                    {timeAgo(p.createdAt)}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                                  <Eye className="w-3 h-3 text-gray-300" />
+                                  {(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                </span>
+                              </div>
+
                               {/* Specs + CTA */}
                               <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
                                 {p.beds > 0 && (
@@ -901,9 +932,23 @@ export default function PropertiesPage() {
                                 {p.title}
                               </h3>
 
-                              <div className="flex items-center gap-1 text-gray-400 text-xs mb-3">
+                              <div className="flex items-center gap-1 text-gray-400 text-xs mb-2">
                                 <MapPin className="w-3 h-3 text-primary shrink-0" />
                                 <span className="truncate">{p.location}</span>
+                              </div>
+
+                              {/* Date + views */}
+                              <div className="flex items-center gap-2.5 mb-2.5">
+                                {p.createdAt && (
+                                  <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                                    <Clock className="w-2.5 h-2.5 text-gray-300" />
+                                    {timeAgo(p.createdAt)}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                                  <Eye className="w-2.5 h-2.5 text-gray-300" />
+                                  {(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                </span>
                               </div>
 
                               {/* Specs */}

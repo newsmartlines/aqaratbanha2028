@@ -18,7 +18,7 @@ import {
   Loader2, Phone, Mail, Map, Heart, MessageCircle,
   Users, Briefcase, ShoppingBag, ClipboardList,
   BedDouble, Bath, Maximize2, Building2, TrendingUp,
-  Store, Trees, Scale, GitCompare, X as XIcon,
+  Store, Trees, Scale, GitCompare, X as XIcon, Eye, Clock,
 } from "lucide-react";
 import { api, type Provider, type Category, type Subcategory, type SiteSettings, type Region, type FavoriteItem } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
@@ -29,6 +29,17 @@ import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store
 import toast from "react-hot-toast";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
+
+function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return "الآن";
+  if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+  if (diff < 604800) return `منذ ${Math.floor(diff / 86400)} ${Math.floor(diff / 86400) === 1 ? "يوم" : "أيام"}`;
+  if (diff < 2592000) return `منذ ${Math.floor(diff / 604800)} ${Math.floor(diff / 604800) === 1 ? "أسبوع" : "أسابيع"}`;
+  return `منذ ${Math.floor(diff / 2592000)} شهر`;
+}
 
 // Fix Leaflet default marker icons for Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -1069,6 +1080,20 @@ export default function Home() {
                             <span>{property.area} م²</span>
                           </div>
                         )}
+                      </div>
+
+                      {/* Date + Views */}
+                      <div className="flex items-center gap-3 mb-2.5">
+                        {property.createdAt && (
+                          <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                            <Clock className="w-3 h-3 text-gray-300" />
+                            {timeAgo(property.createdAt)}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                          <Eye className="w-3 h-3 text-gray-300" />
+                          {((property.viewCount ?? 0) as number).toLocaleString("ar-EG")} مشاهدة
+                        </span>
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
