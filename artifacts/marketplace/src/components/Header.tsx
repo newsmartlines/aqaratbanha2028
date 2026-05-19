@@ -108,18 +108,17 @@ export function Header() {
               {l.label}
             </Link>
           ))}
-        </nav>
-
-        {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-2">
-          {/* Add Property CTA — always visible */}
+          {/* Add Property CTA — end of nav */}
           <Link href="/add-property">
-            <Button className="flex items-center gap-1.5 font-bold text-sm px-5 rounded-full text-white shadow-sm" style={{background: 'linear-gradient(135deg, #12B5D0 0%, #0060A0 100%)'}}>
+            <Button className="flex items-center gap-1.5 font-bold text-sm px-5 rounded-full text-white shadow-sm bg-primary hover:bg-primary/90">
               <span className="text-base leading-none">+</span>
               <span>أضف عقارك</span>
             </Button>
           </Link>
+        </nav>
 
+        {/* Desktop Actions */}
+        <div className="hidden md:flex items-center gap-2">
           {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
