@@ -238,6 +238,7 @@ export default function AdminSettings() {
   const isMaintenance = form.maintenanceMode === "true";
   const requireApproval = form.requireProviderApproval !== "false";
   const allowRegistration = form.allowRegistration !== "false";
+  const servicesEnabled = form.servicesModuleEnabled !== "false";
 
   return (
     <AdminLayout title={t("pageTitle")}>
@@ -813,6 +814,62 @@ export default function AdminSettings() {
         {/* ── Platform Rules ──────────────────────────────────────── */}
         <TabsContent value="platform">
           <div className="space-y-6">
+
+            {/* Services Module Master Switch */}
+            <Card className={`shadow-sm border-2 transition-colors ${servicesEnabled ? "border-teal-200" : "border-rose-200 bg-rose-50/30"}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-xl">🛠️</span>
+                  قسم الخدمات والمزودين
+                </CardTitle>
+                <CardDescription>
+                  تشغيل أو إيقاف قسم الخدمات بالكامل — التسجيل كمزود، صفحات الخدمات، وملفات المزودين
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${servicesEnabled ? "bg-teal-50 border-teal-200" : "bg-rose-50 border-rose-200"}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${servicesEnabled ? "bg-teal-100" : "bg-rose-100"}`}>
+                      {servicesEnabled ? "✅" : "🚫"}
+                    </div>
+                    <div>
+                      <p className={`font-bold text-base ${servicesEnabled ? "text-teal-800" : "text-rose-800"}`}>
+                        {servicesEnabled ? "قسم الخدمات مفعّل" : "قسم الخدمات مُوقَف"}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {servicesEnabled
+                          ? "الزوار يرون صفحات الخدمات وبإمكان المزودين التسجيل"
+                          : "صفحات الخدمات مخفية تماماً — لن يظهر أي شيء للزوار"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={servicesEnabled}
+                    onCheckedChange={v => setForm(f => ({ ...f, servicesModuleEnabled: v ? "true" : "false" }))}
+                  />
+                </div>
+
+                {!servicesEnabled && (
+                  <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700 space-y-1">
+                    <p className="font-semibold">عند التعطيل سيُخفى:</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>رابط التسجيل كمزود خدمة في صفحة التسجيل</li>
+                      <li>صفحة /services والخدمات في قائمة التنقل</li>
+                      <li>صفحات ملفات المزودين (/provider/:id)</li>
+                      <li>روابط التسجيل للمزودين من الصفحة الرئيسية</li>
+                    </ul>
+                  </div>
+                )}
+
+                <Button onClick={() => handleSave({ servicesModuleEnabled: form.servicesModuleEnabled })}
+                  disabled={saveMutation.isPending}
+                  className={servicesEnabled ? "bg-teal-600 hover:bg-teal-700" : "bg-rose-500 hover:bg-rose-600"}>
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعداد قسم الخدمات
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-teal-600" /> إعدادات التسجيل والموافقة</CardTitle>

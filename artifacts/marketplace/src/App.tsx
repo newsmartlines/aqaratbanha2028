@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { useEffect } from "react";
+import { useEffect, createContext, useContext } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -9,7 +9,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LanguageProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { api, mediaUrl } from "@/lib/api";
+import { api, mediaUrl, type SiteSettings } from "@/lib/api";
+
+// ── Site-settings context ───────────────────────────────────────────────────
+export const SiteSettingsContext = createContext<SiteSettings | null>(null);
+export function useSiteSettings() { return useContext(SiteSettingsContext); }
+export function useServicesEnabled() {
+  const s = useSiteSettings();
+  return s ? s.servicesModuleEnabled !== "false" : true;
+}
 import Home from "@/pages/home";
 import Home2 from "@/pages/home2";
 import SearchPage from "@/pages/search";
@@ -146,6 +154,13 @@ function AdminProtectedRoute({ component: Component }: { component: ComponentTyp
   return <Component />;
 }
 
+/** Redirects to "/" when the services module is disabled in site settings. */
+function ServicesGate({ component: Component }: { component: ComponentType }) {
+  const servicesEnabled = useServicesEnabled();
+  if (!servicesEnabled) return <Redirect to="/" />;
+  return <Component />;
+}
+
 // ── Router ─────────────────────────────────────────────────────────────────
 function Router() {
   return (
@@ -154,7 +169,9 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/home2" component={Home2} />
       <Route path="/search" component={SearchPage} />
-      <Route path="/provider/register" component={ProviderRegisterPage} />
+      <Route path="/provider/register">
+        {() => <ServicesGate component={ProviderRegisterPage} />}
+      </Route>
       {/* Must be before `/provider/:id` — otherwise "dashboard" is parsed as a provider id */}
       <Route path="/provider/dashboard">
         {() => <RoleProtectedRoute component={ProviderDashboard} roles={["provider"]} />}
@@ -162,12 +179,16 @@ function Router() {
       <Route path="/provider/subscription">
         {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
       </Route>
-      <Route path="/provider/:id" component={ProviderPage} />
+      <Route path="/provider/:id">
+        {() => <ServicesGate component={ProviderPage} />}
+      </Route>
       <Route path="/add-property" component={AddPropertyPage} />
       <Route path="/map-search" component={MapSearchPage} />
       <Route path="/properties" component={PropertiesPage} />
       <Route path="/property/:id" component={PropertyDetail} />
-      <Route path="/services" component={ServicesPage} />
+      <Route path="/services">
+        {() => <ServicesGate component={ServicesPage} />}
+      </Route>
       <Route path="/categories" component={CategoriesPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/contact" component={ContactPage} />
@@ -372,7 +393,12 @@ function GoogleWrapper({ children }: { children: React.ReactNode }) {
     staleTime: 60_000,
   });
   const clientId = (settings as any)?.googleClientId || import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-  return <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>;
+
+  return (
+    <SiteSettingsContext.Provider value={settings ?? null}>
+      <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>
+    </SiteSettingsContext.Provider>
+  );
 }
 
 function App() {

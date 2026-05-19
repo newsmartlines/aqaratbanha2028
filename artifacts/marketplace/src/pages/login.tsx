@@ -17,6 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
+import { useServicesEnabled } from "@/App";
 
 interface AuthProps {
   defaultTab?: "login" | "register";
@@ -41,6 +42,7 @@ function safeReturnTo(path: string | null, role: string): string | null {
 }
 
 export default function AuthPage({ defaultTab = "login" }: AuthProps) {
+  const servicesEnabled = useServicesEnabled();
   const [view, setView] = useState<View>(defaultTab === "register" ? "register" : "login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -303,11 +305,13 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
               </Link>
             ))}
           </nav>
-          <Link href="/provider/register">
-            <span className="hidden sm:inline-flex px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer transition-colors shadow-sm">
-              كن مقدم خدمة
-            </span>
-          </Link>
+          {servicesEnabled && (
+            <Link href="/provider/register">
+              <span className="hidden sm:inline-flex px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer transition-colors shadow-sm">
+                كن مقدم خدمة
+              </span>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -469,23 +473,25 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                     </div>
                   </Card>
 
-                  <Card
-                    className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-200 relative overflow-hidden"
-                    onClick={() => setAccountType("provider")}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-full bg-background text-muted-foreground flex items-center justify-center shrink-0">
-                        <Briefcase className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-lg">مقدم خدمة</h3>
-                          <span className="text-[10px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">مزود</span>
+                  {servicesEnabled && (
+                    <Card
+                      className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-200 relative overflow-hidden"
+                      onClick={() => setAccountType("provider")}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-full bg-background text-muted-foreground flex items-center justify-center shrink-0">
+                          <Briefcase className="h-6 w-6" />
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">اعرض خدماتك وتواصل مع العملاء وضاعف دخلك.</p>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-lg">مقدم خدمة</h3>
+                            <span className="text-[10px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">مزود</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">اعرض خدماتك وتواصل مع العملاء وضاعف دخلك.</p>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
+                    </Card>
+                  )}
 
                   <Card
                     className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-amber-300/40 transition-all duration-200 relative overflow-hidden"

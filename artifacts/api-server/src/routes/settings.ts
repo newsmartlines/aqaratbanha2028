@@ -8,6 +8,7 @@ const router = Router();
 const DEFAULT_SETTINGS: Record<string, string> = {
   googleClientId: "",
   googleClientSecret: "",
+  servicesModuleEnabled: "true",
   siteName: "عقارات بنها",
   siteNameEn: "Aqarat Banha",
   logoUrl: "",
