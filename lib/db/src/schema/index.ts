@@ -28,3 +28,5 @@ export * from "./propertyFavorites";
 export * from "./savedSearches";
 export * from "./emailTemplates";
 export * from "./billingPlans";
+export * from "./chatLeads";
+export * from "./chatSessions";
