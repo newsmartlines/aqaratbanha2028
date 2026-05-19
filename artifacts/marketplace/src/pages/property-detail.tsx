@@ -127,7 +127,14 @@ export default function PropertyDetail() {
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const viewTracked = useRef(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!id) { setNotFound(true); setLoading(false); return; }
@@ -853,6 +860,23 @@ export default function PropertyDetail() {
               />
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Scroll to top button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 transition-all"
+            aria-label="العودة للأعلى"
+          >
+            <ChevronLeft className="w-5 h-5 rotate-90" />
+          </motion.button>
         )}
       </AnimatePresence>
 
