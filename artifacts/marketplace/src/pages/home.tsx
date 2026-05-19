@@ -519,6 +519,12 @@ export default function Home() {
   const { data: providers, loading: providersLoading } = useApi(() => api.providers.list(), []);
   const { data: settings } = useApi(() => api.settings.list(), []);
 
+  const { data: reCategories = [] } = useQuery<Category[]>({
+    queryKey: ["re-categories"],
+    queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: regions = [] } = useQuery<Region[]>({
     queryKey: ["regions"],
     queryFn: () => api.regions.list(),
@@ -628,9 +634,11 @@ export default function Home() {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery);
-    if (selectedCategory && selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedCategory && selectedCategory !== "all") params.set("mainCategory", selectedCategory);
     if (listingType) params.set("type", listingType);
     if (priceRange && priceRange !== "all") params.set("price", priceRange);
+    if (heroRegionId != null) params.set("regionId", String(heroRegionId));
+    if (heroCityName && heroCityName !== "__all__") params.set("city", heroCityName);
     setLocation(`/properties?${params.toString()}`);
   };
 
@@ -749,8 +757,8 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Category */}
-                <div className="md:w-40">
+                {/* Category — real estate categories from admin */}
+                <div className="md:w-44">
                   <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
                     <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
                       <Building2 className="w-4 h-4 ml-1.5 text-primary shrink-0" />
@@ -758,37 +766,39 @@ export default function Home() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">كل الأنواع</SelectItem>
-                      {(categories as Category[] | undefined)?.map(c => (
-                        <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>
+                      {reCategories.map(c => (
+                        <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Subcategory */}
+                {/* Subcategory — subcategories of the selected real estate category */}
                 <AnimatePresence>
-                  {selectedCategory !== "all" && ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === parseInt(selectedCategory, 10)).length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="md:w-36 overflow-hidden"
-                    >
-                      <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
-                        <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
-                          <ChevronDown className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                          <SelectValue placeholder="النوع الفرعي" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">الكل</SelectItem>
-                          {((allSubs as Subcategory[] | undefined) ?? [])
-                            .filter(s => s.categoryId === parseInt(selectedCategory, 10))
-                            .map(s => <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </motion.div>
-                  )}
+                  {(() => {
+                    const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
+                    const subs = selCat ? ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === selCat.id) : [];
+                    return selectedCategory !== "all" && subs.length > 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="md:w-36 overflow-hidden"
+                      >
+                        <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
+                          <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
+                            <ChevronDown className="w-4 h-4 ml-1.5 text-primary shrink-0" />
+                            <SelectValue placeholder="النوع الفرعي" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">الكل</SelectItem>
+                            {subs.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+                    ) : null;
+                  })()}
                 </AnimatePresence>
 
                 {/* Region */}

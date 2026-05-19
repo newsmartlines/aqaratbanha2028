@@ -69,8 +69,27 @@ export async function seed() {
   }
 
   await seedRegions();
+  await seedRealEstateCategories();
 
   console.log("Database seeded successfully!");
+}
+
+async function seedRealEstateCategories() {
+  const { eq } = await import("drizzle-orm");
+  const existing = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "real_estate"));
+  if (existing.length > 0) {
+    console.log("Real estate categories already seeded, skipping.");
+    return;
+  }
+  console.log("Seeding real estate categories...");
+  const reCategories = [
+    { nameAr: "سكني", nameEn: "Residential", icon: "Home", slug: "residential", description: "العقارات السكنية", type: "real_estate" as const },
+    { nameAr: "تجاري", nameEn: "Commercial", icon: "Store", slug: "commercial", description: "العقارات التجارية", type: "real_estate" as const },
+    { nameAr: "أراضي", nameEn: "Land", icon: "MapPin", slug: "land", description: "الأراضي والقطع", type: "real_estate" as const },
+    { nameAr: "صناعي", nameEn: "Industrial", icon: "Factory", slug: "industrial", description: "العقارات الصناعية", type: "real_estate" as const },
+  ];
+  await db.insert(categoriesTable).values(reCategories);
+  console.log("Real estate categories seeded.");
 }
 
 async function seedRegions() {

@@ -94,6 +94,14 @@ export default function MyPropertiesPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  const { data: reCategories = [] } = useQuery<{ id: number; nameAr: string; slug: string | null }[]>({
+    queryKey: ["re-categories"],
+    queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const getCatLabel = (slug: string) => reCategories.find(c => (c.slug ?? String(c.id)) === slug)?.nameAr ?? CATEGORY_LABELS[slug]?.label ?? slug;
+
   // fetch my properties
   const { data: raw, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["my-properties", user?.id],
@@ -217,16 +225,21 @@ export default function MyPropertiesPage() {
                   <SelectItem value="rent">للإيجار</SelectItem>
                 </SelectContent>
               </Select>
-              {/* Property type */}
+              {/* Property type — dynamic from admin real estate categories */}
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-full sm:w-40 rounded-xl">
                   <SelectValue placeholder="كل الأنواع" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الأنواع</SelectItem>
-                  <SelectItem value="residential">سكني</SelectItem>
-                  <SelectItem value="commercial">تجاري</SelectItem>
-                  <SelectItem value="land">أراضي</SelectItem>
+                  {reCategories.length > 0
+                    ? reCategories.map(c => <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
+                    : <>
+                        <SelectItem value="residential">سكني</SelectItem>
+                        <SelectItem value="commercial">تجاري</SelectItem>
+                        <SelectItem value="land">أراضي</SelectItem>
+                      </>
+                  }
                 </SelectContent>
               </Select>
               {/* Status */}
@@ -346,7 +359,7 @@ export default function MyPropertiesPage() {
                           <td className="px-4 py-3">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                               <CatIcon className="w-3 h-3" />
-                              {cat?.label ?? prop.mainCategory}
+                              {getCatLabel(prop.mainCategory)}
                             </span>
                             <span className={`mt-1 block text-xs font-medium ${prop.listingType === "rent" ? "text-blue-600" : "text-teal-600"}`}>
                               {LISTING_LABELS[prop.listingType] ?? prop.listingType}

@@ -11,7 +11,8 @@ import {
   Building2, Loader2, Save, ArrowRight, ExternalLink,
   MapPin, DollarSign, Home, BedDouble, Bath, Maximize2,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, type Category } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 type DbProperty = {
@@ -104,6 +105,12 @@ export default function AdminPropertyEdit() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const id = parseInt(params.id ?? "0");
+
+  const { data: reCategories = [] } = useQuery<Category[]>({
+    queryKey: ["re-categories"],
+    queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -303,7 +310,12 @@ export default function AdminPropertyEdit() {
                 <Label>نوع العقار</Label>
                 <Select value={f.mainCategory} onValueChange={v => setF({ mainCategory: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {reCategories.length > 0
+                      ? reCategories.map(c => <SelectItem key={c.slug ?? c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
+                      : MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)
+                    }
+                  </SelectContent>
                 </Select>
               </div>
               <div className="col-span-2 grid gap-1.5">

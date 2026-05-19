@@ -13,7 +13,8 @@ import {
   CheckCircle2, XCircle, Building2, TrendingUp, Home, Loader2,
   Plus, BedDouble, Bath, Maximize2, AlertCircle, ExternalLink,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, type Category } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 type DbProperty = {
@@ -97,6 +98,12 @@ export default function AdminProperties() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [providers, setProviders] = useState<{ id: number; name: string }[]>([]);
+
+  const { data: reCategories = [] } = useQuery<Category[]>({
+    queryKey: ["re-categories"],
+    queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const load = async () => {
     setLoading(true);
@@ -227,8 +234,13 @@ export default function AdminProperties() {
         <div className="grid gap-1.5">
           <Label>نوع العقار</Label>
           <Select value={f.mainCategory} onValueChange={v => setF({ ...f, mainCategory: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>{MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
+            <SelectTrigger><SelectValue placeholder="اختر نوع العقار" /></SelectTrigger>
+            <SelectContent>
+              {reCategories.length > 0
+                ? reCategories.map(c => <SelectItem key={c.slug ?? c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
+                : MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)
+              }
+            </SelectContent>
           </Select>
         </div>
         <div className="grid gap-1.5">
@@ -334,7 +346,10 @@ export default function AdminProperties() {
                 <SelectTrigger className="w-36"><SelectValue placeholder="نوع العقار" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الأنواع</SelectItem>
-                  {MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                  {reCategories.length > 0
+                    ? reCategories.map(c => <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
+                    : MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)
+                  }
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>

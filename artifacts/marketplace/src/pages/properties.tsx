@@ -12,7 +12,8 @@ import {
   Heart, Star, Map, Grid3X3, X, ChevronDown, ChevronUp,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, type Category } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 type DbProp = {
   id: number;
@@ -132,22 +133,46 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
   );
 }
 
+function getUrlParams() {
+  const sp = new URLSearchParams(window.location.search);
+  return {
+    q: sp.get("q") ?? "",
+    mainCategory: sp.get("mainCategory") ?? null,
+    type: sp.get("type") ?? null,
+    price: sp.get("price") ?? null,
+    city: sp.get("city") ?? null,
+  };
+}
+
 export default function PropertiesPage() {
   const [, setLocation] = useLocation();
 
+  const initParams = getUrlParams();
+
   const [allProps, setAllProps] = useState<DisplayProp[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedKind, setSelectedKind] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [search, setSearch] = useState(initParams.q);
+  const [selectedType, setSelectedType] = useState<string | null>(initParams.type);
+  const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
+  const [selectedCity, setSelectedCity] = useState<string | null>(initParams.city);
   const [selectedBeds, setSelectedBeds] = useState<number | null>(null);
-  const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
+  const [selectedPrice, setSelectedPrice] = useState<number | null>(() => {
+    if (!initParams.price) return null;
+    const [min, max] = initParams.price.split("-").map(Number);
+    const idx = PRICE_RANGES.findIndex(r => r.min === min && (r.max === max || (max > 1e7 && r.max === Infinity)));
+    return idx >= 0 ? idx : null;
+  });
   const [selectedArea, setSelectedArea] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "area">("default");
+
+  const { data: reCategories = [] } = useQuery<Category[]>({
+    queryKey: ["re-categories"],
+    queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     api.properties.list({ status: "published" })
@@ -320,12 +345,25 @@ export default function PropertiesPage() {
                 </div>
               </FilterSection>
 
-              {/* Property Kind */}
+              {/* Property Kind — dynamic from admin real estate categories */}
               <FilterSection title="نوع العقار">
                 <div className="flex flex-wrap gap-2">
-                  {KINDS.map((k) => (
-                    <Chip key={k} label={k} active={selectedKind === k} onClick={() => setSelectedKind(selectedKind === k ? null : k)} />
-                  ))}
+                  {reCategories.length > 0
+                    ? reCategories.map((c) => {
+                        const slug = c.slug ?? String(c.id);
+                        return (
+                          <Chip
+                            key={slug}
+                            label={c.nameAr}
+                            active={selectedKind === slug}
+                            onClick={() => setSelectedKind(selectedKind === slug ? null : slug)}
+                          />
+                        );
+                      })
+                    : KINDS.map((k) => (
+                        <Chip key={k} label={k} active={selectedKind === k} onClick={() => setSelectedKind(selectedKind === k ? null : k)} />
+                      ))
+                  }
                 </div>
               </FilterSection>
 
