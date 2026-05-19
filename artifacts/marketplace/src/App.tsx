@@ -73,6 +73,7 @@ import ProviderSupport from "@/pages/dashboard/support";
 import ProviderSupportTicketsPage from "@/pages/dashboard/support-tickets";
 import UserInbox from "@/pages/user/inbox";
 import UserSupport from "@/pages/user/support";
+import AddPropertyPage from "@/pages/add-property";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -160,6 +161,7 @@ function Router() {
         {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
       </Route>
       <Route path="/provider/:id" component={ProviderPage} />
+      <Route path="/add-property" component={AddPropertyPage} />
       <Route path="/properties" component={PropertiesPage} />
       <Route path="/property/:id" component={PropertyDetail} />
       <Route path="/services" component={ServicesPage} />

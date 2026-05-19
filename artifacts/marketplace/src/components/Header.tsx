@@ -85,13 +85,20 @@ export function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between" dir="rtl">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group shrink-0">
-          {logoUrl && (
-            <img src={mediaUrl(logoUrl)} alt={siteName} className="h-10 w-auto object-contain rounded" onError={e => { e.currentTarget.style.display = "none"; }} />
-          )}
-          <span className="flex flex-col leading-tight min-w-0">
-            <span className="font-bold text-xl tracking-tight text-primary truncate">{siteName}</span>
-            <span className="text-[11px] font-semibold text-muted-foreground truncate">بنها — عقارات وخدمات</span>
-          </span>
+          <img
+            src="/logo.png"
+            alt="عقارات بنها"
+            className="h-10 w-auto object-contain"
+            onError={e => {
+              e.currentTarget.style.display = "none";
+              if (logoUrl) {
+                const img = document.createElement("img");
+                img.src = mediaUrl(logoUrl);
+                img.className = "h-10 w-auto object-contain rounded";
+                e.currentTarget.parentNode?.appendChild(img);
+              }
+            }}
+          />
         </Link>
 
         {/* Desktop Nav */}
@@ -105,6 +112,14 @@ export function Header() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-2">
+          {/* Add Property CTA — always visible */}
+          <Link href="/add-property">
+            <Button className="flex items-center gap-1.5 font-bold text-sm px-5 rounded-full text-white shadow-sm" style={{background: 'linear-gradient(135deg, #12B5D0 0%, #0060A0 100%)'}}>
+              <span className="text-base leading-none">+</span>
+              <span>أضف عقارك</span>
+            </Button>
+          </Link>
+
           {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -161,11 +176,16 @@ export function Header() {
               )}
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-1 text-sm font-medium">
+              <User className="w-5 h-5 text-muted-foreground" />
               <Link href="/login">
-                <Button variant="ghost" className="text-sm font-medium hover:bg-secondary/50">تسجيل الدخول</Button>
+                <span className="cursor-pointer hover:text-primary transition-colors text-foreground">تسجيل</span>
               </Link>
-            </>
+              <span className="text-border mx-1">|</span>
+              <Link href="/register">
+                <span className="cursor-pointer hover:text-primary transition-colors text-foreground">مستخدم جديد</span>
+              </Link>
+            </div>
           )}
         </div>
 
@@ -217,8 +237,16 @@ export function Header() {
                   <Link href="/login" onClick={() => setMobileOpen(false)}>
                     <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/50 rounded-lg cursor-pointer">تسجيل الدخول</span>
                   </Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)}>
+                    <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/50 rounded-lg cursor-pointer">مستخدم جديد</span>
+                  </Link>
                 </>
               )}
+              <Link href="/add-property" onClick={() => setMobileOpen(false)}>
+                <span className="block mx-4 mt-2 px-4 py-2.5 text-sm font-bold text-white rounded-full text-center cursor-pointer" style={{background: 'linear-gradient(135deg, #12B5D0 0%, #0060A0 100%)'}}>
+                  + أضف عقارك
+                </span>
+              </Link>
             </div>
           </nav>
         </div>
