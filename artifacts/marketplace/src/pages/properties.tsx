@@ -785,7 +785,7 @@ export default function PropertiesPage() {
                             onMouseLeave={() => setHoveredId(null)}
                           >
                             {/* Image */}
-                            <div className="relative w-full sm:w-64 shrink-0 h-52 sm:h-auto overflow-hidden bg-gray-100">
+                            <div className="relative w-full sm:w-60 shrink-0 h-52 overflow-hidden bg-gray-100">
                               <img
                                 src={p.img}
                                 alt={p.title}
@@ -930,7 +930,7 @@ export default function PropertiesPage() {
                             onMouseLeave={() => setHoveredId(null)}
                           >
                             {/* Image */}
-                            <div className="relative h-48 overflow-hidden bg-gray-100">
+                            <div className="relative h-52 overflow-hidden bg-gray-100">
                               <img
                                 src={p.img}
                                 alt={p.title}

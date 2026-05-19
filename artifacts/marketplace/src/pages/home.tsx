@@ -763,7 +763,7 @@ export default function Home() {
             {/* ── Search Card ── */}
             <motion.div
               layout
-              className="w-full max-w-3xl bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/30 overflow-hidden"
+              className="w-full max-w-3xl bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/30"
             >
               {/* Tabs */}
               <div className="relative flex border-b border-border/30 overflow-hidden">
