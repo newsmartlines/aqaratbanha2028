@@ -872,7 +872,8 @@ export default function PropertyDetail() {
             exit={{ opacity: 0, scale: 0.7 }}
             transition={{ duration: 0.2 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 transition-all"
+            className="fixed z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 transition-all"
+            style={{ right: '24px', bottom: '24px' }}
             aria-label="العودة للأعلى"
           >
             <ChevronLeft className="w-5 h-5 rotate-90" />
