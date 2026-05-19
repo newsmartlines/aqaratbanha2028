@@ -585,6 +585,32 @@ export default function PropertyDetail() {
                 </Button>
               )}
             </div>
+
+            {/* Safety Tips Card */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h3 className="text-base font-extrabold text-gray-900 mb-4 text-right">سلامتك تهمنا</h3>
+              <ul className="space-y-3 text-sm text-gray-700 text-right list-none">
+                {[
+                  "قابل السمسار أو المالك في مكان معروف وآمن داخل بنها",
+                  "يُفضَّل يكون معاك شخص موثوق وقت المعاينة",
+                  "عاين العقار على الطبيعة وتأكد من حالته ومطابقته للإعلان",
+                  "اسأل عن كل التفاصيل: السعر، المرافق، الأوراق، والمصاريف",
+                  "متدفعش أي عربون أو تحوّل فلوس غير بعد المعاينة والتأكد من المستندات",
+                ].map((tip, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-5 pt-4 border-t border-border/60 flex items-center gap-2 text-red-500 cursor-pointer hover:text-red-600 transition-colors justify-end">
+                <span className="text-sm font-semibold">الإبلاغ عن إساءة</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
