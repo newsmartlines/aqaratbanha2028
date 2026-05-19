@@ -201,7 +201,7 @@ export default function PropertyDetail() {
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* ── Top action bar ── */}
-        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+        <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Badge className={`rounded-full text-xs font-bold px-3 py-1 ${property.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
@@ -239,58 +239,160 @@ export default function PropertyDetail() {
           </div>
         </div>
 
+        {/* ── Mosaic Hero Gallery ── */}
+        <div className="relative mb-8 rounded-3xl overflow-hidden shadow-md">
+          {gallery.length === 1 ? (
+            /* Single image — full width */
+            <div
+              className="relative h-[420px] md:h-[520px] cursor-zoom-in group"
+              onClick={() => { setLightboxIdx(0); setLightbox(true); }}
+            >
+              <img
+                src={gallery[0]}
+                alt={property.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+            </div>
+          ) : (
+            /* Mosaic: main large image + up to 4 thumbnails */
+            <div className="grid grid-cols-2 md:grid-cols-[3fr_2fr] h-[420px] md:h-[520px] gap-1">
+              {/* Main image */}
+              <div
+                className="relative overflow-hidden cursor-zoom-in group"
+                onClick={() => { setLightboxIdx(0); setLightbox(true); }}
+              >
+                <img
+                  src={gallery[0]}
+                  alt={property.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+              </div>
+
+              {/* Side grid — 2 rows × 2 cols on md+, 2 rows × 1 col on mobile */}
+              <div className="grid grid-rows-2 gap-1">
+                <div className="grid grid-cols-2 gap-1 hidden md:grid">
+                  {[1, 2].map((idx) => (
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden cursor-zoom-in group"
+                      onClick={() => { setLightboxIdx(idx); setLightbox(true); }}
+                    >
+                      {gallery[idx] ? (
+                        <img
+                          src={gallery[idx]}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100" />
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+                {/* mobile: just two stacked images */}
+                {[1, 2].map((idx) => (
+                  <div
+                    key={`mob-${idx}`}
+                    className="relative overflow-hidden cursor-zoom-in group md:hidden"
+                    onClick={() => { setLightboxIdx(idx); setLightbox(true); }}
+                  >
+                    {gallery[idx] ? (
+                      <img
+                        src={gallery[idx]}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100" />
+                    )}
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-2 gap-1 hidden md:grid">
+                  {[3, 4].map((idx) => (
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden cursor-zoom-in group"
+                      onClick={() => { setLightboxIdx(Math.min(idx, gallery.length - 1)); setLightbox(true); }}
+                    >
+                      {gallery[idx] ? (
+                        <>
+                          <img
+                            src={gallery[idx]}
+                            alt=""
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                          />
+                          {/* "show all" overlay on the last visible tile */}
+                          {idx === 4 && gallery.length > 5 && (
+                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 pointer-events-none">
+                              <Eye className="w-6 h-6 text-white" />
+                              <span className="text-white text-sm font-bold">+{gallery.length - 5} صورة</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="w-full h-full bg-gray-100" />
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* mobile bottom row */}
+                {[3, 4].map((idx) => (
+                  <div
+                    key={`mob2-${idx}`}
+                    className="relative overflow-hidden cursor-zoom-in group md:hidden"
+                    onClick={() => { setLightboxIdx(Math.min(idx, gallery.length - 1)); setLightbox(true); }}
+                  >
+                    {gallery[idx] ? (
+                      <img
+                        src={gallery[idx]}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Show-all button */}
+          <button
+            onClick={() => { setLightboxIdx(0); setLightbox(true); }}
+            className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-white/60 text-gray-900 text-sm font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-white transition-all"
+          >
+            <Eye className="w-4 h-4" />
+            عرض كل الصور ({gallery.length})
+          </button>
+
+          {/* Video button */}
+          {property.videoId && (
+            <button
+              onClick={() => setShowVideo(true)}
+              className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-primary transition-all"
+            >
+              <Play className="w-3.5 h-3.5 fill-white" />
+              مشاهدة الفيديو
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* ── LEFT COLUMN ── */}
           <div className="lg:col-span-2 space-y-8">
-
-            {/* Gallery */}
-            <div className="rounded-3xl overflow-hidden bg-white shadow-sm border border-border">
-              <div className="relative aspect-[16/9] overflow-hidden group">
-                <img
-                  src={gallery[activeImg]}
-                  alt={property.title}
-                  className="w-full h-full object-cover cursor-zoom-in transition-transform duration-500 group-hover:scale-105"
-                  onClick={() => { setLightboxIdx(activeImg); setLightbox(true); }}
-                  onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-                {gallery.length > 1 && (
-                  <>
-                    <button onClick={prevImg} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 flex items-center justify-center hover:bg-white transition-all shadow-md">
-                      <ArrowRight className="w-5 h-5" />
-                    </button>
-                    <button onClick={nextImg} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 flex items-center justify-center hover:bg-white transition-all shadow-md">
-                      <ArrowLeft className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-                <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium">
-                  {activeImg + 1} / {gallery.length}
-                </div>
-                {property.videoId && (
-                  <button
-                    onClick={() => setShowVideo(true)}
-                    className="absolute bottom-3 left-3 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium hover:bg-primary transition-all"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-white" />
-                    مشاهدة الفيديو
-                  </button>
-                )}
-              </div>
-              {gallery.length > 1 && (
-                <div className="flex gap-2 p-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                  {gallery.map((img, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveImg(i)}
-                      className={`shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 transition-all ${i === activeImg ? "border-primary shadow-md" : "border-transparent opacity-60 hover:opacity-90"}`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }} />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Specs */}
             <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
