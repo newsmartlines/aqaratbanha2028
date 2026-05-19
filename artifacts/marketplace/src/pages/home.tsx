@@ -534,7 +534,7 @@ export default function Home() {
 
   const { data: banhaAreas = [] } = useQuery({
     queryKey: ["areas", 45],
-    queryFn: () => api.regions.getAreasByCity(45),
+    queryFn: () => api.locations.getAreasByCity(45),
     staleTime: 5 * 60_000,
   });
 
@@ -837,10 +837,10 @@ export default function Home() {
                   >
                     <SelectTrigger className="h-12 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm rounded-none">
                       <MapPin className="w-4 h-4 ml-1.5 text-primary shrink-0" />
-                      <SelectValue placeholder="الحي / المنطقة" />
+                      <SelectValue placeholder="المنطقة" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__all_areas__">كل الأحياء</SelectItem>
+                      <SelectItem value="__all_areas__">كل المناطق</SelectItem>
                       {banhaAreas.map(a => <SelectItem key={a.id} value={a.nameAr}>{a.nameAr}</SelectItem>)}
                     </SelectContent>
                   </Select>

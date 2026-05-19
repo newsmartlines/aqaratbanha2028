@@ -13,7 +13,7 @@ import {
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
   LayoutList,
 } from "lucide-react";
-import { api, type Category } from "@/lib/api";
+import { api, type Category, type Area } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
@@ -26,6 +26,7 @@ type DbProp = {
   featured: boolean | null;
   images: string | null;
   address: string | null;
+  district: string | null;
   rooms: number | null;
   bathrooms: number | null;
   area: string | null;
@@ -33,6 +34,11 @@ type DbProp = {
   longitude: string | null;
   price: string | null;
   status: string | null;
+  finishing: string | null;
+  furnished: string | null;
+  paymentMethod: string | null;
+  features: string | null;
+  floor: number | null;
 };
 
 type DisplayProp = {
@@ -43,6 +49,7 @@ type DisplayProp = {
   featured: boolean;
   img: string;
   location: string;
+  district: string;
   beds: number;
   baths: number;
   area: number;
@@ -50,6 +57,11 @@ type DisplayProp = {
   lng: number;
   price: string;
   priceNum: number;
+  finishing: string;
+  furnished: string;
+  paymentMethod: string;
+  features: string[];
+  floor: number | null;
 };
 
 function tryJsonArr(val: string | null | undefined): string[] {
@@ -74,6 +86,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     featured: row.featured ?? false,
     img: imgs[0] ?? fallback,
     location: row.address ?? "",
+    district: row.district ?? "",
     beds: row.rooms ?? 0,
     baths: row.bathrooms ?? 0,
     area: row.area ? parseFloat(row.area) : 0,
@@ -81,6 +94,11 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     lng: row.longitude ? parseFloat(row.longitude) : 46.6753,
     price: row.price ? Number(row.price).toLocaleString("ar-EG") + " ج.م" : "السعر عند الطلب",
     priceNum: row.price ? parseFloat(row.price) : 0,
+    finishing: row.finishing ?? "",
+    furnished: row.furnished ?? "",
+    paymentMethod: row.paymentMethod ?? "",
+    features: tryJsonArr(row.features),
+    floor: row.floor ?? null,
   };
 }
 
@@ -165,6 +183,9 @@ export default function PropertiesPage() {
   const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
   const [selectedCity, setSelectedCity] = useState<string | null>(initParams.city);
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(initParams.district);
+  const [selectedFinishing, setSelectedFinishing] = useState<string | null>(null);
+  const [selectedFurnished, setSelectedFurnished] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
   const [selectedBeds, setSelectedBeds] = useState<number | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<number | null>(() => {
     if (!initParams.price) return null;
@@ -187,6 +208,12 @@ export default function PropertiesPage() {
     queryKey: ["re-categories"],
     queryFn: () => api.categories.listByType("real_estate"),
     staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: banhaAreas = [] } = useQuery<Area[]>({
+    queryKey: ["areas", 45],
+    queryFn: () => api.locations.getAreasByCity(45),
+    staleTime: 5 * 60_000,
   });
 
   const { data: myFavIds = [] } = useQuery<number[]>({
@@ -244,7 +271,10 @@ export default function PropertiesPage() {
       if (selectedType && p.type !== selectedType) return false;
       if (selectedKind && p.kind !== selectedKind) return false;
       if (selectedCity && !p.location.includes(selectedCity)) return false;
-      if (selectedDistrict && !p.location.includes(selectedDistrict)) return false;
+      if (selectedDistrict && p.district !== selectedDistrict && !p.location.includes(selectedDistrict)) return false;
+      if (selectedFinishing && p.finishing !== selectedFinishing) return false;
+      if (selectedFurnished && p.furnished !== selectedFurnished) return false;
+      if (selectedPayment && p.paymentMethod !== selectedPayment) return false;
       if (selectedBeds && p.beds < selectedBeds) return false;
       if (selectedPrice !== null) {
         const r = PRICE_RANGES[selectedPrice];
@@ -260,12 +290,13 @@ export default function PropertiesPage() {
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.priceNum - a.priceNum);
     if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
     return list;
-  }, [allProps, search, selectedType, selectedKind, selectedCity, selectedBeds, selectedPrice, selectedArea, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedPrice, selectedArea, sortBy]);
 
-  const activeCount = [selectedType, selectedKind, selectedCity, selectedBeds !== null ? 1 : null, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
+  const activeCount = [selectedType, selectedKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds !== null ? 1 : null, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
 
   const clearAll = () => {
-    setSelectedType(null); setSelectedKind(null); setSelectedCity(null);
+    setSelectedType(null); setSelectedKind(null); setSelectedCity(null); setSelectedDistrict(null);
+    setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
     setSelectedBeds(null); setSelectedPrice(null); setSelectedArea(null); setSearch("");
   };
 
@@ -539,6 +570,55 @@ export default function PropertiesPage() {
                 </div>
               </FilterSection>
 
+              {/* District / منطقة */}
+              {banhaAreas.length > 0 && (
+                <FilterSection title="المنطقة">
+                  <div className="flex flex-col gap-2">
+                    {banhaAreas.map((a) => (
+                      <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div
+                          onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
+                        >
+                          {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
+                        </div>
+                        <span
+                          onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
+                          className={`text-sm transition-colors ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}
+                        >{a.nameAr}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
+              )}
+
+              {/* Finishing / التشطيب */}
+              <FilterSection title="التشطيب" defaultOpen={false}>
+                <div className="flex flex-wrap gap-2">
+                  {["سوبر لوكس", "لوكس", "عادي", "نص تشطيب", "بدون تشطيب"].map((v) => (
+                    <Chip key={v} label={v} active={selectedFinishing === v} onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Furnished / التأثيث */}
+              <FilterSection title="التأثيث" defaultOpen={false}>
+                <div className="flex flex-wrap gap-2">
+                  {["مفروش بالكامل", "نص تشطيب", "غير مفروش"].map((v) => (
+                    <Chip key={v} label={v} active={selectedFurnished === v} onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Payment / نظام الدفع */}
+              <FilterSection title="نظام الدفع" defaultOpen={false}>
+                <div className="flex flex-wrap gap-2">
+                  {["كاش", "تقسيط", "كاش أو تقسيط"].map((v) => (
+                    <Chip key={v} label={v} active={selectedPayment === v} onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
+                  ))}
+                </div>
+              </FilterSection>
+
               {/* CTA */}
               {activeCount > 0 && (
                 <Button onClick={clearAll} variant="outline" className="w-full rounded-xl text-sm mt-1 border-primary/30 text-primary hover:bg-primary/5">
@@ -573,6 +653,26 @@ export default function PropertiesPage() {
                 {selectedCity && (
                   <span onClick={() => setSelectedCity(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
                     {selectedCity} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedDistrict && (
+                  <span onClick={() => setSelectedDistrict(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedDistrict} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedFinishing && (
+                  <span onClick={() => setSelectedFinishing(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedFinishing} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedFurnished && (
+                  <span onClick={() => setSelectedFurnished(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedFurnished} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedPayment && (
+                  <span onClick={() => setSelectedPayment(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedPayment} <X className="w-3 h-3" />
                   </span>
                 )}
                 {selectedBeds !== null && (

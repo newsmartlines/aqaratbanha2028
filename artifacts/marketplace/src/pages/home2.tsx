@@ -171,7 +171,7 @@ export default function Home2() {
 
   const { data: banhaAreas = [] } = useQuery({
     queryKey: ["areas", BANHA_CITY_ID],
-    queryFn: () => api.regions.getAreasByCity(BANHA_CITY_ID),
+    queryFn: () => api.locations.getAreasByCity(BANHA_CITY_ID),
     staleTime: 5 * 60_000,
   });
   const [liked,      setLiked]      = useState<Set<number>>(new Set());
@@ -275,7 +275,7 @@ export default function Home2() {
                   onChange={e => setRegion(e.target.value)}
                   className="w-full h-12 rounded-xl bg-white text-gray-700 border-0 shadow text-sm px-4 appearance-none cursor-pointer focus:outline-none"
                 >
-                  <option value="">الحي / المنطقة</option>
+                  <option value="">المنطقة</option>
                   {banhaAreas.map(a => (
                     <option key={a.id} value={a.nameAr}>{a.nameAr}</option>
                   ))}
