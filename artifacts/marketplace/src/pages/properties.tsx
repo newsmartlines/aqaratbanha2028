@@ -11,6 +11,7 @@ import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
   Heart, Star, Map, Grid3X3, X, ChevronDown, ChevronUp,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
+  LayoutList,
 } from "lucide-react";
 import { api, type Category } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -165,7 +166,7 @@ export default function PropertiesPage() {
     return idx >= 0 ? idx : null;
   });
   const [selectedArea, setSelectedArea] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "area">("default");
@@ -344,9 +345,16 @@ export default function PropertiesPage() {
             {/* View toggle */}
             <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
               <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-700"}`}
+                title="عرض قائمة"
+              >
+                <LayoutList className="w-4 h-4" />
+              </button>
+              <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-700"}`}
-                title="عرض بطاقات"
+                title="عرض شبكة"
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
@@ -573,6 +581,124 @@ export default function PropertiesPage() {
             </div>
 
             <AnimatePresence mode="wait">
+              {/* ── LIST VIEW ── */}
+              {viewMode === "list" && (
+                <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {filtered.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center bg-white rounded-3xl border border-gray-200">
+                      <Building2 className="w-16 h-16 text-gray-200" />
+                      <p className="text-xl font-bold text-gray-400">لا توجد عقارات مطابقة</p>
+                      <p className="text-sm text-gray-400">جرّب تعديل الفلاتر أو مسحها</p>
+                      <Button onClick={clearAll} variant="outline" className="rounded-full mt-1">مسح الفلاتر</Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {filtered.map((p, idx) => (
+                        <motion.div
+                          key={p.id}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: idx * 0.03 }}
+                        >
+                          <div
+                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-col sm:flex-row"
+                            onClick={() => setLocation(`/property/${p.id}`)}
+                            onMouseEnter={() => setHoveredId(p.id)}
+                            onMouseLeave={() => setHoveredId(null)}
+                          >
+                            {/* Image */}
+                            <div className="relative w-full sm:w-64 shrink-0 h-52 sm:h-auto overflow-hidden bg-gray-100">
+                              <img
+                                src={p.img}
+                                alt={p.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                onError={(e) => { e.currentTarget.src = FALLBACK; }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent sm:bg-gradient-to-l" />
+
+                              {/* Top badges */}
+                              <div className="absolute top-3 right-3 flex gap-1.5">
+                                <span className={`text-xs font-bold px-2.5 py-1 rounded-lg shadow ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
+                                  {p.type}
+                                </span>
+                                {p.featured && (
+                                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-amber-900 shadow">مميز</span>
+                                )}
+                              </div>
+
+                              {/* Kind badge */}
+                              <div className="absolute bottom-3 right-3 sm:bottom-3 sm:right-3">
+                                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm text-white border border-white/20">
+                                  {p.kind}
+                                </span>
+                              </div>
+
+                              {/* Like */}
+                              <button
+                                className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
+                                onClick={(e) => toggleLike(p.id, e)}
+                              >
+                                <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
+                              </button>
+                            </div>
+
+                            {/* Body */}
+                            <div className="flex-1 p-5 flex flex-col justify-between">
+                              <div>
+                                {/* Price + rating */}
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <p className="text-primary font-extrabold text-xl leading-none">{p.price}</p>
+                                    <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                    <span className="text-xs font-bold text-gray-700">4.8</span>
+                                  </div>
+                                </div>
+
+                                <h3 className="font-bold text-gray-900 text-base leading-snug mb-1.5 group-hover:text-primary transition-colors line-clamp-2">
+                                  {p.title}
+                                </h3>
+
+                                <div className="flex items-center gap-1 text-gray-400 text-sm mb-4">
+                                  <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                  <span className="truncate">{p.location}</span>
+                                </div>
+                              </div>
+
+                              {/* Specs + CTA */}
+                              <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+                                {p.beds > 0 && (
+                                  <span className="flex items-center gap-1.5 text-gray-500 text-sm">
+                                    <BedDouble className="w-4 h-4 text-gray-400" />{p.beds} غرف
+                                  </span>
+                                )}
+                                {p.baths > 0 && (
+                                  <span className="flex items-center gap-1.5 text-gray-500 text-sm">
+                                    <Bath className="w-4 h-4 text-gray-400" />{p.baths} حمام
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1.5 text-gray-500 text-sm">
+                                  <Maximize2 className="w-4 h-4 text-gray-400" />{p.area} م²
+                                </span>
+                                <div className="flex-1" />
+                                <button
+                                  className="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all"
+                                  onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
+                                >
+                                  التفاصيل
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {/* ── GRID VIEW ── */}
               {viewMode === "grid" && (
                 <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
