@@ -35,8 +35,8 @@ export function ScrollToTopButton() {
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="العودة للأعلى"
-      className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-white shadow-xl border border-gray-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-      style={{ direction: "ltr" }}
+      className="fixed z-50 w-14 h-14 rounded-full bg-white shadow-xl border border-gray-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+      style={{ direction: "ltr", bottom: "24px", right: "24px" }}
     >
       <svg width="56" height="56" viewBox="0 0 56 56" className="absolute inset-0 -rotate-90">
         <circle cx="28" cy="28" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="3.5" />
