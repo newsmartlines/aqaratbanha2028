@@ -75,6 +75,7 @@ import UserInbox from "@/pages/user/inbox";
 import UserSupport from "@/pages/user/support";
 import AddPropertyPage from "@/pages/add-property";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
+import MapSearchPage from "@/pages/map-search";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -163,6 +164,7 @@ function Router() {
       </Route>
       <Route path="/provider/:id" component={ProviderPage} />
       <Route path="/add-property" component={AddPropertyPage} />
+      <Route path="/map-search" component={MapSearchPage} />
       <Route path="/properties" component={PropertiesPage} />
       <Route path="/property/:id" component={PropertyDetail} />
       <Route path="/services" component={ServicesPage} />

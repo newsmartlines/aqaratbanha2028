@@ -29,12 +29,9 @@ export function Header() {
 
   const navLinks = [
     { href: "/", label: "الرئيسية" },
-    { href: "/properties", label: "العقارات" },
-    { href: "/services", label: "الخدمات" },
-    { href: "/categories", label: "التصنيفات" },
-    { href: "/about", label: "من نحن" },
-    { href: "/contact", label: "تواصل معنا" },
-    { href: "/faq", label: "الأسئلة الشائعة" },
+    { href: "/properties?listingType=sale", label: "للبيع" },
+    { href: "/properties?listingType=rent", label: "للإيجار" },
+    { href: "/map-search", label: "🗺 بحث بالخريطة" },
   ];
 
   useEffect(() => {
