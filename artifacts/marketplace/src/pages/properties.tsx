@@ -231,7 +231,7 @@ export default function PropertiesPage() {
   }, [myFavIds]);
 
   useEffect(() => {
-    api.properties.list({ status: "published" })
+    api.properties.list({ status: "active" })
       .then((rows) => setAllProps((rows as unknown as DbProp[]).map((r) => mapDbProp(r, FALLBACK))))
       .catch(() => {})
       .finally(() => setLoading(false));

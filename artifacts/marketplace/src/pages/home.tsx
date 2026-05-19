@@ -538,7 +538,7 @@ export default function Home() {
     staleTime: 5 * 60_000,
   });
 
-  const { data: platformStats } = useQuery<{ providers: number; users: number; services: number; requests: number }>({
+  const { data: platformStats } = useQuery<{ providers: number; users: number; services: number; requests: number; properties: number }>({
     queryKey: ["platform-stats"],
     queryFn: () => api.stats.platform(),
     staleTime: 5 * 60 * 1000,
@@ -546,7 +546,7 @@ export default function Home() {
 
   const { data: homePropsRaw = [], isLoading: propsLoading } = useQuery<any[]>({
     queryKey: ["home-properties"],
-    queryFn: () => api.properties.list({ status: "published" }),
+    queryFn: () => api.properties.list({ status: "active" }),
     staleTime: 2 * 60 * 1000,
   });
 
@@ -889,10 +889,10 @@ export default function Home() {
             {/* ── Stats strip ── */}
             <div className="mt-6 flex items-center gap-6 flex-wrap justify-center">
               {[
-                { label: "عقار", value: platformStats?.providers },
+                { label: "عقار متاح", value: platformStats?.properties },
+                { label: "مزود خدمة", value: platformStats?.providers },
                 { label: "خدمة نشطة", value: platformStats?.services },
-                { label: "مستخدم", value: platformStats?.users },
-                { label: "طلب مُنجز", value: platformStats?.requests },
+                { label: "مستخدم مسجل", value: platformStats?.users },
               ].map((s, i) => (
                 <div key={i} className="flex items-baseline gap-1.5 text-white/90">
                   <span className="text-xl font-black text-white drop-shadow">

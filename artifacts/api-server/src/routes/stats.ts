@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { providersTable, usersTable, servicesTable, requestsTable, paymentTransactionsTable } from "@workspace/db";
+import { providersTable, usersTable, servicesTable, requestsTable, paymentTransactionsTable, propertiesTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
 
@@ -8,21 +8,24 @@ const router = Router();
 
 router.get("/stats", async (_req, res) => {
   try {
-    const [[providers], [users], [services], [requests]] = await Promise.all([
+    const [[providers], [users], [services], [requests], [properties]] = await Promise.all([
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(providersTable)
         .where(and(eq(providersTable.approved, true), eq(providersTable.suspended, false))),
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
-        .from(usersTable)
-        .where(eq(usersTable.role, "user")),
+        .from(usersTable),
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(servicesTable),
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(requestsTable),
+      db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(propertiesTable)
+        .where(eq(propertiesTable.status, "active")),
     ]);
 
     res.json({
@@ -32,6 +35,7 @@ router.get("/stats", async (_req, res) => {
         users: users?.count ?? 0,
         services: services?.count ?? 0,
         requests: requests?.count ?? 0,
+        properties: properties?.count ?? 0,
       },
     });
   } catch (e: any) {
