@@ -931,10 +931,28 @@ export default function Home() {
         </section>
 
         {/* ── REAL ESTATE LISTINGS ── */}
-        <section className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-          {/* Decorative background blobs */}
-          <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-primary/5 blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-accent/5 blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
+        <section
+          className="py-20 bg-white relative overflow-hidden"
+          style={{
+            backgroundImage: "radial-gradient(circle, #cbd5e1 1.5px, transparent 1.5px)",
+            backgroundSize: "30px 30px",
+          }}
+        >
+          {/* Fade edges — keeps dots visible in the middle, fades at borders */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{
+              background: [
+                "linear-gradient(to bottom, white 0%, transparent 8%, transparent 92%, white 100%)",
+                "linear-gradient(to right,  white 0%, transparent 8%, transparent 92%, white 100%)",
+              ].join(", "),
+            }}
+          />
+          {/* Soft teal glow top-right */}
+          <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 70%)" }} />
+          {/* Soft accent glow bottom-left */}
+          <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%)" }} />
 
           <div className="container mx-auto px-4 relative z-10">
             {/* Header */}
