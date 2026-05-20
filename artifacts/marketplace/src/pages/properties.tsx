@@ -159,6 +159,13 @@ const MAP_CENTER: [number, number] = [24.7136, 46.6753];
 const CITIES: string[] = [];
 const KINDS = ["فيلا", "شقة", "مكتب", "دوبلكس", "أرض"];
 const TYPES = ["للبيع", "للإيجار"];
+
+const STATIC_SUBCATS: Record<string, string[]> = {
+  residential: ["شقة", "فيلا", "دوبلكس", "روف", "شاليه", "استوديو", "عمارة"],
+  commercial:  ["محل", "مكتب", "معرض", "مستودع", "عيادة", "فندق"],
+  land:        ["أرض سكنية", "أرض تجارية", "مزرعة", "أرض صناعية"],
+  industrial:  ["مصنع", "مستودع صناعي", "ورشة"],
+};
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
 const BATHS_OPTIONS = [1, 2, 3, 4];
 const FLOOR_OPTIONS = ["أرضي", "1", "2", "3", "4", "5+"];
@@ -538,45 +545,52 @@ export default function PropertiesPage() {
       </div>
 
       {/* ── Subcategory Tab Strip ── */}
-      <AnimatePresence>
-        {selectedKind && subCategories.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white border-b border-gray-200 sticky top-[105px] z-20 shadow-sm"
-          >
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-2">
-                <button
-                  onClick={() => setSelectedSubKind(null)}
-                  className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold border transition-all whitespace-nowrap ${
-                    !selectedSubKind
-                      ? "bg-primary text-white border-primary shadow-sm"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
-                  }`}
-                >
-                  الكل
-                </button>
-                {subCategories.map((s) => (
+      {(() => {
+        const dbSubs = subCategories.map(s => s.nameAr);
+        const staticSubs = STATIC_SUBCATS[selectedKind ?? ""] ?? [];
+        const activeSubs = dbSubs.length > 0 ? dbSubs : staticSubs;
+        if (!selectedKind || activeSubs.length === 0) return null;
+        return (
+          <AnimatePresence>
+            <motion.div
+              key="subtabs"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white border-b border-gray-200 sticky top-[105px] z-20 shadow-sm"
+            >
+              <div className="container mx-auto px-4">
+                <div className="flex items-center gap-1.5 overflow-x-auto py-2.5" style={{ scrollbarWidth: "none" }}>
                   <button
-                    key={s.id}
-                    onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)}
-                    className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold border transition-all whitespace-nowrap ${
-                      selectedSubKind === s.nameAr
+                    onClick={() => setSelectedSubKind(null)}
+                    className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-bold border transition-all whitespace-nowrap ${
+                      !selectedSubKind
                         ? "bg-primary text-white border-primary shadow-sm"
                         : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
                     }`}
                   >
-                    {s.nameAr}
+                    الكل
                   </button>
-                ))}
+                  {activeSubs.map((name) => (
+                    <button
+                      key={name}
+                      onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
+                      className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-bold border transition-all whitespace-nowrap ${
+                        selectedSubKind === name
+                          ? "bg-primary text-white border-primary shadow-sm"
+                          : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        );
+      })()}
 
       {/* ── Main Layout ── */}
       <div className="container mx-auto px-4 py-6">
@@ -899,50 +913,140 @@ export default function PropertiesPage() {
                           transition={{ duration: 0.3, delay: idx * 0.03 }}
                         >
                           <div
-                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-col sm:flex-row"
+                            className={`group bg-white rounded-2xl border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-row ${p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-gray-200"}`}
                             onClick={() => setLocation(`/property/${p.id}`)}
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
-                            {/* Image */}
-                            <div className="relative w-full sm:w-60 shrink-0 h-52 overflow-hidden bg-gray-100">
+                            {/* ── Rating strip (far LEFT in RTL) ── */}
+                            <div className="flex flex-col items-center justify-start pt-4 px-3 shrink-0 border-l border-gray-100">
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="text-amber-400 text-lg">★</span>
+                                <span className="text-gray-700 font-bold text-xs">4.8</span>
+                              </div>
+                            </div>
+
+                            {/* ── Content (MIDDLE) ── */}
+                            <div className="flex-1 flex flex-col p-4 gap-2 min-w-0">
+                              {/* Price */}
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-gray-400 text-sm font-medium">جنيه</span>
+                                <span className="text-2xl font-black text-gray-900 leading-none">{p.price}</span>
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="font-bold text-base text-gray-900 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                                {p.title}
+                              </h3>
+
+                              {/* Location */}
+                              <div className="flex items-center gap-1 text-gray-500 text-xs">
+                                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
+                              </div>
+
+                              {/* Time + Views */}
+                              <div className="flex items-center gap-3 text-gray-400 text-xs">
+                                {p.createdAt && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {timeAgo(p.createdAt)}
+                                  </span>
+                                )}
+                                {(p.viewCount ?? 0) > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    <Eye className="w-3 h-3" />
+                                    {p.viewCount} مشاهدة
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Divider */}
+                              <div className="border-t border-gray-100" />
+
+                              {/* Stats + Actions */}
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                {/* Specs */}
+                                <div className="flex items-center gap-3 text-gray-500 text-xs flex-wrap">
+                                  {p.beds > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <BedDouble className="w-3.5 h-3.5" />
+                                      <span className="font-semibold text-gray-700">{p.beds}</span> غرف
+                                    </span>
+                                  )}
+                                  {p.baths > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <Bath className="w-3.5 h-3.5" />
+                                      <span className="font-semibold text-gray-700">{p.baths}</span> حمام
+                                    </span>
+                                  )}
+                                  {p.area > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <Maximize2 className="w-3.5 h-3.5" />
+                                      <span className="font-semibold text-gray-700">{p.area}</span> م²
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Action buttons */}
+                                <div className="flex items-center gap-2">
+                                  {/* WhatsApp icon button */}
+                                  {p.whatsapp && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                      className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-[#25D366] hover:border-[#25D366]/40 transition-all"
+                                      title="واتساب"
+                                    >
+                                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                    </button>
+                                  )}
+                                  {/* Details button */}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
+                                    className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:shadow transition-all"
+                                  >
+                                    التفاصيل
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* ── Image (far RIGHT in RTL) ── */}
+                            <div className="relative shrink-0 w-44 sm:w-56 overflow-hidden bg-gray-100">
                               <img
                                 src={p.img}
                                 alt={p.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                                 onError={(e) => { e.currentTarget.src = FALLBACK; }}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent sm:bg-gradient-to-l" />
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/20" />
 
-                              {/* Top badges */}
-                              <div className="absolute top-3 right-3 flex gap-1.5">
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-lg shadow ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
+                              {/* Top badges — left side of image */}
+                              <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
                                   {p.type}
                                 </span>
                                 {p.featured && (
-                                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-amber-900 shadow">مميز</span>
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-amber-900 shadow">مميز</span>
                                 )}
                               </div>
 
-                              {/* Kind badge */}
-                              <div className="absolute bottom-3 right-3 sm:bottom-3 sm:right-3">
-                                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm text-white border border-white/20">
-                                  {p.kind}
-                                </span>
-                              </div>
-
-                              {/* Like */}
+                              {/* Heart — top right */}
                               <button
-                                className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
+                                className={`absolute top-2.5 right-2.5 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
                                 onClick={(e) => toggleLike(p.id, e)}
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
+
+                              {/* Kind badge — bottom */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
+                                {reCategories.find(c => (c.slug ?? String(c.id)) === p.kind)?.nameAr ?? p.kind}
+                              </div>
                             </div>
 
-                            {/* Body */}
-                            <div className="flex-1 flex flex-col justify-between">
-                              {/* Price banner */}
+                            {/* ── HIDDEN old body stub (replaced above) ── */}
+                            <div className="hidden">
                               <div className="bg-primary px-5 py-3 flex items-center justify-between">
                                 <div>
                                   <p className="text-white font-extrabold text-2xl leading-none">{p.price}</p>
