@@ -32,6 +32,7 @@ import seedDemoRouter from "./seed-demo";
 import backupRouter from "./backup";
 import recommendationsRouter from "./recommendations";
 import adsRouter from "./ads";
+import propertyReportsRouter from "./propertyReports";
 
 const router: IRouter = Router();
 
@@ -68,5 +69,6 @@ router.use(seedDemoRouter);
 router.use(backupRouter);
 router.use(recommendationsRouter);
 router.use(adsRouter);
+router.use(propertyReportsRouter);
 
 export default router;

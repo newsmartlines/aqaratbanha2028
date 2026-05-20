@@ -37,6 +37,7 @@ import AdminListings from "@/pages/admin/listings";
 import AdminCommission from "@/pages/admin/commission";
 import AdminPayments from "@/pages/admin/payments";
 import AdminReports from "@/pages/admin/reports";
+import AdminComplaints from "@/pages/admin/complaints";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminSettings from "@/pages/admin/settings";
 import AdminUsers from "@/pages/admin/users";
@@ -336,6 +337,9 @@ function Router() {
       </Route>
       <Route path="/admin/reports">
         {() => <AdminProtectedRoute component={AdminReports} />}
+      </Route>
+      <Route path="/admin/complaints">
+        {() => <AdminProtectedRoute component={AdminComplaints} />}
       </Route>
       <Route path="/admin/subscriptions">
         {() => <AdminProtectedRoute component={AdminSubscriptions} />}

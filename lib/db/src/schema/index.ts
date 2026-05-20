@@ -6,6 +6,7 @@ export * from "./providers";
 export * from "./services";
 export * from "./serviceItems";
 export * from "./faults";
+export * from "./propertyReports";
 export * from "./companyPricing";
 export * from "./subscriptions";
 export * from "./payments";

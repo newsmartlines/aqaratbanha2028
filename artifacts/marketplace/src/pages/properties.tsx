@@ -10,10 +10,15 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
-  Heart, Star, Map, Grid3X3, X, ChevronDown, ChevronUp,
+  Heart, Map, Grid3X3, X, ChevronDown, ChevronUp,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
-  LayoutList, Scale, GitCompare, Eye, Clock,
+  LayoutList, Scale, GitCompare, Eye, Clock, Flag, Layers,
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { api, type Category, type Area, type Subcategory } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
@@ -137,6 +142,8 @@ const CITIES: string[] = [];
 const KINDS = ["فيلا", "شقة", "مكتب", "دوبلكس", "أرض"];
 const TYPES = ["للبيع", "للإيجار"];
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
+const BATHS_OPTIONS = [1, 2, 3, 4];
+const FLOOR_OPTIONS = ["أرضي", "1", "2", "3", "4", "5+"];
 const PRICE_RANGES = [
   { label: "أقل من 500 ألف", min: 0, max: 500000 },
   { label: "500 ألف – مليون", min: 500000, max: 1000000 },
@@ -209,6 +216,12 @@ export default function PropertiesPage() {
   const [selectedFurnished, setSelectedFurnished] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
   const [selectedBeds, setSelectedBeds] = useState<number | null>(null);
+  const [selectedBaths, setSelectedBaths] = useState<number | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
+  const [reportPropertyId, setReportPropertyId] = useState<number | null>(null);
+  const [reportEmail, setReportEmail] = useState("");
+  const [reportMessage, setReportMessage] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState<number | null>(() => {
     if (!initParams.price) return null;
     const [min, max] = initParams.price.split("-").map(Number);
@@ -309,6 +322,12 @@ export default function PropertiesPage() {
       if (selectedFurnished && p.furnished !== selectedFurnished) return false;
       if (selectedPayment && p.paymentMethod !== selectedPayment) return false;
       if (selectedBeds && p.beds < selectedBeds) return false;
+      if (selectedBaths && p.baths < selectedBaths) return false;
+      if (selectedFloor) {
+        const floorVal = selectedFloor === "أرضي" ? 0 : selectedFloor === "5+" ? null : Number(selectedFloor);
+        if (selectedFloor === "5+") { if ((p.floor ?? 0) < 5) return false; }
+        else if (floorVal !== null && p.floor !== floorVal) return false;
+      }
       if (selectedPrice !== null) {
         const r = PRICE_RANGES[selectedPrice];
         if (p.priceNum < r.min || p.priceNum > r.max) return false;
@@ -323,14 +342,25 @@ export default function PropertiesPage() {
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.priceNum - a.priceNum);
     if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
     return list;
-  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedPrice, selectedArea, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, sortBy]);
 
-  const activeCount = [selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds !== null ? 1 : null, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
+  const activeCount = [selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null, selectedFloor, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
 
   const clearAll = () => {
     setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistrict(null);
     setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
-    setSelectedBeds(null); setSelectedPrice(null); setSelectedArea(null); setSearch("");
+    setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null); setSelectedPrice(null); setSelectedArea(null); setSearch("");
+  };
+
+  const submitReport = async () => {
+    if (!reportEmail.trim() || !reportMessage.trim()) { toast.error("برجاء ملء جميع الحقول"); return; }
+    setReportLoading(true);
+    try {
+      await fetch("/api/property-reports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId: reportPropertyId, email: reportEmail, message: reportMessage }) });
+      toast.success("تم إرسال البلاغ بنجاح ✓");
+      setReportPropertyId(null); setReportEmail(""); setReportMessage("");
+    } catch { toast.error("حدث خطأ، حاول مرة أخرى"); }
+    finally { setReportLoading(false); }
   };
 
   const toggleLike = (id: number, e: React.MouseEvent) => {
@@ -656,6 +686,36 @@ export default function PropertiesPage() {
                 </div>
               </FilterSection>
 
+              {/* Bathrooms */}
+              <FilterSection title="عدد الحمامات">
+                <div className="flex flex-wrap gap-1.5">
+                  {BATHS_OPTIONS.map((b) => (
+                    <button
+                      key={b}
+                      onClick={() => setSelectedBaths(selectedBaths === b ? null : b)}
+                      className={`w-10 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBaths === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}
+                    >
+                      {b}+
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
+              {/* Floor */}
+              <FilterSection title="رقم الطابق" defaultOpen={false}>
+                <div className="flex flex-wrap gap-1.5">
+                  {FLOOR_OPTIONS.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setSelectedFloor(selectedFloor === f ? null : f)}
+                      className={`px-3 h-9 rounded-xl text-sm font-bold border-2 transition-all ${selectedFloor === f ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </FilterSection>
+
               {/* Area */}
               <FilterSection title="المساحة" defaultOpen={true}>
                 <div className="flex flex-col gap-2">
@@ -863,79 +923,80 @@ export default function PropertiesPage() {
                             </div>
 
                             {/* Body */}
-                            <div className="flex-1 p-5 flex flex-col justify-between">
-                              <div>
-                                {/* Price + rating */}
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <p className="text-gray-900 font-extrabold text-xl leading-none">{p.price}</p>
-                                    <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
-                                  </div>
-                                  <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
-                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                                    <span className="text-xs font-bold text-gray-700">4.8</span>
-                                  </div>
-                                </div>
-
-                                <h3 className="font-bold text-gray-900 text-base leading-snug mb-1.5 group-hover:text-primary transition-colors line-clamp-2">
-                                  {p.title}
-                                </h3>
-
-                                <div className="flex items-center gap-1 text-gray-400 text-sm mb-4">
-                                  <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                                  <span className="truncate">{p.location}</span>
-                                </div>
+                            <div className="flex-1 flex flex-col justify-between">
+                              {/* Price banner */}
+                              <div className="bg-primary px-5 py-3">
+                                <p className="text-white font-extrabold text-2xl leading-none">{p.price}</p>
+                                <p className="text-primary-foreground/70 text-xs mt-0.5">جنيه مصري</p>
                               </div>
+                              <div className="p-5 flex flex-col gap-3">
+                                <div>
+                                  <h3 className="font-bold text-gray-900 text-base leading-snug mb-1.5 group-hover:text-primary transition-colors line-clamp-2">
+                                    {p.title}
+                                  </h3>
+                                  <div className="flex items-center gap-1 text-gray-400 text-sm">
+                                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <span className="truncate">{p.location}</span>
+                                  </div>
+                                </div>
 
-                              {/* Date + Views strip */}
-                              <div className="flex items-center gap-3 mb-2.5">
-                                {p.createdAt && (
+                                {/* Date + Views strip */}
+                                <div className="flex items-center gap-3">
+                                  {p.createdAt && (
+                                    <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                                      <Clock className="w-3 h-3 text-gray-300" />
+                                      {timeAgo(p.createdAt)}
+                                    </span>
+                                  )}
                                   <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                                    <Clock className="w-3 h-3 text-gray-300" />
-                                    {timeAgo(p.createdAt)}
+                                    <Eye className="w-3 h-3 text-gray-300" />
+                                    {(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
                                   </span>
-                                )}
-                                <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                                  <Eye className="w-3 h-3 text-gray-300" />
-                                  {(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
-                                </span>
-                              </div>
+                                </div>
 
-                              {/* Specs + CTA */}
-                              <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
-                                {p.beds > 0 && (
+                                {/* Specs + CTA */}
+                                <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                                  {p.beds > 0 && (
+                                    <span className="flex items-center gap-1.5 text-gray-500 text-sm">
+                                      <BedDouble className="w-4 h-4 text-gray-400" />{p.beds} غرف
+                                    </span>
+                                  )}
+                                  {p.baths > 0 && (
+                                    <span className="flex items-center gap-1.5 text-gray-500 text-sm">
+                                      <Bath className="w-4 h-4 text-gray-400" />{p.baths} حمام
+                                    </span>
+                                  )}
                                   <span className="flex items-center gap-1.5 text-gray-500 text-sm">
-                                    <BedDouble className="w-4 h-4 text-gray-400" />{p.beds} غرف
+                                    <Maximize2 className="w-4 h-4 text-gray-400" />{p.area} م²
                                   </span>
-                                )}
-                                {p.baths > 0 && (
-                                  <span className="flex items-center gap-1.5 text-gray-500 text-sm">
-                                    <Bath className="w-4 h-4 text-gray-400" />{p.baths} حمام
-                                  </span>
-                                )}
-                                <span className="flex items-center gap-1.5 text-gray-500 text-sm">
-                                  <Maximize2 className="w-4 h-4 text-gray-400" />{p.area} م²
-                                </span>
-                                <div className="flex-1" />
-                                <button
-                                  className={`p-1.5 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`}
-                                  title="أضف للمقارنة"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" });
-                                    if (r === "added") toast.success("أُضيف للمقارنة ✓");
-                                    else if (r === "already") toast("موجود بالفعل");
-                                    else toast.error("المقارنة ممتلئة (٤ عقارات)");
-                                  }}
-                                >
-                                  <GitCompare className="w-4 h-4" />
-                                </button>
-                                <button
-                                  className="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all"
-                                  onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
-                                >
-                                  التفاصيل
-                                </button>
+                                  <div className="flex-1" />
+                                  <button
+                                    className="p-1.5 rounded-lg border border-rose-200 text-rose-400 hover:bg-rose-50 transition-all"
+                                    title="إبلاغ عن إساءة"
+                                    onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
+                                  >
+                                    <Flag className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    className={`p-1.5 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`}
+                                    title="أضف للمقارنة"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" });
+                                      if (r === "added") toast.success("أُضيف للمقارنة ✓");
+                                      else if (r === "already") toast("موجود بالفعل");
+                                      else toast.error("المقارنة ممتلئة (٤ عقارات)");
+                                    }}
+                                  >
+                                    <GitCompare className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    className="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all"
+                                    onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
+                                  >
+                                    التفاصيل
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1008,19 +1069,13 @@ export default function PropertiesPage() {
                             </div>
 
                             {/* Body */}
-                            <div className="p-4">
-                              {/* Price */}
-                              <div className="flex items-start justify-between mb-1.5">
-                                <div>
-                                  <p className="text-gray-900 font-extrabold text-lg leading-none">{p.price}</p>
-                                  <p className="text-gray-400 text-xs mt-0.5">جنيه مصري</p>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                                  <span className="text-xs font-bold text-gray-600">4.8</span>
-                                </div>
+                            <div>
+                              {/* Price banner */}
+                              <div className="bg-primary px-4 py-2.5">
+                                <p className="text-white font-extrabold text-xl leading-none">{p.price}</p>
+                                <p className="text-primary-foreground/70 text-[11px] mt-0.5">جنيه مصري</p>
                               </div>
-
+                              <div className="p-4">
                               <h3 className="font-bold text-gray-900 text-sm leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-1">
                                 {p.title}
                               </h3>
@@ -1045,7 +1100,7 @@ export default function PropertiesPage() {
                               </div>
 
                               {/* Specs */}
-                              <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                              <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                                 {p.beds > 0 && (
                                   <span className="flex items-center gap-1 text-gray-400 text-xs">
                                     <BedDouble className="w-3.5 h-3.5" />{p.beds}
@@ -1061,7 +1116,14 @@ export default function PropertiesPage() {
                                 </span>
                                 <div className="flex-1" />
                                 <button
-                                  className={`p-1 rounded-lg border transition-all mr-1 ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`}
+                                  className="p-1 rounded-lg border border-rose-200 text-rose-400 hover:bg-rose-50 transition-all"
+                                  title="إبلاغ"
+                                  onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
+                                >
+                                  <Flag className="w-3 h-3" />
+                                </button>
+                                <button
+                                  className={`p-1 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`}
                                   title="أضف للمقارنة"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1074,6 +1136,7 @@ export default function PropertiesPage() {
                                   <GitCompare className="w-3.5 h-3.5" />
                                 </button>
                                 <span className="text-xs text-primary font-semibold">التفاصيل ←</span>
+                              </div>
                               </div>
                             </div>
                           </div>
@@ -1369,6 +1432,36 @@ export default function PropertiesPage() {
       </AnimatePresence>
 
       <RealEstateFooter />
+
+      {/* ── Report Dialog ── */}
+      <Dialog open={reportPropertyId !== null} onOpenChange={(o) => { if (!o) { setReportPropertyId(null); setReportEmail(""); setReportMessage(""); } }}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-600">
+              <Flag className="w-4 h-4" />
+              الإبلاغ عن إساءة
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rep-email">البريد الإلكتروني</Label>
+              <Input id="rep-email" type="email" placeholder="example@email.com" value={reportEmail} onChange={(e) => setReportEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rep-msg">تفاصيل البلاغ</Label>
+              <Textarea id="rep-msg" rows={4} placeholder="اكتب تفاصيل المشكلة هنا..." value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} className="resize-none" />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 flex-row-reverse">
+            <Button onClick={submitReport} disabled={reportLoading} className="bg-rose-600 hover:bg-rose-700 text-white">
+              {reportLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال البلاغ"}
+            </Button>
+            <Button variant="outline" onClick={() => { setReportPropertyId(null); setReportEmail(""); setReportMessage(""); }}>
+              إلغاء
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
