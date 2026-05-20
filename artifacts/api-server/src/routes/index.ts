@@ -28,6 +28,7 @@ import chatLeadsRouter from "./chat-leads";
 import chatSessionsRouter from "./chat-sessions";
 import searchRouter from "./search";
 import featuredAreasRouter from "./featured-areas";
+import seedDemoRouter from "./seed-demo";
 
 const router: IRouter = Router();
 
@@ -60,5 +61,6 @@ router.use(chatLeadsRouter);
 router.use(chatSessionsRouter);
 router.use(searchRouter);
 router.use(featuredAreasRouter);
+router.use(seedDemoRouter);
 
 export default router;

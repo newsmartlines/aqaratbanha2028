@@ -32,6 +32,7 @@ import {
   KeyRound,
   Bot,
   Star,
+  Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -200,6 +201,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Layers3,         label: "الباقات والعمولات", href: "/admin/plans-commissions", perm: "commission" },
     { icon: Bot,             label: "المساعد الذكي",          href: "/admin/chatbot",           perm: "settings" },
     { icon: KeyRound,        label: "Google Kit",            href: "/admin/google-kit",          perm: "settings" },
+    { icon: Database,        label: "المحتوى التجريبي",    href: "/admin/demo-content",        perm: null },
     { icon: Settings,        label: t("settings"),        href: "/admin/settings",         perm: "settings" },
   ];
 
