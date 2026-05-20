@@ -1,0 +1,99 @@
+Create a permanent Professional Email Templates & Demo Data system inside the Admin Dashboard and save everything directly into the real database.
+
+Requirements:
+
+* Add a full Email Templates Management section inside Admin.
+* Save all templates permanently in the database.
+* Do NOT remove them after refresh or deployment.
+* Templates must remain available when moving the project to another platform/server.
+
+Create professional prebuilt email templates for all possible scenarios such as:
+
+Authentication:
+
+* Welcome Email
+* Verify Email
+* Reset Password
+* Login Alert
+* Account Approved
+* Account Suspended
+
+Properties:
+
+* Property Submitted
+* Property Approved
+* Property Rejected
+* Property Expired
+* Featured Property Activated
+* Property Inquiry Received
+
+Payments:
+
+* Payment Success
+* Payment Failed
+* Subscription Activated
+* Subscription Expired
+* Invoice Email
+
+Notifications:
+
+* New Message
+* New Lead
+* New Chat Request
+* Contact Form Submission
+* Admin Notification
+
+Marketing:
+
+* Newsletter
+* Promotional Offers
+* Featured Properties Digest
+* Recommended Properties
+
+Email Template Features:
+
+* Dynamic Variables
+* Live Preview
+* Rich Text Editor
+* Drag & Drop Ready Structure
+* HTML Email Support
+* Mobile Responsive Templates
+* Dark/Light Compatible
+* Professional branding
+
+Add:
+
+* Subject field
+* Email type/category
+* Enable/Disable toggle
+* Send test email button
+
+Technical Requirements:
+
+* Save templates in the real database
+* Create reusable seed system
+* Use proper database architecture
+* Production-ready structure
+* Dynamic rendering system
+
+Also:
+
+* Add permanent Banha/Egypt locations into database
+* Add realistic demo properties into database
+* Ensure homepage, search, filters, hero section, and admin all use real database content dynamically
+
+Important:
+
+* Do NOT use hardcoded frontend arrays
+* Do NOT use temporary mock data
+* Everything must come dynamically from the database
+
+Goal:
+After deploying the project on any new server/platform, the website should already contain:
+
+* Working email templates
+* Locations
+* Categories
+* Properties
+* Demo content
+  and appear fully functional immediately.
