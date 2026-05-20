@@ -48,8 +48,15 @@ type DbProperty = {
   features: string | null;
 };
 
-const MAIN_CATEGORIES = ["شقة", "فيلا", "مكتب", "دوبلكس", "أرض", "محل", "مستودع", "استوديو"];
-const LISTING_TYPES = ["للبيع", "للإيجار"];
+const MAIN_CATEGORIES = [
+  { value: "residential", label: "سكني" },
+  { value: "land", label: "أراضي" },
+  { value: "commercial", label: "تجاري" },
+];
+const LISTING_TYPES = [
+  { value: "sale", label: "للبيع" },
+  { value: "rent", label: "للإيجار" },
+];
 const FINISHING_OPTS = ["تشطيب كامل", "نصف تشطيب", "بدون تشطيب", "فندقي", "لوكس"];
 const CONDITION_OPTS = ["جديد", "ممتاز", "جيد", "يحتاج صيانة"];
 const FURNISHED_OPTS = ["مفروشة", "نصف مفروشة", "غير مفروشة"];
@@ -119,8 +126,8 @@ export default function AdminPropertyEdit() {
     address: "",
     district: "",
     price: "",
-    listingType: "للبيع",
-    mainCategory: "شقة",
+    listingType: "sale",
+    mainCategory: "residential",
     subCategory: "",
     rooms: "",
     bathrooms: "",
@@ -303,7 +310,9 @@ export default function AdminPropertyEdit() {
                 <Label>نوع الصفقة</Label>
                 <Select value={f.listingType} onValueChange={v => setF({ listingType: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{LISTING_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {LISTING_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-1.5">
@@ -313,7 +322,7 @@ export default function AdminPropertyEdit() {
                   <SelectContent>
                     {reCategories.length > 0
                       ? reCategories.map(c => <SelectItem key={c.slug ?? c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
-                      : MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)
+                      : MAIN_CATEGORIES.map(k => <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>)
                     }
                   </SelectContent>
                 </Select>

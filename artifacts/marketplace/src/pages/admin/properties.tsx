@@ -45,8 +45,15 @@ type DbProperty = {
 
 const FALLBACK = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=200&q=60";
 
-const MAIN_CATEGORIES = ["شقة", "فيلا", "مكتب", "دوبلكس", "أرض", "محل", "مستودع", "استوديو"];
-const LISTING_TYPES = ["للبيع", "للإيجار"];
+const MAIN_CATEGORIES = [
+  { value: "residential", label: "سكني" },
+  { value: "land", label: "أراضي" },
+  { value: "commercial", label: "تجاري" },
+];
+const LISTING_TYPES = [
+  { value: "sale", label: "للبيع" },
+  { value: "rent", label: "للإيجار" },
+];
 
 function getFirstImage(images: string | null): string {
   if (!images) return FALLBACK;
@@ -75,8 +82,8 @@ const emptyForm = {
   title: "",
   address: "",
   price: "",
-  listingType: "للبيع",
-  mainCategory: "شقة",
+  listingType: "sale",
+  mainCategory: "residential",
   rooms: 3,
   bathrooms: 2,
   area: 150,
@@ -140,8 +147,8 @@ export default function AdminProperties() {
     published: properties.filter(p => p.status === "published").length,
     pending: properties.filter(p => p.status === "pending").length,
     featured: properties.filter(p => p.featured).length,
-    forSale: properties.filter(p => p.listingType === "للبيع").length,
-    forRent: properties.filter(p => p.listingType === "للإيجار").length,
+    forSale: properties.filter(p => p.listingType === "sale").length,
+    forRent: properties.filter(p => p.listingType === "rent").length,
   }), [properties]);
 
   const handleToggleFeatured = async (p: DbProperty) => {
@@ -228,7 +235,9 @@ export default function AdminProperties() {
           <Label>نوع الصفقة</Label>
           <Select value={f.listingType} onValueChange={v => setF({ ...f, listingType: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>{LISTING_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+            <SelectContent>
+              {LISTING_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </SelectContent>
           </Select>
         </div>
         <div className="grid gap-1.5">
@@ -238,7 +247,7 @@ export default function AdminProperties() {
             <SelectContent>
               {reCategories.length > 0
                 ? reCategories.map(c => <SelectItem key={c.slug ?? c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
-                : MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)
+                : MAIN_CATEGORIES.map(k => <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>)
               }
             </SelectContent>
           </Select>
@@ -339,7 +348,7 @@ export default function AdminProperties() {
                 <SelectTrigger className="w-36"><SelectValue placeholder="نوع الصفقة" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الصفقات</SelectItem>
-                  {LISTING_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {LISTING_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filterKind} onValueChange={setFilterKind}>
@@ -348,7 +357,7 @@ export default function AdminProperties() {
                   <SelectItem value="all">كل الأنواع</SelectItem>
                   {reCategories.length > 0
                     ? reCategories.map(c => <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>)
-                    : MAIN_CATEGORIES.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)
+                    : MAIN_CATEGORIES.map(k => <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>)
                   }
                 </SelectContent>
               </Select>
@@ -434,8 +443,8 @@ export default function AdminProperties() {
                     {/* Type + Kind */}
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <Badge variant="outline" className={`text-xs w-fit ${p.listingType === "للبيع" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-blue-700 border-blue-200 bg-blue-50"}`}>
-                          {p.listingType}
+                        <Badge variant="outline" className={`text-xs w-fit ${p.listingType === "sale" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-blue-700 border-blue-200 bg-blue-50"}`}>
+                          {p.listingType === "sale" ? "للبيع" : p.listingType === "rent" ? "للإيجار" : p.listingType}
                         </Badge>
                         <span className="text-xs text-slate-500">{p.mainCategory}</span>
                       </div>
