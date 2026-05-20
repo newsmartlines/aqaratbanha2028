@@ -4,7 +4,7 @@ import {
   propertiesTable, propertyFavoritesTable, savedSearchesTable,
   notificationsTable, usersTable, siteSettingsTable, providersTable,
 } from "@workspace/db";
-import { eq, desc, and, or, ilike, sql } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql, getTableColumns } from "drizzle-orm";
 import { getSession } from "./auth";
 
 const router = Router();
@@ -186,7 +186,17 @@ router.get("/properties", async (req, res) => {
       ));
     }
 
-    const rows = await db.select().from(propertiesTable)
+    const rows = await db
+      .select({
+        ...getTableColumns(propertiesTable),
+        agentName: usersTable.name,
+        agentAvatar: providersTable.avatar,
+        agentLogo: providersTable.logo,
+        verified: providersTable.verified,
+      })
+      .from(propertiesTable)
+      .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
+      .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(propertiesTable.createdAt));
 

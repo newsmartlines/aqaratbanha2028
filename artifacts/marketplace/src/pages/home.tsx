@@ -1186,10 +1186,15 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
                       {/* Top badges */}
-                      <div className="absolute top-3 right-3 flex gap-2">
+                      <div className="absolute top-3 right-3 flex gap-1.5">
                         {listType && (
-                          <span className={`text-xs font-bold px-3 py-1 rounded-full shadow-lg ${listType === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
-                            {listType}
+                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-lg ${listType === "sale" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
+                            {listType === "sale" ? "للبيع" : "للإيجار"}
+                          </span>
+                        )}
+                        {(property as any).verified && (
+                          <span className="inline-flex items-center gap-1 bg-teal-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+                            <CheckCircle2 className="w-3 h-3" /> موثق
                           </span>
                         )}
                       </div>
@@ -1197,7 +1202,7 @@ export default function Home() {
                       {/* Kind badge bottom left */}
                       {property.propertyType && (
                         <div className="absolute bottom-3 left-3">
-                          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/25 backdrop-blur-md text-white border border-white/30">
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white border border-white/30">
                             {property.propertyType}
                           </span>
                         </div>
@@ -1217,80 +1222,124 @@ export default function Home() {
                     </div>
 
                     {/* Content */}
-                    <div className="p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="text-gray-900 font-extrabold text-xl leading-none">{priceStr}</p>
-                          <p className="text-muted-foreground text-xs mt-0.5">جنيه مصري</p>
-                        </div>
+                    <div className="p-4">
+                      {/* Price */}
+                      <div className="flex items-baseline gap-1.5 mb-1.5">
+                        <p className="text-gray-900 font-extrabold text-xl leading-none">{priceStr}</p>
+                        <span className="text-muted-foreground text-xs font-medium">ج.م</span>
                       </div>
 
-                      <h3 className="font-bold text-gray-900 text-base leading-snug mb-1.5 group-hover:text-primary transition-colors line-clamp-1">
+                      <h3 className="font-bold text-gray-900 text-sm leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-1">
                         {property.title}
                       </h3>
 
-                      <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-4">
-                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
+                        <MapPin className="w-3 h-3 text-primary shrink-0" />
                         <span className="truncate">{location}</span>
                       </div>
 
-                      <div className="border-t border-border mb-4" />
+                      {/* Specs pills */}
+                      {((property.bedrooms ?? 0) > 0 || (property.bathrooms ?? 0) > 0 || (property.area ?? 0) > 0) && (
+                        <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                          {(property.bedrooms ?? 0) > 0 && (
+                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                              <BedDouble className="w-3 h-3 text-slate-400" />
+                              {property.bedrooms} غرفة
+                            </span>
+                          )}
+                          {(property.bathrooms ?? 0) > 0 && (
+                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                              <Bath className="w-3 h-3 text-slate-400" />
+                              {property.bathrooms} حمام
+                            </span>
+                          )}
+                          {(property.area ?? 0) > 0 && (
+                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                              <Maximize2 className="w-3 h-3 text-slate-400" />
+                              {Number(property.area).toLocaleString("ar-EG")} م²
+                            </span>
+                          )}
+                        </div>
+                      )}
 
-                      <div className="flex items-center gap-4 mb-4">
-                        {(property.bedrooms ?? 0) > 0 && (
-                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
-                            <BedDouble className="w-4 h-4 text-gray-400" />
-                            <span>{property.bedrooms} غرف</span>
-                          </div>
-                        )}
-                        {(property.bathrooms ?? 0) > 0 && (
-                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
-                            <Bath className="w-4 h-4 text-gray-400" />
-                            <span>{property.bathrooms} حمام</span>
-                          </div>
-                        )}
-                        {(property.area ?? 0) > 0 && (
-                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
-                            <Maximize2 className="w-4 h-4 text-gray-400" />
-                            <span>{property.area} م²</span>
-                          </div>
-                        )}
-                      </div>
+                      <div className="border-t border-border/60 my-3" />
 
-                      {/* Date + Views */}
-                      <div className="flex items-center gap-3 mb-2.5">
-                        {property.createdAt && (
-                          <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                            <Clock className="w-3 h-3 text-gray-300" />
-                            {timeAgo(property.createdAt)}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                          <Eye className="w-3 h-3 text-gray-300" />
-                          {((property.viewCount ?? 0) as number).toLocaleString("ar-EG")} مشاهدة
-                        </span>
-                      </div>
+                      {/* Agent row */}
+                      {(() => {
+                        const agentName = (property as any).agentName as string | undefined;
+                        const agentAvatar = (property as any).agentAvatar as string | undefined;
+                        const agentLogo = (property as any).agentLogo as string | undefined;
+                        const avatar = agentAvatar || agentLogo;
+                        if (!agentName && !avatar) return null;
+                        return (
+                          <div className="flex items-center gap-2 mb-3">
+                            {avatar ? (
+                              <img
+                                src={avatar}
+                                alt={agentName}
+                                className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
+                                onError={e => {
+                                  (e.currentTarget as HTMLImageElement).src =
+                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`;
+                                }}
+                              />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
+                                {agentName?.charAt(0) ?? "م"}
+                              </div>
+                            )}
+                            <span className="text-xs text-slate-600 font-medium truncate">{agentName}</span>
+                            <span className="flex items-center gap-1 text-[10px] text-gray-400 mr-auto shrink-0">
+                              <Eye className="w-3 h-3" />
+                              {((property.viewCount ?? 0) as number).toLocaleString("ar-EG")}
+                            </span>
+                          </div>
+                        );
+                      })()}
 
-                      <div className="flex items-center justify-between gap-2">
+                      {/* Buttons row */}
+                      <div className="flex items-center gap-1.5">
+                        {/* WhatsApp */}
+                        {(property as any).whatsapp && (
+                          <button
+                            onClick={e => { e.stopPropagation(); window.open(`https://wa.me/${((property as any).whatsapp ?? "").replace(/\D/g, "")}`, "_blank"); }}
+                            className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#25D366] hover:bg-[#1fba5a] text-white shadow-sm transition-all shrink-0"
+                            title="واتساب"
+                          >
+                            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                          </button>
+                        )}
+                        {/* Call */}
+                        {(property as any).phone && (
+                          <button
+                            onClick={e => { e.stopPropagation(); window.location.href = `tel:${(property as any).phone}`; }}
+                            className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-700 hover:bg-slate-900 text-white shadow-sm transition-all shrink-0"
+                            title="مكالمة"
+                          >
+                            <Phone className="w-4 h-4" />
+                          </button>
+                        )}
+                        {/* Compare */}
                         <button
-                          className={`text-xs font-semibold border rounded-full px-3 py-1.5 flex items-center gap-1 transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"}`}
+                          className={`flex items-center justify-center w-9 h-9 rounded-xl border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary"}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-                            const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.bedrooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                            const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+                            const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.bedrooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
                             if (r === "added") toast.success("أُضيف للمقارنة ✓");
                             else if (r === "already") toast("موجود بالفعل في المقارنة");
                             else toast.error("المقارنة ممتلئة (٤ عقارات)");
                           }}
+                          title="قارن"
                         >
-                          <GitCompare className="w-3 h-3" />
-                          {isInCompare(property.id) ? "في المقارنة" : "قارن"}
+                          <GitCompare className="w-4 h-4" />
                         </button>
+                        {/* Details */}
                         <button
-                          className="text-xs font-semibold text-primary border border-primary/30 rounded-full px-4 py-1.5 hover:bg-primary hover:text-white transition-all"
+                          className="flex-1 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-xl px-3 py-2 transition-all"
                           onClick={(e) => { e.stopPropagation(); setLocation(`/property/${property.id}`); }}
                         >
-                          تفاصيل
+                          التفاصيل
                         </button>
                       </div>
                     </div>

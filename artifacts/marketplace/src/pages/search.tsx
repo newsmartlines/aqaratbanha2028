@@ -75,6 +75,10 @@ interface PropertyResult {
   featured: boolean | null;
   viewCount: number;
   createdAt: string;
+  agentName?: string | null;
+  agentAvatar?: string | null;
+  agentLogo?: string | null;
+  verified?: boolean | null;
 }
 
 /* ── Main Component ───────────────────────────────────────────────── */
