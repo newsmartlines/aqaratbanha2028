@@ -1264,6 +1264,18 @@ export default function Home() {
 
                       <div className="border-t border-border/60 my-3" />
 
+                      {/* Date + Views row */}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          {timeAgo((property as any).createdAt) || "—"}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs font-bold text-slate-900">
+                          <Eye className="w-3.5 h-3.5 text-slate-700" />
+                          {((property.viewCount ?? 0) as number).toLocaleString("ar-EG")} مشاهدة
+                        </span>
+                      </div>
+
                       {/* Agent row */}
                       {(() => {
                         const agentName = (property as any).agentName as string | undefined;
@@ -1289,10 +1301,6 @@ export default function Home() {
                               </div>
                             )}
                             <span className="text-xs text-slate-600 font-medium truncate">{agentName}</span>
-                            <span className="flex items-center gap-1 text-[10px] text-gray-400 mr-auto shrink-0">
-                              <Eye className="w-3 h-3" />
-                              {((property.viewCount ?? 0) as number).toLocaleString("ar-EG")}
-                            </span>
                           </div>
                         );
                       })()}
