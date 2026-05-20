@@ -22,6 +22,7 @@ import {
   Store, Trees, Scale, GitCompare, X as XIcon, Eye, Clock,
 } from "lucide-react";
 import { api, type Provider, type Category, type Subcategory, type SiteSettings, type Region, type FavoriteItem } from "@/lib/api";
+import { AdBanner } from "@/components/AdBanner";
 import { useApi } from "@/lib/use-api";
 import { useInterpolate } from "@/lib/use-interpolate";
 import { useAuth } from "@/lib/auth-context";
@@ -1071,6 +1072,11 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── AD: hero bottom ── */}
+        <div className="container mx-auto px-4 py-3">
+          <AdBanner position="hero_bottom" />
+        </div>
+
         {/* ── REAL ESTATE LISTINGS ── */}
         <section
           className="py-20 bg-white relative overflow-hidden"
@@ -1645,6 +1651,11 @@ export default function Home() {
           );
         })()}
 
+        {/* ── AD: homepage mid ── */}
+        <div className="container mx-auto px-4 py-2">
+          <AdBanner position="homepage_mid" />
+        </div>
+
         {/* ── AI: TRENDING PROPERTIES ── */}
         <TrendingSection />
 
@@ -1695,6 +1706,11 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ── AD: before footer ── */}
+        <div className="container mx-auto px-4 py-4">
+          <AdBanner position="homepage_before_footer" />
+        </div>
 
         {/* ── FOOTER ── */}
         <footer className="bg-slate-900 text-white py-16">

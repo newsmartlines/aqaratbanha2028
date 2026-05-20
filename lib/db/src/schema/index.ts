@@ -34,3 +34,4 @@ export * from "./chatbotQueries";
 export * from "./userSearchHistory";
 export * from "./userViews";
 export * from "./userPreferences";
+export * from "./adSpots";

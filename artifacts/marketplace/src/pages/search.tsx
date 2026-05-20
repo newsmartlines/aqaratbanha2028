@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { AdBanner } from "@/components/AdBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 
@@ -619,6 +620,9 @@ export default function SearchPage() {
               </div>
             </div>
 
+            {/* ── AD: search top ── */}
+            <AdBanner position="search_top" className="mb-6" />
+
             {/* Cards */}
             {isFetching ? (
               <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -639,11 +643,19 @@ export default function SearchPage() {
                 <div className={viewMode === "list"
                   ? "flex flex-col gap-5"
                   : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"}>
-                  {sorted.slice(0, visibleCount).map((p, idx) =>
-                    viewMode === "list"
-                      ? <ListCard key={p.id} p={p} idx={idx} />
-                      : <GridCard key={p.id} p={p} idx={idx} />
-                  )}
+                  {sorted.slice(0, visibleCount).map((p, idx) => (
+                    <div key={p.id}>
+                      {viewMode === "list"
+                        ? <ListCard p={p} idx={idx} />
+                        : <GridCard p={p} idx={idx} />}
+                      {/* Inline ad after 5th listing */}
+                      {idx === 4 && (
+                        <div className={viewMode === "list" ? "mt-5" : "col-span-full mt-1"}>
+                          <AdBanner position="search_inline" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </AnimatePresence>
             )}

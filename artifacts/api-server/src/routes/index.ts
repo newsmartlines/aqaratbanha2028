@@ -31,6 +31,7 @@ import featuredAreasRouter from "./featured-areas";
 import seedDemoRouter from "./seed-demo";
 import backupRouter from "./backup";
 import recommendationsRouter from "./recommendations";
+import adsRouter from "./ads";
 
 const router: IRouter = Router();
 
@@ -66,5 +67,6 @@ router.use(featuredAreasRouter);
 router.use(seedDemoRouter);
 router.use(backupRouter);
 router.use(recommendationsRouter);
+router.use(adsRouter);
 
 export default router;

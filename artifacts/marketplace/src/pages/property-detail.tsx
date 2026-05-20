@@ -15,6 +15,7 @@ import {
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { api } from "@/lib/api";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
+import { AdBanner } from "@/components/AdBanner";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -801,7 +802,15 @@ export default function PropertyDetail() {
               </div>
             </div>
 
+            {/* ── AD: property sidebar ── */}
+            <AdBanner position="property_sidebar" className="mt-0" />
+
           </div>
+        </div>
+
+        {/* ── AD: property bottom ── */}
+        <div className="mt-10">
+          <AdBanner position="property_bottom" />
         </div>
 
         {/* Similar Properties */}
