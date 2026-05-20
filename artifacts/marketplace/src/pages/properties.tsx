@@ -918,11 +918,37 @@ export default function PropertiesPage() {
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
-                            {/* ── Rating strip (far LEFT in RTL) ── */}
-                            <div className="flex flex-col items-center justify-start pt-4 px-3 shrink-0 border-l border-gray-100">
-                              <div className="flex flex-col items-center gap-0.5">
-                                <span className="text-amber-400 text-lg">★</span>
-                                <span className="text-gray-700 font-bold text-xs">4.8</span>
+                            {/* ── Image (RIGHT in RTL — first in DOM) ── */}
+                            <div className="relative shrink-0 w-44 sm:w-56 min-h-[160px] overflow-hidden bg-gray-100">
+                              <img
+                                src={p.img}
+                                alt={p.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                onError={(e) => { e.currentTarget.src = FALLBACK; }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/20" />
+
+                              {/* Top badges — top right of image */}
+                              <div className="absolute top-2.5 right-2.5 flex flex-col gap-1">
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
+                                  {p.type}
+                                </span>
+                                {p.featured && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-amber-900 shadow">مميز</span>
+                                )}
+                              </div>
+
+                              {/* Heart — top left of image */}
+                              <button
+                                className={`absolute top-2.5 left-2.5 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
+                                onClick={(e) => toggleLike(p.id, e)}
+                              >
+                                <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
+                              </button>
+
+                              {/* Kind badge — bottom */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
+                                {reCategories.find(c => (c.slug ?? String(c.id)) === p.kind)?.nameAr ?? p.kind}
                               </div>
                             </div>
 
@@ -930,8 +956,8 @@ export default function PropertiesPage() {
                             <div className="flex-1 flex flex-col p-4 gap-2 min-w-0">
                               {/* Price */}
                               <div className="flex items-baseline gap-1.5">
-                                <span className="text-gray-400 text-sm font-medium">جنيه</span>
                                 <span className="text-2xl font-black text-gray-900 leading-none">{p.price}</span>
+                                <span className="text-gray-400 text-sm font-medium">جنيه</span>
                               </div>
 
                               {/* Title */}
@@ -990,7 +1016,6 @@ export default function PropertiesPage() {
 
                                 {/* Action buttons */}
                                 <div className="flex items-center gap-2">
-                                  {/* WhatsApp icon button */}
                                   {p.whatsapp && (
                                     <button
                                       onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
@@ -1000,7 +1025,6 @@ export default function PropertiesPage() {
                                       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
                                     </button>
                                   )}
-                                  {/* Details button */}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
                                     className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:shadow transition-all"
@@ -1011,37 +1035,11 @@ export default function PropertiesPage() {
                               </div>
                             </div>
 
-                            {/* ── Image (far RIGHT in RTL) ── */}
-                            <div className="relative shrink-0 w-44 sm:w-56 overflow-hidden bg-gray-100">
-                              <img
-                                src={p.img}
-                                alt={p.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                                onError={(e) => { e.currentTarget.src = FALLBACK; }}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/20" />
-
-                              {/* Top badges — left side of image */}
-                              <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
-                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
-                                  {p.type}
-                                </span>
-                                {p.featured && (
-                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-amber-900 shadow">مميز</span>
-                                )}
-                              </div>
-
-                              {/* Heart — top right */}
-                              <button
-                                className={`absolute top-2.5 right-2.5 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
-                                onClick={(e) => toggleLike(p.id, e)}
-                              >
-                                <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
-                              </button>
-
-                              {/* Kind badge — bottom */}
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
-                                {reCategories.find(c => (c.slug ?? String(c.id)) === p.kind)?.nameAr ?? p.kind}
+                            {/* ── Rating strip (LEFT in RTL — last in DOM) ── */}
+                            <div className="flex flex-col items-center justify-start pt-4 px-3 shrink-0 border-r border-gray-100">
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="text-amber-400 text-lg">★</span>
+                                <span className="text-gray-700 font-bold text-xs">4.8</span>
                               </div>
                             </div>
 
