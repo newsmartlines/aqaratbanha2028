@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,7 @@ export default function ComparePage() {
                     className="h-32 rounded-2xl overflow-hidden mb-3 cursor-pointer"
                     onClick={() => setLocation(`/property/${item.id}`)}
                   >
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                    <img src={item.image || ""} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" onError={(e) => { e.currentTarget.src = NO_IMAGE_PLACEHOLDER; }} />
                   </div>
                   <p className="text-primary font-extrabold text-lg leading-tight">
                     {item.price} <span className="text-xs text-muted-foreground font-normal">ج.م</span>

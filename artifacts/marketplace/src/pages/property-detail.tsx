@@ -16,6 +16,7 @@ import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { api } from "@/lib/api";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 import { AdBanner } from "@/components/AdBanner";
+import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -24,7 +25,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const DEFAULT_IMG = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=85";
+const DEFAULT_IMG = NO_IMAGE_PLACEHOLDER;
 
 function tryJson<T>(val: string | null | undefined, fallback: T): T {
   if (!val) return fallback;

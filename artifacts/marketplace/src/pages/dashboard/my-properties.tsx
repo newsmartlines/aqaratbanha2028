@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, mediaUrl } from "@/lib/api";
@@ -337,18 +338,12 @@ export default function MyPropertiesPage() {
                           {/* Thumbnail */}
                           <td className="px-4 py-3">
                             <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0">
-                              {img ? (
-                                <img
-                                  src={mediaUrl(img)}
-                                  alt={prop.title}
-                                  className="w-full h-full object-cover"
-                                  onError={e => { e.currentTarget.style.display = "none"; }}
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                  <Home className="w-6 h-6" />
-                                </div>
-                              )}
+                              <img
+                                src={img ? mediaUrl(img) : NO_IMAGE_PLACEHOLDER}
+                                alt={prop.title}
+                                className="w-full h-full object-cover"
+                                onError={e => { e.currentTarget.src = NO_IMAGE_PLACEHOLDER; }}
+                              />
                             </div>
                           </td>
 

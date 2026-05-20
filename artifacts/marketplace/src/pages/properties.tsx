@@ -20,6 +20,7 @@ import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store
 import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
 
 type DbProp = {
   id: number;
@@ -129,7 +130,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const FALLBACK = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80";
+const FALLBACK = NO_IMAGE_PLACEHOLDER;
 const MAP_CENTER: [number, number] = [24.7136, 46.6753];
 
 const CITIES: string[] = [];
