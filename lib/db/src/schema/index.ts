@@ -31,3 +31,6 @@ export * from "./billingPlans";
 export * from "./chatLeads";
 export * from "./chatSessions";
 export * from "./chatbotQueries";
+export * from "./userSearchHistory";
+export * from "./userViews";
+export * from "./userPreferences";

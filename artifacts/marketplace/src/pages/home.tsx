@@ -508,6 +508,147 @@ export const PROPERTIES = [
   },
 ];
 
+/* ═══════════════════════════════════════════════════════════════════
+   AI SMART COMPONENTS — Trending & Recently Viewed
+   ═══════════════════════════════════════════════════════════════════ */
+
+interface SmallProperty {
+  id: number; title: string; price?: string | null; listingType?: string | null;
+  mainCategory?: string | null; district?: string | null; images?: string | null;
+  viewCount?: number; rooms?: number | null; area?: string | null;
+}
+
+function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => void }) {
+  const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
+  const thumb = imgs[0] ?? DEFAULT_IMG;
+  const priceNum = Number(p.price);
+  const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") + " ج.م" : "السعر عند التواصل";
+  const typeAr = p.listingType === "rent" ? "للإيجار" : "للبيع";
+  return (
+    <motion.div
+      whileHover={{ y: -4 }}
+      onClick={onClick}
+      className="w-56 shrink-0 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-shadow duration-300"
+    >
+      <div className="relative h-36 overflow-hidden bg-slate-100">
+        <img src={thumb} alt={p.title} loading="lazy"
+          className="w-full h-full object-cover"
+          onError={e => { e.currentTarget.src = DEFAULT_IMG; }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        <span className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-md
+          ${p.listingType === "rent" ? "bg-blue-500" : "bg-emerald-500"}`}>
+          {typeAr}
+        </span>
+        <span className="absolute bottom-2 right-2 text-white text-xs font-black">{priceStr}</span>
+      </div>
+      <div className="p-3">
+        <p className="font-bold text-slate-800 text-sm line-clamp-1">{p.title}</p>
+        {p.district && (
+          <p className="flex items-center gap-1 text-slate-400 text-xs mt-1">
+            <MapPin className="w-3 h-3 shrink-0" />{p.district}
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function TrendingSection() {
+  const [, setLocation] = useLocation();
+  const { data, isLoading } = useQuery<SmallProperty[]>({
+    queryKey: ["trending-properties"],
+    queryFn: async () => {
+      const res = await fetch("/api/trending?limit=10");
+      const json = await res.json();
+      return json.data ?? [];
+    },
+    staleTime: 60_000,
+  });
+  if (isLoading || !data || data.length === 0) return null;
+  return (
+    <section className="py-14 bg-gradient-to-b from-slate-50 to-white">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 rounded-full px-3 py-1 text-xs font-semibold mb-2">
+              <TrendingUp className="w-3.5 h-3.5" />
+              الأكثر مشاهدة الآن
+            </div>
+            <h2 className="text-2xl font-extrabold text-slate-900">العقارات الأكثر مشاهدة</h2>
+            <p className="text-slate-500 text-sm mt-1">اكتشف ما يبحث عنه الآخرون</p>
+          </div>
+          <button onClick={() => setLocation("/search?sort=popular")}
+            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+            عرض الكل <ArrowLeft className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+          {data.map(p => (
+            <SmallPropertyCard key={p.id} p={p} onClick={() => setLocation(`/property/${p.id}`)} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentlyViewedSection() {
+  const [, setLocation] = useLocation();
+  const [ids, setIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored: number[] = JSON.parse(localStorage.getItem("rve_ids") ?? "[]");
+      setIds(stored.filter(n => n > 0).slice(0, 8));
+    } catch {}
+  }, []);
+
+  const { data, isLoading } = useQuery<SmallProperty[]>({
+    queryKey: ["recently-viewed", ids.join(",")],
+    queryFn: async () => {
+      if (!ids.length) return [];
+      const res = await fetch(`/api/recently-viewed?ids=${ids.join(",")}`);
+      const json = await res.json();
+      return json.data ?? [];
+    },
+    enabled: ids.length > 0,
+    staleTime: 30_000,
+  });
+
+  if (!ids.length || isLoading || !data || data.length === 0) return null;
+
+  return (
+    <section className="py-14 bg-white border-t border-slate-100">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-600 rounded-full px-3 py-1 text-xs font-semibold mb-2">
+              <Eye className="w-3.5 h-3.5" />
+              شاهدته مؤخراً
+            </div>
+            <h2 className="text-2xl font-extrabold text-slate-900">متابعة تصفحك</h2>
+            <p className="text-slate-500 text-sm mt-1">استكمل مشاهدة العقارات التي اهتممت بها</p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("rve_ids");
+              setIds([]);
+            }}
+            className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+          >
+            مسح السجل
+          </button>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+          {data.map(p => (
+            <SmallPropertyCard key={p.id} p={p} onClick={() => setLocation(`/property/${p.id}`)} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -1503,6 +1644,12 @@ export default function Home() {
             </section>
           );
         })()}
+
+        {/* ── AI: TRENDING PROPERTIES ── */}
+        <TrendingSection />
+
+        {/* ── AI: RECENTLY VIEWED ── */}
+        <RecentlyViewedSection />
 
         {/* ── HOW IT WORKS ── */}
         <section className="py-24 bg-secondary/30">

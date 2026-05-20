@@ -30,6 +30,7 @@ import searchRouter from "./search";
 import featuredAreasRouter from "./featured-areas";
 import seedDemoRouter from "./seed-demo";
 import backupRouter from "./backup";
+import recommendationsRouter from "./recommendations";
 
 const router: IRouter = Router();
 
@@ -64,5 +65,6 @@ router.use(searchRouter);
 router.use(featuredAreasRouter);
 router.use(seedDemoRouter);
 router.use(backupRouter);
+router.use(recommendationsRouter);
 
 export default router;

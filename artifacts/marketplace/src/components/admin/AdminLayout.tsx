@@ -34,6 +34,7 @@ import {
   Star,
   Database,
   HardDrive,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -197,6 +198,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: CreditCard,      label: t("payments"),        href: "/admin/payments",         perm: "payments" },
     { icon: Package,         label: t("subscriptions"),   href: "/admin/subscriptions",    perm: "subscriptions" },
     { icon: BarChart3,       label: t("reports"),         href: "/admin/reports",          perm: "reports" },
+    { icon: TrendingUp,      label: "تحليلات الذكاء",     href: "/admin/analytics",        perm: "reports" },
     { icon: MessageSquare,   label: "الرسائل والقوالب",   href: "/admin/messages",         perm: "settings" },
     { icon: Mail,            label: "البريد الإلكتروني", href: "/admin/email-templates",  perm: "settings" },
     { icon: Layers3,         label: "الباقات والعمولات", href: "/admin/plans-commissions", perm: "commission" },

@@ -139,6 +139,18 @@ export default function SearchPage() {
     if (cityFilter.trim()) p.set("city", cityFilter.trim());
     setLocation(`/search?${p.toString()}`);
     setVisibleCount(12);
+    // Fire-and-forget search tracking for AI recommendations
+    fetch("/api/track/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        keyword: searchInput.trim() || null,
+        listingType: selectedListingType !== "all" ? selectedListingType : null,
+        category: selectedCategory !== "all" ? selectedCategory : null,
+        city: cityFilter.trim() || null,
+      }),
+    }).catch(() => {});
   }, [searchInput, selectedListingType, selectedCategory, cityFilter]);
 
   const clearAll = () => {

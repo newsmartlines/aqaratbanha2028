@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import compression from "compression";
 import path from "path";
 import fs from "fs";
 import httpProxy from "http-proxy";
@@ -28,6 +29,7 @@ app.use(
     },
   }),
 );
+app.use(compression());
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());

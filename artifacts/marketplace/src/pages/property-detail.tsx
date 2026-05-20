@@ -150,7 +150,20 @@ export default function PropertyDetail() {
         // Track view once
         if (!viewTracked.current) {
           viewTracked.current = true;
-          api.propertyStats.view(id).catch(() => {});
+          // Save to localStorage for "recently viewed" section
+          try {
+            const key = "rve_ids";
+            const existing: number[] = JSON.parse(localStorage.getItem(key) ?? "[]");
+            const updated = [id, ...existing.filter(x => x !== id)].slice(0, 10);
+            localStorage.setItem(key, JSON.stringify(updated));
+          } catch {}
+          // Track via AI system (fire-and-forget)
+          fetch("/api/track/view", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ propertyId: id, durationSec: 0 }),
+          }).catch(() => {});
         }
 
         // Fetch similar
