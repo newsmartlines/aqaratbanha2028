@@ -1,0 +1,134 @@
+Build an AI-Powered Smart Recommendation & User Intent System for the real estate platform.
+
+Goal:
+Understand what the user is searching for, analyze behavior intelligently, and automatically show the most relevant properties, areas, and suggestions dynamically.
+
+Core Features:
+
+1. Smart User Intent Detection
+   Track and analyze:
+
+* Search keywords
+* Clicked properties
+* Favorite properties
+* Viewed categories
+* Viewed locations
+* Price ranges
+* Property types
+* Time spent on listings
+* Recent searches
+
+Use this data to understand:
+
+* What the user wants
+* Budget level
+* Preferred areas
+* Preferred property type
+* Buy vs Rent intent
+
+2. Smart Recommendations Engine
+   Automatically show:
+
+* Recommended Properties
+* Similar Listings
+* Trending in User Area
+* Recommended Locations
+* Recommended Categories
+* Recently Viewed
+* Personalized Suggestions
+
+3. Dynamic Homepage Personalization
+   Customize homepage sections based on user behavior:
+
+* Hero recommendations
+* Smart banners
+* Personalized property rows
+* Continue browsing section
+
+4. AI Smart Search
+   When user types:
+
+* show live intelligent suggestions
+* autocomplete
+* typo correction
+* related searches
+* smart area matching
+* semantic search behavior
+
+5. Recommendation Logic
+   Use:
+
+* Tags
+* Categories
+* Location similarity
+* User behavior scoring
+* Popularity
+* View count
+* Favorites count
+* Search history
+
+6. Database Architecture
+   Create scalable tables for:
+
+* user_search_history
+* user_views
+* user_preferences
+* recommendation_scores
+* trending_properties
+* recently_viewed
+
+7. Admin Dashboard Features
+   Add admin controls for:
+
+* trending algorithms
+* recommendation settings
+* analytics
+* top searched keywords
+* user behavior insights
+
+8. Smart Notifications
+   Show:
+
+* “Properties مشابهة لاهتماماتك”
+* “عقارات جديدة في المنطقة التي تتابعها”
+* “عقارات ضمن ميزانيتك”
+
+9. Performance Requirements
+
+* Fast queries
+* Cached recommendations
+* Lazy loading
+* Optimized API responses
+
+10. Future AI Ready
+    Prepare architecture for:
+
+* OpenAI integration
+* AI chatbot recommendations
+* Embedding/vector search
+* Personalized ranking models
+
+Technical Requirements:
+
+* Use React Query
+* Use PostgreSQL-compatible scalable design
+* Repository + Services architecture
+* No hardcoded frontend logic
+* Everything database-driven
+* Production-ready structure
+
+Important:
+
+* Keep UI elegant and minimal
+* Do NOT break existing functionality
+* Mobile responsive
+* Scalable for future AI upgrades
+
+Goal:
+Make the website feel intelligent like:
+
+* Airbnb
+* Dubizzle
+* Property Finder
+* Amazon recommendations
+* Netflix personalization
