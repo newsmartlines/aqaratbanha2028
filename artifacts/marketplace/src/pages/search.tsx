@@ -591,12 +591,6 @@ export default function SearchPage() {
                   <Phone className="w-4 h-4" />
                 </button>
               )}
-              <button
-                onClick={e => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
-                className="h-9 px-5 bg-zinc-900 hover:bg-primary text-white text-[13px] font-bold rounded-xl transition-all"
-              >
-                التفاصيل
-              </button>
             </div>
           </div>
         </div>

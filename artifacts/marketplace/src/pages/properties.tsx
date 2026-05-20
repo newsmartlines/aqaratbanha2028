@@ -1068,12 +1068,6 @@ export default function PropertiesPage() {
                                       <Phone className="w-4 h-4" />
                                     </button>
                                   )}
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
-                                    className="h-9 px-5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all"
-                                  >
-                                    التفاصيل
-                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -1206,7 +1200,6 @@ export default function PropertiesPage() {
                                 <button className={`p-1 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`} title="قارن" onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}>
                                   <GitCompare className="w-3.5 h-3.5" />
                                 </button>
-                                <span className="flex-1 text-center text-xs text-primary font-semibold">التفاصيل ←</span>
                               </div>
                               </div>
                             </div>

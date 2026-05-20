@@ -1322,13 +1322,6 @@ export default function Home() {
                         >
                           <GitCompare className="w-4 h-4" />
                         </button>
-                        {/* Details */}
-                        <button
-                          className="flex-1 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-xl px-3 py-2 transition-all"
-                          onClick={(e) => { e.stopPropagation(); setLocation(`/property/${property.id}`); }}
-                        >
-                          التفاصيل
-                        </button>
                       </div>
                     </div>
                   </div>
