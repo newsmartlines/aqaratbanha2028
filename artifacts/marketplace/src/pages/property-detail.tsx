@@ -9,7 +9,7 @@ import L from "leaflet";
 import {
   BedDouble, Bath, Maximize2, Building2, ArrowLeft, ArrowRight,
   MapPin, Phone, MessageCircle, Share2, Heart, CheckCircle2,
-  Star, ChevronLeft, Play, X, Calendar,
+  ChevronLeft, Play, X, Calendar,
   Layers, Car, Home, TrendingUp, Eye, Clock, Loader2, Scale, ShieldCheck,
 } from "lucide-react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
@@ -701,13 +701,6 @@ export default function PropertyDetail() {
                     ≈ {Math.round(property.priceNum / property.area).toLocaleString("ar-EG")} ج.م / م²
                   </p>
                 )}
-              </div>
-
-              <div className="flex gap-3 mb-6">
-                <div className="flex items-center gap-1 text-amber-500">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
-                </div>
-                <span className="text-sm text-muted-foreground">(12 تقييم)</span>
               </div>
 
               <div className="space-y-2 mb-6 text-sm">

@@ -1718,8 +1718,8 @@ export default function Home() {
               </div>
               <div className="relative z-10 flex flex-col items-center">
                 <div className="w-24 h-24 rounded-3xl bg-primary shadow-xl shadow-primary/20 flex items-center justify-center mb-6 text-3xl font-black text-primary-foreground">3</div>
-                <h3 className="text-xl font-bold mb-3">استلم وقيم</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">احصل على خدمتك، وشارك تجربتك من خلال تقييم مزود الخدمة لمساعدة الآخرين.</p>
+                <h3 className="text-xl font-bold mb-3">استلم وتمتع</h3>
+                <p className="text-muted-foreground leading-relaxed px-4">احصل على العقار المناسب وابدأ رحلتك الجديدة بكل راحة وثقة.</p>
               </div>
             </div>
           </div>

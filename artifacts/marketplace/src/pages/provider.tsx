@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  MapPin, Star, Phone, MessageCircle, Share2,
-  Heart, ShieldCheck, Clock, CheckCircle2, Calendar, X, Crown,
+  MapPin, Phone, MessageCircle, Share2,
+  Heart, ShieldCheck, Clock, CheckCircle2, X, Crown,
   ArrowUpCircle, Loader2, Send, Copy, Check, ChevronDown, ChevronUp,
   Briefcase, Plus, Gift,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { api, type ProviderDetail, type Provider, type Review, mediaUrl } from "@/lib/api";
+import { api, type ProviderDetail, type Provider, mediaUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 const DEFAULT_IMG =
@@ -25,18 +25,15 @@ function providerMedia(url: string | null | undefined, fallback = DEFAULT_IMG): 
   return resolved || fallback;
 }
 
-export default function ProviderPage({ params }: { params: { id: string } }) {
+export default function ProviderPage() {
+  const params = useParams<{ id: string }>();
   const [showPhone, setShowPhone] = useState(false);
   const [expandedAbout, setExpandedAbout] = useState(false);
   const [showMsgModal, setShowMsgModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
   const [msgText, setMsgText] = useState("");
   const [msgSent, setMsgSent] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewText, setReviewText] = useState("");
-  const [reviewSent, setReviewSent] = useState(false);
   // Request type chooser modal
   const [requestModal, setRequestModal] = useState<{
     open: boolean;
@@ -118,17 +115,6 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
     onSuccess: () => {
       setMsgSent(true);
       setTimeout(() => { setShowMsgModal(false); setMsgSent(false); setMsgText(""); }, 2000);
-    },
-  });
-
-  /* ─── Review ─── */
-  const addReviewMutation = useMutation({
-    mutationFn: () =>
-      api.reviews.create(providerId, { userId: user?.id, rating: reviewRating, text: reviewText }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["providerDetail", providerId] });
-      setReviewSent(true);
-      setTimeout(() => { setShowReviewModal(false); setReviewSent(false); setReviewText(""); setReviewRating(5); }, 2000);
     },
   });
 
@@ -301,14 +287,8 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                         )}
                       </div>
 
-                      {/* Rating + Actions */}
+                      {/* Actions */}
                       <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1.5 bg-secondary/60 px-3 py-1.5 rounded-xl border border-border/40">
-                          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                          <span className="font-bold">{parseFloat(provider.rating).toFixed(1)}</span>
-                          <span className="text-xs text-muted-foreground">({provider.reviewsCount})</span>
-                        </div>
-
                         <Button
                           size="sm"
                           className="rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md gap-1.5"
@@ -466,74 +446,6 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                 )}
               </section>
 
-              {/* ── Reviews ── */}
-              <section className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                    تقييمات العملاء
-                    <Badge variant="outline" className="rounded-full text-xs font-normal">
-                      {provider.reviews.length}
-                    </Badge>
-                  </h2>
-                  {user && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl h-9 gap-1"
-                      onClick={() => setShowReviewModal(true)}
-                    >
-                      <Plus className="w-4 h-4" /> أضف تقييم
-                    </Button>
-                  )}
-                </div>
-
-                {provider.reviews.length === 0 ? (
-                  <div className="bg-card rounded-2xl border border-dashed border-border/60 p-8 text-center shadow-sm">
-                    <Star className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
-                    <p className="text-muted-foreground">لا توجد تقييمات حتى الآن — كن أول من يقيّم!</p>
-                  </div>
-                ) : (
-                  <div className="bg-card rounded-2xl border border-border/40 shadow-sm divide-y divide-border/40">
-                    {provider.reviews.map((review: Review) => (
-                      <div key={review.id} className="p-5">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0">
-                            {(review.userName ?? "؟").charAt(0)}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="font-bold text-sm">{review.userName ?? "عميل"}</p>
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Calendar className="w-3 h-3" />
-                                {new Date(review.createdAt).toLocaleDateString("ar-EG")}
-                              </div>
-                            </div>
-                            <div className="flex mb-2">
-                              {Array.from({ length: 5 }).map((_, j) => (
-                                <Star
-                                  key={j}
-                                  className={`w-3.5 h-3.5 ${j < review.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/25"}`}
-                                />
-                              ))}
-                            </div>
-                            {review.text && (
-                              <p className="text-muted-foreground text-sm leading-relaxed">{review.text}</p>
-                            )}
-                            {review.reply && (
-                              <div className="mt-3 bg-primary/5 rounded-xl p-3 border-r-2 border-primary">
-                                <p className="text-xs font-bold text-primary mb-1">رد مقدم الخدمة:</p>
-                                <p className="text-xs text-muted-foreground">{review.reply}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-
               {/* ── Similar Providers ── */}
               {similarProviders.length > 0 && (
                 <section>
@@ -553,8 +465,8 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                         <CardContent className="p-3">
                           <h3 className="font-bold text-sm truncate">{p.userName}</h3>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            {parseFloat(p.rating).toFixed(1)}
+                            <MapPin className="w-3 h-3 text-primary" />
+                            {p.city ?? "بنها"}
                           </div>
                         </CardContent>
                       </Card>
@@ -846,54 +758,6 @@ export default function ProviderPage({ params }: { params: { id: string } }) {
                   إرسال
                 </Button>
                 <Button variant="outline" onClick={() => setShowMsgModal(false)}>إلغاء</Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Review Modal */}
-      <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
-        <DialogContent className="max-w-md" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">أضف تقييمك</DialogTitle>
-          </DialogHeader>
-          {reviewSent ? (
-            <div className="flex flex-col items-center justify-center py-8 gap-3">
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle2 className="w-7 h-7 text-green-600" />
-              </div>
-              <p className="text-lg font-bold">شكراً على تقييمك!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium mb-2">التقييم</p>
-                <div className="flex gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <button key={i} onClick={() => setReviewRating(i + 1)}>
-                      <Star className={`w-7 h-7 transition-colors ${i < reviewRating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Textarea
-                placeholder="شاركنا تجربتك..."
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                className="resize-none rounded-xl"
-                rows={4}
-              />
-              <div className="flex gap-3">
-                <Button
-                  className="flex-1"
-                  disabled={addReviewMutation.isPending}
-                  onClick={() => addReviewMutation.mutate()}
-                >
-                  {addReviewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
-                  نشر التقييم
-                </Button>
-                <Button variant="outline" onClick={() => setShowReviewModal(false)}>إلغاء</Button>
               </div>
             </div>
           )}
