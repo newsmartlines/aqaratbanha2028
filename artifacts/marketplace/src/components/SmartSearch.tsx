@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -110,7 +111,9 @@ export function SmartSearch({
   const [debouncedQ, setDebouncedQ] = useState("");
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef  = useRef<HTMLDivElement>(null);
+  const inputRef     = useRef<HTMLInputElement>(null);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
 
   useEffect(() => { if (open) setRecentSearches(getRecent()); }, [open]);
 
@@ -121,11 +124,27 @@ export function SmartSearch({
 
   useEffect(() => { setActiveIdx(-1); }, [debouncedQ]);
 
+  // Track container position for the portal dropdown
+  useLayoutEffect(() => {
+    if (!open) return;
+    const update = () => {
+      if (containerRef.current) setDropdownRect(containerRef.current.getBoundingClientRect());
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open]);
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      const inContainer = containerRef.current?.contains(target);
+      const inDropdown  = dropdownRef.current?.contains(target);
+      if (!inContainer && !inDropdown) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -258,12 +277,20 @@ export function SmartSearch({
         </button>
       )}
 
-      {/* Dropdown */}
-      {showDropdown && (
+      {/* Dropdown — rendered via Portal so it escapes any overflow-hidden ancestor */}
+      {showDropdown && dropdownRect && createPortal(
         <div
-          className={`absolute bg-white border border-gray-200 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] overflow-hidden
-            ${isHero ? "top-full mt-2 left-0 right-0" : "top-[calc(100%+6px)] left-0 right-0"}`}
-          style={{ maxHeight: 460, zIndex: 99999 }}
+          ref={dropdownRef}
+          className="bg-white border border-gray-200 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] overflow-hidden"
+          style={{
+            position: "fixed",
+            top: dropdownRect.bottom + 6,
+            left: dropdownRect.left,
+            width: dropdownRect.width,
+            maxHeight: 460,
+            zIndex: 99999,
+            overflowY: "auto",
+          }}
         >
           {/* Loading */}
           {isLoading && !data && (
@@ -288,7 +315,7 @@ export function SmartSearch({
 
           {/* Results */}
           {!isLoading && !isEmpty && flatItems.length > 0 && (
-            <div className="overflow-y-auto" style={{ maxHeight: 408 }}>
+            <div>
 
               {/* ── No query: recent + trending chips + popular locations ── */}
               {!isTyping && (
@@ -517,7 +544,8 @@ export function SmartSearch({
               البحث الذكي
             </span>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
