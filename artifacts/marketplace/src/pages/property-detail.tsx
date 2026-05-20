@@ -70,6 +70,8 @@ type PropertyView = {
   agentDistrict: string;
   agentMemberSince: string | null;
   providerId: number | null;
+  viewCount: number;
+  createdAt: string | null;
 };
 
 function mapDbToView(p: Record<string, unknown>): PropertyView {
@@ -110,6 +112,8 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     agentDistrict: (p.agentDistrict as string) ?? "",
     agentMemberSince: (p.agentMemberSince as string) ?? null,
     providerId: (p.providerId as number) ?? null,
+    viewCount: (p.viewCount as number) ?? 0,
+    createdAt: (p.createdAt as string) ?? null,
   };
 }
 
@@ -149,9 +153,10 @@ export default function PropertyDetail() {
         const mapped = mapDbToView(raw);
         setProperty(mapped);
 
-        // Track view once
+        // Track view once per property per 24h
         if (!viewTracked.current) {
           viewTracked.current = true;
+
           // Save to localStorage for "recently viewed" section
           try {
             const key = "rve_ids";
@@ -159,13 +164,37 @@ export default function PropertyDetail() {
             const updated = [id, ...existing.filter(x => x !== id)].slice(0, 10);
             localStorage.setItem(key, JSON.stringify(updated));
           } catch {}
-          // Track via AI system (fire-and-forget)
-          fetch("/api/track/view", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ propertyId: id, durationSec: 0 }),
-          }).catch(() => {});
+
+          // Client-side 24h cooldown — prevents redundant API calls on fast re-visits
+          const cooldownKey = `pvw_${id}`;
+          const lastSeen = parseInt(localStorage.getItem(cooldownKey) ?? "0", 10);
+          const shouldTrack = Date.now() - lastSeen > 24 * 60 * 60 * 1000;
+
+          if (shouldTrack) {
+            // Retrieve/create a persistent session ID for this browser
+            let sessionId = localStorage.getItem("re_session_id");
+            if (!sessionId) {
+              sessionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+              localStorage.setItem("re_session_id", sessionId);
+            }
+
+            fetch(`/api/properties/${id}/view`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ sessionId }),
+            })
+              .then(r => r.json())
+              .then((json: { success?: boolean; counted?: boolean; viewCount?: number }) => {
+                if (json.counted) {
+                  localStorage.setItem(cooldownKey, String(Date.now()));
+                }
+                if (typeof json.viewCount === "number") {
+                  setProperty(prev => prev ? { ...prev, viewCount: json.viewCount! } : prev);
+                }
+              })
+              .catch(() => {});
+          }
         }
 
         // Fetch similar
@@ -708,8 +737,8 @@ export default function PropertyDetail() {
                   { icon: Home, label: "نوع العقار", value: property.kind },
                   { icon: MapPin, label: "الموقع", value: property.location },
                   { icon: TrendingUp, label: "الحالة", value: property.type },
-                  { icon: Eye, label: "المشاهدات", value: "١,٢٤٧ مشاهدة" },
-                  { icon: Clock, label: "تاريخ النشر", value: "منذ ٣ أيام" },
+                  { icon: Eye, label: "المشاهدات", value: `${(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة` },
+                  { icon: Clock, label: "تاريخ النشر", value: property.createdAt ? new Date(property.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                     <item.icon className="w-4 h-4 text-primary shrink-0" />

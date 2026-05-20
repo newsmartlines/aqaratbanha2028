@@ -3,8 +3,9 @@ import { db } from "@workspace/db";
 import {
   propertiesTable, propertyFavoritesTable, savedSearchesTable,
   notificationsTable, usersTable, siteSettingsTable, providersTable,
+  userViewsTable,
 } from "@workspace/db";
-import { eq, desc, and, or, ilike, sql, getTableColumns } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql, getTableColumns, lt } from "drizzle-orm";
 import { getSession } from "./auth";
 
 const router = Router();
@@ -265,14 +266,51 @@ router.get("/properties/:id", async (req, res) => {
   }
 });
 
-// ── POST /api/properties/:id/view — increment view count ──────────────────
+// ── POST /api/properties/:id/view — deduplicated view count ───────────────
 router.post("/properties/:id/view", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    await db.update(propertiesTable)
+    const sessionId: string = req.body?.sessionId ?? req.ip ?? "anon";
+
+    // Check for existing view from same sessionId within 24 hours
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const existing = await db
+      .select({ id: userViewsTable.id })
+      .from(userViewsTable)
+      .where(
+        and(
+          eq(userViewsTable.propertyId, id),
+          eq(userViewsTable.sessionId, sessionId),
+          lt(cutoff, userViewsTable.createdAt),
+        ),
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Already counted recently — return current count without incrementing
+      const [row] = await db
+        .select({ viewCount: propertiesTable.viewCount })
+        .from(propertiesTable)
+        .where(eq(propertiesTable.id, id))
+        .limit(1);
+      return res.json({ success: true, counted: false, viewCount: row?.viewCount ?? 0 });
+    }
+
+    // New view: insert record + increment counter
+    await db.insert(userViewsTable).values({
+      sessionId,
+      propertyId: id,
+      userId: null,
+      durationSec: req.body?.durationSec ?? 0,
+    });
+
+    const [updated] = await db
+      .update(propertiesTable)
       .set({ viewCount: sql`${propertiesTable.viewCount} + 1` })
-      .where(eq(propertiesTable.id, id));
-    res.json({ success: true });
+      .where(eq(propertiesTable.id, id))
+      .returning({ viewCount: propertiesTable.viewCount });
+
+    res.json({ success: true, counted: true, viewCount: updated?.viewCount ?? 0 });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message });
   }

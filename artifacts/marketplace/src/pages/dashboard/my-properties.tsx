@@ -122,12 +122,13 @@ export default function MyPropertiesPage() {
 
   // Stats
   const stats = useMemo(() => ({
-    rent:      allProps.filter(p => p.listingType === "rent").length,
-    sale:      allProps.filter(p => p.listingType === "sale").length,
-    featured:  allProps.filter(p => p.featured).length,
-    pending:   allProps.filter(p => p.status === "pending").length,
-    published: allProps.filter(p => p.status === "published" || p.status === "active").length,
-    total:     allProps.length,
+    rent:       allProps.filter(p => p.listingType === "rent").length,
+    sale:       allProps.filter(p => p.listingType === "sale").length,
+    featured:   allProps.filter(p => p.featured).length,
+    pending:    allProps.filter(p => p.status === "pending").length,
+    published:  allProps.filter(p => p.status === "published" || p.status === "active").length,
+    total:      allProps.length,
+    totalViews: allProps.reduce((sum, p) => sum + (p.viewCount ?? 0), 0),
   }), [allProps]);
 
   // Filtered list
@@ -195,13 +196,14 @@ export default function MyPropertiesPage() {
           </div>
 
           {/* ── Stats row ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <StatCard icon={TrendingUp}    label="للإيجار"       value={stats.rent}      color="bg-blue-50 text-blue-600" />
-            <StatCard icon={Home}          label="للبيع"          value={stats.sale}      color="bg-teal-50 text-teal-600" />
-            <StatCard icon={Star}          label="مميز"           value={stats.featured}  color="bg-amber-50 text-amber-500" />
-            <StatCard icon={AlertCircle}   label="قيد الموافقة"  value={stats.pending}   color="bg-orange-50 text-orange-500" />
-            <StatCard icon={CheckCheck}    label="منشور"          value={stats.published} color="bg-green-50 text-green-600" />
-            <StatCard icon={LayoutGrid}    label="إجمالي العقارات" value={stats.total}   color="bg-primary/10 text-primary" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <StatCard icon={TrendingUp}    label="للإيجار"          value={stats.rent}        color="bg-blue-50 text-blue-600" />
+            <StatCard icon={Home}          label="للبيع"             value={stats.sale}        color="bg-teal-50 text-teal-600" />
+            <StatCard icon={Star}          label="مميز"              value={stats.featured}    color="bg-amber-50 text-amber-500" />
+            <StatCard icon={AlertCircle}   label="قيد الموافقة"     value={stats.pending}     color="bg-orange-50 text-orange-500" />
+            <StatCard icon={CheckCheck}    label="منشور"             value={stats.published}   color="bg-green-50 text-green-600" />
+            <StatCard icon={LayoutGrid}    label="إجمالي العقارات"  value={stats.total}       color="bg-primary/10 text-primary" />
+            <StatCard icon={Eye}           label="إجمالي المشاهدات" value={stats.totalViews}  color="bg-sky-50 text-sky-600" />
           </div>
 
           {/* ── Filters & search ── */}
