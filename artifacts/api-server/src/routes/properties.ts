@@ -193,6 +193,8 @@ router.get("/properties", async (req, res) => {
         agentAvatar: providersTable.avatar,
         agentLogo: providersTable.logo,
         verified: providersTable.verified,
+        providerPhone: providersTable.phone,
+        providerWhatsapp: providersTable.whatsapp,
       })
       .from(propertiesTable)
       .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
