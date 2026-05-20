@@ -7,13 +7,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Search, MapPin, LayoutGrid, List as ListIcon, X, Filter, Loader2,
   Phone, Clock, ChevronLeft, BedDouble, Bath, Maximize2,
-  Star, Crown, ArrowUpCircle, Eye,
+  Crown, Eye, Heart,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +27,33 @@ function WhatsAppIcon({ size = 18 }: { size?: number }) {
     </svg>
   );
 }
+
+/* ── Subcategory definitions ─────────────────────────────────────── */
+const SUBCATEGORIES: Record<string, { value: string; label: string }[]> = {
+  residential: [
+    { value: "apartment", label: "شقة" },
+    { value: "villa", label: "فيلا" },
+    { value: "duplex", label: "دوبلكس" },
+    { value: "roof", label: "روف" },
+    { value: "chalet", label: "شاليه" },
+    { value: "studio", label: "استوديو" },
+    { value: "building", label: "عمارة" },
+  ],
+  commercial: [
+    { value: "shop", label: "محل" },
+    { value: "office", label: "مكتب" },
+    { value: "showroom", label: "معرض" },
+    { value: "warehouse", label: "مستودع" },
+    { value: "clinic", label: "عيادة" },
+    { value: "hotel", label: "فندق" },
+  ],
+  land: [
+    { value: "residential_land", label: "أرض سكنية" },
+    { value: "commercial_land", label: "أرض تجارية" },
+    { value: "farm", label: "مزرعة" },
+    { value: "industrial_land", label: "أرض صناعية" },
+  ],
+};
 
 /* ── Helpers ──────────────────────────────────────────────────────── */
 const LISTING_TYPE_MAP: Record<string, string> = {
@@ -60,6 +85,7 @@ interface PropertyResult {
   title: string;
   description: string | null;
   mainCategory: string;
+  subCategory: string | null;
   listingType: string;
   price: string | null;
   area: string | null;
@@ -88,6 +114,7 @@ export default function SearchPage() {
   const [searchInput, setSearchInput] = useState("");
   const [selectedListingType, setSelectedListingType] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("all");
   const [cityFilter, setCityFilter] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [visibleCount, setVisibleCount] = useState(12);
@@ -102,9 +129,19 @@ export default function SearchPage() {
     const sp = new URLSearchParams(window.location.search);
     setSearchInput(sp.get("q") ?? "");
     setSelectedListingType(sp.get("listingType") ?? "all");
-    setSelectedCategory(sp.get("category") ?? "all");
+    const cat = sp.get("category") ?? "all";
+    setSelectedCategory(cat);
+    setSelectedSubCategory(sp.get("subCategory") ?? "all");
     setCityFilter(sp.get("city") ?? "");
   }, [urlSignature]);
+
+  /* ── Reset subcategory when main category changes ── */
+  useEffect(() => {
+    setSelectedSubCategory("all");
+  }, [selectedCategory]);
+
+  /* ── Current subcategories list ── */
+  const currentSubcats = selectedCategory !== "all" ? (SUBCATEGORIES[selectedCategory] ?? []) : [];
 
   /* ── Fetch properties ── */
   const { data: properties = [], isFetching } = useQuery<PropertyResult[]>({
@@ -124,27 +161,32 @@ export default function SearchPage() {
     staleTime: 30_000,
   });
 
+  /* ── Filter by subcategory client-side ── */
+  const filteredBySubcat = useMemo(() => {
+    if (selectedSubCategory === "all") return properties;
+    return properties.filter(p => p.subCategory === selectedSubCategory);
+  }, [properties, selectedSubCategory]);
+
   /* ── Sort ── */
   const sorted = useMemo(() => {
-    const arr = [...properties];
+    const arr = [...filteredBySubcat];
     if (sortBy === "price_asc") arr.sort((a, b) => Number(a.price ?? 0) - Number(b.price ?? 0));
     else if (sortBy === "price_desc") arr.sort((a, b) => Number(b.price ?? 0) - Number(a.price ?? 0));
     else if (sortBy === "popular") arr.sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
     else arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    // featured first
     arr.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     return arr;
-  }, [properties, sortBy]);
+  }, [filteredBySubcat, sortBy]);
 
   const applySearch = useCallback(() => {
     const p = new URLSearchParams();
     if (searchInput.trim()) p.set("q", searchInput.trim());
     if (selectedListingType !== "all") p.set("listingType", selectedListingType);
     if (selectedCategory !== "all") p.set("category", selectedCategory);
+    if (selectedSubCategory !== "all") p.set("subCategory", selectedSubCategory);
     if (cityFilter.trim()) p.set("city", cityFilter.trim());
     setLocation(`/search?${p.toString()}`);
     setVisibleCount(12);
-    // Fire-and-forget search tracking for AI recommendations
     fetch("/api/track/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -156,11 +198,11 @@ export default function SearchPage() {
         city: cityFilter.trim() || null,
       }),
     }).catch(() => {});
-  }, [searchInput, selectedListingType, selectedCategory, cityFilter]);
+  }, [searchInput, selectedListingType, selectedCategory, selectedSubCategory, cityFilter]);
 
   const clearAll = () => {
     setSearchInput(""); setSelectedListingType("all");
-    setSelectedCategory("all"); setCityFilter("");
+    setSelectedCategory("all"); setSelectedSubCategory("all"); setCityFilter("");
     setVisibleCount(12);
     setLocation("/search");
   };
@@ -203,7 +245,7 @@ export default function SearchPage() {
           ].map(opt => (
             <button
               key={opt.value}
-              onClick={() => setSelectedCategory(opt.value)}
+              onClick={() => { setSelectedCategory(opt.value); setSelectedSubCategory("all"); }}
               className={`flex items-center gap-2 w-full text-right px-3 py-2 rounded-xl text-sm font-medium transition-all
                 ${selectedCategory === opt.value
                   ? "bg-primary text-white shadow-sm"
@@ -213,6 +255,36 @@ export default function SearchPage() {
             </button>
           ))}
         </div>
+
+        {/* Subcategory buttons — shown inline under category */}
+        {currentSubcats.length > 0 && (
+          <div className="mt-3 border-t border-slate-100 pt-3">
+            <h4 className="text-xs font-semibold text-slate-500 mb-2 pr-1">التصنيف الفرعي</h4>
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={() => setSelectedSubCategory("all")}
+                className={`flex items-center gap-2 w-full text-right px-3 py-1.5 rounded-xl text-sm transition-all
+                  ${selectedSubCategory === "all"
+                    ? "bg-primary/15 text-primary font-semibold"
+                    : "text-slate-600 hover:bg-slate-50"}`}
+              >
+                الكل
+              </button>
+              {currentSubcats.map(sub => (
+                <button
+                  key={sub.value}
+                  onClick={() => setSelectedSubCategory(sub.value)}
+                  className={`flex items-center gap-2 w-full text-right px-3 py-1.5 rounded-xl text-sm transition-all
+                    ${selectedSubCategory === sub.value
+                      ? "bg-primary/15 text-primary font-semibold"
+                      : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* City */}
@@ -238,34 +310,137 @@ export default function SearchPage() {
   );
 
   /* ── Active filter badges ── */
+  const subCatLabel = currentSubcats.find(s => s.value === selectedSubCategory)?.label;
   const activeFilters = [
     selectedListingType !== "all" && { key: "lt", label: LISTING_TYPE_MAP[selectedListingType] ?? selectedListingType, clear: () => setSelectedListingType("all") },
-    selectedCategory !== "all" && { key: "cat", label: CATEGORY_MAP[selectedCategory] ?? selectedCategory, clear: () => setSelectedCategory("all") },
+    selectedCategory !== "all" && { key: "cat", label: CATEGORY_MAP[selectedCategory] ?? selectedCategory, clear: () => { setSelectedCategory("all"); setSelectedSubCategory("all"); } },
+    selectedSubCategory !== "all" && subCatLabel && { key: "sub", label: subCatLabel, clear: () => setSelectedSubCategory("all") },
     cityFilter && { key: "city", label: cityFilter, clear: () => setCityFilter("") },
   ].filter(Boolean) as { key: string; label: string; clear: () => void }[];
 
-  /* ── Property Card (List View) ── */
+  /* ── Property Card (New Design - matching screenshot) ── */
   const ListCard = ({ p, idx }: { p: PropertyResult; idx: number }) => {
     const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
     const thumb = imgs[0] ?? DEFAULT_IMG;
     const priceNum = Number(p.price);
     const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : null;
     const typeAr = LISTING_TYPE_MAP[p.listingType] ?? p.listingType;
-    const catAr = CATEGORY_MAP[p.mainCategory] ?? p.mainCategory;
     const location = [p.district, p.address].filter(Boolean).join(" — ") || "بنها";
     const phone = (p.whatsapp ?? p.phone ?? "").replace(/\D/g, "");
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: Math.min(idx, 5) * 0.06 }}
-        className={`group bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/25 transition-all duration-300 flex flex-col sm:flex-row
+        transition={{ duration: 0.28, delay: Math.min(idx, 5) * 0.05 }}
+        className={`group bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 flex flex-row
           ${p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-slate-200"}`}
       >
-        {/* ── Image ── */}
+        {/* ── Left: Rating strip ── */}
+        <div className="flex flex-col items-center justify-start pt-4 px-3 shrink-0 border-l border-slate-100">
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-amber-400 text-lg">★</span>
+            <span className="text-slate-700 font-bold text-xs">4.8</span>
+          </div>
+        </div>
+
+        {/* ── Center: Content ── */}
+        <div className="flex-1 flex flex-col p-4 gap-2 min-w-0">
+
+          {/* Price row */}
+          <div className="flex items-baseline gap-1.5">
+            {priceStr ? (
+              <>
+                <span className="text-slate-500 text-sm font-medium">ج.م</span>
+                <span className="text-2xl font-black text-slate-900 leading-none" style={{ fontFeatureSettings: '"tnum"' }}>
+                  {priceStr}
+                </span>
+              </>
+            ) : (
+              <span className="text-slate-400 text-base font-medium">السعر عند التواصل</span>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3
+            className="font-bold text-base text-slate-900 leading-snug cursor-pointer hover:text-primary transition-colors line-clamp-2"
+            onClick={() => setLocation(`/property/${p.id}`)}
+          >
+            {p.title}
+          </h3>
+
+          {/* Location */}
+          <div className="flex items-center gap-1 text-slate-500 text-xs">
+            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="line-clamp-1">{location}</span>
+          </div>
+
+          {/* Time + Views */}
+          <div className="flex items-center gap-3 text-slate-400 text-xs">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {timeAgo(p.createdAt) ?? ""}
+            </span>
+            {p.viewCount > 0 && (
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {p.viewCount} مشاهدة
+              </span>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-slate-100" />
+
+          {/* Stats + Actions row */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Stats */}
+            <div className="flex items-center gap-3 text-slate-500 text-xs flex-wrap">
+              {p.rooms != null && (
+                <span className="flex items-center gap-1">
+                  <BedDouble className="w-3.5 h-3.5" />
+                  <span className="font-semibold text-slate-700">{p.rooms}</span> غرف
+                </span>
+              )}
+              {p.bathrooms != null && (
+                <span className="flex items-center gap-1">
+                  <Bath className="w-3.5 h-3.5" />
+                  <span className="font-semibold text-slate-700">{p.bathrooms}</span> حمام
+                </span>
+              )}
+              {p.area != null && (
+                <span className="flex items-center gap-1">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span className="font-semibold text-slate-700">{Number(p.area).toLocaleString("ar-EG")}</span> م²
+                </span>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  window.open(`https://wa.me/${phone || "20"}`, "_blank");
+                }}
+                className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-[#25D366] hover:border-[#25D366]/40 transition-all"
+                title="واتساب"
+              >
+                <WhatsAppIcon size={16} />
+              </button>
+              <button
+                onClick={() => setLocation(`/property/${p.id}`)}
+                className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:shadow transition-all duration-200"
+              >
+                التفاصيل
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right: Image ── */}
         <div
-          className="relative shrink-0 h-56 sm:h-auto sm:w-72 overflow-hidden bg-slate-100 cursor-pointer"
+          className="relative shrink-0 w-44 sm:w-56 overflow-hidden bg-slate-100 cursor-pointer"
           onClick={() => setLocation(`/property/${p.id}`)}
         >
           <img
@@ -275,135 +450,33 @@ export default function SearchPage() {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             onError={e => { e.currentTarget.src = DEFAULT_IMG; }}
           />
-          {/* Dark gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+          {/* gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/20" />
 
-          {/* Top-right badges */}
-          <div className="absolute top-3 right-3 flex flex-col gap-1.5">
-            <span className={`inline-flex items-center gap-1 text-white text-[11px] font-extrabold px-3 py-1 rounded-lg shadow-md
+          {/* Badges top-left */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+            <span className={`inline-flex items-center text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow
               ${p.listingType === "sale" ? "bg-emerald-500" : "bg-blue-500"}`}>
               {typeAr}
             </span>
-            {catAr && (
-              <span className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-lg">
-                {catAr}
-              </span>
-            )}
             {p.featured && (
-              <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow">
-                <Crown className="w-3 h-3" /> مميز
+              <span className="inline-flex items-center gap-0.5 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow">
+                <Crown className="w-2.5 h-2.5" /> مميز
               </span>
             )}
           </div>
 
-          {/* Bottom: view count */}
-          {p.viewCount > 0 && (
-            <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[11px] px-2 py-1 rounded-full">
-              <Eye className="w-3 h-3" /> {p.viewCount} مشاهدة
-            </div>
-          )}
-        </div>
-
-        {/* ── Content ── */}
-        <div className="flex-1 flex flex-col p-5 gap-3 min-w-0">
-
-          {/* Title */}
-          <h3
-            className="font-extrabold text-xl text-slate-900 leading-tight cursor-pointer hover:text-primary transition-colors line-clamp-2"
-            onClick={() => setLocation(`/property/${p.id}`)}
+          {/* Wishlist heart */}
+          <button
+            onClick={e => e.stopPropagation()}
+            className="absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow hover:bg-white transition-colors"
           >
-            {p.title}
-          </h3>
+            <Heart className="w-3.5 h-3.5 text-slate-400 hover:text-red-500 transition-colors" />
+          </button>
 
-          {/* Price — BIG */}
-          {priceStr ? (
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-primary leading-none" style={{ fontFeatureSettings: '"tnum"' }}>
-                {priceStr}
-              </span>
-              <span className="text-slate-500 text-sm font-medium">ج.م</span>
-            </div>
-          ) : (
-            <p className="text-slate-400 text-base font-medium">السعر عند التواصل</p>
-          )}
-
-          {/* Stats row — rooms / bathrooms / area */}
-          {(p.rooms || p.bathrooms || p.area) && (
-            <div className="flex items-center gap-4 flex-wrap">
-              {p.rooms != null && (
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-                  <BedDouble className="w-4 h-4 text-slate-500" />
-                  <span className="text-slate-700 font-bold text-sm">{p.rooms}</span>
-                  <span className="text-slate-400 text-xs">غرفة</span>
-                </div>
-              )}
-              {p.bathrooms != null && (
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-                  <Bath className="w-4 h-4 text-slate-500" />
-                  <span className="text-slate-700 font-bold text-sm">{p.bathrooms}</span>
-                  <span className="text-slate-400 text-xs">حمام</span>
-                </div>
-              )}
-              {p.area != null && (
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-                  <Maximize2 className="w-4 h-4 text-slate-500" />
-                  <span className="text-slate-700 font-bold text-sm">{Number(p.area).toLocaleString("ar-EG")}</span>
-                  <span className="text-slate-400 text-xs">م²</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Location */}
-          <div className="flex items-center gap-1.5 text-slate-500 text-sm">
-            <MapPin className="w-4 h-4 text-primary shrink-0" />
-            <span className="line-clamp-1">{location}</span>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-slate-100 mt-auto" />
-
-          {/* Footer: time + buttons */}
-          <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
-            <span className="flex items-center gap-1.5 text-xs text-slate-400">
-              <Clock className="w-3.5 h-3.5" />
-              {timeAgo(p.createdAt) ?? ""}
-            </span>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* WhatsApp */}
-              <button
-                onClick={e => {
-                  e.stopPropagation();
-                  window.open(`https://wa.me/${phone || "20"}`, "_blank");
-                }}
-                className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1fba5a] text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <WhatsAppIcon size={18} />
-                واتساب
-              </button>
-
-              {/* Call */}
-              <button
-                onClick={e => {
-                  e.stopPropagation();
-                  if (phone) window.location.href = `tel:${phone}`;
-                }}
-                className="inline-flex items-center gap-2 bg-slate-700 hover:bg-slate-900 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <Phone className="w-4 h-4" />
-                مكالمة
-              </button>
-
-              {/* Details */}
-              <button
-                onClick={() => setLocation(`/property/${p.id}`)}
-                className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                عرض التفاصيل
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            </div>
+          {/* Category label bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
+            {CATEGORY_MAP[p.mainCategory] ?? p.mainCategory}
           </div>
         </div>
       </motion.div>
@@ -517,7 +590,7 @@ export default function SearchPage() {
             <div className="w-px bg-slate-200 my-1 hidden lg:block" />
             {/* Category */}
             <div className="hidden lg:block w-36">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setSelectedSubCategory("all"); }}>
                 <SelectTrigger className="h-11 border-none bg-transparent shadow-none focus:ring-0 text-sm">
                   <SelectValue placeholder="التصنيف" />
                 </SelectTrigger>
@@ -536,6 +609,43 @@ export default function SearchPage() {
               بحث
             </Button>
           </div>
+
+          {/* ── Subcategory tabs — shown when a category is selected ── */}
+          <AnimatePresence>
+            {currentSubcats.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.22 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-2 pt-3 overflow-x-auto pb-1 scrollbar-none">
+                  <button
+                    onClick={() => setSelectedSubCategory("all")}
+                    className={`shrink-0 text-sm px-4 py-1.5 rounded-full font-medium transition-all border
+                      ${selectedSubCategory === "all"
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-primary"}`}
+                  >
+                    الكل
+                  </button>
+                  {currentSubcats.map(sub => (
+                    <button
+                      key={sub.value}
+                      onClick={() => setSelectedSubCategory(sub.value)}
+                      className={`shrink-0 text-sm px-4 py-1.5 rounded-full font-medium transition-all border
+                        ${selectedSubCategory === sub.value
+                          ? "bg-primary text-white border-primary shadow-sm"
+                          : "bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-primary"}`}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -544,7 +654,7 @@ export default function SearchPage() {
 
           {/* ── Sidebar ── */}
           <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-[140px] bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div className="sticky top-[160px] bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
               <h2 className="font-extrabold text-slate-800 text-base mb-5 flex items-center gap-2">
                 <Filter className="w-4 h-4 text-primary" />
                 فلاتر البحث
@@ -645,16 +755,15 @@ export default function SearchPage() {
             ) : (
               <AnimatePresence mode="wait">
                 <div className={viewMode === "list"
-                  ? "flex flex-col gap-5"
+                  ? "flex flex-col gap-4"
                   : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"}>
                   {sorted.slice(0, visibleCount).map((p, idx) => (
                     <div key={p.id}>
                       {viewMode === "list"
                         ? <ListCard p={p} idx={idx} />
                         : <GridCard p={p} idx={idx} />}
-                      {/* Inline ad after 5th listing */}
                       {idx === 4 && (
-                        <div className={viewMode === "list" ? "mt-5" : "col-span-full mt-1"}>
+                        <div className={viewMode === "list" ? "mt-4" : "col-span-full mt-1"}>
                           <AdBanner position="search_inline" />
                         </div>
                       )}
