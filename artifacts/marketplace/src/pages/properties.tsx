@@ -952,201 +952,125 @@ export default function PropertiesPage() {
                               </div>
                             </div>
 
-                            {/* ── Content (MIDDLE) ── */}
-                            <div className="flex-1 flex flex-col p-4 gap-2 min-w-0">
+                            {/* ── Content ── */}
+                            <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
                               {/* Price */}
-                              <div className="flex items-baseline gap-1.5">
-                                <span className="text-2xl font-black text-gray-900 leading-none">{p.price}</span>
-                                <span className="text-gray-400 text-sm font-medium">جنيه</span>
+                              <div className="flex items-baseline gap-1.5 mb-2">
+                                <span className="text-[22px] sm:text-2xl font-black text-gray-900 leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
+                                <span className="text-sm font-semibold text-gray-500">ج.م</span>
+                                {p.type === "للإيجار" && <span className="text-xs text-gray-400">/ شهر</span>}
                               </div>
 
                               {/* Title */}
-                              <h3 className="font-bold text-base text-gray-900 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                              <h3 className="font-bold text-base text-gray-900 leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2">
                                 {p.title}
                               </h3>
 
                               {/* Location */}
-                              <div className="flex items-center gap-1 text-gray-500 text-xs">
+                              <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
                                 <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                                 <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
                               </div>
 
-                              {/* Time + Views */}
-                              <div className="flex items-center gap-3 text-gray-400 text-xs">
-                                {p.createdAt && (
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    {timeAgo(p.createdAt)}
-                                  </span>
-                                )}
-                                {(p.viewCount ?? 0) > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    <Eye className="w-3 h-3" />
-                                    {p.viewCount} مشاهدة
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Divider */}
-                              <div className="border-t border-gray-100" />
-
-                              {/* Stats + Actions */}
-                              <div className="flex items-center justify-between gap-2 flex-wrap">
-                                {/* Specs */}
-                                <div className="flex items-center gap-3 text-gray-500 text-xs flex-wrap">
+                              {/* Specs */}
+                              {(p.beds > 0 || p.baths > 0 || p.area > 0) && (
+                                <div className="flex items-center gap-4 mb-3 flex-wrap">
                                   {p.beds > 0 && (
-                                    <span className="flex items-center gap-1">
-                                      <BedDouble className="w-3.5 h-3.5" />
-                                      <span className="font-semibold text-gray-700">{p.beds}</span> غرف
-                                    </span>
+                                    <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                                      <BedDouble className="w-4 h-4 text-gray-400 shrink-0" />
+                                      <span className="font-semibold">{p.beds}</span>
+                                      <span className="text-gray-400">غرف</span>
+                                    </div>
                                   )}
                                   {p.baths > 0 && (
-                                    <span className="flex items-center gap-1">
-                                      <Bath className="w-3.5 h-3.5" />
-                                      <span className="font-semibold text-gray-700">{p.baths}</span> حمام
-                                    </span>
+                                    <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                                      <Bath className="w-4 h-4 text-gray-400 shrink-0" />
+                                      <span className="font-semibold">{p.baths}</span>
+                                      <span className="text-gray-400">حمام</span>
+                                    </div>
                                   )}
                                   {p.area > 0 && (
-                                    <span className="flex items-center gap-1">
-                                      <Maximize2 className="w-3.5 h-3.5" />
-                                      <span className="font-semibold text-gray-700">{p.area}</span> م²
-                                    </span>
+                                    <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                                      <Maximize2 className="w-4 h-4 text-gray-400 shrink-0" />
+                                      <span className="font-semibold">{p.area}</span>
+                                      <span className="text-gray-400">م²</span>
+                                    </div>
                                   )}
                                 </div>
+                              )}
 
-                                {/* Action buttons */}
-                                <div className="flex items-center gap-2">
+                              {/* Divider */}
+                              <div className="border-t border-gray-100 mb-3" />
+
+                              {/* Bottom row: agent + actions */}
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                {/* Agent + time */}
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {(p.agentAvatar || p.agentLogo) ? (
+                                    <img
+                                      src={p.agentAvatar || p.agentLogo}
+                                      alt={p.agentName}
+                                      className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0"
+                                      onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName || "م")}&background=0d9488&color=fff&size=28`; }}
+                                    />
+                                  ) : p.agentName ? (
+                                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
+                                      {p.agentName.charAt(0)}
+                                    </div>
+                                  ) : null}
+                                  <div className="min-w-0">
+                                    {p.agentName && <p className="text-xs font-semibold text-gray-700 truncate leading-none mb-0.5">{p.agentName}</p>}
+                                    <div className="flex items-center gap-2 text-gray-400 text-[11px]">
+                                      {p.createdAt && <span>{timeAgo(p.createdAt)}</span>}
+                                      {(p.viewCount ?? 0) > 0 && (
+                                        <>
+                                          <span>·</span>
+                                          <span className="flex items-center gap-0.5">
+                                            <Eye className="w-2.5 h-2.5" /> {p.viewCount}
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
+                                    className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-200 transition-all"
+                                    title="إبلاغ"
+                                  >
+                                    <Flag className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
+                                    className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-400 hover:border-primary/30 hover:text-primary"}`}
+                                    title="أضف للمقارنة"
+                                  >
+                                    <GitCompare className="w-4 h-4" />
+                                  </button>
                                   {p.whatsapp && (
                                     <button
                                       onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
-                                      className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-[#25D366] hover:border-[#25D366]/40 transition-all"
+                                      className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-[#25D366] hover:border-[#25D366]/40 hover:bg-[#25D366]/5 transition-all"
                                       title="واتساب"
                                     >
                                       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
                                     </button>
                                   )}
+                                  {p.phone && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                                      className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all"
+                                      title="اتصال"
+                                    >
+                                      <Phone className="w-4 h-4" />
+                                    </button>
+                                  )}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
-                                    className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:shadow transition-all"
-                                  >
-                                    التفاصيل
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* ── Rating strip (LEFT in RTL — last in DOM) ── */}
-                            <div className="flex flex-col items-center justify-start pt-4 px-3 shrink-0 border-r border-gray-100">
-                              <div className="flex flex-col items-center gap-0.5">
-                                <span className="text-amber-400 text-lg">★</span>
-                                <span className="text-gray-700 font-bold text-xs">4.8</span>
-                              </div>
-                            </div>
-
-                            {/* ── HIDDEN old body stub (replaced above) ── */}
-                            <div className="hidden">
-                              <div className="bg-primary px-5 py-3 flex items-center justify-between">
-                                <div>
-                                  <p className="text-white font-extrabold text-2xl leading-none">{p.price}</p>
-                                  <p className="text-primary-foreground/70 text-xs mt-0.5">جنيه</p>
-                                </div>
-                                {p.verified && (
-                                  <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/30">
-                                    <BadgeCheck className="w-3.5 h-3.5 text-teal-300 fill-teal-300/20" /> موثّق
-                                  </span>
-                                )}
-                              </div>
-                              <div className="p-5 flex flex-col gap-3">
-                                <div>
-                                  <h3 className="font-bold text-gray-900 text-base leading-snug mb-1.5 group-hover:text-primary transition-colors line-clamp-2">
-                                    {p.title}
-                                  </h3>
-                                  <div className="flex items-center gap-1 text-gray-400 text-sm">
-                                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                                    <span className="truncate">{p.location}</span>
-                                  </div>
-                                </div>
-
-                                {/* Specs */}
-                                <div className="flex items-center gap-4">
-                                  {p.beds > 0 && (
-                                    <span className="flex items-center gap-1.5 text-gray-500 text-sm">
-                                      <BedDouble className="w-4 h-4 text-gray-400" />{p.beds} غرف
-                                    </span>
-                                  )}
-                                  {p.baths > 0 && (
-                                    <span className="flex items-center gap-1.5 text-gray-500 text-sm">
-                                      <Bath className="w-4 h-4 text-gray-400" />{p.baths} حمام
-                                    </span>
-                                  )}
-                                  {p.area > 0 && (
-                                    <span className="flex items-center gap-1.5 text-gray-500 text-sm">
-                                      <Maximize2 className="w-4 h-4 text-gray-400" />{p.area} م²
-                                    </span>
-                                  )}
-                                  <span className="flex items-center gap-1 text-[11px] text-gray-400 mr-auto">
-                                    <Eye className="w-3 h-3 text-gray-300" />
-                                    {(p.viewCount ?? 0).toLocaleString("ar-EG")}
-                                  </span>
-                                </div>
-
-                                {/* Owner row */}
-                                {(p.agentName || p.agentAvatar || p.agentLogo) && (
-                                  <div className="flex items-center gap-2 py-2 px-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    {(p.agentAvatar || p.agentLogo) ? (
-                                      <img
-                                        src={p.agentAvatar || p.agentLogo}
-                                        alt={p.agentName}
-                                        className={`object-cover border border-slate-200 shrink-0 ${p.agentLogo && !p.agentAvatar ? "w-8 h-8 rounded-lg" : "w-8 h-8 rounded-full"}`}
-                                        onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName || "م")}&background=0d9488&color=fff&size=32`; }}
-                                      />
-                                    ) : (
-                                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-sm">
-                                        {p.agentName?.charAt(0) ?? "م"}
-                                      </div>
-                                    )}
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-xs font-semibold text-gray-800 truncate">{p.agentName || "مُعلِن"}</p>
-                                      <p className="text-[10px] text-gray-400">صاحب الإعلان</p>
-                                    </div>
-                                    {p.whatsapp && (
-                                      <button onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }} className="w-8 h-8 rounded-xl bg-[#25D366] hover:bg-[#1fba5a] flex items-center justify-center text-white transition-all shrink-0" title="واتساب">
-                                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
-                                      </button>
-                                    )}
-                                    {p.phone && (
-                                      <button onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }} className="w-8 h-8 rounded-xl bg-primary hover:bg-primary/90 flex items-center justify-center text-white transition-all shrink-0" title="اتصال">
-                                        <Phone className="w-3.5 h-3.5" />
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Bottom CTA */}
-                                <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                                  <button
-                                    className="p-1.5 rounded-lg border border-rose-200 text-rose-400 hover:bg-rose-50 transition-all"
-                                    title="إبلاغ"
-                                    onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
-                                  >
-                                    <Flag className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    className={`p-1.5 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`}
-                                    title="أضف للمقارنة"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" });
-                                      if (r === "added") toast.success("أُضيف للمقارنة ✓");
-                                      else if (r === "already") toast("موجود بالفعل");
-                                      else toast.error("المقارنة ممتلئة (٤ عقارات)");
-                                    }}
-                                  >
-                                    <GitCompare className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    className="flex-1 py-1.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all"
-                                    onClick={(e) => { e.stopPropagation(); setLocation(`/property/${p.id}`); }}
+                                    className="h-9 px-5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all"
                                   >
                                     التفاصيل
                                   </button>
