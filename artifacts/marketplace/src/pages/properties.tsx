@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
@@ -65,6 +66,7 @@ type DisplayProp = {
   kind: string;
   featured: boolean;
   img: string;
+  imgs: string[];
   location: string;
   district: string;
   beds: number;
@@ -110,6 +112,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     kind: row.mainCategory,
     featured: row.featured ?? false,
     img: imgs[0] ?? fallback,
+    imgs,
     location: row.address ?? "",
     district: row.district ?? "",
     beds: row.rooms ?? 0,
@@ -919,17 +922,14 @@ export default function PropertiesPage() {
                             onMouseLeave={() => setHoveredId(null)}
                           >
                             {/* ── Image (RIGHT in RTL — first in DOM) ── */}
-                            <div className="relative shrink-0 w-44 sm:w-56 min-h-[160px] overflow-hidden bg-gray-100">
-                              <img
-                                src={p.img}
-                                alt={p.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                                onError={(e) => { e.currentTarget.src = FALLBACK; }}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/20" />
-
-                              {/* Top badges — top right of image */}
-                              <div className="absolute top-2.5 right-2.5 flex flex-col gap-1">
+                            <PropertyImageGallery
+                              images={p.imgs}
+                              alt={p.title}
+                              fallback={FALLBACK}
+                              className="shrink-0 w-44 sm:w-56 min-h-[160px]"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/20 pointer-events-none" />
+                              <div className="absolute top-2.5 right-2.5 flex flex-col gap-1 z-20">
                                 <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
                                   {p.type}
                                 </span>
@@ -937,20 +937,16 @@ export default function PropertiesPage() {
                                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-amber-900 shadow">مميز</span>
                                 )}
                               </div>
-
-                              {/* Heart — top left of image */}
                               <button
-                                className={`absolute top-2.5 left-2.5 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
+                                className={`absolute top-2.5 left-2.5 z-20 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
                                 onClick={(e) => toggleLike(p.id, e)}
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
-
-                              {/* Kind badge — bottom */}
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
+                              <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
                                 {reCategories.find(c => (c.slug ?? String(c.id)) === p.kind)?.nameAr ?? p.kind}
                               </div>
-                            </div>
+                            </PropertyImageGallery>
 
                             {/* ── Content ── */}
                             <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
@@ -1101,17 +1097,14 @@ export default function PropertiesPage() {
                             onMouseLeave={() => setHoveredId(null)}
                           >
                             {/* Image */}
-                            <div className="relative h-52 overflow-hidden bg-gray-100">
-                              <img
-                                src={p.img}
-                                alt={p.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                                onError={(e) => { e.currentTarget.src = FALLBACK; }}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                              {/* Top badges */}
-                              <div className="absolute top-3 right-3 flex gap-1.5">
+                            <PropertyImageGallery
+                              images={p.imgs}
+                              alt={p.title}
+                              fallback={FALLBACK}
+                              className="h-52"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                              <div className="absolute top-3 right-3 flex gap-1.5 z-20">
                                 <span className={`text-xs font-bold px-2.5 py-1 rounded-lg shadow ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
                                   {p.type}
                                 </span>
@@ -1119,22 +1112,18 @@ export default function PropertiesPage() {
                                   <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-amber-900 shadow">مميز</span>
                                 )}
                               </div>
-
-                              {/* Kind badge */}
-                              <div className="absolute bottom-3 right-3">
+                              <div className="absolute bottom-3 right-3 z-20">
                                 <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm text-white border border-white/20">
                                   {p.kind}
                                 </span>
                               </div>
-
-                              {/* Like */}
                               <button
-                                className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
+                                className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
                                 onClick={(e) => toggleLike(p.id, e)}
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
-                            </div>
+                            </PropertyImageGallery>
 
                             {/* Body */}
                             <div>

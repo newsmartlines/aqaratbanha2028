@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
+import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { Header } from "@/components/Header";
 import {
   Search, MapPin, LayoutGrid, List as ListIcon, X, Loader2,
@@ -428,16 +429,14 @@ export default function SearchPage() {
         onClick={() => setLocation(`/property/${p.id}`)}
       >
         {/* ── Image RIGHT (first in RTL DOM) ── */}
-        <div className="relative shrink-0 w-56 sm:w-72 overflow-hidden bg-zinc-100">
-          <img
-            src={thumb} alt={p.title} loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-            onError={e => { e.currentTarget.src = DEFAULT_IMG; }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/15" />
-
-          {/* Badges */}
-          <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+        <PropertyImageGallery
+          images={imgs}
+          alt={p.title}
+          fallback={DEFAULT_IMG}
+          className="shrink-0 w-56 sm:w-72"
+        >
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/15 pointer-events-none" />
+          <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-20">
             <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-lg text-white tracking-wide
               ${p.listingType === "sale" ? "bg-emerald-500" : "bg-blue-500"}`}>
               {typeAr}
@@ -453,29 +452,17 @@ export default function SearchPage() {
               </span>
             )}
           </div>
-
-          {/* Save */}
           <button
             onClick={e => toggleSave(p.id, e)}
-            className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all shadow-sm
+            className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all shadow-sm
               ${saved.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/90 border-white/60 text-zinc-500 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200"}`}
           >
             <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-white" : ""}`} />
           </button>
-
-          {/* Image count */}
-          {imgs.length > 1 && (
-            <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-              {imgs.length}
-            </div>
-          )}
-
-          {/* Category strip */}
-          <div className="absolute bottom-0 inset-x-0 bg-black/40 backdrop-blur-[2px] text-white text-[10px] font-medium px-3 py-1.5 text-center">
+          <div className="absolute bottom-0 inset-x-0 z-20 bg-black/40 backdrop-blur-[2px] text-white text-[10px] font-medium px-3 py-1.5 text-center">
             {CATEGORY_MAP[p.mainCategory] ?? p.mainCategory}
           </div>
-        </div>
+        </PropertyImageGallery>
 
         {/* ── Content LEFT ── */}
         <div className="flex-1 flex flex-col p-5 min-w-0">
@@ -619,16 +606,14 @@ export default function SearchPage() {
             : "shadow-sm border border-zinc-200/80 hover:shadow-lg hover:border-zinc-300"}`}
       >
         {/* Image */}
-        <div className="relative h-52 overflow-hidden bg-zinc-100">
-          <img
-            src={thumb} alt={p.title} loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
-            onError={e => { e.currentTarget.src = DEFAULT_IMG; }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-
-          {/* Badges */}
-          <div className="absolute top-3 right-3 flex flex-col gap-1">
+        <PropertyImageGallery
+          images={imgs}
+          alt={p.title}
+          fallback={DEFAULT_IMG}
+          className="h-52"
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+          <div className="absolute top-3 right-3 flex flex-col gap-1 z-20">
             <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-lg text-white
               ${p.listingType === "sale" ? "bg-emerald-500" : "bg-blue-500"}`}>
               {typeAr}
@@ -639,18 +624,14 @@ export default function SearchPage() {
               </span>
             )}
           </div>
-
-          {/* Save */}
           <button
             onClick={e => toggleSave(p.id, e)}
-            className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all
+            className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all
               ${saved.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/90 border-white/60 text-zinc-500 hover:text-rose-500"}`}
           >
             <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-white" : ""}`} />
           </button>
-
-          {/* Price on image */}
-          <div className="absolute bottom-3 right-3">
+          <div className="absolute bottom-3 right-3 z-20">
             {priceStr ? (
               <span className="bg-white/96 backdrop-blur-sm text-zinc-900 font-black text-[15px] px-3 py-1.5 rounded-xl shadow-sm">
                 {priceStr} <span className="text-xs font-semibold text-zinc-500">ج.م</span>
@@ -661,7 +642,7 @@ export default function SearchPage() {
               </span>
             )}
           </div>
-        </div>
+        </PropertyImageGallery>
 
         {/* Content */}
         <div className="p-4">

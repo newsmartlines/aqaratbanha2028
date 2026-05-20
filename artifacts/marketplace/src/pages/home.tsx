@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
+import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -1175,18 +1176,15 @@ export default function Home() {
                     className="group relative bg-white border border-border rounded-3xl overflow-hidden hover:border-primary/30 hover:shadow-xl transition-all duration-300 cursor-pointer"
                     onClick={() => setLocation(`/property/${property.id}`)}
                   >
-                    {/* Image */}
-                    <div className="relative h-52 overflow-hidden">
-                      <img
-                        src={thumb}
-                        alt={property.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                        onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-                      {/* Top badges */}
-                      <div className="absolute top-3 right-3 flex gap-1.5">
+                    {/* Image gallery */}
+                    <PropertyImageGallery
+                      images={imgs}
+                      alt={property.title}
+                      fallback={DEFAULT_IMG}
+                      className="h-52"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute top-3 right-3 flex gap-1.5 z-20">
                         {listType && (
                           <span className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-lg ${listType === "sale" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
                             {listType === "sale" ? "للبيع" : "للإيجار"}
@@ -1198,19 +1196,15 @@ export default function Home() {
                           </span>
                         )}
                       </div>
-
-                      {/* Kind badge bottom left */}
                       {property.propertyType && (
-                        <div className="absolute bottom-3 left-3">
+                        <div className="absolute bottom-3 left-3 z-20">
                           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white border border-white/30">
                             {property.propertyType}
                           </span>
                         </div>
                       )}
-
-                      {/* Fav button */}
                       <button
-                        className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${homeFavIds.includes(property.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500 hover:border-rose-400"}`}
+                        className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${homeFavIds.includes(property.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500 hover:border-rose-400"}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           const add = !homeFavIds.includes(property.id);
@@ -1219,7 +1213,7 @@ export default function Home() {
                       >
                         <Heart className={`w-3.5 h-3.5 ${homeFavIds.includes(property.id) ? "fill-white" : ""}`} />
                       </button>
-                    </div>
+                    </PropertyImageGallery>
 
                     {/* Content */}
                     <div className="p-4">
@@ -1242,7 +1236,7 @@ export default function Home() {
                       <div className="flex items-center gap-1.5 flex-wrap mb-3">
                         <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
                           <BedDouble className="w-3 h-3 text-slate-400" />
-                          {property.bedrooms ? `${property.bedrooms} غرفة` : "—"}
+                          {(property as any).rooms ? `${(property as any).rooms} غرفة` : "—"}
                         </span>
                         {(property.bathrooms ?? 0) > 0 && (
                           <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
@@ -1303,7 +1297,7 @@ export default function Home() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-                                const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.bedrooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                                const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: (property as any).rooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
                                 if (r === "added") toast.success("أُضيف للمقارنة ✓");
                                 else if (r === "already") toast("موجود بالفعل في المقارنة");
                                 else toast.error("المقارنة ممتلئة (٤ عقارات)");
