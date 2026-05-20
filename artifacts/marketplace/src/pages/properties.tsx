@@ -488,6 +488,47 @@ export default function PropertiesPage() {
         </div>
       </div>
 
+      {/* ── Subcategory Tab Strip ── */}
+      <AnimatePresence>
+        {selectedKind && subCategories.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white border-b border-gray-200 sticky top-[105px] z-20 shadow-sm"
+          >
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-2">
+                <button
+                  onClick={() => setSelectedSubKind(null)}
+                  className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold border transition-all whitespace-nowrap ${
+                    !selectedSubKind
+                      ? "bg-primary text-white border-primary shadow-sm"
+                      : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
+                  }`}
+                >
+                  الكل
+                </button>
+                {subCategories.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)}
+                    className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold border transition-all whitespace-nowrap ${
+                      selectedSubKind === s.nameAr
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
+                    }`}
+                  >
+                    {s.nameAr}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Main Layout ── */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">
