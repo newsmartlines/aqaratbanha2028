@@ -1229,7 +1229,7 @@ export default function Home() {
                         <span className="text-muted-foreground text-xs font-medium">ج.م</span>
                       </div>
 
-                      <h3 className="font-bold text-gray-900 text-sm leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                      <h3 className="font-bold text-gray-900 text-sm leading-snug mb-2 line-clamp-1">
                         {property.title}
                       </h3>
 
@@ -1238,29 +1238,25 @@ export default function Home() {
                         <span className="truncate">{location}</span>
                       </div>
 
-                      {/* Specs pills */}
-                      {((property.bedrooms ?? 0) > 0 || (property.bathrooms ?? 0) > 0 || (property.area ?? 0) > 0) && (
-                        <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                          {(property.bedrooms ?? 0) > 0 && (
-                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
-                              <BedDouble className="w-3 h-3 text-slate-400" />
-                              {property.bedrooms} غرفة
-                            </span>
-                          )}
-                          {(property.bathrooms ?? 0) > 0 && (
-                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
-                              <Bath className="w-3 h-3 text-slate-400" />
-                              {property.bathrooms} حمام
-                            </span>
-                          )}
-                          {(property.area ?? 0) > 0 && (
-                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
-                              <Maximize2 className="w-3 h-3 text-slate-400" />
-                              {Number(property.area).toLocaleString("ar-EG")} م²
-                            </span>
-                          )}
-                        </div>
-                      )}
+                      {/* Specs pills — always show beds */}
+                      <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                        <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                          <BedDouble className="w-3 h-3 text-slate-400" />
+                          {property.bedrooms ? `${property.bedrooms} غرفة` : "—"}
+                        </span>
+                        {(property.bathrooms ?? 0) > 0 && (
+                          <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                            <Bath className="w-3 h-3 text-slate-400" />
+                            {property.bathrooms} حمام
+                          </span>
+                        )}
+                        {(property.area ?? 0) > 0 && (
+                          <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                            <Maximize2 className="w-3 h-3 text-slate-400" />
+                            {Number(property.area).toLocaleString("ar-EG")} م²
+                          </span>
+                        )}
+                      </div>
 
                       <div className="border-t border-border/60 my-3" />
 
@@ -1276,53 +1272,49 @@ export default function Home() {
                         </span>
                       </div>
 
-                      {/* Agent row */}
+                      {/* Agent + compare in one row */}
                       {(() => {
                         const agentName = (property as any).agentName as string | undefined;
                         const agentAvatar = (property as any).agentAvatar as string | undefined;
                         const agentLogo = (property as any).agentLogo as string | undefined;
                         const avatar = agentAvatar || agentLogo;
-                        if (!agentName && !avatar) return null;
                         return (
-                          <div className="flex items-center gap-2 mb-3">
-                            {avatar ? (
-                              <img
-                                src={avatar}
-                                alt={agentName}
-                                className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
-                                onError={e => {
-                                  (e.currentTarget as HTMLImageElement).src =
-                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`;
-                                }}
-                              />
-                            ) : (
-                              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
-                                {agentName?.charAt(0) ?? "م"}
-                              </div>
+                          <div className="flex items-center gap-2">
+                            {(agentName || avatar) && (
+                              <>
+                                {avatar ? (
+                                  <img
+                                    src={avatar}
+                                    alt={agentName}
+                                    className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
+                                    onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`; }}
+                                  />
+                                ) : (
+                                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
+                                    {agentName?.charAt(0) ?? "م"}
+                                  </div>
+                                )}
+                                <span className="text-xs text-slate-600 font-medium truncate flex-1">{agentName}</span>
+                              </>
                             )}
-                            <span className="text-xs text-slate-600 font-medium truncate">{agentName}</span>
+                            {!agentName && !avatar && <span className="flex-1" />}
+                            <button
+                              className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary"}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+                                const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.bedrooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                                if (r === "added") toast.success("أُضيف للمقارنة ✓");
+                                else if (r === "already") toast("موجود بالفعل في المقارنة");
+                                else toast.error("المقارنة ممتلئة (٤ عقارات)");
+                              }}
+                              title="قارن"
+                            >
+                              <GitCompare className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         );
                       })()}
-
-                      {/* Buttons row */}
-                      <div className="flex items-center gap-1.5">
-                        {/* Compare */}
-                        <button
-                          className={`flex items-center justify-center w-9 h-9 rounded-xl border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary"}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-                            const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.bedrooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
-                            if (r === "added") toast.success("أُضيف للمقارنة ✓");
-                            else if (r === "already") toast("موجود بالفعل في المقارنة");
-                            else toast.error("المقارنة ممتلئة (٤ عقارات)");
-                          }}
-                          title="قارن"
-                        >
-                          <GitCompare className="w-4 h-4" />
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </motion.div>
