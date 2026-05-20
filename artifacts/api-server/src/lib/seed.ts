@@ -6,7 +6,10 @@ import {
   propertiesTable, featuredAreasTable, emailTemplatesTable, siteSettingsTable,
 } from "@workspace/db";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import path from "path";
+import fs from "fs/promises";
+import { existsSync } from "fs";
 
 // ── Billing Plans ─────────────────────────────────────────────────────────────
 
@@ -26,8 +29,147 @@ const DEFAULT_COMMISSION_RULES = [
 
 // ── Main Entry ────────────────────────────────────────────────────────────────
 
+// ── Auto-seed from lib/db/seeds/ (for fresh deployments) ─────────────────────
+
+const SEEDS_DIR = path.resolve(process.cwd(), "lib/db/seeds");
+
+function toSnakeKey(str: string): string {
+  return str.replace(/([A-Z])/g, "_$1").toLowerCase();
+}
+
+/**
+ * Reads JSON seed files from lib/db/seeds/ and restores any empty tables.
+ * Called at startup before the hardcoded seed functions so fresh deployments
+ * auto-populate from committed seed files (GitHub → clone → run = full data).
+ *
+ * Returns the set of table keys that were restored from files (so the
+ * hardcoded seed can skip those tables to avoid duplicate logic).
+ */
+export async function seedFromFiles(): Promise<Set<string>> {
+  const seeded = new Set<string>();
+
+  const manifestPath = path.join(SEEDS_DIR, "manifest.json");
+  if (!existsSync(manifestPath)) return seeded;
+
+  let manifest: { files?: string[] } = {};
+  try {
+    manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+  } catch {
+    return seeded;
+  }
+
+  const files = (manifest.files ?? []).filter((f: string) => f.endsWith(".json"));
+  if (files.length === 0) return seeded;
+
+  console.log(`[seed-files] Found ${files.length} seed file(s) in lib/db/seeds/`);
+
+  // DB table name → table name for sequence reset
+  const tablesToReset = new Set<string>();
+
+  for (const file of files) {
+    const fp = path.join(SEEDS_DIR, file);
+    if (!existsSync(fp)) continue;
+
+    let content: { tables?: Record<string, any[]> } = {};
+    try {
+      content = JSON.parse(await fs.readFile(fp, "utf8"));
+    } catch {
+      console.warn(`[seed-files] Could not parse ${file}, skipping`);
+      continue;
+    }
+
+    const tables = content.tables ?? {};
+
+    for (const [tableKey, rows] of Object.entries(tables)) {
+      if (!rows || rows.length === 0) continue;
+
+      // Map key → db table name
+      const dbName = tableKeyToDbName(tableKey);
+      if (!dbName) continue;
+
+      try {
+        // Only restore if table is currently empty
+        const [{ cnt }] = await db.execute(sql.raw(`SELECT COUNT(*) as cnt FROM "${dbName}"`)) as any[];
+        const existingCount = parseInt(cnt ?? "0", 10);
+        if (existingCount > 0) {
+          console.log(`[seed-files] ${dbName}: already has ${existingCount} rows, skipping`);
+          continue;
+        }
+
+        let inserted = 0;
+        for (const row of rows) {
+          try {
+            const keys = Object.keys(row);
+            const vals = Object.values(row);
+            const colSqls = keys.map(k => sql.raw(`"${toSnakeKey(k)}"`));
+            const valSqls = vals.map(v => sql`${v}`);
+            await db.execute(
+              sql`INSERT INTO ${sql.raw(`"${dbName}"`)} (${sql.join(colSqls, sql`,`)}) VALUES (${sql.join(valSqls, sql`,`)}) ON CONFLICT (id) DO NOTHING`,
+            );
+            inserted++;
+          } catch {
+            // row conflict or error — skip
+          }
+        }
+
+        console.log(`[seed-files] ${dbName}: restored ${inserted}/${rows.length} rows`);
+        seeded.add(tableKey);
+        tablesToReset.add(dbName);
+      } catch (err: any) {
+        console.warn(`[seed-files] Error restoring ${dbName}:`, err?.message);
+      }
+    }
+  }
+
+  // Reset sequences for all restored tables
+  for (const dbName of tablesToReset) {
+    try {
+      await db.execute(
+        sql.raw(`SELECT setval(pg_get_serial_sequence('"${dbName}"', 'id'), COALESCE((SELECT MAX(id) FROM "${dbName}"), 1))`),
+      );
+    } catch {
+      // no sequence — ignore
+    }
+  }
+
+  if (seeded.size > 0) {
+    console.log(`[seed-files] ✅ Restored ${seeded.size} table(s) from seed files`);
+  }
+
+  return seeded;
+}
+
+/** Maps the camelCase table key used in seed files to the PostgreSQL table name. */
+function tableKeyToDbName(key: string): string | null {
+  const map: Record<string, string> = {
+    regions: "regions",
+    cities: "cities",
+    areas: "areas",
+    featuredAreas: "featured_areas",
+    categories: "categories",
+    subcategories: "subcategories",
+    properties: "properties",
+    emailTemplates: "email_templates",
+    siteSettings: "site_settings",
+    billingPlans: "billing_plans",
+    commissionRules: "commission_rules",
+    packages: "packages",
+    adminStaff: "admin_staff",
+    users: "users",
+  };
+  return map[key] ?? null;
+}
+
+// ── Main Entry ────────────────────────────────────────────────────────────────
+
 export async function seed() {
   console.log("Seeding database...");
+
+  // ── Step 0: Try restoring from committed seed files (GitHub-friendly) ───────
+  // This runs first so that when cloning to a new server, all admin-exported
+  // data is automatically restored before the hardcoded defaults kick in.
+  // The sub-seeders below all detect existing data and skip gracefully.
+  await seedFromFiles().catch((err: any) => console.warn("[seed-files] Could not load seed files:", err?.message));
 
   // Billing plans
   const existingBP = await db.select({ id: billingPlansTable.id }).from(billingPlansTable).limit(1);

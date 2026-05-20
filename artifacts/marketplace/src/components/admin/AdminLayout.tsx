@@ -33,6 +33,7 @@ import {
   Bot,
   Star,
   Database,
+  HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -202,6 +203,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Bot,             label: "المساعد الذكي",          href: "/admin/chatbot",           perm: "settings" },
     { icon: KeyRound,        label: "Google Kit",            href: "/admin/google-kit",          perm: "settings" },
     { icon: Database,        label: "المحتوى التجريبي",    href: "/admin/demo-content",        perm: null },
+    { icon: HardDrive,       label: "النسخ الاحتياطي",    href: "/admin/backup",              perm: null },
     { icon: Settings,        label: t("settings"),        href: "/admin/settings",         perm: "settings" },
   ];
 
