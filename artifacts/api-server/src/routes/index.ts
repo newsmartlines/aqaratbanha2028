@@ -33,6 +33,7 @@ import backupRouter from "./backup";
 import recommendationsRouter from "./recommendations";
 import adsRouter from "./ads";
 import propertyReportsRouter from "./propertyReports";
+import wpImportRouter from "./wpImport";
 
 const router: IRouter = Router();
 
@@ -70,5 +71,6 @@ router.use(backupRouter);
 router.use(recommendationsRouter);
 router.use(adsRouter);
 router.use(propertyReportsRouter);
+router.use(wpImportRouter);
 
 export default router;

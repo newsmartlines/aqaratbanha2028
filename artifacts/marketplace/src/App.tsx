@@ -76,6 +76,7 @@ import AdminChatbot from "@/pages/admin/chatbot";
 import AdminFeaturedAreas from "@/pages/admin/featured-areas";
 import AdminDemoContent from "@/pages/admin/demo-content";
 import AdminBackup from "@/pages/admin/backup";
+import AdminWpImport from "@/pages/admin/wp-import";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminAds from "@/pages/admin/ads";
 import PropertyDetail from "@/pages/property-detail";
@@ -388,6 +389,9 @@ function Router() {
       </Route>
       <Route path="/admin/backup">
         {() => <AdminProtectedRoute component={AdminBackup} />}
+      </Route>
+      <Route path="/admin/wp-import">
+        {() => <AdminProtectedRoute component={AdminWpImport} />}
       </Route>
       <Route path="/admin/analytics">
         {() => <AdminProtectedRoute component={AdminAnalytics} />}
