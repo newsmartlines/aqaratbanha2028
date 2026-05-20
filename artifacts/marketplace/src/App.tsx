@@ -409,7 +409,9 @@ function FaviconUpdater() {
   const { data: settings } = useQuery({
     queryKey: ["site-settings"],
     queryFn: api.settings.list,
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   useEffect(() => {
@@ -432,7 +434,9 @@ function GoogleWrapper({ children }: { children: React.ReactNode }) {
   const { data: settings } = useQuery({
     queryKey: ["site-settings"],
     queryFn: api.settings.list,
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
   const clientId = (settings as any)?.googleClientId || import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 

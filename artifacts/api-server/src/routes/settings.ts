@@ -39,6 +39,8 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 };
 
 router.get("/settings", async (_req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.set("Pragma", "no-cache");
   try {
     const rows = await db.select().from(siteSettingsTable);
     const settings: Record<string, string> = { ...DEFAULT_SETTINGS };
