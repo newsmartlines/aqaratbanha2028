@@ -14,8 +14,17 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Search, MapPin, Map,
   Star, LayoutGrid, List as ListIcon, X, Filter, Navigation, Crown, ArrowUpCircle, Loader2,
-  CheckCircle2, Phone, Clock,
+  CheckCircle2, Phone, Clock, ChevronLeft, BadgeCheck,
 } from "lucide-react";
+
+function WhatsAppIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="white" fillOpacity="0.25"/>
+      <path d="M16 5C10.477 5 6 9.477 6 15c0 1.89.528 3.66 1.449 5.17L6 27l7.01-1.428A10.94 10.94 0 0016 26c5.523 0 10-4.477 10-10S21.523 5 16 5zm0 19.6c-1.7 0-3.29-.46-4.66-1.26l-.33-.2-3.42.698.717-3.33-.218-.34A8.6 8.6 0 017.4 15c0-4.74 3.86-8.6 8.6-8.6 4.74 0 8.6 3.86 8.6 8.6 0 4.74-3.86 8.6-8.6 8.6zm4.71-6.44c-.26-.13-1.53-.755-1.768-.84-.237-.087-.41-.13-.582.13-.172.258-.667.84-.817 1.014-.15.172-.3.194-.557.065-.258-.13-1.09-.402-2.076-1.28-.768-.685-1.286-1.53-1.437-1.787-.15-.258-.016-.397.113-.526.116-.115.258-.3.387-.452.13-.15.172-.258.258-.43.087-.172.043-.322-.022-.452-.065-.13-.582-1.403-.797-1.92-.21-.505-.424-.436-.583-.444l-.496-.009a.952.952 0 00-.69.323c-.237.258-.906.885-.906 2.157 0 1.272.928 2.502 1.057 2.674.13.172 1.825 2.787 4.42 3.907.617.267 1.099.426 1.475.546.62.197 1.184.17 1.63.103.497-.075 1.53-.626 1.747-1.23.215-.603.215-1.12.15-1.228-.064-.108-.237-.172-.496-.3z" fill="white"/>
+    </svg>
+  );
+}
 import { api, type Provider, type Category, type Region, type City } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { useQuery } from "@tanstack/react-query";
@@ -660,15 +669,185 @@ export default function SearchPage() {
                     return c ? Math.round(haversine(userLocation.lat, userLocation.lng, c[0], c[1])) : null;
                   })() : null;
 
+                  /* ── Dubizzle-style Big Card ── */
+                  if (viewMode === "list") return (
+                    <motion.div
+                      key={`${provider.id}-${idx}`}
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: idx * 0.05 }}
+                      className={`group relative bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col sm:flex-row
+                        ${isSponsored ? "border-amber-300 bg-amber-50/20" : "border-slate-200"}
+                      `}
+                    >
+                      {/* ── Image ── */}
+                      <div
+                        className="relative shrink-0 cursor-pointer overflow-hidden bg-slate-100 h-52 sm:h-auto sm:w-64"
+                        onClick={() => setLocation(`/provider/${provider.id}`)}
+                      >
+                        <img
+                          src={provider.banner ?? provider.avatar ?? DEFAULT_IMG}
+                          alt={provider.userName}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                        />
+                        {/* Gradient overlay bottom */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                        {/* Top badges */}
+                        <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+                          {isSponsored && (
+                            <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow">
+                              <ArrowUpCircle className="w-3 h-3" /> إعلان مدفوع
+                            </span>
+                          )}
+                          {provider.featured && !isSponsored && (
+                            <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow">
+                              <Crown className="w-3 h-3" /> مميز
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Distance badge */}
+                        {distance !== null && (
+                          <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <Navigation className="w-3 h-3" />
+                            {distance < 1 ? "أقل من كم" : `${distance} كم`}
+                          </div>
+                        )}
+
+                        {/* Boost hover */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                          <button
+                            className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg translate-y-3 group-hover:translate-y-0 transition-transform duration-300"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (user?.role === "provider") setLocation("/dashboard/subscription");
+                              else setLocation(`/login?returnTo=${encodeURIComponent("/dashboard/subscription")}`);
+                            }}
+                          >
+                            <ArrowUpCircle className="w-3.5 h-3.5" /> رفع الإعلان
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* ── Content ── */}
+                      <div className="flex-1 flex flex-col p-5 gap-3 min-w-0">
+
+                        {/* Row 1: Name + Rating */}
+                        <div className="flex items-start justify-between gap-3">
+                          <h3
+                            className="font-extrabold text-xl text-slate-900 leading-tight cursor-pointer hover:text-primary transition-colors line-clamp-1"
+                            onClick={() => setLocation(`/provider/${provider.id}`)}
+                          >
+                            {provider.userName}
+                          </h3>
+                          <div className="flex items-center gap-1.5 shrink-0 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl">
+                            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                            <span className="font-extrabold text-slate-800 text-sm">{parseFloat(provider.rating).toFixed(1)}</span>
+                            <span className="text-slate-400 text-xs">({provider.reviewsCount})</span>
+                          </div>
+                        </div>
+
+                        {/* Row 2: Meta strip — category · city · district · verified */}
+                        <div className="flex items-center gap-2 flex-wrap text-sm font-medium text-slate-500">
+                          {provider.categoryNameAr && (
+                            <span className="bg-primary/8 text-primary border border-primary/15 rounded-lg px-2.5 py-0.5 text-xs font-bold">
+                              {provider.categoryNameAr}
+                            </span>
+                          )}
+                          {provider.city && (
+                            <span className="flex items-center gap-1 text-slate-600">
+                              <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                              {provider.city}
+                            </span>
+                          )}
+                          {provider.district && (
+                            <>
+                              <span className="text-slate-300">•</span>
+                              <span className="text-slate-500">{provider.district}</span>
+                            </>
+                          )}
+                          {provider.verified && (
+                            <>
+                              <span className="text-slate-300">•</span>
+                              <span className="flex items-center gap-1 text-teal-600 font-semibold">
+                                <BadgeCheck className="w-3.5 h-3.5" /> موثق
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Row 3: Bio */}
+                        <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 flex-1">
+                          {provider.bio ?? "لا يوجد وصف"}
+                        </p>
+
+                        {/* Divider */}
+                        <div className="border-t border-slate-100" />
+
+                        {/* Row 4: Footer — time + action buttons */}
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          {formatRegisteredSinceAr(provider.createdAt) ? (
+                            <span className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                              <Clock className="w-3.5 h-3.5" />
+                              على المنصة {formatRegisteredSinceAr(provider.createdAt)}
+                            </span>
+                          ) : <span />}
+
+                          <div className="flex items-center gap-2">
+                            {/* WhatsApp */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const d = digitsPhone(provider.phone);
+                                window.open(`https://wa.me/${d || "20"}`, "_blank");
+                              }}
+                              className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1db954] text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group/wa"
+                            >
+                              <span className="group-hover/wa:scale-110 transition-transform duration-200">
+                                <WhatsAppIcon size={18} />
+                              </span>
+                              واتساب
+                            </button>
+
+                            {/* Call */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const d = digitsPhone(provider.phone);
+                                if (d) window.location.href = `tel:${d}`;
+                              }}
+                              className="inline-flex items-center gap-2 bg-slate-700 hover:bg-slate-900 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group/call"
+                            >
+                              <Phone className="w-4 h-4 group-hover/call:scale-110 transition-transform duration-200" />
+                              مكالمة
+                            </button>
+
+                            {/* Details */}
+                            <button
+                              onClick={() => setLocation(`/provider/${provider.id}`)}
+                              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                            >
+                              عرض التفاصيل
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+
+                  /* ── Grid Card (unchanged style) ── */
                   return (
                     <Card
                       key={`${provider.id}-${idx}`}
-                      className={`overflow-hidden group border-border/50 hover:shadow-xl hover:border-primary/20 transition-all duration-300 relative ${viewMode === "list" ? "flex flex-col sm:flex-row sm:min-h-[11rem]" : "flex flex-col cursor-pointer"} ${isSponsored ? "bg-amber-50/30 border-amber-200" : ""}`}
-                      onClick={viewMode === "grid" ? () => setLocation(`/provider/${provider.id}`) : undefined}
-                      role={viewMode === "grid" ? "link" : undefined}
+                      className={`overflow-hidden group border-border/50 hover:shadow-xl hover:border-primary/20 transition-all duration-300 relative flex flex-col cursor-pointer ${isSponsored ? "bg-amber-50/30 border-amber-200" : ""}`}
+                      onClick={() => setLocation(`/provider/${provider.id}`)}
+                      role="link"
                     >
                       <div
-                        className={`relative overflow-hidden bg-muted ${viewMode === "list" ? "h-44 sm:h-auto sm:w-52 shrink-0 cursor-pointer" : "h-48"}`}
+                        className="relative overflow-hidden bg-muted h-48"
                         onClick={() => setLocation(`/provider/${provider.id}`)}
                       >
                         <img
@@ -680,8 +859,7 @@ export default function SearchPage() {
                         <div className="absolute top-3 right-3 flex flex-wrap gap-1.5 max-w-[80%]">
                           {isSponsored ? (
                             <Badge className="bg-amber-500 text-white border-none shadow-sm flex items-center gap-1">
-                              <ArrowUpCircle className="w-3 h-3" />
-                              إعلان مدفوع
+                              <ArrowUpCircle className="w-3 h-3" /> إعلان مدفوع
                             </Badge>
                           ) : (
                             <>
@@ -690,8 +868,7 @@ export default function SearchPage() {
                               </Badge>
                               {provider.featured && (
                                 <Badge className="bg-amber-500 text-white border-none shadow-sm flex items-center gap-1 text-[10px]">
-                                  <Crown className="w-2.5 h-2.5" />
-                                  مميز
+                                  <Crown className="w-2.5 h-2.5" /> مميز
                                 </Badge>
                               )}
                             </>
@@ -703,110 +880,23 @@ export default function SearchPage() {
                             {distance < 1 ? "أقل من كم" : `${distance} كم`}
                           </div>
                         )}
-                        {/* Hover boost button */}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (user?.role === "provider") setLocation("/dashboard/subscription");
-                              else setLocation(`/login?returnTo=${encodeURIComponent("/dashboard/subscription")}`);
-                            }}
-                          >
-                            <ArrowUpCircle className="w-3.5 h-3.5 ml-1.5" />
-                            رفع الإعلان
-                          </Button>
-                        </div>
                       </div>
-
-                      <CardContent className={`p-4 flex flex-col justify-between ${viewMode === "list" ? "flex-1 py-4 gap-3" : ""}`}>
-                        <div>
-                          <div className="flex justify-between items-start mb-1.5 gap-2">
-                            <h3
-                              className="font-bold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1 cursor-pointer"
-                              onClick={() => setLocation(`/provider/${provider.id}`)}
-                            >
-                              {provider.userName}
-                            </h3>
-                            <div className="flex items-center gap-1 shrink-0 bg-secondary/80 px-1.5 py-0.5 rounded text-xs mt-0.5">
-                              <Star className="w-3 h-3 fill-accent text-accent" />
-                              <span className="font-bold">{parseFloat(provider.rating).toFixed(1)}</span>
-                              <span className="text-muted-foreground">({provider.reviewsCount})</span>
-                            </div>
+                      <CardContent className="p-4 flex flex-col gap-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                            {provider.userName}
+                          </h3>
+                          <div className="flex items-center gap-1 shrink-0 bg-secondary/80 px-1.5 py-0.5 rounded text-xs mt-0.5">
+                            <Star className="w-3 h-3 fill-accent text-accent" />
+                            <span className="font-bold">{parseFloat(provider.rating).toFixed(1)}</span>
+                            <span className="text-muted-foreground">({provider.reviewsCount})</span>
                           </div>
-
-                          {/* City + District — prominent */}
-                          <div className="flex items-center gap-3 mb-2 flex-wrap">
-                            {provider.city && (
-                              <div className="flex items-center gap-1 text-xs font-medium text-primary/80 bg-primary/8 px-2 py-0.5 rounded-full border border-primary/15">
-                                <MapPin className="w-3 h-3" />
-                                {provider.city}
-                              </div>
-                            )}
-                            {provider.district && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <span className="text-border">•</span>
-                                {provider.district}
-                              </div>
-                            )}
-                            {provider.verified && (
-                              <div className="flex items-center gap-1 text-xs text-teal-600 font-medium">
-                                <CheckCircle2 className="w-3 h-3" />
-                                موثق
-                              </div>
-                            )}
-                          </div>
-
-                          <p className={`text-sm text-muted-foreground leading-relaxed ${viewMode === "list" ? "line-clamp-2" : "line-clamp-2"}`}>
-                            {provider.bio ?? ""}
-                          </p>
-                          {formatRegisteredSinceAr(provider.createdAt) && (
-                            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              على المنصة {formatRegisteredSinceAr(provider.createdAt)}
-                            </p>
-                          )}
                         </div>
-
-                        {viewMode === "list" && (
-                          <div className="mt-auto flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-                            <div className="flex gap-2 flex-wrap">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="rounded-xl text-xs gap-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const d = digitsPhone(provider.phone);
-                                  if (d) window.location.href = `tel:${d}`;
-                                }}
-                              >
-                                <Phone className="w-3.5 h-3.5" />
-                                اتصال
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="rounded-xl text-xs gap-1 bg-[#25D366] hover:bg-[#20bd5a] text-white border-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const d = digitsPhone(provider.phone);
-                                  window.open(`https://wa.me/${d || "966"}`, "_blank");
-                                }}
-                              >
-                                واتساب
-                              </Button>
-                            </div>
-                            <Button
-                              size="sm"
-                              className="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground shadow-none rounded-xl text-xs shrink-0"
-                              onClick={() => setLocation(`/provider/${provider.id}`)}
-                            >
-                              عرض التفاصيل
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+                          {provider.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-primary" />{provider.city}</span>}
+                          {provider.verified && <span className="flex items-center gap-1 text-teal-600 font-medium"><CheckCircle2 className="w-3 h-3" />موثق</span>}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{provider.bio ?? ""}</p>
                       </CardContent>
                     </Card>
                   );
