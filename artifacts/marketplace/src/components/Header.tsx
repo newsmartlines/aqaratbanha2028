@@ -31,6 +31,7 @@ export function Header() {
     { href: "/", label: "الرئيسية" },
     { href: "/properties?listingType=sale", label: "للبيع" },
     { href: "/properties?listingType=rent", label: "للإيجار" },
+    { href: "/search", label: "نتائج البحث" },
     { href: "/map-search", label: "🗺 بحث بالخريطة" },
   ];
 
