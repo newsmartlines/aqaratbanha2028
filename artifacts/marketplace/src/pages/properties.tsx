@@ -416,36 +416,23 @@ export default function PropertiesPage() {
       {/* ── Top Search Bar (Dubizzle-style) ── */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-16 z-30">
         <div className="container mx-auto px-4 py-4">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-            <button onClick={() => setLocation("/")} className="hover:text-primary transition-colors">الرئيسية</button>
-            <span>/</span>
-            <span className="text-gray-700 font-medium">العقارات</span>
-          </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Transaction type tabs */}
-            <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
-              {TYPES.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedType(selectedType === t ? null : t)}
-                  className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${selectedType === t ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
-                >
-                  {t}
-                </button>
-              ))}
-              {selectedType && (
-                <button onClick={() => setSelectedType(null)} className="px-5 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-gray-700">الكل</button>
-              )}
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 shrink-0">
+              <button onClick={() => setLocation("/")} className="hover:text-primary transition-colors">الرئيسية</button>
+              <span>/</span>
+              <span className="text-gray-700 font-medium">عقارات</span>
             </div>
 
-            {/* Smart Search */}
-            <SmartSearch
-              value={search}
-              onChange={setSearch}
-              placeholder="ابحث بالمدينة أو الحي أو العقار..."
-              variant="bar"
-            />
+            {/* Smart Search — grows to fill available space */}
+            <div className="flex-1 min-w-[200px]">
+              <SmartSearch
+                value={search}
+                onChange={setSearch}
+                placeholder="ابحث بالمدينة أو الحي أو العقار..."
+                variant="bar"
+              />
+            </div>
 
             {/* Sort */}
             <select
