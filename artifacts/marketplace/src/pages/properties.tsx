@@ -14,7 +14,6 @@ import {
   Heart, Map, Grid3X3, X, ChevronDown, ChevronUp,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
   LayoutList, Scale, GitCompare, Eye, Clock, Flag, Layers, Phone, BadgeCheck,
-  Home, TreePine, Factory, LayoutGrid,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -505,85 +504,6 @@ export default function PropertiesPage() {
             </div>
           </div>
 
-          {/* ── Category Strip ── */}
-          {(() => {
-            const CAT_ICONS: Record<string, React.ReactNode> = {
-              residential: <Home className="w-3.5 h-3.5" />,
-              commercial:  <Building2 className="w-3.5 h-3.5" />,
-              land:        <TreePine className="w-3.5 h-3.5" />,
-              industrial:  <Factory className="w-3.5 h-3.5" />,
-            };
-            const cats = reCategories.length > 0
-              ? reCategories.map(c => ({ slug: c.slug ?? String(c.id), label: c.nameAr, icon: CAT_ICONS[c.slug ?? ""] ?? <Building2 className="w-3.5 h-3.5" /> }))
-              : [
-                  { slug: "residential", label: "سكني",   icon: <Home className="w-3.5 h-3.5" /> },
-                  { slug: "commercial",  label: "تجاري",  icon: <Building2 className="w-3.5 h-3.5" /> },
-                  { slug: "land",        label: "أراضي",  icon: <TreePine className="w-3.5 h-3.5" /> },
-                  { slug: "industrial",  label: "صناعي",  icon: <Factory className="w-3.5 h-3.5" /> },
-                ];
-            const dbSubs   = subCategories.map(s => s.nameAr);
-            const staticSubs = STATIC_SUBCATS[selectedKind ?? ""] ?? [];
-            const activeSubs = dbSubs.length > 0 ? dbSubs : staticSubs;
-            return (
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                {/* Main categories row */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold text-gray-400 ml-1 whitespace-nowrap">نوع العقار:</span>
-                  <button
-                    onClick={() => { setSelectedKind(null); setSelectedSubKind(null); }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all whitespace-nowrap
-                      ${!selectedKind
-                        ? "bg-primary text-white border-primary shadow-sm"
-                        : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                    الكل
-                  </button>
-                  {cats.map(c => (
-                    <button
-                      key={c.slug}
-                      onClick={() => { const next = selectedKind === c.slug ? null : c.slug; setSelectedKind(next); setSelectedSubKind(null); }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all whitespace-nowrap
-                        ${selectedKind === c.slug
-                          ? "bg-primary text-white border-primary shadow-sm"
-                          : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
-                    >
-                      {c.icon}
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Subcategory pills — appear when a category is selected */}
-                {selectedKind && activeSubs.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap pt-2.5 mt-1 border-t border-gray-100">
-                    <span className="text-xs font-bold text-gray-400 ml-1 whitespace-nowrap">التصنيف الفرعي:</span>
-                    <button
-                      onClick={() => setSelectedSubKind(null)}
-                      className={`px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
-                        ${!selectedSubKind
-                          ? "bg-primary text-white border-primary shadow-sm"
-                          : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
-                    >
-                      الكل
-                    </button>
-                    {activeSubs.map(name => (
-                      <button
-                        key={name}
-                        onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
-                        className={`px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
-                          ${selectedSubKind === name
-                            ? "bg-primary text-white border-primary shadow-sm"
-                            : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
-                      >
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
 
           {/* ── Save Search Panel ── */}
           <AnimatePresence>
@@ -703,21 +623,31 @@ export default function PropertiesPage() {
                   }
                 </div>
                 {/* Subcategory chips — appear when a main category is selected */}
-                {selectedKind && subCategories.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-400 mb-2 font-semibold">تخصيص أكثر:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {subCategories.map((s) => (
+                {selectedKind && (() => {
+                  const dbSubs = subCategories.map(s => s.nameAr);
+                  const activeSubs = dbSubs.length > 0 ? dbSubs : (STATIC_SUBCATS[selectedKind] ?? []);
+                  if (activeSubs.length === 0) return null;
+                  return (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-400 mb-2 font-semibold">التصنيف الفرعي:</p>
+                      <div className="flex flex-wrap gap-1.5">
                         <Chip
-                          key={s.id}
-                          label={s.nameAr}
-                          active={selectedSubKind === s.nameAr}
-                          onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)}
+                          label="الكل"
+                          active={!selectedSubKind}
+                          onClick={() => setSelectedSubKind(null)}
                         />
-                      ))}
+                        {activeSubs.map(name => (
+                          <Chip
+                            key={name}
+                            label={name}
+                            active={selectedSubKind === name}
+                            onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </FilterSection>
 
               {/* Price Range */}
