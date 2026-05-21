@@ -971,8 +971,8 @@ export default function SearchPage() {
             <div className="flex items-baseline gap-1.5">
               {priceStr ? (
                 <>
-                  <span className="text-xl font-black text-zinc-900 leading-none">{priceStr}</span>
-                  <span className="text-sm font-semibold text-zinc-400">ج.م</span>
+                  <span className="text-2xl font-black text-zinc-900 leading-none">{priceStr}</span>
+                  <span className="text-base font-semibold text-zinc-400">ج.م</span>
                   {p.listingType === "rent" && <span className="text-xs text-zinc-400">/ {p.rentDuration === "monthly" ? "شهر" : p.rentDuration === "yearly" ? "سنة" : "/"}</span>}
                 </>
               ) : (
@@ -1115,8 +1115,8 @@ export default function SearchPage() {
           </button>
           <div className="absolute bottom-3 right-3 z-20">
             {priceStr
-              ? <span className="bg-white/96 backdrop-blur-sm text-zinc-900 font-black text-[14px] px-3 py-1.5 rounded-xl shadow-sm">{priceStr} <span className="text-xs font-semibold text-zinc-500">ج.م</span></span>
-              : <span className="bg-white/96 backdrop-blur-sm text-zinc-500 font-semibold text-xs px-3 py-1.5 rounded-xl">السعر عند التواصل</span>}
+              ? <span className="bg-white/96 backdrop-blur-sm text-zinc-900 font-black text-lg px-3 py-1.5 rounded-xl shadow-sm">{priceStr} <span className="text-sm font-semibold text-zinc-500">ج.م</span></span>
+              : <span className="bg-white/96 backdrop-blur-sm text-zinc-500 font-semibold text-sm px-3 py-1.5 rounded-xl">السعر عند التواصل</span>}
           </div>
         </PropertyImageGallery>
         <div className="p-3.5">

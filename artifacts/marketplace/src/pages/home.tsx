@@ -541,7 +541,7 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
           ${p.listingType === "rent" ? "bg-blue-500" : "bg-emerald-500"}`}>
           {typeAr}
         </span>
-        <span className="absolute bottom-2 right-2 text-white text-xs font-black">{priceStr}</span>
+        <span className="absolute bottom-2 right-2 text-white text-sm font-black drop-shadow-md">{priceStr}</span>
       </div>
       <div className="p-3">
         <p className="font-bold text-slate-800 text-sm line-clamp-1">{p.title}</p>
@@ -1208,8 +1208,8 @@ export default function Home() {
                     <div className="p-4">
                       {/* Price */}
                       <div className="flex items-baseline gap-1.5 mb-1.5">
-                        <p className="text-gray-900 font-extrabold text-xl leading-none">{priceStr}</p>
-                        <span className="text-muted-foreground text-xs font-medium">ج.م</span>
+                        <p className="text-gray-900 font-extrabold text-2xl leading-none">{priceStr}</p>
+                        <span className="text-muted-foreground text-sm font-medium">ج.م</span>
                         {listType === "rent" && <span className="text-muted-foreground text-xs">/شهر</span>}
                       </div>
 
