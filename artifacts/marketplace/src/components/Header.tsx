@@ -177,7 +177,7 @@ export function Header() {
                 <span className="cursor-pointer hover:text-primary transition-colors text-foreground">مستخدم جديد</span>
               </Link>
               <span className="text-border mx-1">|</span>
-              <Link href="/add-property">
+              <Link href={user?.role === "provider" ? "/real-estate-onboarding" : "/company-register"}>
                 <Button className="flex items-center gap-1 font-bold text-sm px-4 py-1.5 rounded-full text-white shadow-sm bg-primary hover:bg-primary/90 h-auto">
                   <span className="text-base leading-none">+</span>
                   <span>أضف عقارك</span>
@@ -240,7 +240,7 @@ export function Header() {
                   </Link>
                 </>
               )}
-              <Link href="/add-property" onClick={() => setMobileOpen(false)}>
+              <Link href={user?.role === "provider" ? "/real-estate-onboarding" : "/company-register"} onClick={() => setMobileOpen(false)}>
                 <span className="block mx-4 mt-2 px-4 py-2.5 text-sm font-bold text-white rounded-full text-center cursor-pointer" style={{background: 'linear-gradient(135deg, #12B5D0 0%, #0060A0 100%)'}}>
                   + أضف عقارك
                 </span>

@@ -148,32 +148,51 @@ export default function ProviderDashboard() {
           </div>
         )}
 
+        {/* ── Add Property CTA Banner ── */}
+        <div
+          className="relative overflow-hidden rounded-3xl p-6 sm:p-8 text-white"
+          style={{ background: "linear-gradient(135deg, #0f4c75 0%, #1b6ca8 60%, #12B5D0 100%)" }}
+        >
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute -top-10 -left-10 w-48 h-48 bg-white/5 rounded-full" />
+            <div className="absolute -bottom-6 right-10 w-32 h-32 bg-white/5 rounded-full" />
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0">
+                {user.avatar ? (
+                  <img src={mediaUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover rounded-2xl" />
+                ) : (
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`} alt={user.name} className="w-10 h-10 rounded-full" />
+                )}
+              </div>
+              <div>
+                <p className="text-white/70 text-sm font-medium">مرحباً بعودتك 👋</p>
+                <h2 className="text-xl sm:text-2xl font-extrabold">{user.name}</h2>
+                <p className="text-white/60 text-xs mt-0.5">لوحة تحكم المعلن العقاري</p>
+              </div>
+            </div>
+            <Link href="/real-estate-onboarding">
+              <Button
+                size="lg"
+                className="shrink-0 bg-white hover:bg-white/95 text-primary font-extrabold text-base rounded-2xl px-8 h-13 shadow-2xl shadow-black/20 transition-all hover:scale-105 active:scale-100 group"
+              >
+                <span className="text-xl ml-2 group-hover:animate-bounce inline-block">+</span>
+                أضف عقارك
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         {/* Welcome Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/5 p-6 rounded-2xl border border-primary/10">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-secondary border-2 border-white shadow-sm flex items-center justify-center p-1 shrink-0">
-              {user.avatar ? (
-                <img
-                  src={mediaUrl(user.avatar)}
-                  alt={user.name}
-                  className="max-w-full max-h-full w-auto h-auto object-contain rounded-full"
-                />
-              ) : (
-                <img
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
-                  alt={user.name}
-                  className="max-w-full max-h-full object-contain rounded-full"
-                />
-              )}
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">مرحباً، {user.name} 👋</h2>
-              <p className="text-muted-foreground mt-1">إليك نظرة عامة على أداء نشاطك اليوم</p>
-            </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/5 p-5 rounded-2xl border border-primary/10">
+          <div>
+            <h3 className="text-lg font-bold text-foreground">نظرة عامة على نشاطك</h3>
+            <p className="text-muted-foreground text-sm mt-0.5">إحصائيات حسابك اليوم</p>
           </div>
           <Link href="/dashboard/services">
-            <Button className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
-              إضافة خدمة جديدة
+            <Button variant="outline" className="shrink-0 rounded-xl text-sm">
+              إدارة الخدمات
             </Button>
           </Link>
         </div>

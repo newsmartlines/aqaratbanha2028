@@ -101,6 +101,7 @@ import UserSupport from "@/pages/user/support";
 import UserSavedSearches from "@/pages/user/saved-searches";
 import AddPropertyPage from "@/pages/add-property";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
+import CompanyRegisterPage from "@/pages/company-register";
 import MapSearchPage from "@/pages/map-search";
 
 const queryClient = new QueryClient({
@@ -224,15 +225,14 @@ function Router() {
       {/* Auth routes */}
       <Route path="/login">{() => <AuthPage />}</Route>
       <Route path="/register" component={RegisterPage} />
+      <Route path="/company-register" component={CompanyRegisterPage} />
       <Route path="/admin/login" component={AdminLogin} />
 
       {/* Onboarding — signed-in providers only */}
       <Route path="/onboarding">
         {() => <RoleProtectedRoute component={OnboardingPage} roles={["provider"]} />}
       </Route>
-      <Route path="/real-estate-onboarding">
-        {() => <RoleProtectedRoute component={RealEstateOnboardingPage} roles={["provider"]} />}
-      </Route>
+      <Route path="/real-estate-onboarding" component={RealEstateOnboardingPage} />
 
       {/* Provider dashboard (canonical paths) */}
       <Route path="/dashboard">
