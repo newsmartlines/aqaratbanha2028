@@ -543,7 +543,7 @@ export default function PropertiesPage() {
           {/* ═══════════════════════════════════════
               RIGHT SIDEBAR — Filters (Dubizzle style)
           ═══════════════════════════════════════ */}
-          <aside className="w-64 shrink-0 hidden lg:flex lg:flex-col h-full overflow-y-auto py-6 scrollbar-thin">
+          <aside className="w-64 shrink-0 hidden lg:flex lg:flex-col h-full overflow-y-auto py-6 no-scrollbar">
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
@@ -782,7 +782,7 @@ export default function PropertiesPage() {
           {/* ═══════════════════════════════════════
               LEFT — Results
           ═══════════════════════════════════════ */}
-          <div className="flex-1 min-w-0 py-6 lg:h-full lg:overflow-y-auto">
+          <div className="flex-1 min-w-0 py-6 lg:h-full lg:overflow-y-auto results-scroll-area">
             {/* Results header */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-wrap">
