@@ -90,6 +90,9 @@ import CategoriesPage from "@/pages/categories";
 import AboutPage from "@/pages/about";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
+import PrivacyPage from "@/pages/privacy";
+import TermsPage from "@/pages/terms";
+import SitemapPage from "@/pages/sitemap";
 import ProviderInbox from "@/pages/dashboard/inbox";
 import ProviderSupport from "@/pages/dashboard/support";
 import ProviderSupportTicketsPage from "@/pages/dashboard/support-tickets";
@@ -210,6 +213,9 @@ function Router() {
       <Route path="/about" component={AboutPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/faq" component={FaqPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/sitemap" component={SitemapPage} />
 
       <Route path="/admin" component={() => <Redirect to="/admin/dashboard" />} />
       <Route path="/provider" component={() => <Redirect to="/provider/dashboard" />} />

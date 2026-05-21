@@ -4,6 +4,8 @@ import { Building2, Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube }
 export function RealEstateFooter() {
   const [, setLocation] = useLocation();
 
+  const navigate = (path: string) => setLocation(path);
+
   return (
     <footer className="bg-gray-900 text-gray-300 pt-14 pb-6 mt-12" dir="rtl">
       <div className="container mx-auto px-4">
@@ -25,14 +27,16 @@ export function RealEstateFooter() {
             </p>
             <div className="flex items-center gap-3">
               {[
-                { Icon: Facebook, href: "#" },
-                { Icon: Twitter, href: "#" },
-                { Icon: Instagram, href: "#" },
-                { Icon: Youtube, href: "#" },
+                { Icon: Facebook, href: "https://facebook.com" },
+                { Icon: Twitter, href: "https://x.com" },
+                { Icon: Instagram, href: "https://instagram.com" },
+                { Icon: Youtube, href: "https://youtube.com" },
               ].map(({ Icon, href }, i) => (
                 <a
                   key={i}
                   href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-colors"
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -48,14 +52,14 @@ export function RealEstateFooter() {
               {[
                 { label: "الرئيسية", path: "/" },
                 { label: "جميع العقارات", path: "/properties" },
-                { label: "للبيع", path: "/properties" },
-                { label: "للإيجار", path: "/properties" },
+                { label: "للبيع", path: "/properties?listingType=sale" },
+                { label: "للإيجار", path: "/properties?listingType=rent" },
                 { label: "من نحن", path: "/about" },
                 { label: "تواصل معنا", path: "/contact" },
               ].map((l) => (
                 <li key={l.label}>
                   <button
-                    onClick={() => setLocation(l.path)}
+                    onClick={() => navigate(l.path)}
                     className="text-sm text-gray-400 hover:text-primary transition-colors hover:translate-x-[-4px] block"
                   >
                     {l.label}
@@ -69,13 +73,20 @@ export function RealEstateFooter() {
           <div>
             <p className="font-bold text-white mb-4 text-sm uppercase tracking-wide">أنواع العقارات</p>
             <ul className="space-y-2.5">
-              {["فيلل فاخرة", "شقق سكنية", "مكاتب تجارية", "دوبلكس", "أراضي", "عمارات استثمارية"].map((t) => (
-                <li key={t}>
+              {[
+                { label: "فيلل فاخرة",          path: "/properties?mainCategory=فيلا" },
+                { label: "شقق سكنية",            path: "/properties?mainCategory=شقة" },
+                { label: "مكاتب تجارية",         path: "/properties?mainCategory=مكتب" },
+                { label: "دوبلكس",               path: "/properties?mainCategory=دوبلكس" },
+                { label: "أراضي",                path: "/properties?mainCategory=أرض" },
+                { label: "عمارات استثمارية",     path: "/properties?mainCategory=عمارة" },
+              ].map((t) => (
+                <li key={t.label}>
                   <button
-                    onClick={() => setLocation("/properties")}
+                    onClick={() => navigate(t.path)}
                     className="text-sm text-gray-400 hover:text-primary transition-colors block"
                   >
-                    {t}
+                    {t.label}
                   </button>
                 </li>
               ))}
@@ -92,11 +103,11 @@ export function RealEstateFooter() {
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm text-gray-400" dir="ltr">+20 11 234 5678</span>
+                <a href="tel:+201123456789" className="text-sm text-gray-400 hover:text-primary transition-colors" dir="ltr">+20 11 234 5678</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm text-gray-400">realestate@aqarat-banha.com</span>
+                <a href="mailto:realestate@aqarat-banha.com" className="text-sm text-gray-400 hover:text-primary transition-colors">realestate@aqarat-banha.com</a>
               </li>
             </ul>
 
@@ -112,11 +123,11 @@ export function RealEstateFooter() {
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <p>© {new Date().getFullYear()} عقارات بنها للعقارات. جميع الحقوق محفوظة.</p>
           <div className="flex items-center gap-4">
-            <button className="hover:text-gray-300 transition-colors">سياسة الخصوصية</button>
+            <button onClick={() => navigate("/privacy")} className="hover:text-gray-300 transition-colors">سياسة الخصوصية</button>
             <span>·</span>
-            <button className="hover:text-gray-300 transition-colors">الشروط والأحكام</button>
+            <button onClick={() => navigate("/terms")} className="hover:text-gray-300 transition-colors">الشروط والأحكام</button>
             <span>·</span>
-            <button className="hover:text-gray-300 transition-colors">خريطة الموقع</button>
+            <button onClick={() => navigate("/sitemap")} className="hover:text-gray-300 transition-colors">خريطة الموقع</button>
           </div>
         </div>
       </div>
