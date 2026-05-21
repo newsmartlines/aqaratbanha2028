@@ -179,11 +179,25 @@ const PRICE_RANGES = [
   { label: "أكثر من 3 مليون", min: 3000000, max: Infinity },
 ];
 const AREA_RANGES = [
-  { label: "أقل من 150 م²", min: 0, max: 150 },
-  { label: "150 – 300 م²", min: 150, max: 300 },
-  { label: "300 – 600 م²", min: 300, max: 600 },
-  { label: "أكثر من 600 م²", min: 600, max: Infinity },
+  { label: "أقل من 100 م²", min: 0, max: 100 },
+  { label: "100 – 200 م²", min: 100, max: 200 },
+  { label: "200 – 400 م²", min: 200, max: 400 },
+  { label: "400 – 1000 م²", min: 400, max: 1000 },
+  { label: "أكثر من 1000 م²", min: 1000, max: Infinity },
 ];
+const RECENCY_OPTIONS = [
+  { label: "اليوم", hours: 24 },
+  { label: "هذا الأسبوع", hours: 168 },
+  { label: "هذا الشهر", hours: 720 },
+];
+const FEATURE_OPTIONS = [
+  "مصعد", "موقف سيارات", "أمن وحراسة", "إنترنت فايبر",
+  "تكييف مركزي", "حديقة خاصة", "مسبح", "غرفة سائق",
+  "نظام ري", "جراج", "مولد كهرباء", "غرفة خادمة",
+];
+const FINISHING_OPTIONS = ["مشطب", "سوبر لوكس", "لوكس", "نص تشطيب", "خام"];
+const FURNISHED_OPTIONS = ["مفروش", "مفروش جزئياً", "غير مفروش"];
+const PAYMENT_OPTIONS = ["نقدي", "تقسيط", "نقدي أو تقسيط", "بنكي"];
 
 function FilterSection({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -246,6 +260,9 @@ export default function PropertiesPage() {
   const [selectedBeds, setSelectedBeds] = useState<number | null>(null);
   const [selectedBaths, setSelectedBaths] = useState<number | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
+  const [selectedFeaturedOnly, setSelectedFeaturedOnly] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedRecency, setSelectedRecency] = useState<number | null>(null);
   const [reportPropertyId, setReportPropertyId] = useState<number | null>(null);
   const [reportEmail, setReportEmail] = useState("");
   const [reportMessage, setReportMessage] = useState("");
@@ -338,9 +355,13 @@ export default function PropertiesPage() {
     onError: () => toast.error("حدث خطأ أثناء حفظ البحث"),
   });
 
+  const availableCities = useMemo(() =>
+    [...new Set(allProps.map(p => p.location).filter(Boolean))].sort(), [allProps]);
+
   const filtered = useMemo(() => {
+    const now = Date.now();
     let list = allProps.filter((p) => {
-      if (search && !p.title.includes(search) && !p.location.includes(search)) return false;
+      if (search && !p.title.includes(search) && !p.location.includes(search) && !p.district.includes(search)) return false;
       if (selectedType && p.type !== selectedType) return false;
       if (selectedKind && !selectedSubKind && p.kind !== selectedKind) return false;
       if (selectedSubKind && p.kind !== selectedSubKind) return false;
@@ -364,20 +385,38 @@ export default function PropertiesPage() {
         const r = AREA_RANGES[selectedArea];
         if (p.area < r.min || p.area > r.max) return false;
       }
+      if (selectedFeaturedOnly && !p.featured) return false;
+      if (selectedFeatures.length > 0) {
+        const pf = p.features.join(" ");
+        if (!selectedFeatures.every(f => pf.includes(f))) return false;
+      }
+      if (selectedRecency !== null) {
+        const hours = RECENCY_OPTIONS[selectedRecency].hours;
+        if (!p.createdAt) return false;
+        if ((now - new Date(p.createdAt).getTime()) > hours * 3600 * 1000) return false;
+      }
       return true;
     });
     if (sortBy === "price_asc") list = [...list].sort((a, b) => a.priceNum - b.priceNum);
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.priceNum - a.priceNum);
     if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
     return list;
-  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
 
-  const activeCount = [selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null, selectedFloor, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null].filter(Boolean).length;
+  const activeCount = [
+    selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict,
+    selectedFinishing, selectedFurnished, selectedPayment,
+    selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null,
+    selectedFloor, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null,
+    selectedFeaturedOnly ? 1 : null, selectedRecency !== null ? 1 : null,
+    ...selectedFeatures,
+  ].filter(Boolean).length;
 
   const clearAll = () => {
     setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistrict(null);
     setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
-    setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null); setSelectedPrice(null); setSelectedArea(null); setSearch("");
+    setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null); setSelectedPrice(null); setSelectedArea(null);
+    setSelectedFeaturedOnly(false); setSelectedFeatures([]); setSelectedRecency(null); setSearch("");
   };
 
   const submitReport = async () => {
@@ -541,9 +580,9 @@ export default function PropertiesPage() {
         <div className="flex gap-6 lg:h-full">
 
           {/* ═══════════════════════════════════════
-              RIGHT SIDEBAR — Filters (Dubizzle style)
+              RIGHT SIDEBAR — Filters
           ═══════════════════════════════════════ */}
-          <aside className="w-64 shrink-0 hidden lg:flex lg:flex-col h-full overflow-y-auto py-6 no-scrollbar">
+          <aside className="w-80 shrink-0 hidden lg:flex lg:flex-col h-full overflow-y-auto py-6 no-scrollbar">
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
@@ -559,223 +598,243 @@ export default function PropertiesPage() {
                 )}
               </div>
 
-              {/* Filter body */}
               <div className="px-5 pt-4 pb-5">
 
-              {/* Transaction Type */}
-              <FilterSection title="نوع الصفقة">
-                <div className="flex flex-col gap-2">
-                  {TYPES.map((t) => (
-                    <label key={t} className="flex items-center gap-2.5 cursor-pointer group">
-                      <div
-                        onClick={() => setSelectedType(selectedType === t ? null : t)}
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedType === t ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
-                      >
-                        {selectedType === t && <div className="w-2 h-2 rounded-sm bg-white" />}
-                      </div>
-                      <span
-                        onClick={() => setSelectedType(selectedType === t ? null : t)}
-                        className={`text-sm transition-colors ${selectedType === t ? "text-primary font-semibold" : "text-gray-600"}`}
-                      >{t}</span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* Property Kind — dynamic from admin real estate categories */}
-              <FilterSection title="نوع العقار">
-                <div className="flex flex-wrap gap-2">
-                  {reCategories.length > 0
-                    ? reCategories.map((c) => {
-                        const slug = c.slug ?? String(c.id);
-                        return (
-                          <Chip
-                            key={slug}
-                            label={c.nameAr}
-                            active={selectedKind === slug}
-                            onClick={() => {
-                              const next = selectedKind === slug ? null : slug;
-                              setSelectedKind(next);
-                              setSelectedSubKind(null);
-                            }}
-                          />
-                        );
-                      })
-                    : KINDS.map((k) => (
-                        <Chip key={k} label={k} active={selectedKind === k} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
-                      ))
-                  }
-                </div>
-                {/* Subcategory chips — appear when a main category is selected */}
-                {selectedKind && (() => {
-                  const dbSubs = subCategories.map(s => s.nameAr);
-                  const activeSubs = dbSubs.length > 0 ? dbSubs : (STATIC_SUBCATS[selectedKind] ?? []);
-                  if (activeSubs.length === 0) return null;
-                  return (
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-xs text-gray-400 mb-2 font-semibold">التصنيف الفرعي:</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        <Chip
-                          label="الكل"
-                          active={!selectedSubKind}
-                          onClick={() => setSelectedSubKind(null)}
-                        />
-                        {activeSubs.map(name => (
-                          <Chip
-                            key={name}
-                            label={name}
-                            active={selectedSubKind === name}
-                            onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
-                          />
-                        ))}
-                      </div>
+                {/* ── العقارات المميزة فقط ── */}
+                <div className="mb-4 pb-4 border-b border-gray-100">
+                  <label className="flex items-center justify-between cursor-pointer group">
+                    <span className="font-bold text-gray-800 text-sm">عقارات مميزة فقط</span>
+                    <div
+                      onClick={() => setSelectedFeaturedOnly(v => !v)}
+                      className={`w-10 h-6 rounded-full transition-all relative cursor-pointer ${selectedFeaturedOnly ? "bg-primary" : "bg-gray-200"}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${selectedFeaturedOnly ? "right-1" : "left-1"}`} />
                     </div>
-                  );
-                })()}
-              </FilterSection>
+                  </label>
+                </div>
 
-              {/* Price Range */}
-              <FilterSection title="نطاق السعر (جنيه)">
-                <div className="flex flex-col gap-2">
-                  {PRICE_RANGES.map((r, i) => (
-                    <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
-                      <div
-                        onClick={() => setSelectedPrice(selectedPrice === i ? null : i)}
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedPrice === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
+                {/* ── نوع الصفقة ── */}
+                <FilterSection title="نوع الصفقة">
+                  <div className="flex gap-2">
+                    {TYPES.map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setSelectedType(selectedType === t ? null : t)}
+                        className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all ${selectedType === t ? "bg-primary text-white border-primary shadow-sm" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
                       >
-                        {selectedPrice === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                      <span
-                        onClick={() => setSelectedPrice(selectedPrice === i ? null : i)}
-                        className={`text-sm transition-colors ${selectedPrice === i ? "text-primary font-semibold" : "text-gray-600"}`}
-                      >{r.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
 
-              {/* Bedrooms */}
-              <FilterSection title="عدد غرف النوم">
-                <div className="flex flex-wrap gap-1.5">
-                  {BEDS_OPTIONS.map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => setSelectedBeds(selectedBeds === b ? null : b)}
-                      className={`w-10 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBeds === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}
-                    >
-                      {b}+
-                    </button>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* Bathrooms */}
-              <FilterSection title="عدد الحمامات">
-                <div className="flex flex-wrap gap-1.5">
-                  {BATHS_OPTIONS.map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => setSelectedBaths(selectedBaths === b ? null : b)}
-                      className={`w-10 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBaths === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}
-                    >
-                      {b}+
-                    </button>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* Floor */}
-              <FilterSection title="رقم الطابق" defaultOpen={false}>
-                <div className="flex flex-wrap gap-1.5">
-                  {FLOOR_OPTIONS.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setSelectedFloor(selectedFloor === f ? null : f)}
-                      className={`px-3 h-9 rounded-xl text-sm font-bold border-2 transition-all ${selectedFloor === f ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* Area */}
-              <FilterSection title="المساحة" defaultOpen={true}>
-                <div className="flex flex-col gap-2">
-                  {AREA_RANGES.map((r, i) => (
-                    <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
-                      <div
-                        onClick={() => setSelectedArea(selectedArea === i ? null : i)}
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedArea === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
-                      >
-                        {selectedArea === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                      <span
-                        onClick={() => setSelectedArea(selectedArea === i ? null : i)}
-                        className={`text-sm transition-colors ${selectedArea === i ? "text-primary font-semibold" : "text-gray-600"}`}
-                      >{r.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* District / منطقة */}
-              {banhaAreas.length > 0 && (
-                <FilterSection title="المنطقة">
-                  <div className="flex flex-col gap-2">
-                    {banhaAreas.map((a) => (
-                      <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
-                        <div
-                          onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
-                          className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
-                        >
-                          {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
+                {/* ── نوع العقار ── */}
+                <FilterSection title="نوع العقار">
+                  <div className="flex flex-wrap gap-2">
+                    {reCategories.length > 0
+                      ? reCategories.map((c) => {
+                          const slug = c.slug ?? String(c.id);
+                          return (
+                            <Chip key={slug} label={c.nameAr} active={selectedKind === slug}
+                              onClick={() => { setSelectedKind(selectedKind === slug ? null : slug); setSelectedSubKind(null); }} />
+                          );
+                        })
+                      : KINDS.map((k) => (
+                          <Chip key={k} label={k} active={selectedKind === k} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
+                        ))
+                    }
+                  </div>
+                  {selectedKind && (() => {
+                    const dbSubs = subCategories.map(s => s.nameAr);
+                    const activeSubs = dbSubs.length > 0 ? dbSubs : (STATIC_SUBCATS[selectedKind] ?? []);
+                    if (activeSubs.length === 0) return null;
+                    return (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-400 mb-2 font-semibold">التصنيف الفرعي:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Chip label="الكل" active={!selectedSubKind} onClick={() => setSelectedSubKind(null)} />
+                          {activeSubs.map(name => (
+                            <Chip key={name} label={name} active={selectedSubKind === name}
+                              onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)} />
+                          ))}
                         </div>
-                        <span
-                          onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
-                          className={`text-sm transition-colors ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}
-                        >{a.nameAr}</span>
+                      </div>
+                    );
+                  })()}
+                </FilterSection>
+
+                {/* ── المدينة ── */}
+                {availableCities.length > 0 && (
+                  <FilterSection title="المدينة / المنطقة">
+                    <select
+                      value={selectedCity ?? ""}
+                      onChange={e => setSelectedCity(e.target.value || null)}
+                      className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 text-gray-700 focus:outline-none focus:border-primary/50 cursor-pointer"
+                    >
+                      <option value="">كل المدن</option>
+                      {availableCities.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </FilterSection>
+                )}
+
+                {/* ── نطاق السعر ── */}
+                <FilterSection title="نطاق السعر (جنيه)">
+                  <div className="flex flex-col gap-2">
+                    {PRICE_RANGES.map((r, i) => (
+                      <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div onClick={() => setSelectedPrice(selectedPrice === i ? null : i)}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedPrice === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                          {selectedPrice === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <span onClick={() => setSelectedPrice(selectedPrice === i ? null : i)}
+                          className={`text-sm transition-colors cursor-pointer ${selectedPrice === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
                       </label>
                     ))}
                   </div>
                 </FilterSection>
-              )}
 
-              {/* Finishing / التشطيب */}
-              <FilterSection title="التشطيب" defaultOpen={true}>
-                <div className="flex flex-wrap gap-2">
-                  {["سوبر لوكس", "لوكس", "عادي", "نص تشطيب", "بدون تشطيب"].map((v) => (
-                    <Chip key={v} label={v} active={selectedFinishing === v} onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
-                  ))}
-                </div>
-              </FilterSection>
+                {/* ── المساحة ── */}
+                <FilterSection title="المساحة (م²)">
+                  <div className="flex flex-col gap-2">
+                    {AREA_RANGES.map((r, i) => (
+                      <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div onClick={() => setSelectedArea(selectedArea === i ? null : i)}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedArea === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                          {selectedArea === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <span onClick={() => setSelectedArea(selectedArea === i ? null : i)}
+                          className={`text-sm transition-colors cursor-pointer ${selectedArea === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
 
-              {/* Furnished / التأثيث */}
-              <FilterSection title="التأثيث" defaultOpen={true}>
-                <div className="flex flex-wrap gap-2">
-                  {["مفروش بالكامل", "نص تشطيب", "غير مفروش"].map((v) => (
-                    <Chip key={v} label={v} active={selectedFurnished === v} onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
-                  ))}
-                </div>
-              </FilterSection>
+                {/* ── عدد الغرف ── */}
+                <FilterSection title="عدد غرف النوم">
+                  <div className="flex flex-wrap gap-1.5">
+                    {BEDS_OPTIONS.map((b) => (
+                      <button key={b} onClick={() => setSelectedBeds(selectedBeds === b ? null : b)}
+                        className={`w-11 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBeds === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>
+                        {b}+
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
 
-              {/* Payment / نظام الدفع */}
-              <FilterSection title="نظام الدفع" defaultOpen={true}>
-                <div className="flex flex-wrap gap-2">
-                  {["كاش", "تقسيط", "كاش أو تقسيط"].map((v) => (
-                    <Chip key={v} label={v} active={selectedPayment === v} onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
-                  ))}
-                </div>
-              </FilterSection>
+                {/* ── عدد الحمامات ── */}
+                <FilterSection title="عدد الحمامات">
+                  <div className="flex flex-wrap gap-1.5">
+                    {BATHS_OPTIONS.map((b) => (
+                      <button key={b} onClick={() => setSelectedBaths(selectedBaths === b ? null : b)}
+                        className={`w-11 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBaths === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>
+                        {b}+
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
 
-              {/* CTA */}
-              {activeCount > 0 && (
-                <Button onClick={clearAll} variant="outline" className="w-full rounded-xl text-sm mt-1 border-primary/30 text-primary hover:bg-primary/5">
-                  <X className="w-3.5 h-3.5 ml-1" />
-                  إزالة كل الفلاتر
-                </Button>
-              )}
-              </div>{/* end .filters-scroll-area */}
+                {/* ── رقم الطابق ── */}
+                <FilterSection title="رقم الطابق" defaultOpen={false}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {FLOOR_OPTIONS.map((f) => (
+                      <button key={f} onClick={() => setSelectedFloor(selectedFloor === f ? null : f)}
+                        className={`px-3 h-9 rounded-xl text-sm font-bold border-2 transition-all ${selectedFloor === f ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* ── التشطيب ── */}
+                <FilterSection title="حالة التشطيب">
+                  <div className="flex flex-wrap gap-1.5">
+                    {FINISHING_OPTIONS.map((v) => (
+                      <Chip key={v} label={v} active={selectedFinishing === v}
+                        onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* ── التأثيث ── */}
+                <FilterSection title="التأثيث">
+                  <div className="flex flex-wrap gap-1.5">
+                    {FURNISHED_OPTIONS.map((v) => (
+                      <Chip key={v} label={v} active={selectedFurnished === v}
+                        onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* ── نظام الدفع ── */}
+                <FilterSection title="نظام الدفع">
+                  <div className="flex flex-wrap gap-1.5">
+                    {PAYMENT_OPTIONS.map((v) => (
+                      <Chip key={v} label={v} active={selectedPayment === v}
+                        onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* ── الميزات والمرافق ── */}
+                <FilterSection title="الميزات والمرافق" defaultOpen={false}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {FEATURE_OPTIONS.map((f) => {
+                      const active = selectedFeatures.includes(f);
+                      return (
+                        <button key={f}
+                          onClick={() => setSelectedFeatures(prev => active ? prev.filter(x => x !== f) : [...prev, f])}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}>
+                          {f}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FilterSection>
+
+                {/* ── تاريخ الإضافة ── */}
+                <FilterSection title="تاريخ الإضافة" defaultOpen={false}>
+                  <div className="flex flex-col gap-2">
+                    {RECENCY_OPTIONS.map((r, i) => (
+                      <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div onClick={() => setSelectedRecency(selectedRecency === i ? null : i)}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedRecency === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                          {selectedRecency === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <span onClick={() => setSelectedRecency(selectedRecency === i ? null : i)}
+                          className={`text-sm transition-colors cursor-pointer ${selectedRecency === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* ── المنطقة من DB ── */}
+                {banhaAreas.length > 0 && (
+                  <FilterSection title="الحي / المنطقة" defaultOpen={false}>
+                    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto no-scrollbar">
+                      {banhaAreas.map((a) => (
+                        <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
+                          <div onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                            {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
+                          </div>
+                          <span onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
+                            className={`text-sm transition-colors cursor-pointer ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </FilterSection>
+                )}
+
+                {/* CTA */}
+                {activeCount > 0 && (
+                  <Button onClick={clearAll} variant="outline" className="w-full rounded-xl text-sm mt-1 border-primary/30 text-primary hover:bg-primary/5">
+                    <X className="w-3.5 h-3.5 ml-1" />
+                    إزالة كل الفلاتر ({activeCount})
+                  </Button>
+                )}
+              </div>
             </div>
           </aside>
 
