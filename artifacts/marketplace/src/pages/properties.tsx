@@ -1,4 +1,26 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+
+/** Dubizzle-style smart scroll: sidebar scrolls independently;
+ *  when it hits its boundary the page scroll takes over. */
+function useSidebarSmartScroll(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const atTop    = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+      const goingUp  = e.deltaY < 0;
+      const goingDown = e.deltaY > 0;
+      if ((goingUp && atTop) || (goingDown && atBottom)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      el.scrollTop += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [ref]);
+}
 import { useLocation } from "wouter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { motion, AnimatePresence } from "framer-motion";
@@ -285,6 +307,9 @@ export default function PropertiesPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { items: compareItems, isIn: isInCompare } = useCompare();
+
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  useSidebarSmartScroll(sidebarRef);
 
   const { data: reCategories = [] } = useQuery<Category[]>({
     queryKey: ["re-categories"],
@@ -576,13 +601,18 @@ export default function PropertiesPage() {
 
 
       {/* ── Main Layout ── */}
-      <div className="container mx-auto px-4 lg:h-[calc(100vh-8.5rem)] lg:overflow-hidden">
-        <div className="flex gap-6 lg:h-full">
+      <div className="container mx-auto px-4">
+        <div className="flex gap-6">
 
           {/* ═══════════════════════════════════════
               RIGHT SIDEBAR — Filters
           ═══════════════════════════════════════ */}
-          <aside className="w-80 shrink-0 hidden lg:flex lg:flex-col h-full overflow-y-auto py-6 no-scrollbar">
+          <aside className="w-80 shrink-0 hidden lg:flex lg:flex-col py-6">
+            {/* Smart-scroll inner: sticky + independent wheel scroll */}
+            <div
+              ref={sidebarRef}
+              className="sticky top-[136px] max-h-[calc(100vh-152px)] overflow-y-auto no-scrollbar [overscroll-behavior:contain]"
+            >
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
@@ -836,12 +866,13 @@ export default function PropertiesPage() {
                 )}
               </div>
             </div>
+            </div>
           </aside>
 
           {/* ═══════════════════════════════════════
               LEFT — Results
           ═══════════════════════════════════════ */}
-          <div className="flex-1 min-w-0 py-6 lg:h-full lg:overflow-y-auto results-scroll-area">
+          <div className="flex-1 min-w-0 py-6">
             {/* Results header */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-wrap">

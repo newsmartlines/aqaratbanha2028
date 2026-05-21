@@ -1,4 +1,26 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+
+/** Dubizzle-style smart scroll: sidebar scrolls independently;
+ *  when it hits its boundary the page scroll takes over. */
+function useSidebarSmartScroll(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const atTop    = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+      const goingUp  = e.deltaY < 0;
+      const goingDown = e.deltaY > 0;
+      if ((goingUp && atTop) || (goingDown && atBottom)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      el.scrollTop += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [ref]);
+}
 import { useLocation } from "wouter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { Header } from "@/components/Header";
@@ -350,6 +372,7 @@ export default function SearchPage() {
   const [saved, setSaved] = useState<Set<number>>(new Set());
   const [mobileFilters, setMobileFilters] = useState(false);
   const filterPanelRef = useRef<HTMLDivElement>(null);
+  useSidebarSmartScroll(filterPanelRef);
 
   const set = useCallback(<K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -1270,7 +1293,10 @@ export default function SearchPage() {
 
         {/* ── Desktop Sidebar ──────────────────────────────────────── */}
         <aside className="hidden lg:block w-72 shrink-0">
-          <div className="bg-white rounded-2xl shadow-sm border border-zinc-200/80 sticky top-[130px] max-h-[calc(100vh-150px)] overflow-y-auto">
+          <div
+            ref={filterPanelRef}
+            className="bg-white rounded-2xl shadow-sm border border-zinc-200/80 sticky top-[130px] max-h-[calc(100vh-150px)] overflow-y-auto no-scrollbar [overscroll-behavior:contain]"
+          >
             <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-zinc-100">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-primary" />
