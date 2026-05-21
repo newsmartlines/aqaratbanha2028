@@ -929,7 +929,7 @@ export default function SearchPage() {
       >
         <PropertyImageGallery
           images={imgs} alt={p.title} fallback={DEFAULT_IMG}
-          className="shrink-0 w-52 sm:w-64"
+          className="shrink-0 w-60 sm:w-80"
         >
           <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/15 pointer-events-none" />
           <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-20">
@@ -1045,19 +1045,26 @@ export default function SearchPage() {
               ) : p.agentName ? (
                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-black text-xs">{p.agentName.charAt(0)}</div>
               ) : null}
-              <div className="min-w-0">
-                {p.agentName && <p className="text-xs font-bold text-zinc-700 truncate leading-none mb-0.5">{p.agentName}</p>}
-                <div className="flex items-center gap-2 text-zinc-400 text-[10px]">
-                  <span className="flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
-                  {p.viewCount > 0 && <span className="flex items-center gap-0.5"><Eye className="w-2.5 h-2.5" />{p.viewCount.toLocaleString("ar-EG")}</span>}
-                </div>
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                {p.agentName && <span className="text-xs font-bold text-zinc-700 truncate leading-none">{p.agentName}</span>}
+                <span className="flex items-center gap-0.5 text-zinc-400 text-[10px] shrink-0">
+                  <Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}
+                </span>
+                {p.viewCount > 0 && (
+                  <span className="flex items-center gap-0.5 text-zinc-400 text-[10px] shrink-0">
+                    <Eye className="w-2.5 h-2.5" />{p.viewCount.toLocaleString("ar-EG")}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {wa && (
-                <button onClick={e => { e.stopPropagation(); window.open(`https://wa.me/${wa}`, "_blank"); }}
-                  className="w-8 h-8 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-500 hover:text-[#25D366] hover:border-[#25D366]/40 transition-all">
+                <button
+                  onClick={e => { e.stopPropagation(); window.open(`https://wa.me/${wa}`, "_blank"); }}
+                  className="flex items-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white text-[11px] font-bold px-3 h-8 rounded-xl transition-all shadow-sm hover:shadow-md"
+                >
                   <WaIcon />
+                  واتساب
                 </button>
               )}
               {p.phone && (
