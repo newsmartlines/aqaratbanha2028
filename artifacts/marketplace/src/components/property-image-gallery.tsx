@@ -114,13 +114,13 @@ export function PropertyImageGallery({
             onClick={next}
             aria-label="صورة تالية"
             className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/92 backdrop-blur-sm shadow-lg flex items-center justify-center text-gray-800 transition-all duration-200
-              ${showNext && (hovered || idx === 0) ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"}`}
+              ${showNext && hovered ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"}`}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
 
           <div
-            className={`absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1"
           >
             {Array.from({ length: visibleDots }, (_, dot) => (
               <button

@@ -864,34 +864,56 @@ export default function PropertiesPage() {
                           transition={{ duration: 0.3, delay: idx * 0.03 }}
                         >
                           <div
-                            className={`group bg-white rounded-2xl border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-row ${p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-gray-200"}`}
+                            className={`group bg-white rounded-2xl border overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-row relative ${p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-gray-200"}`}
                             onClick={() => setLocation(`/property/${p.id}`)}
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
-                            {/* ── Image (RIGHT in RTL — first in DOM) ── */}
+                            {/* ── Featured ribbon — right edge ── */}
+                            {p.featured && (
+                              <div className="absolute top-0 right-0 z-30 overflow-hidden w-16 h-16 pointer-events-none">
+                                <div className="absolute top-3 -right-4 bg-amber-400 text-amber-900 text-[9px] font-extrabold py-0.5 w-20 text-center shadow-sm rotate-45 origin-center">
+                                  مميز ✦
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── Image ── */}
                             <PropertyImageGallery
                               images={p.imgs}
                               alt={p.title}
                               fallback={FALLBACK}
-                              className="shrink-0 w-44 sm:w-56 min-h-[160px]"
+                              className="shrink-0 w-52 sm:w-72 min-h-[200px]"
                             >
-                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/20 pointer-events-none" />
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40 pointer-events-none" />
+
+                              {/* Type badge + time */}
                               <div className="absolute top-2.5 right-2.5 flex flex-col gap-1 z-20">
-                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
+                                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
                                   {p.type}
                                 </span>
-                                {p.featured && (
-                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-amber-900 shadow">مميز</span>
-                                )}
                               </div>
+
+                              {/* Time ago badge — bottom right of image */}
+                              {p.createdAt && (
+                                <div className="absolute bottom-2 right-2 z-20">
+                                  <span className="flex items-center gap-1 bg-black/55 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                                    <Clock className="w-2.5 h-2.5 shrink-0" />
+                                    {timeAgo(p.createdAt)}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Like button */}
                               <button
                                 className={`absolute top-2.5 left-2.5 z-20 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
                                 onClick={(e) => toggleLike(p.id, e)}
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
-                              <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/50 text-white text-[9px] font-medium px-2 py-1 text-center">
+
+                              {/* Category label */}
+                              <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/60 to-transparent text-white text-[9px] font-medium px-2 pb-1.5 pt-3 text-center">
                                 {reCategories.find(c => (c.slug ?? String(c.id)) === p.kind)?.nameAr ?? p.kind}
                               </div>
                             </PropertyImageGallery>
@@ -945,6 +967,7 @@ export default function PropertiesPage() {
                               {/* Bottom row: agent + actions */}
                               <div className="flex items-center justify-between gap-2 flex-wrap">
                                 {/* Agent + time */}
+                                {/* Agent info */}
                                 <div className="flex items-center gap-2 min-w-0">
                                   {(p.agentAvatar || p.agentLogo) ? (
                                     <img
@@ -960,49 +983,44 @@ export default function PropertiesPage() {
                                   ) : null}
                                   <div className="min-w-0">
                                     {p.agentName && <p className="text-xs font-semibold text-gray-700 truncate leading-none mb-0.5">{p.agentName}</p>}
-                                    <div className="flex items-center gap-2 text-gray-400 text-[11px]">
-                                      {p.createdAt && <span>{timeAgo(p.createdAt)}</span>}
-                                      {(p.viewCount ?? 0) > 0 && (
-                                        <>
-                                          <span>·</span>
-                                          <span className="flex items-center gap-0.5">
-                                            <Eye className="w-2.5 h-2.5" /> {p.viewCount}
-                                          </span>
-                                        </>
-                                      )}
-                                    </div>
+                                    {(p.viewCount ?? 0) > 0 && (
+                                      <span className="flex items-center gap-0.5 text-gray-400 text-[11px]">
+                                        <Eye className="w-2.5 h-2.5" /> {p.viewCount} مشاهدة
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
 
                                 {/* Actions */}
                                 <div className="flex items-center gap-2 shrink-0">
+                                  {/* WhatsApp — labeled green button */}
+                                  {p.whatsapp && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                      className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-[#25D366]/40 bg-[#25D366]/8 text-[#128C7E] text-xs font-bold hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all"
+                                    >
+                                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                      واتساب
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
+                                    className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-400 hover:border-primary/30 hover:text-primary"}`}
+                                    title="أضف للمقارنة"
+                                  >
+                                    <GitCompare className="w-3.5 h-3.5" />
+                                  </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
-                                    className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-200 transition-all"
+                                    className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-200 transition-all"
                                     title="إبلاغ"
                                   >
                                     <Flag className="w-3.5 h-3.5" />
                                   </button>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
-                                    className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-400 hover:border-primary/30 hover:text-primary"}`}
-                                    title="أضف للمقارنة"
-                                  >
-                                    <GitCompare className="w-4 h-4" />
-                                  </button>
-                                  {p.whatsapp && (
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
-                                      className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-[#25D366] hover:border-[#25D366]/40 hover:bg-[#25D366]/5 transition-all"
-                                      title="واتساب"
-                                    >
-                                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
-                                    </button>
-                                  )}
                                   {p.phone && (
                                     <button
                                       onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
-                                      className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all"
+                                      className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all"
                                       title="اتصال"
                                     >
                                       <Phone className="w-4 h-4" />
