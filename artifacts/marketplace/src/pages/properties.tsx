@@ -537,13 +537,13 @@ export default function PropertiesPage() {
 
 
       {/* ── Main Layout ── */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex gap-6">
+      <div className="container mx-auto px-4 lg:h-[calc(100vh-8.5rem)] lg:overflow-hidden">
+        <div className="flex gap-6 lg:h-full">
 
           {/* ═══════════════════════════════════════
               RIGHT SIDEBAR — Filters (Dubizzle style)
           ═══════════════════════════════════════ */}
-          <aside className="w-64 shrink-0 hidden lg:block">
+          <aside className="w-64 shrink-0 hidden lg:flex lg:flex-col h-full overflow-y-auto py-6 scrollbar-thin">
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
@@ -782,7 +782,7 @@ export default function PropertiesPage() {
           {/* ═══════════════════════════════════════
               LEFT — Results
           ═══════════════════════════════════════ */}
-          <div className="flex-1 min-w-0 results-scroll-area">
+          <div className="flex-1 min-w-0 py-6 lg:h-full lg:overflow-y-auto">
             {/* Results header */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-wrap">
