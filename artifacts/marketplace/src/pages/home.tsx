@@ -1125,26 +1125,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Stats strip */}
-            <div className="flex gap-6 mb-10 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-              {[
-                { icon: Building2, label: "عقار متاح", value: "+1,200" },
-                { icon: TrendingUp, label: "صفقة هذا الشهر", value: "+340" },
-                { icon: MapPin, label: "مدينة مغطاة", value: "18" },
-                { icon: CheckCircle2, label: "عميل راضٍ", value: "+5K" },
-              ].map((s, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white border border-border shadow-sm rounded-2xl px-5 py-3 shrink-0">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <s.icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-gray-900 font-bold text-lg leading-none">{s.value}</p>
-                    <p className="text-muted-foreground text-xs mt-0.5">{s.label}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Property cards grid */}
             {propsLoading ? (
               <div className="flex justify-center py-20">
