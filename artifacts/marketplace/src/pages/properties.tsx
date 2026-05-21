@@ -942,7 +942,7 @@ export default function PropertiesPage() {
                               images={p.imgs}
                               alt={p.title}
                               fallback={FALLBACK}
-                              className="shrink-0 w-60 sm:w-80 min-h-[200px]"
+                              className="shrink-0 w-60 sm:w-80 min-h-[280px]"
                             >
                               <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40 pointer-events-none" />
 
@@ -968,7 +968,7 @@ export default function PropertiesPage() {
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
-                            <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
+                            <div className="flex-1 flex flex-col p-6 gap-0 min-w-0">
                               {/* Price */}
                               <div className="flex items-baseline gap-1.5 mb-2">
                                 <span className="text-[22px] sm:text-2xl font-black text-gray-900 leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
@@ -1009,6 +1009,26 @@ export default function PropertiesPage() {
                                   </div>
                                 )}
                               </div>
+
+                              {/* Extra tags: finishing / floor / furnished / payment */}
+                              {(p.finishing || p.floor != null || p.furnished || p.paymentMethod) && (
+                                <div className="flex flex-wrap gap-1.5 mb-4">
+                                  {p.finishing && (
+                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100">{p.finishing}</span>
+                                  )}
+                                  {p.floor != null && (
+                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                                      {p.floor === 0 ? "دور أرضي" : `دور ${p.floor}`}
+                                    </span>
+                                  )}
+                                  {p.furnished && p.furnished !== "غير مفروش" && (
+                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">{p.furnished}</span>
+                                  )}
+                                  {p.paymentMethod && (
+                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100">{p.paymentMethod}</span>
+                                  )}
+                                </div>
+                              )}
 
                               {/* Divider */}
                               <div className="border-t border-gray-100 mb-3" />
