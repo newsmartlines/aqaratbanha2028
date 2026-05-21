@@ -555,43 +555,32 @@ export default function PropertiesPage() {
                 </div>
 
                 {/* Subcategory pills — appear when a category is selected */}
-                <AnimatePresence>
-                  {selectedKind && activeSubs.length > 0 && (
-                    <motion.div
-                      key={selectedKind}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
+                {selectedKind && activeSubs.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap pt-2.5 mt-1 border-t border-gray-100">
+                    <span className="text-xs font-bold text-gray-400 ml-1 whitespace-nowrap">التصنيف الفرعي:</span>
+                    <button
+                      onClick={() => setSelectedSubKind(null)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
+                        ${!selectedSubKind
+                          ? "bg-primary text-white border-primary shadow-sm"
+                          : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
                     >
-                      <div className="flex items-center gap-2 flex-wrap pt-2.5">
-                        <span className="text-xs font-bold text-gray-400 ml-1 whitespace-nowrap">التصنيف الفرعي:</span>
-                        <button
-                          onClick={() => setSelectedSubKind(null)}
-                          className={`px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
-                            ${!selectedSubKind
-                              ? "bg-primary text-white border-primary shadow-sm"
-                              : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
-                        >
-                          الكل
-                        </button>
-                        {activeSubs.map(name => (
-                          <button
-                            key={name}
-                            onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
-                            className={`px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
-                              ${selectedSubKind === name
-                                ? "bg-primary text-white border-primary shadow-sm"
-                                : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
-                          >
-                            {name}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      الكل
+                    </button>
+                    {activeSubs.map(name => (
+                      <button
+                        key={name}
+                        onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
+                        className={`px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
+                          ${selectedSubKind === name
+                            ? "bg-primary text-white border-primary shadow-sm"
+                            : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"}`}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -639,53 +628,6 @@ export default function PropertiesPage() {
         </div>
       </div>
 
-      {/* ── Subcategory Tab Strip ── */}
-      {(() => {
-        const dbSubs = subCategories.map(s => s.nameAr);
-        const staticSubs = STATIC_SUBCATS[selectedKind ?? ""] ?? [];
-        const activeSubs = dbSubs.length > 0 ? dbSubs : staticSubs;
-        if (!selectedKind || activeSubs.length === 0) return null;
-        return (
-          <AnimatePresence>
-            <motion.div
-              key="subtabs"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white border-b border-gray-200 sticky top-[105px] z-20 shadow-sm"
-            >
-              <div className="container mx-auto px-4">
-                <div className="flex items-center gap-1.5 overflow-x-auto py-2.5" style={{ scrollbarWidth: "none" }}>
-                  <button
-                    onClick={() => setSelectedSubKind(null)}
-                    className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-bold border transition-all whitespace-nowrap ${
-                      !selectedSubKind
-                        ? "bg-primary text-white border-primary shadow-sm"
-                        : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
-                    }`}
-                  >
-                    الكل
-                  </button>
-                  {activeSubs.map((name) => (
-                    <button
-                      key={name}
-                      onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)}
-                      className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-bold border transition-all whitespace-nowrap ${
-                        selectedSubKind === name
-                          ? "bg-primary text-white border-primary shadow-sm"
-                          : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
-                      }`}
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        );
-      })()}
 
       {/* ── Main Layout ── */}
       <div className="container mx-auto px-4 py-6">
