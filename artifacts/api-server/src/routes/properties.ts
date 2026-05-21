@@ -166,18 +166,56 @@ async function requireAuth(req: any): Promise<{ userId: number; providerId?: num
 // ── GET /api/properties ────────────────────────────────────────────────────
 router.get("/properties", async (req, res) => {
   try {
-    const { search, category, city, status, providerId, featured, listingType } = req.query as Record<string, string>;
+    const q = req.query as Record<string, string>;
+    const {
+      search, category, subCategory, city, district, compound, street,
+      status, providerId, featured, urgent, listingType,
+      priceMin, priceMax, areaMin, areaMax,
+      rooms, bathrooms, floor,
+      ageMin, ageMax,
+      finishing, condition, furnished, direction, facade,
+      paymentMethod, rentDuration, advertiserType,
+      features,
+      sortBy,
+    } = q;
+
     const conditions: any[] = [];
+
     if (status) conditions.push(eq(propertiesTable.status, status));
     if (category) conditions.push(eq(propertiesTable.mainCategory, category));
+    if (subCategory) conditions.push(eq(propertiesTable.subCategory, subCategory));
     if (providerId) conditions.push(eq(propertiesTable.providerId, parseInt(providerId)));
     if (featured === "true") conditions.push(eq(propertiesTable.featured, true));
+    if (urgent === "true") conditions.push(eq(propertiesTable.urgent, true));
     if (listingType) conditions.push(eq(propertiesTable.listingType, listingType));
+    if (finishing) conditions.push(eq(propertiesTable.finishing, finishing));
+    if (condition) conditions.push(eq(propertiesTable.condition, condition));
+    if (furnished) conditions.push(eq(propertiesTable.furnished, furnished));
+    if (direction) conditions.push(eq(propertiesTable.direction, direction));
+    if (facade) conditions.push(eq(propertiesTable.facade, facade));
+    if (paymentMethod) conditions.push(eq(propertiesTable.paymentMethod, paymentMethod));
+    if (rentDuration) conditions.push(eq(propertiesTable.rentDuration, rentDuration));
+    if (advertiserType) conditions.push(eq(propertiesTable.advertiserType, advertiserType));
+
+    if (priceMin) conditions.push(sql`CAST(${propertiesTable.price} AS numeric) >= ${parseFloat(priceMin)}`);
+    if (priceMax) conditions.push(sql`CAST(${propertiesTable.price} AS numeric) <= ${parseFloat(priceMax)}`);
+    if (areaMin) conditions.push(sql`CAST(${propertiesTable.area} AS numeric) >= ${parseFloat(areaMin)}`);
+    if (areaMax) conditions.push(sql`CAST(${propertiesTable.area} AS numeric) <= ${parseFloat(areaMax)}`);
+    if (rooms) conditions.push(sql`${propertiesTable.rooms} >= ${parseInt(rooms)}`);
+    if (bathrooms) conditions.push(sql`${propertiesTable.bathrooms} >= ${parseInt(bathrooms)}`);
+    if (floor) conditions.push(eq(propertiesTable.floor, parseInt(floor)));
+
+    const currentYear = new Date().getFullYear();
+    if (ageMin) conditions.push(sql`${propertiesTable.buildYear} <= ${currentYear - parseInt(ageMin)}`);
+    if (ageMax) conditions.push(sql`${propertiesTable.buildYear} >= ${currentYear - parseInt(ageMax)}`);
+
     if (search) {
       conditions.push(or(
         ilike(propertiesTable.title, `%${search}%`),
         ilike(propertiesTable.description, `%${search}%`),
         ilike(propertiesTable.address, `%${search}%`),
+        ilike(propertiesTable.district, `%${search}%`),
+        ilike(propertiesTable.compound, `%${search}%`),
       ));
     }
     if (city) {
@@ -186,6 +224,23 @@ router.get("/properties", async (req, res) => {
         ilike(propertiesTable.address, `%${city}%`),
       ));
     }
+    if (district) conditions.push(ilike(propertiesTable.district, `%${district}%`));
+    if (compound) conditions.push(ilike(propertiesTable.compound, `%${compound}%`));
+    if (street) conditions.push(ilike(propertiesTable.street, `%${street}%`));
+
+    if (features) {
+      const featureList = features.split(",").map(f => f.trim()).filter(Boolean);
+      for (const feat of featureList) {
+        conditions.push(sql`${propertiesTable.features}::text ILIKE ${'%' + feat + '%'}`);
+      }
+    }
+
+    let orderClause: any = desc(propertiesTable.createdAt);
+    if (sortBy === "price_asc") orderClause = sql`CAST(${propertiesTable.price} AS numeric) ASC NULLS LAST`;
+    else if (sortBy === "price_desc") orderClause = sql`CAST(${propertiesTable.price} AS numeric) DESC NULLS LAST`;
+    else if (sortBy === "popular") orderClause = desc(propertiesTable.viewCount);
+    else if (sortBy === "area_asc") orderClause = sql`CAST(${propertiesTable.area} AS numeric) ASC NULLS LAST`;
+    else if (sortBy === "area_desc") orderClause = sql`CAST(${propertiesTable.area} AS numeric) DESC NULLS LAST`;
 
     const rows = await db
       .select({
@@ -201,7 +256,7 @@ router.get("/properties", async (req, res) => {
       .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
       .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
       .where(conditions.length ? and(...conditions) : undefined)
-      .orderBy(desc(propertiesTable.createdAt));
+      .orderBy(sql`${propertiesTable.featured} DESC NULLS LAST`, sql`${propertiesTable.urgent} DESC NULLS LAST`, orderClause);
 
     res.json({ success: true, data: rows });
   } catch (err: any) {
