@@ -1244,47 +1244,56 @@ export default function Home() {
 
                       <div className="border-t border-border/60 my-3" />
 
-                      {/* Date + Views + compare row */}
+                      {/* Agent + compare row */}
                       {(() => {
                         const agentName = (property as any).agentName as string | undefined;
                         const agentAvatar = (property as any).agentAvatar as string | undefined;
                         const agentLogo = (property as any).agentLogo as string | undefined;
                         const avatar = agentAvatar || agentLogo;
                         return (
-                          <div className="flex items-center gap-2">
-                            {avatar ? (
-                              <img
-                                src={avatar}
-                                alt={agentName}
-                                className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
-                                onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`; }}
-                              />
-                            ) : agentName ? (
-                              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
-                                {agentName.charAt(0)}
-                              </div>
-                            ) : null}
-                            {agentName && <span className="text-xs text-slate-600 font-medium truncate flex-1">{agentName}</span>}
-                            {!agentName && (
-                              <span className="flex items-center gap-1 text-xs text-slate-500 flex-1">
-                                <Clock className="w-3 h-3 text-slate-400" />
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              {avatar ? (
+                                <img
+                                  src={avatar}
+                                  alt={agentName}
+                                  className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
+                                  onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`; }}
+                                />
+                              ) : agentName ? (
+                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
+                                  {agentName.charAt(0)}
+                                </div>
+                              ) : null}
+                              {agentName && <span className="text-xs text-slate-600 font-medium truncate flex-1">{agentName}</span>}
+                              {!agentName && <span className="flex-1" />}
+                              <button
+                                className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary"}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+                                  const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: (property as any).rooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                                  if (r === "added") toast.success("أُضيف للمقارنة ✓");
+                                  else if (r === "already") toast("موجود بالفعل في المقارنة");
+                                  else toast.error("المقارنة ممتلئة (٤ عقارات)");
+                                }}
+                                title="قارن"
+                              >
+                                <GitCompare className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Time ago + views count */}
+                            <div className="flex items-center justify-between text-[11px] text-slate-400">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3 shrink-0" />
                                 {timeAgo((property as any).createdAt) || "—"}
                               </span>
-                            )}
-                            <button
-                              className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary"}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-                                const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: (property as any).rooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
-                                if (r === "added") toast.success("أُضيف للمقارنة ✓");
-                                else if (r === "already") toast("موجود بالفعل في المقارنة");
-                                else toast.error("المقارنة ممتلئة (٤ عقارات)");
-                              }}
-                              title="قارن"
-                            >
-                              <GitCompare className="w-3.5 h-3.5" />
-                            </button>
+                              <span className="flex items-center gap-1">
+                                <Eye className="w-3 h-3 shrink-0" />
+                                {((property as any).viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                              </span>
+                            </div>
                           </div>
                         );
                       })()}

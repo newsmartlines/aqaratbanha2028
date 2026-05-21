@@ -156,7 +156,7 @@ export function PopupRenderer() {
 
   const { data } = useQuery<{ success: boolean; data: Popup[] }>({
     queryKey: ["popups-active"],
-    queryFn: () => fetch("/api-server/api/popups").then(r => r.json()),
+    queryFn: () => fetch("/api/popups").then(r => r.json()),
     staleTime: 60_000,
   });
 

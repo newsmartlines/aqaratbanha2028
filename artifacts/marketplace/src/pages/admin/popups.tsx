@@ -184,7 +184,7 @@ export default function AdminPopups() {
 
   const { data, isLoading } = useQuery<{ success: boolean; data: Popup[] }>({
     queryKey: ["admin-popups"],
-    queryFn: () => fetch("/api-server/api/admin/popups").then(r => r.json()),
+    queryFn: () => fetch("/api/admin/popups").then(r => r.json()),
   });
 
   const popups = data?.data ?? [];
@@ -193,27 +193,27 @@ export default function AdminPopups() {
 
   const createMut = useMutation({
     mutationFn: (body: Partial<Popup>) =>
-      fetch("/api-server/api/admin/popups", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) }).then(r => r.json()),
+      fetch("/api/admin/popups", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) }).then(r => r.json()),
     onSuccess: () => { toast.success("تم إنشاء البوب آب ✓"); invalidate(); setShowModal(false); },
     onError: () => toast.error("خطأ في الإنشاء"),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Partial<Popup> }) =>
-      fetch(`/api-server/api/admin/popups/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) }).then(r => r.json()),
+      fetch(`/api/admin/popups/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) }).then(r => r.json()),
     onSuccess: () => { toast.success("تم التحديث ✓"); invalidate(); setShowModal(false); },
     onError: () => toast.error("خطأ في التحديث"),
   });
 
   const toggleMut = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api-server/api/admin/popups/${id}/toggle`, { method: "PATCH", credentials: "include" }).then(r => r.json()),
+      fetch(`/api/admin/popups/${id}/toggle`, { method: "PATCH", credentials: "include" }).then(r => r.json()),
     onSuccess: () => invalidate(),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api-server/api/admin/popups/${id}`, { method: "DELETE", credentials: "include" }).then(r => r.json()),
+      fetch(`/api/admin/popups/${id}`, { method: "DELETE", credentials: "include" }).then(r => r.json()),
     onSuccess: () => { toast.success("تم الحذف"); invalidate(); },
   });
 
