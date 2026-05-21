@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import {
@@ -135,6 +139,12 @@ export default function PropertyDetail() {
   const [copied, setCopied] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [compareMsg, setCompareMsg] = useState<"added" | "already" | "full" | null>(null);
+
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportEmail, setReportEmail] = useState("");
+  const [reportMessage, setReportMessage] = useState("");
+  const [reportSending, setReportSending] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
   const viewTracked = useRef(false);
   const { items: compareItems, isIn: isInCompare } = useCompare();
 
@@ -816,7 +826,10 @@ export default function PropertyDetail() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-5 pt-4 border-t border-border/60 flex items-center gap-2 text-red-500 cursor-pointer hover:text-red-600 transition-colors justify-end">
+              <div
+                className="mt-5 pt-4 border-t border-border/60 flex items-center gap-2 text-red-500 cursor-pointer hover:text-red-600 transition-colors justify-end"
+                onClick={() => { setReportDone(false); setReportEmail(""); setReportMessage(""); setReportOpen(true); }}
+              >
                 <span className="text-sm font-semibold">الإبلاغ عن إساءة</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -997,6 +1010,90 @@ export default function PropertyDetail() {
       </AnimatePresence>
 
       <RealEstateFooter />
+
+      {/* ── Report Modal ── */}
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              الإبلاغ عن إساءة
+            </DialogTitle>
+          </DialogHeader>
+
+          {reportDone ? (
+            <div className="py-8 flex flex-col items-center gap-3 text-center">
+              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-7 h-7 text-green-600" />
+              </div>
+              <p className="font-bold text-gray-800 text-lg">تم إرسال البلاغ</p>
+              <p className="text-sm text-gray-500">شكراً لك، سيتم مراجعة البلاغ من قِبل الإدارة في أقرب وقت.</p>
+              <Button className="mt-2 rounded-xl" onClick={() => setReportOpen(false)}>إغلاق</Button>
+            </div>
+          ) : (
+            <form
+              className="space-y-4 pt-2"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!reportEmail.trim() || !reportMessage.trim()) return;
+                setReportSending(true);
+                try {
+                  const res = await fetch("/api/property-reports", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ propertyId: property?.id ?? id, email: reportEmail.trim(), message: reportMessage.trim() }),
+                  });
+                  if (res.ok) {
+                    setReportDone(true);
+                  }
+                } finally {
+                  setReportSending(false);
+                }
+              }}
+            >
+              <p className="text-sm text-gray-600">إذا وجدت محتوى مسيء أو مخالف، أخبرنا بالتفاصيل وسنتخذ الإجراء اللازم.</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="report-email">بريدك الإلكتروني</Label>
+                <Input
+                  id="report-email"
+                  type="email"
+                  placeholder="example@email.com"
+                  value={reportEmail}
+                  onChange={(e) => setReportEmail(e.target.value)}
+                  required
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="report-msg">تفاصيل البلاغ</Label>
+                <Textarea
+                  id="report-msg"
+                  placeholder="اكتب هنا سبب الإبلاغ بالتفصيل..."
+                  rows={4}
+                  value={reportMessage}
+                  onChange={(e) => setReportMessage(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-xl bg-red-600 hover:bg-red-700"
+                  disabled={reportSending || !reportEmail.trim() || !reportMessage.trim()}
+                >
+                  {reportSending ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال البلاغ"}
+                </Button>
+                <Button type="button" variant="outline" className="rounded-xl" onClick={() => setReportOpen(false)}>
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
