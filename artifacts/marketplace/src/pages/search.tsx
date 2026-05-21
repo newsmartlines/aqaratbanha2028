@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { Header } from "@/components/Header";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import {
   Search, MapPin, LayoutGrid, List as ListIcon, X, Loader2,
   BedDouble, Bath, Maximize2, Crown, Eye, Heart, ChevronDown,
@@ -1377,6 +1378,7 @@ export default function SearchPage() {
           </>
         )}
       </AnimatePresence>
+      <RealEstateFooter />
     </div>
   );
 }

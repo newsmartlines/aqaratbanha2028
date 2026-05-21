@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { api } from "@/lib/api";
 import { ChevronDown, ChevronUp, HelpCircle, Loader2 } from "lucide-react";
 import { useInterpolate } from "@/lib/use-interpolate";
@@ -76,11 +77,7 @@ export default function FaqPage() {
         </div>
       </div>
 
-      <footer className="py-8 border-t border-border/30 bg-secondary/20">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2026 {siteName} — جميع الحقوق محفوظة</p>
-        </div>
-      </footer>
+      <RealEstateFooter />
     </div>
   );
 }

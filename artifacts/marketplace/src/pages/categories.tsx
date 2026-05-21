@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { api, type Category, type Subcategory } from "@/lib/api";
 import { 
   ChefHat, Wrench, Palette, BookOpen, Calendar, Sparkles, Grid,
@@ -146,12 +147,7 @@ export default function CategoriesPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-16 py-8 border-t border-border/30 bg-secondary/20">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2026 عقارات بنها — جميع الحقوق محفوظة</p>
-        </div>
-      </footer>
+      <RealEstateFooter />
     </div>
   );
 }

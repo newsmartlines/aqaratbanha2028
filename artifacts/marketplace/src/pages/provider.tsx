@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -790,6 +791,7 @@ export default function ProviderPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <RealEstateFooter />
     </div>
   );
 }
