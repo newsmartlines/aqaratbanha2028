@@ -204,6 +204,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: BarChart3,       label: t("reports"),         href: "/admin/reports",          perm: "reports" },
     { icon: TrendingUp,      label: "تحليلات الذكاء",     href: "/admin/analytics",        perm: "reports" },
     { icon: Megaphone,       label: "إدارة الإعلانات",    href: "/admin/ads",              perm: null },
+    { icon: Megaphone,       label: "البوب آب والإعلانات", href: "/admin/popups",           perm: null },
     { icon: MessageSquare,   label: "الرسائل والقوالب",   href: "/admin/messages",         perm: "settings" },
     { icon: Mail,            label: "البريد الإلكتروني", href: "/admin/email-templates",  perm: "settings" },
     { icon: Layers3,         label: "الباقات والعمولات", href: "/admin/plans-commissions", perm: "commission" },

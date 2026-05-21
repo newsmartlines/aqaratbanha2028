@@ -79,6 +79,8 @@ import AdminBackup from "@/pages/admin/backup";
 import AdminWpImport from "@/pages/admin/wp-import";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminAds from "@/pages/admin/ads";
+import AdminPopups from "@/pages/admin/popups";
+import { PopupRenderer } from "@/components/PopupRenderer";
 import PropertyDetail from "@/pages/property-detail";
 import ComparePage from "@/pages/compare";
 import AdvertiserPage from "@/pages/advertiser";
@@ -399,6 +401,9 @@ function Router() {
       <Route path="/admin/ads">
         {() => <AdminProtectedRoute component={AdminAds} />}
       </Route>
+      <Route path="/admin/popups">
+        {() => <AdminProtectedRoute component={AdminPopups} />}
+      </Route>
 
       <Route component={NotFound} />
     </Switch>
@@ -461,6 +466,7 @@ function App() {
                 <Router />
               </WouterRouter>
               <ScrollToTopButton />
+              <PopupRenderer />
               <AiChat />
               <Toaster />
               <HotToaster position="top-center" />
