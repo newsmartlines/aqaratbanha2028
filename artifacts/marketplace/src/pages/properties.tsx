@@ -121,8 +121,8 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     agentAvatar: row.agentAvatar ?? "",
     agentLogo: row.agentLogo ?? "",
     verified: row.verified ?? false,
-    phone: row.providerPhone ?? "",
-    whatsapp: row.providerWhatsapp ?? "",
+    phone: (row as any).phone ?? row.providerPhone ?? "",
+    whatsapp: (row as any).whatsapp ?? row.providerWhatsapp ?? "",
     area: row.area ? parseFloat(row.area) : 0,
     lat: row.latitude ? parseFloat(row.latitude) : 24.7136,
     lng: row.longitude ? parseFloat(row.longitude) : 46.6753,
@@ -1200,7 +1200,7 @@ export default function PropertiesPage() {
                                 {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-gray-400" />{p.area}م²</span>}
                               </div>
 
-                              {/* Agent + actions in one row */}
+                              {/* Agent + actions */}
                               <div className="flex items-center gap-2 pt-2 mt-1 border-t border-gray-100">
                                 {p.agentName && (
                                   <>
@@ -1220,18 +1220,35 @@ export default function PropertiesPage() {
                                   <button className={`p-1 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-gray-400 hover:border-primary/30 hover:text-primary"}`} title="قارن" onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}>
                                     <GitCompare className="w-3.5 h-3.5" />
                                   </button>
-                                  {p.whatsapp && (
-                                    <button onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }} className="w-6 h-6 rounded-lg bg-[#25D366] flex items-center justify-center text-white shrink-0" title="واتساب">
-                                      <svg viewBox="0 0 24 24" className="w-3 h-3 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
-                                    </button>
-                                  )}
-                                  {p.phone && (
-                                    <button onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }} className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center text-white shrink-0" title="اتصال">
-                                      <Phone className="w-3 h-3" />
-                                    </button>
-                                  )}
                                 </div>
                               </div>
+
+                              {/* تواصل مع المعلن */}
+                              {(p.whatsapp || p.phone) && (
+                                <div className="mt-2 pt-2 border-t border-gray-100">
+                                  <p className="text-[10px] font-bold text-gray-400 mb-1.5 text-right">تواصل مع المعلن</p>
+                                  <div className="flex gap-2">
+                                    {p.whatsapp && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                        className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm"
+                                      >
+                                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                        واتساب
+                                      </button>
+                                    )}
+                                    {p.phone && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                                        className={`flex items-center justify-center gap-1.5 h-9 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${p.whatsapp ? "px-4" : "flex-1"}`}
+                                      >
+                                        <Phone className="w-3.5 h-3.5 shrink-0" />
+                                        اتصال
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                               </div>
                             </div>
                           </div>
