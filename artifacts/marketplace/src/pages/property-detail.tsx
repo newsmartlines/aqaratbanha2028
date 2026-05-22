@@ -143,6 +143,7 @@ export default function PropertyDetail() {
   const [copied, setCopied] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [compareMsg, setCompareMsg] = useState<"added" | "already" | "full" | null>(null);
+  const [mapRevealed, setMapRevealed] = useState(false);
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportEmail, setReportEmail] = useState("");
@@ -634,12 +635,17 @@ export default function PropertyDetail() {
                   <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
                 </div>
               </div>
-              <div className="h-72 md:h-96">
+              <div className="relative h-72 md:h-96">
+                {/* Always render the map underneath */}
                 <MapContainer
                   center={[property.lat, property.lng]}
                   zoom={14}
                   className="h-full w-full"
-                  zoomControl={true}
+                  zoomControl={mapRevealed}
+                  dragging={mapRevealed}
+                  scrollWheelZoom={mapRevealed}
+                  doubleClickZoom={mapRevealed}
+                  touchZoom={mapRevealed}
                 >
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -655,6 +661,26 @@ export default function PropertyDetail() {
                     </Popup>
                   </Marker>
                 </MapContainer>
+
+                {/* Reveal overlay — shown until user clicks */}
+                {!mapRevealed && (
+                  <div
+                    className="absolute inset-0 z-[1000] flex flex-col items-center justify-center cursor-pointer"
+                    style={{ backdropFilter: "blur(6px)", backgroundColor: "rgba(255,255,255,0.18)" }}
+                    onClick={() => setMapRevealed(true)}
+                  >
+                    <button
+                      className="flex items-center gap-2.5 bg-white text-gray-800 font-bold text-sm px-5 py-3 rounded-full shadow-lg border border-gray-200 hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 group"
+                      onClick={(e) => { e.stopPropagation(); setMapRevealed(true); }}
+                    >
+                      <MapPin className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+                      عرض الخريطة
+                    </button>
+                    <p className="mt-2.5 text-xs text-gray-500 bg-white/80 px-3 py-1 rounded-full">
+                      {property.location}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
