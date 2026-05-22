@@ -115,8 +115,10 @@ export default function AdminProperties() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await api.properties.list();
-      setProperties(data as unknown as DbProperty[]);
+      const data = await api.properties.list({ status: "all" });
+      setProperties((data as unknown as DbProperty[]).sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ));
     } catch {
       toast.error("فشل تحميل العقارات");
     } finally {
@@ -165,7 +167,11 @@ export default function AdminProperties() {
     try {
       await api.properties.patchStatus(p.id, status);
       setProperties(prev => prev.map(x => x.id === p.id ? { ...x, status } : x));
-      toast.success(status === "published" ? `تم نشر: ${p.title}` : `تم رفض: ${p.title}`);
+      if (status === "published") {
+        toast.success(`✅ تمت الموافقة على: ${p.title} — تم إشعار المالك`);
+      } else if (status === "rejected") {
+        toast.success(`❌ تم رفض: ${p.title} — تم إشعار المالك`);
+      }
     } catch {
       toast.error("فشل تحديث الحالة");
     }
@@ -303,8 +309,83 @@ export default function AdminProperties() {
     </div>
   );
 
+  const pendingProps = useMemo(() => properties.filter(p => p.status === "pending"), [properties]);
+
   return (
     <AdminLayout title="إدارة العقارات">
+
+      {/* ── Pending Alert Banner ── */}
+      {pendingProps.length > 0 && (
+        <div className="mb-6 rounded-xl border-2 border-amber-300 bg-amber-50 overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between px-5 py-3 bg-amber-100 border-b border-amber-200">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-amber-900 text-sm">
+                  العقارات المعلقة — تحتاج إلى مراجعة
+                </h3>
+                <p className="text-xs text-amber-700">{pendingProps.length} عقار ينتظر الموافقة أو الرفض</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setFilterStatus("pending")}
+              className="text-xs font-semibold text-amber-800 hover:text-amber-900 underline underline-offset-2"
+            >
+              عرض الكل
+            </button>
+          </div>
+
+          <div className="divide-y divide-amber-200 max-h-72 overflow-y-auto">
+            {pendingProps.slice(0, 5).map((p) => (
+              <div key={p.id} className="flex items-center gap-3 px-5 py-3 hover:bg-amber-50/80 transition-colors">
+                <div className="w-10 h-9 rounded-lg overflow-hidden border border-amber-200 shrink-0">
+                  <img
+                    src={getFirstImage(p.images)}
+                    alt={p.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.src = FALLBACK; }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate" dir="rtl">{p.title}</p>
+                  <p className="text-xs text-slate-500">{p.address ?? "—"} • {fmtPrice(p.price)}</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button
+                    size="sm"
+                    className="h-7 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                    onClick={() => handleStatus(p, "published")}
+                  >
+                    <CheckCircle2 className="w-3 h-3" />
+                    موافقة
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-3 text-xs border-red-300 text-red-600 hover:bg-red-50 gap-1"
+                    onClick={() => handleStatus(p, "rejected")}
+                  >
+                    <XCircle className="w-3 h-3" />
+                    رفض
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {pendingProps.length > 5 && (
+              <div className="px-5 py-2.5 text-center">
+                <button
+                  onClick={() => setFilterStatus("pending")}
+                  className="text-xs text-amber-700 font-medium hover:underline"
+                >
+                  + {pendingProps.length - 5} عقارات أخرى — عرض الكل
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">

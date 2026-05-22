@@ -842,6 +842,8 @@ export const api = {
       ),
     create: (data: Record<string, any>) =>
       fetchJson(`/properties`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: Record<string, any>) =>
+      fetchJson(`/properties/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   },
 
   propertyFavorites: {

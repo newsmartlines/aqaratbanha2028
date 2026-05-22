@@ -181,7 +181,14 @@ router.get("/properties", async (req, res) => {
 
     const conditions: any[] = [];
 
-    if (status) conditions.push(eq(propertiesTable.status, status));
+    // status=all → no filter (admin). status=<value> → exact match. no status → default to published
+    if (status === "all") {
+      // show everything — no filter
+    } else if (status) {
+      conditions.push(eq(propertiesTable.status, status));
+    } else {
+      conditions.push(eq(propertiesTable.status, "published"));
+    }
     if (category) conditions.push(eq(propertiesTable.mainCategory, category));
     if (subCategory) conditions.push(eq(propertiesTable.subCategory, subCategory));
     if (providerId) conditions.push(eq(propertiesTable.providerId, parseInt(providerId)));
@@ -469,6 +476,12 @@ router.put("/properties/:id", async (req, res) => {
     delete updateData.viewCount;
     delete updateData.phoneClickCount;
 
+    // Non-admin editing a published property → reset to pending for re-review
+    const sessionRole = (session as any).role;
+    if (sessionRole !== "admin" && existing.status === "published") {
+      updateData.status = "pending";
+    }
+
     const [updated] = await db.update(propertiesTable).set(updateData).where(eq(propertiesTable.id, id)).returning();
     res.json({ success: true, data: updated });
   } catch (err: any) {
@@ -511,7 +524,26 @@ router.patch("/properties/:id/status", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status } = req.body;
+
+    const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
+    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+
     const [updated] = await db.update(propertiesTable).set({ status }).where(eq(propertiesTable.id, id)).returning();
+
+    const ownerUserId = property.ownerUserId;
+    if (ownerUserId && (status === "published" || status === "rejected")) {
+      const isApproved = status === "published";
+      await db.insert(notificationsTable).values({
+        userId: ownerUserId,
+        title: isApproved ? "✅ تمت الموافقة على عقارك" : "❌ تم رفض عقارك",
+        message: isApproved
+          ? `تمت الموافقة على إعلانك "${property.title}" وهو الآن ظاهر للجمهور.`
+          : `تم رفض إعلانك "${property.title}". يرجى مراجعة بيانات العقار وإعادة التقديم.`,
+        type: isApproved ? "success" : "warning",
+        link: "/user/my-properties",
+      });
+    }
+
     res.json({ success: true, data: updated });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to update status" });

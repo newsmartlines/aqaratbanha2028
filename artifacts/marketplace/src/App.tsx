@@ -89,6 +89,7 @@ import UserSupport from "@/pages/user/support";
 import UserSavedSearches from "@/pages/user/saved-searches";
 import UserAddProperty from "@/pages/user/add-property";
 import UserMyProperties from "@/pages/user/my-properties";
+import UserEditProperty from "@/pages/user/edit-property";
 import AddPropertyPage from "@/pages/add-property";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
 import CompanyRegisterPage from "@/pages/company-register";
@@ -279,6 +280,9 @@ function Router() {
       </Route>
       <Route path="/user/my-properties">
         {() => <RoleProtectedRoute component={UserMyProperties} roles={["user"]} />}
+      </Route>
+      <Route path="/user/edit-property/:id">
+        {() => <RoleProtectedRoute component={UserEditProperty} roles={["user"]} />}
       </Route>
 
       {/* Admin routes */}
