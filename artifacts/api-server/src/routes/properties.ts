@@ -475,12 +475,41 @@ router.put("/properties/:id", async (req, res) => {
     if (!existing) return res.status(404).json({ success: false, error: "Property not found" });
 
     const updateData: any = { ...req.body };
+
+    // Serialize array fields
     if (Array.isArray(updateData.images)) updateData.images = JSON.stringify(updateData.images);
     if (Array.isArray(updateData.features)) updateData.features = JSON.stringify(updateData.features);
     if (Array.isArray(updateData.nearbyServices)) updateData.nearbyServices = JSON.stringify(updateData.nearbyServices);
     if (Array.isArray(updateData.contactMethods)) updateData.contactMethods = JSON.stringify(updateData.contactMethods);
+
+    // Convert empty strings → null (prevents type errors on numeric/foreign key columns)
+    for (const key of Object.keys(updateData)) {
+      if (updateData[key] === "") updateData[key] = null;
+    }
+
+    // Parse integer fields (accept string or number, null-safe)
+    const intFields = ["rooms", "bathrooms", "floor", "totalFloors", "buildYear", "regionId", "cityId"];
+    for (const field of intFields) {
+      if (updateData[field] !== undefined && updateData[field] !== null) {
+        const parsed = parseInt(String(updateData[field]), 10);
+        updateData[field] = isNaN(parsed) ? null : parsed;
+      }
+    }
+
+    // Parse decimal fields
+    const decimalFields = ["latitude", "longitude"];
+    for (const field of decimalFields) {
+      if (updateData[field] !== undefined && updateData[field] !== null) {
+        const parsed = parseFloat(String(updateData[field]));
+        updateData[field] = isNaN(parsed) ? null : String(parsed);
+      }
+    }
+
+    // Remove read-only / computed columns
     delete updateData.viewCount;
     delete updateData.phoneClickCount;
+    delete updateData.createdAt;
+    delete updateData.id;
 
     // Non-admin editing a published property → reset to pending for re-review
     const sessionRole = (session as any).role;
