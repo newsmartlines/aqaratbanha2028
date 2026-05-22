@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
-import { api, mediaUrl, type Package } from "@/lib/api";
+import { api, mediaUrl, type BillingPlan } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,117 +85,176 @@ function DragDropZone({ label, hint, preview, onFile, onClear, aspectRatio = "as
   );
 }
 
-/* ─── Build readable feature bullets from package data ─── */
-function buildFeatures(pkg: Package): string[] {
-  const f: string[] = [];
-  const price = parseFloat(pkg.price);
-  if (price === 0)      f.push("نشر مجاني بدون رسوم");
-  else                  f.push(`نشر لمدة ${pkg.durationDays} يوماً`);
-  if (pkg.maxListings)  f.push(`حتى ${pkg.maxListings} إعلان نشط`);
-  else                  f.push("عدد إعلانات غير محدود");
-  if (pkg.featuredAllowed && pkg.featuredAllowed > 0)
-                        f.push(`${pkg.featuredAllowed} إعلان مميز`);
-  if (pkg.topBadge)     f.push("شارة أعلى النتائج");
-  const comm = parseFloat(pkg.commissionRate);
-  if (comm > 0)         f.push(`عمولة ${comm}% فقط`);
-  else                  f.push("بدون عمولة على المبيعات");
-  if (pkg.priorityRank >= 2) f.push("أولوية في نتائج البحث");
-  if (pkg.priorityRank >= 1) f.push("دعم فني مخصص");
-  return f;
+type PlanFeatures = {
+  homepageDisplay?: boolean; topSearch?: boolean; verifiedBadge?: boolean;
+  premiumBadge?: boolean; prioritySupport?: boolean; analytics?: boolean;
+  seo?: boolean; aiTools?: boolean; autoBoost?: boolean;
+};
+
+type PlanLimits = {
+  properties?: number; photos?: number; videos?: number;
+  featuredAds?: number; pinnedAds?: number; messages?: number; leads?: number;
+};
+
+const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
+  homepageDisplay: "ظهور في الصفحة الرئيسية",
+  topSearch: "أعلى نتائج البحث",
+  verifiedBadge: "شارة موثق",
+  premiumBadge: "شارة Premium",
+  prioritySupport: "دعم فني بأولوية",
+  analytics: "إحصائيات متقدمة",
+  seo: "تحسين SEO",
+  aiTools: "أدوات الذكاء الاصطناعي",
+  autoBoost: "رفع تلقائي للإعلان",
+};
+
+function parsePlanFeatures(raw: string): string[] {
+  try {
+    const obj: PlanFeatures = JSON.parse(raw);
+    return (Object.entries(obj) as [keyof PlanFeatures, boolean][])
+      .filter(([, v]) => v)
+      .map(([k]) => FEATURE_LABELS[k])
+      .filter(Boolean);
+  } catch { return []; }
 }
 
-/* ─── Package card ─── */
+function parsePlanLimits(raw: string): PlanLimits {
+  try { return JSON.parse(raw); } catch { return {}; }
+}
+
+function buildPlanBullets(plan: BillingPlan): string[] {
+  const bullets: string[] = [];
+  const limits = parsePlanLimits(plan.limits);
+  const price = parseFloat(plan.price);
+
+  if (price === 0) bullets.push("نشر مجاني بدون رسوم");
+  else bullets.push(`نشر لمدة ${plan.durationDays} يوماً`);
+
+  if (limits.properties === -1 || !limits.properties) bullets.push("عدد إعلانات غير محدود");
+  else bullets.push(`حتى ${limits.properties} إعلان نشط`);
+
+  if (limits.photos && limits.photos > 0) bullets.push(`حتى ${limits.photos} صورة لكل إعلان`);
+  if (limits.featuredAds && limits.featuredAds > 0) bullets.push(`${limits.featuredAds} إعلان مميز`);
+
+  const comm = parseFloat(plan.commissionPercent ?? "0");
+  if (comm > 0) bullets.push(`عمولة ${comm}% فقط`);
+  else bullets.push("بدون عمولة على المبيعات");
+
+  const featureBullets = parsePlanFeatures(plan.features);
+  bullets.push(...featureBullets.slice(0, 4));
+
+  if (plan.trialDays > 0) bullets.push(`تجربة مجانية ${plan.trialDays} يوم`);
+
+  return bullets;
+}
+
+/* ─── Premium Package card ─── */
 function PackageCard({
-  pkg, selected, onSelect, recommended,
+  plan, selected, onSelect,
 }: {
-  pkg: Package; selected: boolean; onSelect: () => void; recommended?: boolean;
+  plan: BillingPlan; selected: boolean; onSelect: () => void;
 }) {
-  const price   = parseFloat(pkg.price);
-  const isFree  = price === 0;
-  const features = buildFeatures(pkg);
+  const price  = parseFloat(plan.price);
+  const isFree = price === 0;
+  const bullets = buildPlanBullets(plan);
+  const accent = plan.color || "#0d9488";
 
-  // Tier style
-  let ring   = "border-zinc-200";
-  let badge  = "";
-  let btnCls = "bg-teal-600 hover:bg-teal-700 text-white";
-  let rankBg = "from-zinc-50 to-zinc-100";
-
-  if (recommended) {
-    ring   = "border-amber-400 shadow-amber-100 shadow-xl";
-    badge  = "الأكثر طلباً";
-    btnCls = "bg-amber-500 hover:bg-amber-600 text-white";
-    rankBg = "from-amber-50 to-amber-100/60";
-  } else if (pkg.topBadge) {
-    ring   = "border-purple-300 shadow-purple-50 shadow-lg";
-    badge  = "مميز";
-    btnCls = "bg-purple-600 hover:bg-purple-700 text-white";
-    rankBg = "from-purple-50 to-purple-100/40";
-  } else if (pkg.priorityRank >= 1) {
-    ring   = "border-teal-300 shadow-teal-50 shadow-md";
-    rankBg = "from-teal-50 to-teal-100/40";
-  }
-
-  if (selected) {
-    ring   = "border-teal-600 shadow-teal-100 shadow-xl ring-2 ring-teal-400 ring-offset-2";
-    btnCls = "bg-teal-700 text-white";
-  }
+  const isPopular    = plan.isMostPopular;
+  const isRecommended = plan.isRecommended;
+  const badge = isPopular ? "الأكثر شيوعاً" : isRecommended ? "موصى به" : null;
 
   return (
     <div
       onClick={onSelect}
-      className={`relative rounded-2xl border-2 bg-white transition-all duration-200 cursor-pointer flex flex-col overflow-hidden group
-        hover:shadow-xl hover:-translate-y-1 ${ring}`}
+      className={`relative rounded-2xl bg-white flex flex-col overflow-hidden cursor-pointer
+        transition-all duration-250 group
+        ${selected
+          ? "shadow-2xl -translate-y-2 ring-2 ring-offset-2"
+          : "border border-zinc-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 hover:border-transparent"
+        }`}
+      style={selected ? { ringColor: accent, borderColor: accent } as React.CSSProperties : {}}
     >
-      {/* Badge */}
+      {/* Top color bar */}
+      <div className="h-1.5 w-full shrink-0" style={{ background: accent }} />
+
+      {/* Popular badge */}
       {badge && (
-        <div className="absolute -top-0 right-0 left-0 flex justify-center -translate-y-1/2 z-10">
-          <span className={`text-[11px] font-bold px-3 py-0.5 rounded-full shadow-sm
-            ${recommended ? "bg-amber-500 text-white" : "bg-purple-600 text-white"}`}>
+        <div className="absolute top-3 right-3 z-10">
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm"
+            style={{ background: accent, color: "#fff" }}>
+            {isPopular ? <Star className="w-2.5 h-2.5" /> : <Crown className="w-2.5 h-2.5" />}
             {badge}
           </span>
         </div>
       )}
 
-      {/* Selected check */}
+      {/* Selected checkmark */}
       {selected && (
-        <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center z-10">
+        <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center z-10 shadow"
+          style={{ background: accent }}>
           <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
         </div>
       )}
 
-      {/* Header gradient */}
-      <div className={`bg-gradient-to-br ${rankBg} px-5 pt-7 pb-5 border-b border-zinc-100`}>
-        <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-1">{pkg.nameEn || ""}</p>
-        <h3 className="text-lg font-extrabold text-zinc-800 mb-3">{pkg.nameAr}</h3>
-        <div className="flex items-end gap-1">
+      {/* Header */}
+      <div className="px-5 pt-6 pb-5 border-b border-zinc-100">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">
+          {plan.name}
+        </p>
+        <h3 className="text-lg font-extrabold text-zinc-800 mb-1 leading-tight">
+          {plan.nameAr ?? plan.name}
+        </h3>
+        {plan.descriptionAr && (
+          <p className="text-xs text-zinc-400 mb-3 leading-relaxed">{plan.descriptionAr}</p>
+        )}
+        <div className="flex items-end gap-1 mt-3">
           {isFree ? (
             <span className="text-3xl font-black text-emerald-600">مجاني</span>
           ) : (
             <>
-              <span className="text-3xl font-black text-zinc-800">{Number(price).toLocaleString("ar")}</span>
-              <span className="text-sm text-zinc-400 mb-1">ج.م / {pkg.durationDays}ي</span>
+              <span className="text-3xl font-black text-zinc-900">
+                {Number(price).toLocaleString("ar")}
+              </span>
+              <span className="text-sm text-zinc-400 mb-1 mr-1">
+                {plan.currency} / {plan.durationDays}ي
+              </span>
             </>
           )}
         </div>
+        {plan.trialDays > 0 && (
+          <p className="text-xs font-medium text-emerald-600 mt-1">
+            تجربة مجانية {plan.trialDays} يوم
+          </p>
+        )}
       </div>
 
-      {/* Features */}
-      <div className="px-5 py-4 flex-1 space-y-2.5">
-        {features.map((f, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0
-              ${selected ? "bg-teal-100" : "bg-zinc-100 group-hover:bg-teal-50"}`}>
-              <Check className={`w-2.5 h-2.5 ${selected ? "text-teal-600" : "text-zinc-400 group-hover:text-teal-500"}`} strokeWidth={3} />
+      {/* Features list */}
+      <div className="px-5 py-4 flex-1 space-y-2">
+        {bullets.map((b, i) => (
+          <div key={i} className="flex items-start gap-2.5">
+            <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors bg-zinc-100"
+              style={{ background: selected ? `${accent}22` : undefined }}>
+              <Check className="w-2.5 h-2.5" strokeWidth={3}
+                style={{ color: selected ? accent : "#a1a1aa" }} />
             </div>
-            <span className="text-sm text-zinc-600">{f}</span>
+            <span className="text-sm text-zinc-600 leading-tight">{b}</span>
           </div>
         ))}
       </div>
 
-      {/* CTA */}
-      <div className="px-5 pb-5">
-        <button type="button" onClick={e => { e.stopPropagation(); onSelect(); }}
-          className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${selected ? btnCls : "bg-zinc-100 text-zinc-700 group-hover:bg-teal-600 group-hover:text-white"}`}>
+      {/* CTA button */}
+      <div className="px-5 pb-5 pt-2">
+        <button
+          type="button"
+          onClick={e => { e.stopPropagation(); onSelect(); }}
+          className="w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200"
+          style={selected
+            ? { background: accent, color: "#fff" }
+            : { background: "#f4f4f5", color: "#3f3f46" }
+          }
+          onMouseEnter={e => { if (!selected) { (e.currentTarget as HTMLButtonElement).style.background = accent; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
+          onMouseLeave={e => { if (!selected) { (e.currentTarget as HTMLButtonElement).style.background = "#f4f4f5"; (e.currentTarget as HTMLButtonElement).style.color = "#3f3f46"; } }}
+        >
           {selected ? "تم الاختيار ✓" : "اختر هذه الباقة"}
         </button>
       </div>
@@ -227,17 +286,16 @@ export default function CompanyRegisterPage() {
   });
   const set = (patch: Partial<typeof form>) => setForm(prev => ({ ...prev, ...patch }));
 
-  const { data: pkgs = [], isLoading: pkgsLoading } = useQuery<Package[]>({
-    queryKey: ["packages"],
-    queryFn: api.packages.list,
+  const { data: allPlans = [], isLoading: pkgsLoading } = useQuery<BillingPlan[]>({
+    queryKey: ["billing-plans-company"],
+    queryFn: () => api.fetchJson<BillingPlan[]>("/billing/plans"),
     staleTime: 5 * 60_000,
   });
 
-  // Sort packages by priorityRank asc (free first, then tiers)
-  const sortedPkgs = [...pkgs].sort((a, b) => a.priorityRank - b.priorityRank);
-  // Find recommended = highest priorityRank or topBadge
-  const recommendedId = sortedPkgs.find(p => p.topBadge)?.id
-    ?? sortedPkgs[Math.floor(sortedPkgs.length / 2)]?.id;
+  // Filter: only active plans visible to companies (userType "company" or "all")
+  const companyPlans = allPlans
+    .filter(p => p.status === "active" && (p.userType === "company" || p.userType === "all"))
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price));
 
   useEffect(() => {
     if (user) {
@@ -629,48 +687,54 @@ export default function CompanyRegisterPage() {
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 <span className="mr-3 text-zinc-500 font-medium">جاري تحميل الباقات…</span>
               </div>
-            ) : sortedPkgs.length === 0 ? (
+            ) : companyPlans.length === 0 ? (
               <div className="text-center py-16 text-zinc-400">
                 <PkgIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="font-semibold">لا توجد باقات متاحة حالياً</p>
+                <p className="font-semibold">لا توجد باقات متاحة للشركات حالياً</p>
+                <p className="text-xs mt-1">يمكنك المتابعة والاشتراك لاحقاً من لوحة التحكم</p>
               </div>
             ) : (
               <>
-                {/* Grid: max 4 per row */}
-                <div className={`grid gap-5
-                  ${sortedPkgs.length === 1 ? "grid-cols-1 max-w-xs mx-auto" : ""}
-                  ${sortedPkgs.length === 2 ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto" : ""}
-                  ${sortedPkgs.length === 3 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : ""}
-                  ${sortedPkgs.length >= 4  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" : ""}`}>
-                  {sortedPkgs.map(pkg => (
+                {/* Premium 4-per-row grid — wraps automatically when more than 4 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                  {companyPlans.map(plan => (
                     <PackageCard
-                      key={pkg.id}
-                      pkg={pkg}
-                      selected={selectedPkg === pkg.id}
-                      onSelect={() => setSelectedPkg(prev => prev === pkg.id ? null : pkg.id)}
-                      recommended={pkg.id === recommendedId}
+                      key={plan.id}
+                      plan={plan}
+                      selected={selectedPkg === plan.id}
+                      onSelect={() => setSelectedPkg(prev => prev === plan.id ? null : plan.id)}
                     />
                   ))}
                 </div>
 
-                {/* Selected summary */}
+                {/* Selected summary banner */}
                 {selectedPkg !== null && (() => {
-                  const p = sortedPkgs.find(x => x.id === selectedPkg);
+                  const p = companyPlans.find(x => x.id === selectedPkg);
                   if (!p) return null;
                   const isFree = parseFloat(p.price) === 0;
+                  const accent = p.color || "#0d9488";
                   return (
-                    <div className="bg-teal-50 border border-teal-200 rounded-2xl px-5 py-4 flex items-center justify-between">
+                    <div className="rounded-2xl px-5 py-4 flex items-center justify-between border"
+                      style={{ background: `${accent}0f`, borderColor: `${accent}40` }}>
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-teal-600 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm"
+                          style={{ background: accent }}>
                           <Check className="w-5 h-5 text-white" strokeWidth={3} />
                         </div>
                         <div>
-                          <p className="font-bold text-teal-800 text-sm">الباقة المختارة: {p.nameAr}</p>
-                          <p className="text-xs text-teal-600">{p.durationDays} يوم · {isFree ? "مجانية" : `${Number(p.price).toLocaleString("ar")} ج.م`}</p>
+                          <p className="font-bold text-sm" style={{ color: accent }}>
+                            الباقة المختارة: {p.nameAr ?? p.name}
+                          </p>
+                          <p className="text-xs text-zinc-500">
+                            {p.durationDays} يوم ·{" "}
+                            {isFree ? "مجانية" : `${Number(p.price).toLocaleString("ar")} ${p.currency}`}
+                          </p>
                         </div>
                       </div>
                       <button type="button" onClick={() => setSelectedPkg(null)}
-                        className="text-xs text-teal-500 hover:text-teal-700 font-semibold underline shrink-0">تغيير</button>
+                        className="text-xs font-semibold underline shrink-0" style={{ color: accent }}>
+                        تغيير
+                      </button>
                     </div>
                   );
                 })()}
