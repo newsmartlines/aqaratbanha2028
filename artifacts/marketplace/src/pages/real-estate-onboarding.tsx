@@ -10,10 +10,51 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Header } from "@/components/Header";
-import { Upload, X, GripVertical, Loader2, Check, ChevronLeft, ChevronRight, Navigation, Play } from "lucide-react";
+import {
+  Upload, X, GripVertical, Loader2, Check, ChevronLeft, ChevronRight, Navigation, Play,
+  CreditCard, Smartphone, Building2 as BankIcon, ShieldCheck, Star, Crown, Zap,
+  CheckCircle2, Clock, AlertCircle, BadgeCheck, ClipboardList, Send, Lock,
+} from "lucide-react";
 import toast from "react-hot-toast";
-import { api, type Region, type Package } from "@/lib/api";
+import { api, type Region, type BillingPlan } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+
+/* ─── Plan helper utils ──────────────────────────────────────────────────── */
+const FEATURE_LABELS: Record<string, string> = {
+  homepageDisplay: "ظهور في الصفحة الرئيسية",
+  topSearch:       "أولوية في نتائج البحث",
+  verifiedBadge:   "شارة موثق",
+  premiumBadge:    "شارة Premium",
+  prioritySupport: "دعم فني بأولوية",
+  analytics:       "إحصائيات متقدمة",
+  seo:             "تحسين محركات البحث",
+  aiTools:         "أدوات الذكاء الاصطناعي",
+  autoBoost:       "رفع تلقائي للإعلان",
+};
+function parsePlanFeatureBullets(featuresJson: string): string[] {
+  try {
+    return Object.entries(JSON.parse(featuresJson) as Record<string, boolean>)
+      .filter(([, v]) => v)
+      .map(([k]) => FEATURE_LABELS[k])
+      .filter(Boolean);
+  } catch { return []; }
+}
+function parsePlanLimits(limitsJson: string): Record<string, number> {
+  try { return JSON.parse(limitsJson); } catch { return {}; }
+}
+function getPlanBullets(plan: BillingPlan): string[] {
+  const bullets: string[] = [];
+  const lim = parsePlanLimits(plan.limits);
+  const comm = parseFloat(plan.commissionPercent ?? "0");
+  if (lim.properties === -1 || !lim.properties) bullets.push("إعلانات غير محدودة");
+  else bullets.push(`حتى ${lim.properties} إعلان نشط`);
+  if (lim.photos && lim.photos > 0) bullets.push(`حتى ${lim.photos} صورة لكل إعلان`);
+  const feats = parsePlanFeatureBullets(plan.features);
+  bullets.push(...feats.slice(0, 3));
+  if (comm > 0) bullets.push(`عمولة ${comm}% على الصفقات`);
+  else bullets.push("بدون عمولة");
+  return bullets.slice(0, 5);
+}
 
 // Fix leaflet default marker
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -107,27 +148,40 @@ function MapClickHandler({ onPick }: { onPick: (lat: number, lng: number) => voi
   return null;
 }
 
-/* ─── Step indicator ─── */
+/* ─── Professional step indicator ─── */
 function Steps({ step }: { step: number }) {
-  const labels = ["تفاصيل العقار", "الباقة", "الدفع والنشر"];
+  const steps = [
+    { label: "تفاصيل العقار", icon: "🏠" },
+    { label: "اختيار الباقة",  icon: "📦" },
+    { label: "الدفع والنشر",   icon: "💳" },
+  ];
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div className="max-w-3xl mx-auto px-6 py-0">
-        <div className="flex">
-          {labels.map((l, i) => {
+    <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+      <div className="max-w-3xl mx-auto px-4 py-4">
+        <div className="flex items-center justify-between gap-1">
+          {steps.map((s, i) => {
             const n = i + 1;
             const active = step === n;
             const done   = step > n;
             return (
-              <div key={i} className={`flex-1 py-4 text-center border-b-2 transition-colors text-sm font-semibold
-                ${active ? "border-teal-600 text-teal-700" : done ? "border-gray-300 text-gray-500" : "border-transparent text-gray-400"}`}>
-                <span className={`inline-flex items-center gap-2`}>
-                  <span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold
-                    ${active ? "bg-teal-600 text-white" : done ? "bg-gray-300 text-gray-600" : "bg-gray-100 text-gray-400"}`}>
-                    {done ? "✓" : n}
+              <div key={i} className="flex items-center flex-1">
+                {/* Step circle + label */}
+                <div className="flex flex-col items-center gap-1 flex-1">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold transition-all duration-300 shadow-sm
+                    ${done   ? "bg-teal-600 text-white scale-95"
+                    : active ? "bg-teal-600 text-white ring-4 ring-teal-100 scale-105"
+                    :          "bg-gray-100 text-gray-400"}`}>
+                    {done ? <Check className="w-5 h-5" /> : <span>{n}</span>}
+                  </div>
+                  <span className={`text-[11px] font-semibold hidden sm:block text-center transition-colors
+                    ${active ? "text-teal-700" : done ? "text-gray-500" : "text-gray-400"}`}>
+                    {s.label}
                   </span>
-                  <span className="hidden sm:inline">{l}</span>
-                </span>
+                </div>
+                {/* Connector line */}
+                {i < steps.length - 1 && (
+                  <div className={`h-0.5 flex-1 mx-2 rounded-full transition-all duration-500 ${done ? "bg-teal-500" : "bg-gray-200"}`} />
+                )}
               </div>
             );
           })}
@@ -192,11 +246,25 @@ export default function RealEstateOnboarding() {
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const [mapPos, setMapPos] = useState<[number, number] | null>(null);
 
+  // Payment flow state
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "paid" | "failed">("idle");
+  const [pmMethod, setPmMethod] = useState<"card" | "instapay" | "stcpay">("card");
+  const [cardNum, setCardNum]     = useState("");
+  const [cardName, setCardName]   = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc]     = useState("");
+  const [mobileNum, setMobileNum] = useState("");
+  const [wasPaid, setWasPaid]     = useState(false);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const imgFilesRef = useRef<File[]>([]);
   const [draft, setDraft] = useState<Draft>(loadDraft);
 
-  const { data: pkgs = [] } = useQuery<Package[]>({ queryKey: ["packages"], queryFn: api.packages.list, staleTime: 5 * 60_000 });
+  const { data: billingPlans = [] } = useQuery<BillingPlan[]>({
+    queryKey: ["billing-plans-onboarding"],
+    queryFn: api.billingPlans.publicList,
+    staleTime: 5 * 60_000,
+  });
   const { data: regions = [] } = useQuery({ queryKey: ["regions"], queryFn: api.regions.list, staleTime: 5 * 60_000 });
 
   const upd = useCallback((p: Partial<Draft>) => {
@@ -232,7 +300,15 @@ export default function RealEstateOnboarding() {
   const isLand    = draft.mainType === "land";
   const isRes     = draft.mainType === "residential";
   const isCom     = draft.mainType === "commercial";
-  const sorted    = [...pkgs].sort((a, b) => a.priorityRank - b.priorityRank);
+
+  // Sorted billing plans, filtered to company/all user types
+  const sortedPlans = billingPlans
+    .filter(p => p.status === "active" && (p.userType === "company" || p.userType === "all" || p.userType === "provider"))
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price));
+
+  // The currently selected billing plan object (null = free)
+  const selectedBillingPlan = draft.plan !== null ? sortedPlans.find(p => p.id === draft.plan) ?? null : null;
+  const isFreeSelected = draft.plan === null;
 
   /* ── Map pick ── */
   const onMapPick = (lat: number, lng: number) => {
@@ -302,7 +378,7 @@ export default function RealEstateOnboarding() {
   const tog = (key: "features" | "nearby", v: string) =>
     upd({ [key]: draft[key].includes(v) ? draft[key].filter(x => x !== v) : [...draft[key], v] });
 
-  /* ── Submit ── */
+  /* ── Submit (creates property after payment or for free plan) ── */
   const handleSubmit = async () => {
     setSubmitting(true); setProgress(0);
     try {
@@ -334,38 +410,110 @@ export default function RealEstateOnboarding() {
       });
 
       setProgress(90);
-      if (draft.plan !== null) { try { await api.subscriptions.subscribe(pid, draft.plan); } catch {} }
+      // Activate billing plan subscription if a paid plan was selected
+      if (draft.plan !== null) {
+        try { await api.subscriptions.subscribe(pid, draft.plan, true); } catch {}
+      }
       setProgress(100);
       await refetchAuth();
       try { localStorage.removeItem(DRAFT_KEY); } catch {}
-      toast.success("تم نشر عقارك بنجاح!");
       setStep(99);
-    } catch (e: any) { toast.error(e?.message ?? "حدث خطأ"); }
+    } catch (e: any) {
+      toast.error(e?.message ?? "حدث خطأ أثناء إرسال العقار");
+      setPaymentStatus("failed");
+    }
     finally { setSubmitting(false); }
+  };
+
+  /* ── Process payment then submit ── */
+  const handlePayment = async () => {
+    // Basic validation
+    if (pmMethod === "card") {
+      if (cardNum.replace(/\s/g, "").length < 16) { toast.error("رقم البطاقة غير مكتمل"); return; }
+      if (!cardName.trim()) { toast.error("أدخل اسم حامل البطاقة"); return; }
+      if (!cardExpiry.trim()) { toast.error("أدخل تاريخ الانتهاء"); return; }
+      if (cardCvc.length < 3) { toast.error("أدخل رمز CVV"); return; }
+    } else {
+      if (!/^(010|011|012|015)\d{8}$/.test(mobileNum.replace(/\s/g, ""))) {
+        toast.error("أدخل رقم هاتف مصري صحيح (11 رقم يبدأ بـ 010/011/012/015)");
+        return;
+      }
+    }
+    setPaymentStatus("processing");
+    // Simulate payment gateway processing
+    await new Promise(r => setTimeout(r, 2500));
+    setPaymentStatus("paid");
+    setWasPaid(true);
+    await handleSubmit();
   };
 
   /* ══════════════════════════════════════════════════
       SUCCESS
   ══════════════════════════════════════════════════ */
   if (step === 99) return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex flex-col" dir="rtl">
       <Header />
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="max-w-sm w-full text-center space-y-6">
-          <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center mx-auto">
-            <Check className="w-10 h-10 text-teal-600" />
+        <div className="max-w-md w-full text-center space-y-8 animate-in zoom-in-95 fade-in duration-500">
+
+          {/* Icon stack */}
+          <div className="relative w-28 h-28 mx-auto">
+            {wasPaid && (
+              <div className="absolute -top-2 -right-2 w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg z-10">
+                <CreditCard className="w-4 h-4 text-white" />
+              </div>
+            )}
+            <div className="w-28 h-28 rounded-full bg-emerald-100 flex items-center justify-center shadow-md">
+              <CheckCircle2 className="w-16 h-16 text-emerald-500" />
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">تم نشر إعلانك بنجاح</h1>
-            <p className="text-gray-500 text-sm">سيتم مراجعة إعلانك خلال ساعات قليلة وتفعيله.</p>
+
+          {/* Messages */}
+          <div className="space-y-2">
+            {wasPaid && (
+              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 text-sm font-bold px-4 py-2 rounded-full">
+                <Check className="w-4 h-4" />تم الدفع بنجاح
+              </div>
+            )}
+            <h1 className="text-2xl font-extrabold text-gray-900">
+              {wasPaid ? "تم نشر إعلانك مع الباقة المميزة" : "تم إرسال إعلانك للمراجعة"}
+            </h1>
+            <p className="text-gray-500 leading-relaxed">
+              {wasPaid
+                ? "سيتم مراجعة إعلانك وتفعيله مع مميزات الباقة المدفوعة خلال ساعات قليلة."
+                : "سيتم مراجعة إعلانك خلال 24 ساعة وإشعارك عند التفعيل."}
+            </p>
           </div>
-          <div className="space-y-3">
-            <Button className="w-full h-12 bg-teal-600 hover:bg-teal-700 rounded-lg font-bold" onClick={() => setLocation("/dashboard")}>
+
+          {/* Status badges */}
+          <div className="flex justify-center gap-3 flex-wrap">
+            {[
+              { icon: <Clock className="w-4 h-4" />, text: "قيد المراجعة", color: "bg-amber-50 text-amber-700 border-amber-200" },
+              { icon: <ShieldCheck className="w-4 h-4" />, text: "مؤمّن ومحمي", color: "bg-blue-50 text-blue-700 border-blue-200" },
+              ...(wasPaid ? [{ icon: <BadgeCheck className="w-4 h-4" />, text: "باقة مفعّلة", color: "bg-emerald-50 text-emerald-700 border-emerald-200" }] : []),
+            ].map((b, i) => (
+              <span key={i} className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${b.color}`}>
+                {b.icon}{b.text}
+              </span>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-3 pt-2">
+            <Button
+              className="w-full h-13 rounded-2xl font-bold text-base shadow-md shadow-teal-200"
+              onClick={() => setLocation("/dashboard/my-properties")}
+            >
+              عرض عقاراتي
+            </Button>
+            <Button variant="outline" className="w-full h-12 rounded-2xl font-semibold"
+              onClick={() => setLocation("/provider/dashboard")}
+            >
               لوحة التحكم
             </Button>
-            <button className="w-full text-sm text-gray-500 hover:text-gray-700 underline"
-              onClick={() => { setStep(1); setDraft({ ...defaults }); imgFilesRef.current = []; }}>
-              نشر إعلان آخر
+            <button className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => { setStep(1); setDraft({ ...defaults }); setPaymentStatus("idle"); setWasPaid(false); imgFilesRef.current = []; }}>
+              + نشر إعلان آخر
             </button>
           </div>
         </div>
@@ -663,107 +811,149 @@ export default function RealEstateOnboarding() {
   );
 
   /* ══════════════════════════════════════════════════
-      STEP 2 — الباقة
+      STEP 2 — اختيار الباقة
   ══════════════════════════════════════════════════ */
+  const freePlanBullets = ["نشر مجاني بدون رسوم", "ظهور عادي في نتائج البحث", "مدة 30 يوم", "صور غير محدودة", "بدون عمولة"];
+
   const step2 = (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">اختر باقة الإعلان</h2>
-        <p className="text-sm text-gray-500">الباقات المدفوعة تمنح إعلانك ظهوراً أكبر في نتائج البحث</p>
+        <h2 className="text-xl font-extrabold text-gray-900 mb-1">اختر باقة الإعلان</h2>
+        <p className="text-sm text-gray-500">اختر الباقة المناسبة لك — يمكنك الترقية لاحقاً من لوحة التحكم</p>
       </div>
 
-      <div className="space-y-3">
-        {[{ id: null, nameAr: "مجانية", price: "0", durationDays: 30, commissionRate: 10, priorityRank: 0, topBadge: false, features: [] } as any, ...sorted].map((pkg) => {
-          const sel = draft.plan === pkg.id;
-          const isPaid = pkg.id !== null;
-          const isTop = isPaid && (pkg.topBadge || pkg.priorityRank >= 2);
-          return (
-            <div key={pkg.id ?? "free"} onClick={() => upd({ plan: pkg.id })}
-              className={`relative rounded-xl border-2 p-5 cursor-pointer transition-all flex items-center gap-5
-                ${sel ? "border-teal-600 bg-teal-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
-              {isTop && <div className="absolute -top-2.5 right-5 bg-amber-500 text-white text-[10px] font-bold px-3 py-0.5 rounded-full">الأكثر طلباً</div>}
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-sm font-black
-                ${isTop ? "bg-amber-100 text-amber-700" : isPaid ? "bg-teal-100 text-teal-700" : "bg-gray-100 text-gray-600"}`}>
-                {pkg.id === null ? "🆓" : isPaid && pkg.priorityRank >= 2 ? "⭐" : "✦"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-900 text-base">{pkg.nameAr}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{pkg.durationDays} يوم{isPaid ? ` · عمولة ${pkg.commissionRate}%` : " · ظهور عادي"}</p>
-              </div>
-              <div className="text-left shrink-0">
-                <p className={`text-xl font-extrabold ${isTop ? "text-amber-600" : isPaid ? "text-teal-700" : "text-gray-500"}`}>
-                  {pkg.id === null ? "مجاني" : `${Number(pkg.price).toLocaleString("ar")} ج.م`}
-                </p>
-              </div>
-              {sel && <div className="w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center shrink-0"><Check className="w-3.5 h-3.5 text-white" /></div>}
+      {/* Plan cards grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {/* Free plan card */}
+        <div onClick={() => upd({ plan: null })}
+          className={`relative rounded-2xl border-2 cursor-pointer transition-all duration-200 overflow-hidden flex flex-col
+            ${isFreeSelected ? "border-teal-500 shadow-lg shadow-teal-100 -translate-y-0.5" : "border-gray-200 hover:border-gray-300 hover:shadow-md"}`}>
+          {/* Top accent */}
+          <div className="h-1.5 w-full bg-gray-300" />
+          {isFreeSelected && (
+            <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center shadow">
+              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
             </div>
-          );
-        })}
-      </div>
-
-      {/* ملخص */}
-      <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-        <p className="text-sm font-bold text-gray-700 mb-3">ملخص العقار</p>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          {[
-            ["النوع", `${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"} · ${draft.subType || "—"}`],
-            ["الصفقة", LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"],
-            ["الموقع", draft.cityName ?? "—"],
-            ["السعر", draft.price ? `${Number(draft.price).toLocaleString("ar")} ج.م` : "—"],
-            ["المساحة", draft.area ? `${draft.area} م²` : "—"],
-            ["الصور", `${draft.images.length} صورة`],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between col-span-2 sm:col-span-1 py-1 border-b border-gray-100 last:border-0">
-              <span className="text-gray-500">{k}</span>
-              <span className="font-semibold text-gray-800 text-left">{v}</span>
+          )}
+          <div className="p-5 flex flex-col flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">مجانية</p>
+            <h3 className="text-lg font-extrabold text-gray-800 mb-3">نشر مجاني</h3>
+            <div className="mb-4">
+              <span className="text-3xl font-black text-emerald-600">مجاني</span>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ══════════════════════════════════════════════════
-      STEP 3 — الدفع والنشر
-  ══════════════════════════════════════════════════ */
-  const step3 = (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">طريقة الدفع</h2>
-        <p className="text-sm text-gray-500">اختر الطريقة المناسبة لك</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        {PAYMENT_OPS.map(pm => {
-          const sel = draft.paymentMethod === pm.id;
-          return (
-            <button key={pm.id} type="button" onClick={() => upd({ paymentMethod: pm.id })}
-              className={`py-4 px-5 rounded-xl border-2 transition-all text-sm font-semibold text-center
-                ${sel ? "border-teal-600 bg-teal-50 text-teal-700" : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"}`}>
-              {pm.label}
-              {sel && <span className="block text-xs mt-1 text-teal-500 font-normal">✓ محدد</span>}
+            <div className="space-y-2 flex-1">
+              {freePlanBullets.map((b, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${isFreeSelected ? "bg-teal-100" : "bg-gray-100"}`}>
+                    <Check className={`w-2.5 h-2.5 ${isFreeSelected ? "text-teal-600" : "text-gray-400"}`} strokeWidth={3} />
+                  </div>
+                  <span className="text-sm text-gray-600">{b}</span>
+                </div>
+              ))}
+            </div>
+            <button type="button" className={`w-full mt-5 py-2.5 rounded-xl font-bold text-sm transition-colors
+              ${isFreeSelected ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>
+              {isFreeSelected ? "تم الاختيار ✓" : "اختر هذه الباقة"}
             </button>
+          </div>
+        </div>
+
+        {/* Paid plan cards */}
+        {sortedPlans.map(plan => {
+          const sel = draft.plan === plan.id;
+          const price = parseFloat(plan.price);
+          const accent = plan.color || "#0d9488";
+          const isFree = price === 0;
+          const isPopular = plan.isMostPopular;
+          const isRec = plan.isRecommended;
+          const badge = isPopular ? "الأكثر طلباً" : isRec ? "موصى به" : null;
+          const bullets = getPlanBullets(plan);
+
+          return (
+            <div key={plan.id} onClick={() => upd({ plan: plan.id })}
+              className={`relative rounded-2xl border-2 cursor-pointer transition-all duration-200 overflow-hidden flex flex-col
+                ${sel ? "shadow-xl -translate-y-1 ring-2 ring-offset-1" : "border-gray-200 hover:border-gray-300 hover:shadow-md"}`}
+              style={sel ? { borderColor: accent, ringColor: accent } as React.CSSProperties : {}}>
+
+              <div className="h-1.5 w-full shrink-0" style={{ background: accent }} />
+
+              {badge && (
+                <div className="absolute top-3 right-3">
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full text-white shadow-sm"
+                    style={{ background: accent }}>
+                    {isPopular ? "⭐ " : ""}{badge}
+                  </span>
+                </div>
+              )}
+              {sel && (
+                <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center shadow"
+                  style={{ background: accent }}>
+                  <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                </div>
+              )}
+
+              <div className="p-5 flex flex-col flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{plan.name}</p>
+                <h3 className="text-lg font-extrabold text-gray-800 mb-1">{plan.nameAr ?? plan.name}</h3>
+                {plan.descriptionAr && <p className="text-xs text-gray-400 mb-3 leading-relaxed">{plan.descriptionAr}</p>}
+
+                <div className="flex items-end gap-1 mb-4">
+                  {isFree ? (
+                    <span className="text-3xl font-black text-emerald-600">مجاني</span>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-black text-gray-900">{Number(price).toLocaleString("ar")}</span>
+                      <span className="text-sm text-gray-400 mb-1">{plan.currency} / {plan.durationDays}ي</span>
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2 flex-1">
+                  {bullets.map((b, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-colors"
+                        style={{ background: sel ? `${accent}22` : "#f4f4f5" }}>
+                        <Check className="w-2.5 h-2.5" strokeWidth={3} style={{ color: sel ? accent : "#a1a1aa" }} />
+                      </div>
+                      <span className="text-sm text-gray-600">{b}</span>
+                    </div>
+                  ))}
+                  {plan.trialDays > 0 && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        <Zap className="w-2.5 h-2.5 text-emerald-600" />
+                      </div>
+                      <span className="text-sm text-emerald-600 font-medium">تجربة مجانية {plan.trialDays} يوم</span>
+                    </div>
+                  )}
+                </div>
+
+                <button type="button"
+                  className="w-full mt-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200"
+                  style={sel ? { background: accent, color: "#fff" } : { background: "#f4f4f5", color: "#3f3f46" }}
+                  onClick={e => { e.stopPropagation(); upd({ plan: plan.id }); }}>
+                  {sel ? "تم الاختيار ✓" : "اختر هذه الباقة"}
+                </button>
+              </div>
+            </div>
           );
         })}
       </div>
 
-      {/* ملخص نهائي */}
-      <div className="rounded-xl border border-gray-200 overflow-hidden">
-        <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
-          <p className="font-bold text-gray-800 text-sm">الملخص النهائي</p>
-        </div>
-        <div className="divide-y divide-gray-100">
+      {/* Property summary */}
+      <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
+        <p className="text-sm font-bold text-gray-700 mb-3">ملخص العقار المراد نشره</p>
+        <div className="grid grid-cols-2 gap-2 text-sm">
           {[
-            ["العقار",     `${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"} · ${draft.subType || "—"}`],
-            ["الصفقة",    LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"],
-            ["الموقع",    `${draft.cityName ?? "—"}${draft.address ? " · " + draft.address : ""}`],
-            ["السعر",     draft.price ? `${Number(draft.price).toLocaleString("ar")} ج.م` : "—"],
-            ["المساحة",   draft.area ? `${draft.area} م²` : "—"],
-            ["الصور",     `${draft.images.length} صورة`],
-            ["الباقة",    draft.plan === null ? "مجانية" : sorted.find(p => p.id === draft.plan)?.nameAr ?? "—"],
-            ["الدفع",     PAYMENT_OPS.find(p => p.id === draft.paymentMethod)?.label ?? "—"],
+            ["النوع",     `${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"} · ${draft.subType || "—"}`],
+            ["الصفقة",   LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"],
+            ["الموقع",   draft.cityName ?? "—"],
+            ["السعر",    draft.price ? `${Number(draft.price).toLocaleString("ar")} ج.م` : "—"],
+            ["المساحة",  draft.area ? `${draft.area} م²` : "—"],
+            ["الصور",    `${draft.images.length} صورة`],
           ].map(([k, v]) => (
-            <div key={k} className="flex justify-between px-5 py-3 text-sm">
+            <div key={k} className="flex justify-between py-1.5 border-b border-gray-100 last:border-0 col-span-2 sm:col-span-1">
               <span className="text-gray-500">{k}</span>
               <span className="font-semibold text-gray-800">{v}</span>
             </div>
@@ -771,23 +961,225 @@ export default function RealEstateOnboarding() {
         </div>
       </div>
 
-      {submitting && (
+      {/* Hint */}
+      <p className="text-center text-xs text-gray-400">
+        {isFreeSelected
+          ? "⚡ سيتم إرسال إعلانك مباشرة للمراجعة بدون دفع"
+          : `💳 ستنتقل لصفحة الدفع بعد الضغط على "التالي"`}
+      </p>
+    </div>
+  );
+
+  /* ══════════════════════════════════════════════════
+      STEP 3 — الدفع والنشر
+  ══════════════════════════════════════════════════ */
+
+  // ── Summary row helper
+  const SummaryRow = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
+    <div className="flex justify-between items-center py-2.5 border-b border-gray-100 last:border-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className={`text-sm font-semibold ${highlight ? "text-teal-700" : "text-gray-800"}`}>{value}</span>
+    </div>
+  );
+
+  // ── Formatted card number
+  const fmtCard = (v: string) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+
+  const step3 = (
+    <div className="space-y-7">
+
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-extrabold text-gray-900 mb-1">
+            {isFreeSelected ? "مراجعة ونشر" : "الدفع والنشر"}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {isFreeSelected ? "راجع بيانات إعلانك قبل الإرسال" : "ادفع لتفعيل باقتك ونشر إعلانك"}
+          </p>
+        </div>
+        {!isFreeSelected && selectedBillingPlan && (
+          <div className="text-left shrink-0 bg-teal-50 rounded-xl px-4 py-2 border border-teal-100">
+            <p className="text-xs text-teal-600 font-semibold">{selectedBillingPlan.nameAr}</p>
+            <p className="text-xl font-black text-teal-700 leading-tight">
+              {Number(selectedBillingPlan.price).toLocaleString("ar")} {selectedBillingPlan.currency}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Order summary card */}
+      <div className="rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-gray-50 px-5 py-3 flex items-center gap-2 border-b border-gray-100">
+          <ClipboardList className="w-4 h-4 text-gray-400" />
+          <p className="font-bold text-gray-700 text-sm">ملخص الطلب</p>
+        </div>
+        <div className="px-5 py-1 divide-y divide-gray-100">
+          <SummaryRow label="العقار"  value={`${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"} — ${draft.subType || "—"}`} />
+          <SummaryRow label="الصفقة" value={LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"} />
+          <SummaryRow label="الموقع" value={`${draft.cityName ?? "—"}${draft.address ? " · " + draft.address : ""}`} />
+          <SummaryRow label="السعر"  value={draft.price ? `${Number(draft.price).toLocaleString("ar")} ج.م` : "—"} />
+          <SummaryRow label="المساحة" value={draft.area ? `${draft.area} م²` : "—"} />
+          <SummaryRow label="الصور"  value={`${draft.images.length} صورة`} />
+          <SummaryRow label="الباقة" value={isFreeSelected ? "مجانية" : selectedBillingPlan?.nameAr ?? "—"} highlight />
+          {!isFreeSelected && selectedBillingPlan && (
+            <SummaryRow label="المبلغ المستحق"
+              value={`${Number(selectedBillingPlan.price).toLocaleString("ar")} ${selectedBillingPlan.currency}`}
+              highlight />
+          )}
+        </div>
+      </div>
+
+      {/* ── PAID PLAN: Payment method selector + form ── */}
+      {!isFreeSelected && paymentStatus !== "processing" && paymentStatus !== "paid" && (
+        <>
+          {/* Method tabs */}
+          <div>
+            <p className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-gray-400" />طريقة الدفع
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "card" as const, label: "بطاقة بنكية", icon: "💳" },
+                { id: "instapay" as const, label: "InstaPay", icon: "⚡" },
+                { id: "stcpay" as const, label: "STC Pay", icon: "📱" },
+              ].map(m => (
+                <button key={m.id} type="button" onClick={() => setPmMethod(m.id)}
+                  className={`py-3 rounded-xl border-2 font-semibold text-sm transition-all flex flex-col items-center gap-1
+                    ${pmMethod === m.id ? "border-teal-600 bg-teal-50 text-teal-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"}`}>
+                  <span className="text-xl">{m.icon}</span>
+                  <span className="text-xs">{m.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Card form */}
+          {pmMethod === "card" && (
+            <div className="space-y-4 bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">رقم البطاقة</label>
+                <div className="relative">
+                  <Input value={cardNum} onChange={e => setCardNum(fmtCard(e.target.value))}
+                    placeholder="0000 0000 0000 0000"
+                    maxLength={19}
+                    className="h-12 rounded-xl border-gray-200 pr-10 font-mono text-base tracking-widest" dir="ltr" />
+                  <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">اسم حامل البطاقة</label>
+                <Input value={cardName} onChange={e => setCardName(e.target.value)}
+                  placeholder="كما هو مكتوب على البطاقة"
+                  className="h-12 rounded-xl border-gray-200" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">تاريخ الانتهاء</label>
+                  <Input value={cardExpiry}
+                    onChange={e => {
+                      let v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      if (v.length >= 3) v = v.slice(0,2) + "/" + v.slice(2);
+                      setCardExpiry(v);
+                    }}
+                    placeholder="MM/YY" maxLength={5}
+                    className="h-12 rounded-xl border-gray-200 font-mono" dir="ltr" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">رمز CVV</label>
+                  <Input value={cardCvc} onChange={e => setCardCvc(e.target.value.replace(/\D/g,"").slice(0,4))}
+                    placeholder="123" maxLength={4} type="password"
+                    className="h-12 rounded-xl border-gray-200 font-mono" dir="ltr" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-400 pt-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>مشفّر بـ SSL 256-bit — بياناتك محمية ولن تُحفظ</span>
+              </div>
+            </div>
+          )}
+
+          {/* InstaPay / STC Pay */}
+          {(pmMethod === "instapay" || pmMethod === "stcpay") && (
+            <div className="space-y-4 bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  {pmMethod === "instapay" ? "رقم المحفظة (InstaPay)" : "رقم الجوال المسجل في STC Pay"}
+                </label>
+                <div className="relative">
+                  <Input value={mobileNum} onChange={e => setMobileNum(e.target.value.replace(/\D/g,"").slice(0,11))}
+                    placeholder={pmMethod === "instapay" ? "01XXXXXXXXX" : "05XXXXXXXX"}
+                    className="h-12 rounded-xl border-gray-200 pr-10 font-mono text-base tracking-wide" dir="ltr" />
+                  <Smartphone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>ستصلك رسالة تأكيد على الرقم المسجّل لإتمام الدفع</span>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Processing overlay ── */}
+      {paymentStatus === "processing" && (
+        <div className="rounded-2xl border border-teal-200 bg-teal-50 p-8 text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center mx-auto">
+            <Loader2 className="w-7 h-7 text-teal-600 animate-spin" />
+          </div>
+          <div>
+            <p className="font-bold text-teal-800 text-base">جاري معالجة الدفع…</p>
+            <p className="text-teal-600 text-sm mt-1">يرجى الانتظار، لا تغلق الصفحة</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Upload progress ── */}
+      {submitting && paymentStatus === "paid" && (
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-gray-600">
             <span>جاري رفع البيانات والصور…</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div className="h-full bg-teal-600 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
         </div>
       )}
 
-      <Button onClick={handleSubmit} disabled={submitting}
-        className="w-full h-14 rounded-xl text-base font-bold bg-teal-600 hover:bg-teal-700 shadow-md">
-        {submitting ? <><Loader2 className="w-5 h-5 ml-2 animate-spin" />جاري النشر…</> : "نشر الإعلان"}
-      </Button>
-      <p className="text-center text-xs text-gray-400">بالنشر أنت توافق على شروط وأحكام المنصة</p>
+      {/* ── Action button ── */}
+      {paymentStatus !== "processing" && paymentStatus !== "paid" && (
+        <div className="space-y-3">
+          {isFreeSelected ? (
+            <Button onClick={handleSubmit} disabled={submitting}
+              className="w-full h-14 rounded-2xl text-base font-bold bg-teal-600 hover:bg-teal-700 shadow-md">
+              {submitting
+                ? <><Loader2 className="w-5 h-5 ml-2 animate-spin" />جاري الإرسال…</>
+                : <><Send className="w-5 h-5 ml-2" />إرسال للمراجعة</>}
+            </Button>
+          ) : (
+            <Button onClick={handlePayment} disabled={submitting}
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-md bg-emerald-600 hover:bg-emerald-700">
+              {submitting
+                ? <><Loader2 className="w-5 h-5 ml-2 animate-spin" />جاري المعالجة…</>
+                : <><Lock className="w-5 h-5 ml-2" />ادفع الآن وانشر الإعلان</>}
+            </Button>
+          )}
+          <p className="text-center text-xs text-gray-400">بالنشر أنت توافق على شروط وأحكام المنصة</p>
+        </div>
+      )}
+
+      {paymentStatus === "failed" && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-red-700 font-semibold text-sm">فشل الدفع أو رفع البيانات</p>
+            <p className="text-red-500 text-xs mt-0.5">يرجى المحاولة مرة أخرى أو التواصل مع الدعم</p>
+          </div>
+          <button className="mr-auto text-xs text-red-600 underline" onClick={() => setPaymentStatus("idle")}>إعادة المحاولة</button>
+        </div>
+      )}
     </div>
   );
 
