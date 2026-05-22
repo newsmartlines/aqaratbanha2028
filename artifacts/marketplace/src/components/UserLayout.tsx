@@ -141,13 +141,13 @@ export default function UserLayout({ children }: UserLayoutProps) {
       ══════════════════════════════════════════════ */}
       <div className="flex min-h-[calc(100vh-64px)]">
 
-        {/* Fixed sidebar — desktop only */}
-        <div className="hidden lg:flex lg:w-72 lg:flex-col lg:fixed lg:top-16 lg:bottom-0 right-0 z-40">
+        {/* Sticky sidebar — desktop only */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-72 shrink-0 sticky top-16" style={{ height: "calc(100vh - 4rem)" }}>
           <SidebarContent />
-        </div>
+        </aside>
 
         {/* Page content */}
-        <div className="flex flex-col flex-1 lg:pr-72 w-full">
+        <div className="flex flex-col flex-1 min-w-0">
           {/* Sub-header: mobile sidebar + page title */}
           <div className="lg:hidden sticky top-14 z-30 flex h-12 items-center gap-3 border-b bg-background px-4 shadow-sm">
             <Sheet>

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation, Redirect } from "wouter";
 import {
-  LayoutDashboard, Crown, Bell, Star,
+  LayoutDashboard, Crown, Bell,
   CreditCard, Settings, LogOut, Menu,
   Briefcase, Home,
   HelpCircle, AlertTriangle, MessageCircle as MessageCircleIcon,
@@ -37,17 +37,15 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   const unreadCount = typeof unreadData === "number" ? unreadData : 0;
 
   const dashboardNav = [
-    { name: "لوحة التحكم",   href: "/provider/dashboard",        icon: LayoutDashboard,   badge: 0 },
-    { name: "الاشتراك",      href: "/provider/subscription",     icon: Crown,             badge: 0 },
-    { name: "عقاراتي",       href: "/dashboard/my-properties",   icon: Building2,         badge: 0 },
-    { name: "الطلبات",       href: "/dashboard/orders",          icon: Bell,              badge: 0 },
-    { name: "الإشعارات",     href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
-    { name: "الرسائل",       href: "/dashboard/inbox",           icon: MessageCircleIcon, badge: 0 },
-    { name: "تذاكر الدعم",   href: "/dashboard/support-tickets", icon: Ticket,            badge: 0 },
-    { name: "التقييمات",     href: "/dashboard/reviews",         icon: Star,              badge: 0 },
-    { name: "المدفوعات",     href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
-    { name: "الإعدادات",     href: "/dashboard/settings",        icon: Settings,          badge: 0 },
-    { name: "المساعدة",      href: "/dashboard/support",         icon: HelpCircle,        badge: 0 },
+    { name: "لوحة التحكم",    href: "/provider/dashboard",        icon: LayoutDashboard,   badge: 0 },
+    { name: "الاشتراك",       href: "/provider/subscription",     icon: Crown,             badge: 0 },
+    { name: "عقاراتي",        href: "/dashboard/my-properties",   icon: Building2,         badge: 0 },
+    { name: "الإشعارات",      href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
+    { name: "الرسائل",        href: "/dashboard/inbox",           icon: MessageCircleIcon, badge: 0 },
+    { name: "تذاكر الدعم",    href: "/dashboard/support-tickets", icon: Ticket,            badge: 0 },
+    { name: "المدفوعات",      href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
+    { name: "الإعدادات",      href: "/dashboard/settings",        icon: Settings,          badge: 0 },
+    { name: "المساعدة",       href: "/dashboard/support",         icon: HelpCircle,        badge: 0 },
   ];
 
   const handleLogout = async () => {
@@ -99,7 +97,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
         </div>
       </div>
 
-      {/* Dashboard navigation */}
+      {/* Dashboard navigation + footer — all in one scrollable block */}
       <div className="flex-1 min-h-0 overflow-y-auto py-4 px-3 hide-scrollbar">
         <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-blue-300/40">لوحة التحكم</p>
         <nav className="space-y-0.5">
@@ -125,24 +123,27 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
               </Link>
             );
           })}
-        </nav>
-      </div>
 
-      {/* Footer: view marketplace + logout */}
-      <div className="p-4 border-t border-white/10 space-y-1">
-        <Link href="/">
-          <span className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-blue-100/70 hover:bg-white/5 hover:text-white transition-colors cursor-pointer">
-            <Home className="ml-3 shrink-0 h-4 w-4 text-blue-300/60 group-hover:text-white" />
-            العودة للموقع
-          </span>
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-xl text-red-300/80 hover:bg-red-500/10 hover:text-red-300 transition-colors"
-        >
-          <LogOut className="ml-3 shrink-0 h-4 w-4 text-red-400/60 group-hover:text-red-300" />
-          تسجيل الخروج
-        </button>
+          {/* Divider */}
+          <div className="my-3 border-t border-white/10" />
+
+          {/* Back to site */}
+          <Link href="/">
+            <span className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-blue-100/70 hover:bg-white/5 hover:text-white transition-colors cursor-pointer">
+              <Home className="ml-3 shrink-0 h-4 w-4 text-blue-300/60 group-hover:text-white" />
+              العودة للموقع
+            </span>
+          </Link>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-xl text-red-300/80 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+          >
+            <LogOut className="ml-3 shrink-0 h-4 w-4 text-red-400/60 group-hover:text-red-300" />
+            تسجيل الخروج
+          </button>
+        </nav>
       </div>
     </div>
   );
@@ -157,13 +158,13 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
       ══════════════════════════════════════════ */}
       <div className="flex min-h-[calc(100vh-64px)]">
 
-        {/* Fixed right sidebar — desktop only */}
-        <div className="hidden lg:flex lg:w-72 lg:flex-col lg:fixed lg:top-16 lg:bottom-0 right-0 z-40">
+        {/* Sticky sidebar — desktop only */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-72 shrink-0 sticky top-16" style={{ height: "calc(100vh - 4rem)" }}>
           <SidebarContent />
-        </div>
+        </aside>
 
         {/* Page content */}
-        <div className="flex flex-col flex-1 lg:pr-72 w-full">
+        <div className="flex flex-col flex-1 min-w-0">
 
           {/* Mobile sub-header: dashboard sidebar trigger + page label */}
           <div className="lg:hidden sticky top-16 z-30 flex h-12 items-center gap-3 border-b bg-background px-4 shadow-sm">
