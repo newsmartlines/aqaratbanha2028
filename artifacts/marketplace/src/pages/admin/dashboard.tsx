@@ -10,8 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 
 const dict = {
   pageTitle: { ar: "نظرة عامة على لوحة التحكم", en: "Dashboard Overview" },
-  totalProviders: { ar: "إجمالي مقدمي الخدمة", en: "Total Providers" },
-  activeProviders: { ar: "مقدمو الخدمة النشطون", en: "Active Providers" },
+  totalProviders: { ar: "إجمالي الشركات العقارية", en: "Total Companies" },
+  activeProviders: { ar: "الشركات العقارية النشطة", en: "Active Companies" },
   totalUsers: { ar: "إجمالي المستخدمين", en: "Total Users" },
   totalListings: { ar: "إجمالي الخدمات", en: "Total Listings" },
   totalRevenue: { ar: "إجمالي الإيرادات", en: "Total Revenue" },

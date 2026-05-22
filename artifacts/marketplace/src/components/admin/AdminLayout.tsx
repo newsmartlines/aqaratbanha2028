@@ -70,7 +70,7 @@ const layoutDict = {
   superAdmin: { ar: "مسؤول عام", en: "Super Admin" },
   menu: { ar: "القائمة", en: "Menu" },
   dashboard: { ar: "لوحة التحكم", en: "Dashboard" },
-  providers: { ar: "مقدمو الخدمة", en: "Providers" },
+  providers: { ar: "شركات عقارية", en: "Real Estate Companies" },
   users: { ar: "المستخدمون", en: "Users" },
   staff: { ar: "الموظفون والصلاحيات", en: "Staff & Roles" },
   listings: { ar: "الخدمات", en: "Listings" },
