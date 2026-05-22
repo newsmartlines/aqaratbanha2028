@@ -18,22 +18,13 @@ import toast from "react-hot-toast";
 import { api, type Region, type Package } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
-const DRAFT_KEY = "re_onboarding_v2_draft";
-const TOTAL_STEPS = 4;
+const DRAFT_KEY = "re_onboarding_v3_draft";
+const TOTAL_STEPS = 3;
 
 const MAIN_CATEGORIES = [
-  {
-    id: "residential", label: "سكني", desc: "شقق، فيلات، دوبلكس وأكثر",
-    icon: Home, gradient: "from-teal-500 to-teal-600", bg: "bg-teal-50", border: "border-teal-200",
-  },
-  {
-    id: "commercial", label: "تجاري", desc: "محلات، مكاتب، عيادات",
-    icon: Building2, gradient: "from-amber-500 to-amber-600", bg: "bg-amber-50", border: "border-amber-200",
-  },
-  {
-    id: "land", label: "أراضي", desc: "سكنية، تجارية، زراعية",
-    icon: TreePine, gradient: "from-emerald-500 to-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200",
-  },
+  { id: "residential", label: "سكني", desc: "شقق، فيلات، دوبلكس وأكثر", icon: Home, gradient: "from-teal-500 to-teal-600" },
+  { id: "commercial", label: "تجاري", desc: "محلات، مكاتب، عيادات", icon: Building2, gradient: "from-amber-500 to-amber-600" },
+  { id: "land", label: "أراضي", desc: "سكنية، تجارية، زراعية", icon: TreePine, gradient: "from-emerald-500 to-emerald-600" },
 ];
 
 const SUB_CATEGORIES: Record<string, { id: string; label: string; icon: string }[]> = {
@@ -65,15 +56,15 @@ const SUB_CATEGORIES: Record<string, { id: string; label: string; icon: string }
 };
 
 const LISTING_TYPES = [
-  { id: "sale", label: "للبيع", emoji: "🏷️", color: "from-blue-500 to-blue-600" },
-  { id: "rent", label: "للإيجار", emoji: "🔑", color: "from-violet-500 to-violet-600" },
+  { id: "sale", label: "للبيع", emoji: "🏷️" },
+  { id: "rent", label: "للإيجار", emoji: "🔑" },
 ];
 
 const FINISHING_OPTIONS = ["سوبر لوكس", "لوكس", "عادي", "بدون تشطيب", "تشطيب جزئي"];
 const CONDITION_OPTIONS = ["جديد", "ممتاز", "جيد جداً", "جيد", "يحتاج تجديد"];
 const FURNISHED_OPTIONS = ["مفروش بالكامل", "مفروش جزئياً", "غير مفروش"];
 const DIRECTION_OPTIONS = ["شمالي", "جنوبي", "شرقي", "غربي", "شمالي شرقي", "شمالي غربي", "جنوبي شرقي", "جنوبي غربي"];
-const PAYMENT_METHODS = ["دفعة واحدة", "أقساط شهرية", "أقساط سنوية", "قابل للتفاوض"];
+const PAYMENT_METHODS_PROP = ["دفعة واحدة", "أقساط شهرية", "أقساط سنوية", "قابل للتفاوض"];
 
 const PROPERTY_FEATURES = [
   "مسبح", "جراج مغطى", "حديقة خاصة", "مصعد", "شرفة", "مكيف مركزي",
@@ -88,12 +79,12 @@ const NEARBY_SERVICES = [
   "نوادي رياضية", "سوبر ماركت",
 ];
 
-const PAYMENT_ICONS: Record<string, React.ReactNode> = {
-  card: <CreditCard className="w-5 h-5" />,
-  wallet: <Wallet className="w-5 h-5" />,
-  transfer: <ArrowLeftRight className="w-5 h-5" />,
-  cash: <Banknote className="w-5 h-5" />,
-};
+const PAYMENT_METHOD_OPTIONS = [
+  { id: "card", label: "بطاقة بنكية", icon: <CreditCard className="w-5 h-5" /> },
+  { id: "wallet", label: "محفظة إلكترونية", icon: <Wallet className="w-5 h-5" /> },
+  { id: "transfer", label: "تحويل بنكي", icon: <ArrowLeftRight className="w-5 h-5" /> },
+  { id: "cash", label: "دفع كاش", icon: <Banknote className="w-5 h-5" /> },
+];
 
 interface FormDraft {
   mainCategory: string;
@@ -152,14 +143,13 @@ function loadDraft(): FormDraft {
 /* ─── Step Progress Bar ─── */
 function StepBar({ step }: { step: number }) {
   const steps = [
-    { label: "نوع العقار", icon: Home },
-    { label: "التفاصيل", icon: FileText },
-    { label: "الصور والفيديو", icon: ImageIcon },
-    { label: "الباقة والنشر", icon: Star },
+    { label: "تفاصيل العقار", icon: FileText },
+    { label: "اختيار الباقة", icon: Star },
+    { label: "الدفع والنشر", icon: CheckCircle2 },
   ];
   return (
-    <div className="w-full bg-white border-b border-zinc-100 sticky top-0 z-30">
-      <div className="max-w-3xl mx-auto px-4 py-4">
+    <div className="w-full bg-white border-b border-zinc-100 sticky top-0 z-30 shadow-sm">
+      <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center">
           {steps.map((s, i) => {
             const Icon = s.icon;
@@ -169,21 +159,38 @@ function StepBar({ step }: { step: number }) {
             return (
               <div key={i} className="flex items-center flex-1 last:flex-none">
                 <div className="flex flex-col items-center gap-1">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0
                     ${done ? "bg-primary text-white" : active ? "bg-primary text-white shadow-lg shadow-primary/30 scale-110" : "bg-zinc-100 text-zinc-400"}`}>
                     {done ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                   </div>
-                  <span className={`text-[10px] font-semibold whitespace-nowrap hidden sm:block transition-colors ${active ? "text-primary" : done ? "text-zinc-500" : "text-zinc-300"}`}>
+                  <span className={`text-[11px] font-semibold whitespace-nowrap hidden sm:block transition-colors ${active ? "text-primary" : done ? "text-zinc-500" : "text-zinc-300"}`}>
                     {s.label}
                   </span>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className={`h-0.5 flex-1 mx-2 rounded-full transition-all duration-500 ${done ? "bg-primary" : "bg-zinc-100"}`} />
+                  <div className={`h-0.5 flex-1 mx-3 rounded-full transition-all duration-500 ${done ? "bg-primary" : "bg-zinc-100"}`} />
                 )}
               </div>
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Section heading ─── */
+function SectionHeading({ icon: Icon, title, subtitle, color = "text-primary", bg = "bg-primary/10" }: {
+  icon: React.ElementType; title: string; subtitle?: string; color?: string; bg?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 mb-5">
+      <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
+        <Icon className={`w-4.5 h-4.5 ${color}`} style={{ width: 18, height: 18 }} />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-zinc-800 leading-tight">{title}</h2>
+        {subtitle && <p className="text-zinc-400 text-xs mt-0.5">{subtitle}</p>}
       </div>
     </div>
   );
@@ -226,7 +233,6 @@ export default function RealEstateOnboarding() {
     });
   }, []);
 
-  // Auto-login as provider
   const providerSessionRef = useRef(false);
   useEffect(() => {
     if (!user || user.role === "admin" || providerSessionRef.current) return;
@@ -263,32 +269,33 @@ export default function RealEstateOnboarding() {
   const isCommercial = draft.mainCategory === "commercial";
   const sortedPackages = [...packages].sort((a, b) => a.priorityRank - b.priorityRank);
 
+  /* ── Validation ── */
   const validate = (s: number): boolean => {
     const e: Record<string, string> = {};
     if (s === 1) {
       if (!draft.mainCategory) e.mainCategory = "اختر تصنيف العقار";
       if (!draft.listingType) e.listingType = "اختر نوع الصفقة";
       if (!draft.subCategory) e.subCategory = "اختر النوع الفرعي";
-    } else if (s === 2) {
+      if (!draft.locRegionId) e.region = "المنطقة مطلوبة";
+      if (!draft.locCityId) e.city = "المدينة مطلوبة";
       if (!draft.propTitle.trim()) e.propTitle = "عنوان الإعلان مطلوب";
       if (!draft.propPrice.trim()) e.propPrice = "السعر مطلوب";
       if (!draft.propArea.trim()) e.propArea = "المساحة مطلوبة";
-      if (!draft.locRegionId) e.region = "المنطقة مطلوبة";
-      if (!draft.locCityId) e.city = "المدينة مطلوبة";
-    } else if (s === 3) {
       if (draft.images.length === 0) e.images = "أضف صورة واحدة على الأقل";
     }
     setErrors(e);
+    if (Object.keys(e).length > 0) {
+      const firstKey = Object.keys(e)[0];
+      const el = document.getElementById(`field-${firstKey}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     return Object.keys(e).length === 0;
   };
 
   const handleNext = () => {
     if (validate(step) && step < TOTAL_STEPS) setStep(s => s + 1);
   };
-
-  const handleBack = () => {
-    if (step > 1) setStep(s => s - 1);
-  };
+  const handleBack = () => { if (step > 1) setStep(s => s - 1); };
 
   /* ── Image handling ── */
   const addFiles = (files: File[]) => {
@@ -299,60 +306,32 @@ export default function RealEstateOnboarding() {
     const previews = toAdd.map(f => URL.createObjectURL(f));
     updateDraft({ images: [...draft.images, ...previews] });
   };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    addFiles(Array.from(e.target.files ?? []));
-    e.target.value = "";
-  };
-
-  const handleDropZone = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragOver(false);
-    addFiles(Array.from(e.dataTransfer.files));
-  };
-
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => { addFiles(Array.from(e.target.files ?? [])); e.target.value = ""; };
+  const handleDropZone = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragOver(false); addFiles(Array.from(e.dataTransfer.files)); };
   const removeImage = (idx: number) => {
     imageFilesRef.current = imageFilesRef.current.filter((_, i) => i !== idx);
     const newImages = draft.images.filter((_, i) => i !== idx);
     const newMain = draft.mainImageIdx >= newImages.length ? Math.max(0, newImages.length - 1) : draft.mainImageIdx;
     updateDraft({ images: newImages, mainImageIdx: newMain });
   };
-
-  /* ── Drag to reorder ── */
-  const handleImageDragStart = (e: DragEvent<HTMLDivElement>, idx: number) => {
-    setDragIdx(idx);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  const handleImageDragOver = (e: DragEvent<HTMLDivElement>, idx: number) => {
-    e.preventDefault();
-    setDragOverIdx(idx);
-  };
+  const handleImageDragStart = (e: DragEvent<HTMLDivElement>, idx: number) => { setDragIdx(idx); e.dataTransfer.effectAllowed = "move"; };
+  const handleImageDragOver = (e: DragEvent<HTMLDivElement>, idx: number) => { e.preventDefault(); setDragOverIdx(idx); };
   const handleImageDrop = (e: DragEvent<HTMLDivElement>, toIdx: number) => {
     e.preventDefault();
     if (dragIdx === null || dragIdx === toIdx) { setDragIdx(null); setDragOverIdx(null); return; }
-    const imgs = [...draft.images];
-    const files = [...imageFilesRef.current];
-    const [img] = imgs.splice(dragIdx, 1);
-    const [file] = files.splice(dragIdx, 1);
-    imgs.splice(toIdx, 0, img);
-    files.splice(toIdx, 0, file);
+    const imgs = [...draft.images]; const files = [...imageFilesRef.current];
+    const [img] = imgs.splice(dragIdx, 1); const [file] = files.splice(dragIdx, 1);
+    imgs.splice(toIdx, 0, img); files.splice(toIdx, 0, file);
     imageFilesRef.current = files;
     let newMain = draft.mainImageIdx;
     if (newMain === dragIdx) newMain = toIdx;
     else if (dragIdx < newMain && toIdx >= newMain) newMain--;
     else if (dragIdx > newMain && toIdx <= newMain) newMain++;
     updateDraft({ images: imgs, mainImageIdx: newMain });
-    setDragIdx(null);
-    setDragOverIdx(null);
+    setDragIdx(null); setDragOverIdx(null);
   };
-
-  const toggleFeature = (f: string) => {
-    updateDraft({ features: draft.features.includes(f) ? draft.features.filter(x => x !== f) : [...draft.features, f] });
-  };
-  const toggleNearby = (s: string) => {
-    updateDraft({ nearbyServices: draft.nearbyServices.includes(s) ? draft.nearbyServices.filter(x => x !== s) : [...draft.nearbyServices, s] });
-  };
-
+  const toggleFeature = (f: string) => updateDraft({ features: draft.features.includes(f) ? draft.features.filter(x => x !== f) : [...draft.features, f] });
+  const toggleNearby = (s: string) => updateDraft({ nearbyServices: draft.nearbyServices.includes(s) ? draft.nearbyServices.filter(x => x !== s) : [...draft.nearbyServices, s] });
   const getGPS = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -372,18 +351,12 @@ export default function RealEstateOnboarding() {
         providerId = (me as any).providerId;
         if (providerId) setUser(me as any);
       }
-      if (!providerId) {
-        toast.error("لم يُعثر على ملف المعلن. أعد تحميل الصفحة.");
-        return;
-      }
+      if (!providerId) { toast.error("لم يُعثر على ملف المعلن. أعد تحميل الصفحة."); return; }
 
       const uploadedImages: string[] = [];
       for (let i = 0; i < imageFilesRef.current.length; i++) {
-        try {
-          const up = await api.upload.propertyImage(imageFilesRef.current[i]);
-          uploadedImages.push(up.url);
-        } catch {}
-        setUploadProgress(Math.round(((i + 1) / imageFilesRef.current.length) * 70));
+        try { const up = await api.upload.propertyImage(imageFilesRef.current[i]); uploadedImages.push(up.url); } catch {}
+        setUploadProgress(Math.round(((i + 1) / Math.max(1, imageFilesRef.current.length)) * 70));
       }
 
       await api.properties.create({
@@ -419,11 +392,9 @@ export default function RealEstateOnboarding() {
       });
 
       setUploadProgress(90);
-
       if (draft.plan !== null) {
         try { await api.subscriptions.subscribe(providerId, draft.plan); } catch {}
       }
-
       setUploadProgress(100);
       await refetchAuth();
       try { localStorage.removeItem(DRAFT_KEY); } catch {}
@@ -450,14 +421,11 @@ export default function RealEstateOnboarding() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold text-zinc-800 mb-2">تم نشر عقارك بنجاح! 🎉</h1>
-              <p className="text-zinc-500 text-base leading-relaxed">
-                سيتم مراجعة إعلانك وتفعيله من قِبَل فريقنا خلال ساعات قليلة.
-              </p>
+              <p className="text-zinc-500 text-base leading-relaxed">سيتم مراجعة إعلانك وتفعيله من قِبَل فريقنا خلال ساعات قليلة.</p>
             </div>
             <div className="space-y-3 pt-2">
               <Button size="lg" className="w-full h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/20" onClick={() => setLocation("/dashboard")}>
-                <Building2 className="w-5 h-5 ml-2" />
-                لوحة التحكم
+                <Building2 className="w-5 h-5 ml-2" />لوحة التحكم
               </Button>
               <Button variant="outline" size="lg" className="w-full h-12 rounded-2xl" onClick={() => { setStep(1); setDraft({ ...defaultDraft }); imageFilesRef.current = []; }}>
                 نشر عقار آخر
@@ -470,33 +438,25 @@ export default function RealEstateOnboarding() {
   }
 
   /* ═══════════════════════════════════════════
-      STEP 1 — نوع العقار
+      STEP 1 — صفحة التفاصيل الكاملة (طويلة)
   ═══════════════════════════════════════════ */
   const renderStep1 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-400">
-      {/* Main Category */}
-      <div>
-        <h2 className="text-xl font-bold text-zinc-800 mb-1">ما نوع العقار؟</h2>
-        <p className="text-zinc-500 text-sm mb-5">اختر التصنيف الرئيسي للعقار</p>
+    <div className="space-y-10 pb-4">
+
+      {/* ── نوع العقار ── */}
+      <section id="field-mainCategory">
+        <SectionHeading icon={Home} title="نوع العقار" subtitle="اختر التصنيف الرئيسي للعقار" />
         {errors.mainCategory && <p className="text-sm text-red-500 flex items-center gap-1 mb-3"><AlertCircle className="w-4 h-4" />{errors.mainCategory}</p>}
         <div className="grid grid-cols-3 gap-4">
           {MAIN_CATEGORIES.map(cat => {
             const Icon = cat.icon;
             const sel = draft.mainCategory === cat.id;
             return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => updateDraft({ mainCategory: cat.id, subCategory: "" })}
-                className={`relative p-5 rounded-2xl border-2 transition-all duration-200 text-center group flex flex-col items-center gap-3
-                  ${sel ? `border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.02]` : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"}`}
-              >
-                {sel && (
-                  <div className="absolute top-2.5 left-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                )}
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${cat.gradient} shadow-lg`}>
+              <button key={cat.id} type="button" onClick={() => updateDraft({ mainCategory: cat.id, subCategory: "" })}
+                className={`relative p-5 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center gap-3 text-center
+                  ${sel ? "border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.02]" : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"}`}>
+                {sel && <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center"><Check className="w-3 h-3 text-white" /></div>}
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${cat.gradient} shadow-md`}>
                   <Icon className="w-7 h-7 text-white" />
                 </div>
                 <div>
@@ -507,25 +467,20 @@ export default function RealEstateOnboarding() {
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Listing Type */}
+      {/* ── نوع الصفقة ── */}
       {draft.mainCategory && (
-        <div className="animate-in fade-in slide-in-from-bottom-3 duration-400">
-          <h3 className="text-lg font-bold text-zinc-800 mb-1">نوع الصفقة</h3>
-          <p className="text-zinc-500 text-sm mb-4">بيع أم إيجار؟</p>
-          {errors.listingType && <p className="text-sm text-red-500 flex items-center gap-1 mb-2"><AlertCircle className="w-4 h-4" />{errors.listingType}</p>}
+        <section id="field-listingType" className="animate-in fade-in slide-in-from-bottom-2 duration-300 border-t border-zinc-100 pt-8">
+          <SectionHeading icon={FileText} title="نوع الصفقة" subtitle="بيع أم إيجار؟" />
+          {errors.listingType && <p className="text-sm text-red-500 flex items-center gap-1 mb-3"><AlertCircle className="w-4 h-4" />{errors.listingType}</p>}
           <div className="grid grid-cols-2 gap-4">
             {LISTING_TYPES.map(lt => {
               const sel = draft.listingType === lt.id;
               return (
-                <button
-                  key={lt.id}
-                  type="button"
-                  onClick={() => updateDraft({ listingType: lt.id })}
+                <button key={lt.id} type="button" onClick={() => updateDraft({ listingType: lt.id })}
                   className={`p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-3 font-bold text-base
-                    ${sel ? "border-primary bg-primary/5 shadow-md shadow-primary/10" : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"}`}
-                >
+                    ${sel ? "border-primary bg-primary/5 shadow-md" : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"}`}>
                   <span className="text-3xl">{lt.emoji}</span>
                   <span className={sel ? "text-primary" : "text-zinc-700"}>{lt.label}</span>
                   {sel && <Check className="w-5 h-5 text-primary mr-auto" />}
@@ -533,53 +488,35 @@ export default function RealEstateOnboarding() {
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Sub Categories */}
+      {/* ── النوع الفرعي ── */}
       {draft.mainCategory && draft.listingType && (
-        <div className="animate-in fade-in slide-in-from-bottom-3 duration-400">
-          <h3 className="text-lg font-bold text-zinc-800 mb-1">النوع الفرعي</h3>
-          <p className="text-zinc-500 text-sm mb-4">حدد نوع العقار بدقة</p>
-          {errors.subCategory && <p className="text-sm text-red-500 flex items-center gap-1 mb-2"><AlertCircle className="w-4 h-4" />{errors.subCategory}</p>}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <section id="field-subCategory" className="animate-in fade-in slide-in-from-bottom-2 duration-300 border-t border-zinc-100 pt-8">
+          <SectionHeading icon={Building2} title="النوع الفرعي" subtitle="حدد نوع العقار بدقة" />
+          {errors.subCategory && <p className="text-sm text-red-500 flex items-center gap-1 mb-3"><AlertCircle className="w-4 h-4" />{errors.subCategory}</p>}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {(SUB_CATEGORIES[draft.mainCategory] ?? []).map((sub, i) => {
               const sel = draft.subCategory === sub.id;
               return (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => updateDraft({ subCategory: sub.id })}
-                  style={{ animationDelay: `${i * 50}ms` }}
-                  className={`p-3.5 rounded-xl border-2 transition-all duration-200 text-center animate-in fade-in zoom-in-95
-                    ${sel ? "border-primary bg-primary/5 shadow-md" : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"}`}
-                >
-                  <div className="text-2xl mb-1.5">{sub.icon}</div>
+                <button key={sub.id} type="button" onClick={() => updateDraft({ subCategory: sub.id })}
+                  style={{ animationDelay: `${i * 40}ms` }}
+                  className={`p-3.5 rounded-xl border-2 transition-all duration-150 text-center animate-in fade-in zoom-in-95
+                    ${sel ? "border-primary bg-primary/5 shadow-md" : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"}`}>
+                  <div className="text-2xl mb-1">{sub.icon}</div>
                   <p className={`text-sm font-semibold ${sel ? "text-primary" : "text-zinc-600"}`}>{sub.label}</p>
                   {sel && <div className="w-4 h-4 rounded-full bg-primary mx-auto mt-1.5 flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></div>}
                 </button>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
-    </div>
-  );
 
-  /* ═══════════════════════════════════════════
-      STEP 2 — تفاصيل العقار
-  ═══════════════════════════════════════════ */
-  const renderStep2 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-400">
-
-      {/* Location */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <MapPin className="w-4 h-4 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-zinc-800">الموقع</h2>
-        </div>
+      {/* ── الموقع ── */}
+      <section id="field-region" className="border-t border-zinc-100 pt-8">
+        <SectionHeading icon={MapPin} title="الموقع" subtitle="حدد موقع العقار بدقة" color="text-rose-500" bg="bg-rose-50" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">المنطقة *</Label>
@@ -587,9 +524,7 @@ export default function RealEstateOnboarding() {
               if (v === "__") { updateDraft({ locRegionId: null, locCityId: null, locCityName: null }); return; }
               updateDraft({ locRegionId: parseInt(v), locCityId: null, locCityName: null });
             }}>
-              <SelectTrigger className={`h-11 rounded-xl ${errors.region ? "border-red-400" : ""}`}>
-                <SelectValue placeholder="اختر المنطقة" />
-              </SelectTrigger>
+              <SelectTrigger className={`h-11 rounded-xl ${errors.region ? "border-red-400" : ""}`}><SelectValue placeholder="اختر المنطقة" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__">— اختر المنطقة —</SelectItem>
                 {(regionsList as Region[]).map(r => <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>)}
@@ -597,7 +532,7 @@ export default function RealEstateOnboarding() {
             </Select>
             {errors.region && <p className="text-xs text-red-500 mt-1">{errors.region}</p>}
           </div>
-          <div>
+          <div id="field-city">
             <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">المدينة / المحافظة *</Label>
             {!draft.locRegionId ? (
               <div className="h-11 flex items-center px-3 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-400 text-sm">اختر المنطقة أولاً</div>
@@ -608,9 +543,7 @@ export default function RealEstateOnboarding() {
                 const city = (cityList as any[]).find(c => c.id === id);
                 updateDraft({ locCityId: id, locCityName: city?.nameAr ?? null });
               }}>
-                <SelectTrigger className={`h-11 rounded-xl ${errors.city ? "border-red-400" : ""}`}>
-                  <SelectValue placeholder="اختر المدينة" />
-                </SelectTrigger>
+                <SelectTrigger className={`h-11 rounded-xl ${errors.city ? "border-red-400" : ""}`}><SelectValue placeholder="اختر المدينة" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__">— اختر المدينة —</SelectItem>
                   {(cityList as any[]).map((c: any) => <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>)}
@@ -627,7 +560,8 @@ export default function RealEstateOnboarding() {
             <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">العنوان التفصيلي</Label>
             <div className="flex gap-2">
               <Input value={draft.locAddress} onChange={e => updateDraft({ locAddress: e.target.value })} placeholder="الشارع والعنوان" className="h-11 rounded-xl flex-1" />
-              <button type="button" onClick={getGPS} title="تحديد موقعي" className="h-11 px-3 rounded-xl border border-zinc-200 hover:bg-primary/5 hover:border-primary/30 transition-colors shrink-0">
+              <button type="button" onClick={getGPS} title="تحديد موقعي"
+                className="h-11 px-3 rounded-xl border border-zinc-200 hover:bg-primary/5 hover:border-primary/30 transition-colors shrink-0">
                 <Navigation className="w-4 h-4 text-primary" />
               </button>
             </div>
@@ -635,55 +569,44 @@ export default function RealEstateOnboarding() {
         </div>
       </section>
 
-      {/* Property Info */}
+      {/* ── تفاصيل الإعلان ── */}
       <section className="border-t border-zinc-100 pt-8">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <FileText className="w-4 h-4 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-zinc-800">تفاصيل الإعلان</h2>
-        </div>
+        <SectionHeading icon={FileText} title="تفاصيل الإعلان" />
         <div className="space-y-4">
-          <div>
+          <div id="field-propTitle">
             <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">عنوان الإعلان *</Label>
-            <Input value={draft.propTitle} onChange={e => { updateDraft({ propTitle: e.target.value }); setErrors(prev => ({ ...prev, propTitle: "" })); }}
+            <Input value={draft.propTitle}
+              onChange={e => { updateDraft({ propTitle: e.target.value }); setErrors(p => ({ ...p, propTitle: "" })); }}
               placeholder={`مثال: ${draft.subCategory || "شقة"} ${draft.listingType === "sale" ? "للبيع" : "للإيجار"} — ${draft.locCityName ?? "بنها"}`}
-              className={`h-12 rounded-xl ${errors.propTitle ? "border-red-400" : ""}`} />
+              className={`h-12 rounded-xl text-base ${errors.propTitle ? "border-red-400" : ""}`} />
             {errors.propTitle && <p className="text-xs text-red-500 mt-1">{errors.propTitle}</p>}
           </div>
           <div>
-            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">وصف العقار</Label>
+            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">وصف العقار <span className="text-zinc-400 font-normal">(اختياري)</span></Label>
             <Textarea value={draft.propDesc} onChange={e => updateDraft({ propDesc: e.target.value })}
               placeholder="اكتب وصفاً تفصيلياً يساعد المشترين على فهم مميزات العقار..."
-              className="resize-none h-28 rounded-xl" maxLength={2000} />
+              className="resize-none h-32 rounded-xl" maxLength={2000} />
             <p className="text-xs text-zinc-400 mt-1 text-left" dir="ltr">{draft.propDesc.length}/2000</p>
           </div>
         </div>
       </section>
 
-      {/* Numeric Details */}
+      {/* ── المواصفات ── */}
       <section className="border-t border-zinc-100 pt-8">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Maximize2 className="w-4 h-4 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-zinc-800">المواصفات</h2>
-        </div>
+        <SectionHeading icon={Maximize2} title="المواصفات" subtitle="البيانات الرقمية للعقار" color="text-violet-600" bg="bg-violet-50" />
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-              <span className="text-base">💰</span> السعر (جنيه) *
-            </Label>
-            <Input inputMode="numeric" value={draft.propPrice} onChange={e => { updateDraft({ propPrice: e.target.value.replace(/\D/g, "") }); setErrors(prev => ({ ...prev, propPrice: "" })); }}
-              placeholder="مثال: 850000" className={`h-11 rounded-xl font-mono ${errors.propPrice ? "border-red-400" : ""}`} dir="ltr" />
+          <div id="field-propPrice">
+            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><span className="text-base">💰</span> السعر (جنيه) *</Label>
+            <Input inputMode="numeric" value={draft.propPrice}
+              onChange={e => { updateDraft({ propPrice: e.target.value.replace(/\D/g, "") }); setErrors(p => ({ ...p, propPrice: "" })); }}
+              placeholder="850000" className={`h-11 rounded-xl font-mono ${errors.propPrice ? "border-red-400" : ""}`} dir="ltr" />
             {errors.propPrice && <p className="text-xs text-red-500 mt-1">{errors.propPrice}</p>}
           </div>
-          <div>
-            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-              <Maximize2 className="w-3.5 h-3.5 text-zinc-400" /> المساحة (م²) *
-            </Label>
-            <Input inputMode="numeric" value={draft.propArea} onChange={e => { updateDraft({ propArea: e.target.value.replace(/\D/g, "") }); setErrors(prev => ({ ...prev, propArea: "" })); }}
-              placeholder="مثال: 120" className={`h-11 rounded-xl font-mono ${errors.propArea ? "border-red-400" : ""}`} dir="ltr" />
+          <div id="field-propArea">
+            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><Maximize2 className="w-3.5 h-3.5 text-zinc-400" /> المساحة (م²) *</Label>
+            <Input inputMode="numeric" value={draft.propArea}
+              onChange={e => { updateDraft({ propArea: e.target.value.replace(/\D/g, "") }); setErrors(p => ({ ...p, propArea: "" })); }}
+              placeholder="120" className={`h-11 rounded-xl font-mono ${errors.propArea ? "border-red-400" : ""}`} dir="ltr" />
             {errors.propArea && <p className="text-xs text-red-500 mt-1">{errors.propArea}</p>}
           </div>
 
@@ -691,55 +614,44 @@ export default function RealEstateOnboarding() {
             <>
               {isResidential && (
                 <div>
-                  <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-                    <BedDouble className="w-3.5 h-3.5 text-zinc-400" /> عدد الغرف
-                  </Label>
+                  <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><BedDouble className="w-3.5 h-3.5 text-zinc-400" /> عدد الغرف</Label>
                   <Input inputMode="numeric" value={draft.propRooms} onChange={e => updateDraft({ propRooms: e.target.value.replace(/\D/g, "") })} placeholder="3" className="h-11 rounded-xl font-mono" dir="ltr" />
                 </div>
               )}
               {(isResidential || isCommercial) && (
                 <div>
-                  <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-                    <Bath className="w-3.5 h-3.5 text-zinc-400" /> عدد الحمامات
-                  </Label>
+                  <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><Bath className="w-3.5 h-3.5 text-zinc-400" /> عدد الحمامات</Label>
                   <Input inputMode="numeric" value={draft.propBathrooms} onChange={e => updateDraft({ propBathrooms: e.target.value.replace(/\D/g, "") })} placeholder="2" className="h-11 rounded-xl font-mono" dir="ltr" />
                 </div>
               )}
               <div>
-                <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-                  <Layers className="w-3.5 h-3.5 text-zinc-400" /> رقم الدور
-                </Label>
+                <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><Layers className="w-3.5 h-3.5 text-zinc-400" /> رقم الدور</Label>
                 <Input inputMode="numeric" value={draft.propFloor} onChange={e => updateDraft({ propFloor: e.target.value.replace(/\D/g, "") })} placeholder="3" className="h-11 rounded-xl font-mono" dir="ltr" />
               </div>
               <div>
-                <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-                  <Layers className="w-3.5 h-3.5 text-zinc-400" /> عدد الأدوار الكلي
-                </Label>
+                <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><Layers className="w-3.5 h-3.5 text-zinc-400" /> عدد الأدوار الكلي</Label>
                 <Input inputMode="numeric" value={draft.propTotalFloors} onChange={e => updateDraft({ propTotalFloors: e.target.value.replace(/\D/g, "") })} placeholder="10" className="h-11 rounded-xl font-mono" dir="ltr" />
               </div>
             </>
           )}
-
           <div>
-            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block">
-              <Calendar className="w-3.5 h-3.5 text-zinc-400" /> سنة البناء
-            </Label>
+            <Label className="text-sm font-semibold text-zinc-700 mb-1.5 flex items-center gap-1.5 block"><Calendar className="w-3.5 h-3.5 text-zinc-400" /> سنة البناء</Label>
             <Input inputMode="numeric" value={draft.propBuildYear} onChange={e => updateDraft({ propBuildYear: e.target.value.replace(/\D/g, "").slice(0, 4) })} placeholder="2022" className="h-11 rounded-xl font-mono" dir="ltr" />
           </div>
         </div>
       </section>
 
-      {/* Dropdown selects */}
+      {/* ── التفاصيل الإضافية ── */}
       {!isLand && (
         <section className="border-t border-zinc-100 pt-8">
-          <h3 className="text-base font-bold text-zinc-700 mb-4">التفاصيل الإضافية</h3>
+          <SectionHeading icon={Star} title="التفاصيل الإضافية" subtitle="تساعد في استهداف المشترين المناسبين" color="text-amber-500" bg="bg-amber-50" />
           <div className="grid grid-cols-2 gap-4">
             {[
               { key: "propFinishing", label: "نوع التشطيب", opts: FINISHING_OPTIONS },
               { key: "propCondition", label: "حالة العقار", opts: CONDITION_OPTIONS },
               ...(isResidential ? [{ key: "propFurnished", label: "الأثاث", opts: FURNISHED_OPTIONS }] : []),
               { key: "propDirection", label: "اتجاه الواجهة", opts: DIRECTION_OPTIONS },
-              { key: "propPaymentMethod", label: "نظام الدفع", opts: PAYMENT_METHODS },
+              { key: "propPaymentMethod", label: "نظام الدفع", opts: PAYMENT_METHODS_PROP },
             ].map(({ key, label, opts }) => (
               <div key={key}>
                 <Label className="text-sm font-semibold text-zinc-700 mb-1.5 block">{label}</Label>
@@ -756,21 +668,16 @@ export default function RealEstateOnboarding() {
         </section>
       )}
 
-      {/* Features */}
+      {/* ── مميزات العقار ── */}
       {!isLand && (
         <section className="border-t border-zinc-100 pt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <h2 className="text-lg font-bold text-zinc-800">مميزات العقار</h2>
-          </div>
+          <SectionHeading icon={Sparkles} title="مميزات العقار" subtitle="اختر كل ما ينطبق" />
           <div className="flex flex-wrap gap-2">
             {PROPERTY_FEATURES.map(f => {
               const sel = draft.features.includes(f);
               return (
                 <button key={f} type="button" onClick={() => toggleFeature(f)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-150
+                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all duration-150
                     ${sel ? "bg-primary text-white border-primary shadow-sm" : "border-zinc-200 text-zinc-600 hover:border-primary/40 hover:bg-primary/5"}`}>
                   {f}
                 </button>
@@ -780,20 +687,15 @@ export default function RealEstateOnboarding() {
         </section>
       )}
 
-      {/* Nearby */}
+      {/* ── الخدمات القريبة ── */}
       <section className="border-t border-zinc-100 pt-8">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <MapPin className="w-4 h-4 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-zinc-800">الخدمات القريبة</h2>
-        </div>
+        <SectionHeading icon={MapPin} title="الخدمات القريبة" subtitle="اختر ما يتوفر بالقرب من العقار" color="text-teal-600" bg="bg-teal-50" />
         <div className="flex flex-wrap gap-2">
           {NEARBY_SERVICES.map(s => {
             const sel = draft.nearbyServices.includes(s);
             return (
               <button key={s} type="button" onClick={() => toggleNearby(s)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-150
+                className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all duration-150
                   ${sel ? "bg-teal-600 text-white border-teal-600 shadow-sm" : "border-zinc-200 text-zinc-600 hover:border-teal-300 hover:bg-teal-50"}`}>
                 {s}
               </button>
@@ -801,316 +703,276 @@ export default function RealEstateOnboarding() {
           })}
         </div>
       </section>
-    </div>
-  );
 
-  /* ═══════════════════════════════════════════
-      STEP 3 — الصور والفيديو
-  ═══════════════════════════════════════════ */
-  const renderStep3 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-400">
-      <div>
-        <h2 className="text-xl font-bold text-zinc-800 mb-1">الصور والفيديو</h2>
-        <p className="text-zinc-500 text-sm">الصور الجيدة تزيد فرص البيع بنسبة 3× — أضف حتى 20 صورة</p>
-      </div>
+      {/* ── الصور والفيديو ── */}
+      <section id="field-images" className="border-t border-zinc-100 pt-8">
+        <SectionHeading icon={ImageIcon} title="صور العقار" subtitle="الصور الجيدة تزيد فرص البيع 3× — أضف حتى 20 صورة" color="text-rose-500" bg="bg-rose-50" />
 
-      {/* Drop Zone */}
-      <div
-        ref={dropZoneRef}
-        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDropZone}
-        onClick={() => fileInputRef.current?.click()}
-        className={`relative w-full aspect-[2/1] rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-4
-          ${dragOver ? "border-primary bg-primary/5 scale-[1.01]" : "border-zinc-300 hover:border-primary/50 hover:bg-zinc-50"}`}
-      >
-        <input ref={fileInputRef} type="file" className="hidden" multiple accept="image/*" onChange={handleFileInput} />
-        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors ${dragOver ? "bg-primary/10 text-primary" : "bg-zinc-100 text-zinc-400"}`}>
-          <Upload className="w-8 h-8" />
+        <div ref={dropZoneRef}
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDropZone}
+          onClick={() => fileInputRef.current?.click()}
+          className={`relative w-full rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-4 py-12
+            ${dragOver ? "border-primary bg-primary/5 scale-[1.01]" : "border-zinc-300 hover:border-primary/50 hover:bg-zinc-50"}`}>
+          <input ref={fileInputRef} type="file" className="hidden" multiple accept="image/*" onChange={handleFileInput} />
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors ${dragOver ? "bg-primary/10 text-primary" : "bg-zinc-100 text-zinc-400"}`}>
+            <Upload className="w-8 h-8" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold text-zinc-700 text-base">{dragOver ? "أفلت الصور هنا" : "اسحب وأفلت الصور هنا"}</p>
+            <p className="text-zinc-400 text-sm mt-1">أو اضغط للاختيار من جهازك</p>
+            <p className="text-zinc-300 text-xs mt-2">JPG, PNG, WEBP — حتى 5MB للصورة</p>
+          </div>
+          {draft.images.length > 0 && (
+            <div className="absolute bottom-3 right-3 bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">{draft.images.length}/20</div>
+          )}
         </div>
-        <div className="text-center">
-          <p className="font-bold text-zinc-700 text-base">{dragOver ? "أفلت الصور هنا" : "اسحب وأفلت الصور هنا"}</p>
-          <p className="text-zinc-400 text-sm mt-1">أو اضغط للاختيار من جهازك</p>
-          <p className="text-zinc-300 text-xs mt-2">JPG, PNG, WEBP — حتى 5MB للصورة</p>
-        </div>
+
+        {errors.images && <p className="text-sm text-red-500 flex items-center gap-1 mt-3"><AlertCircle className="w-4 h-4" />{errors.images}</p>}
+
         {draft.images.length > 0 && (
-          <div className="absolute bottom-3 right-3 bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">
-            {draft.images.length}/20
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-zinc-700">{draft.images.length} صورة — اسحب لإعادة الترتيب</p>
+              <button type="button" onClick={() => { updateDraft({ images: [], mainImageIdx: 0 }); imageFilesRef.current = []; }}
+                className="text-xs text-red-500 hover:text-red-600 font-semibold flex items-center gap-1">
+                <X className="w-3 h-3" />حذف الكل
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {draft.images.map((src, idx) => (
+                <div key={idx} draggable
+                  onDragStart={e => handleImageDragStart(e, idx)}
+                  onDragOver={e => handleImageDragOver(e, idx)}
+                  onDrop={e => handleImageDrop(e, idx)}
+                  onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
+                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-150 cursor-grab active:cursor-grabbing group
+                    ${idx === draft.mainImageIdx ? "border-primary shadow-lg shadow-primary/20" : "border-zinc-200 hover:border-zinc-300"}
+                    ${dragOverIdx === idx && dragIdx !== idx ? "scale-[1.03] border-primary/50" : ""}
+                    ${dragIdx === idx ? "opacity-50" : "opacity-100"}`}>
+                  <img src={src} alt={`صورة ${idx + 1}`} className="w-full h-full object-cover" />
+                  {idx === draft.mainImageIdx && (
+                    <div className="absolute top-1.5 right-1.5 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">رئيسية</div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-2">
+                    <button type="button" onClick={() => updateDraft({ mainImageIdx: idx })}
+                      className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${idx === draft.mainImageIdx ? "bg-primary text-white" : "bg-white/90 text-zinc-700 hover:bg-primary hover:text-white"}`}>
+                      {idx === draft.mainImageIdx ? "✓ رئيسية" : "اجعلها رئيسية"}
+                    </button>
+                    <button type="button" onClick={() => removeImage(idx)} className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="absolute top-1.5 left-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-lg p-1">
+                    <GripVertical className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+              ))}
+              {draft.images.length < 20 && (
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-xl border-2 border-dashed border-zinc-200 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-zinc-400 hover:text-primary">
+                  <Upload className="w-5 h-5" />
+                  <span className="text-xs font-semibold">إضافة</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
-      </div>
 
-      {errors.images && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.images}</p>}
-
-      {/* Image Grid */}
-      {draft.images.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-bold text-zinc-700">
-              {draft.images.length} صورة — اسحب لإعادة الترتيب
-            </p>
-            <button type="button" onClick={() => { updateDraft({ images: [], mainImageIdx: 0 }); imageFilesRef.current = []; }}
-              className="text-xs text-red-500 hover:text-red-600 font-semibold flex items-center gap-1">
-              <X className="w-3 h-3" />حذف الكل
-            </button>
+        {/* فيديو */}
+        <div className="mt-6 border border-zinc-100 rounded-2xl p-4 bg-zinc-50/50">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+              <Play className="w-4 h-4 text-rose-500" />
+            </div>
+            <div>
+              <h3 className="font-bold text-zinc-700 text-sm">رابط فيديو العقار</h3>
+              <p className="text-xs text-zinc-400">اختياري — YouTube أو رابط مباشر</p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {draft.images.map((src, idx) => (
-              <div
-                key={idx}
-                draggable
-                onDragStart={e => handleImageDragStart(e, idx)}
-                onDragOver={e => handleImageDragOver(e, idx)}
-                onDrop={e => handleImageDrop(e, idx)}
-                onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-                className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-150 cursor-grab active:cursor-grabbing group
-                  ${idx === draft.mainImageIdx ? "border-primary shadow-lg shadow-primary/20" : "border-zinc-200 hover:border-zinc-300"}
-                  ${dragOverIdx === idx && dragIdx !== idx ? "scale-[1.03] border-primary/50" : ""}
-                  ${dragIdx === idx ? "opacity-50" : "opacity-100"}`}
-              >
-                <img src={src} alt={`صورة ${idx + 1}`} className="w-full h-full object-cover" />
-
-                {/* Main badge */}
-                {idx === draft.mainImageIdx && (
-                  <div className="absolute top-1.5 right-1.5 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    رئيسية
-                  </div>
-                )}
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-2">
-                  <button
-                    type="button"
-                    onClick={() => updateDraft({ mainImageIdx: idx })}
-                    className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${idx === draft.mainImageIdx ? "bg-primary text-white" : "bg-white/90 text-zinc-700 hover:bg-primary hover:text-white"}`}
-                  >
-                    {idx === draft.mainImageIdx ? "✓ رئيسية" : "اجعلها رئيسية"}
-                  </button>
-                  <button type="button" onClick={() => removeImage(idx)} className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Drag handle */}
-                <div className="absolute top-1.5 left-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-lg p-1">
-                  <GripVertical className="w-3 h-3 text-white" />
-                </div>
-              </div>
-            ))}
-
-            {/* Add more */}
-            {draft.images.length < 20 && (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="aspect-square rounded-xl border-2 border-dashed border-zinc-200 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-zinc-400 hover:text-primary"
-              >
-                <Upload className="w-5 h-5" />
-                <span className="text-xs font-semibold">إضافة</span>
-              </button>
-            )}
-          </div>
+          <Input value={draft.videoUrl} onChange={e => updateDraft({ videoUrl: e.target.value })}
+            placeholder="https://www.youtube.com/watch?v=..." className="h-10 rounded-xl bg-white" dir="ltr" />
         </div>
-      )}
-
-      {/* Video */}
-      <section className="border-t border-zinc-100 pt-6">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center">
-            <Play className="w-4 h-4 text-rose-500" />
-          </div>
-          <div>
-            <h3 className="font-bold text-zinc-800">رابط فيديو العقار</h3>
-            <p className="text-xs text-zinc-400">اختياري — YouTube أو رابط مباشر</p>
-          </div>
-        </div>
-        <Input
-          value={draft.videoUrl}
-          onChange={e => updateDraft({ videoUrl: e.target.value })}
-          placeholder="https://www.youtube.com/watch?v=..."
-          className="h-11 rounded-xl"
-          dir="ltr"
-        />
       </section>
     </div>
   );
 
   /* ═══════════════════════════════════════════
-      STEP 4 — الباقة والنشر
+      STEP 2 — اختيار الباقة
   ═══════════════════════════════════════════ */
-  const renderStep4 = () => {
-    const getPkgStyle = (pkg: Package, idx: number) => {
-      if (pkg.topBadge || pkg.priorityRank >= 2) return {
-        gradient: "from-amber-500 to-orange-500",
-        badge: "الأكثر طلباً 🔥",
-        icon: <Crown className="w-5 h-5 text-amber-400" />,
-        ring: "ring-2 ring-amber-400/60 shadow-xl shadow-amber-100",
-        accent: "text-amber-600",
-      };
-      if (pkg.priorityRank === 1 || idx === 1) return {
-        gradient: "from-teal-500 to-cyan-600",
-        badge: "الأفضل للمحترفين",
-        icon: <Zap className="w-5 h-5 text-teal-400" />,
-        ring: "ring-2 ring-teal-400/40 shadow-lg shadow-teal-100",
-        accent: "text-teal-600",
-      };
-      return {
-        gradient: "from-slate-400 to-slate-500",
-        badge: null,
-        icon: <Shield className="w-5 h-5 text-slate-400" />,
-        ring: "ring-1 ring-zinc-200",
-        accent: "text-slate-500",
-      };
-    };
-
-    return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-400">
-        <div>
-          <h2 className="text-xl font-bold text-zinc-800 mb-1">اختر باقة الإعلان</h2>
-          <p className="text-zinc-500 text-sm">الباقات المميزة تضاعف ظهور عقارك أمام المشترين</p>
-        </div>
-
-        {/* Packages */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[{ id: null, name: "أساسية", nameAr: "مجاني", price: "0", durationDays: 30, priorityRank: 0, topBadge: false, features: [] } as any, ...sortedPackages].map((pkg, idx) => {
-            const style = pkg.id === null
-              ? { gradient: "from-zinc-400 to-zinc-500", badge: null, icon: <Shield className="w-5 h-5 text-zinc-400" />, ring: "ring-1 ring-zinc-200", accent: "text-zinc-500" }
-              : getPkgStyle(pkg, idx - 1);
-            const sel = draft.plan === pkg.id;
-            return (
-              <div
-                key={pkg.id ?? "free"}
-                onClick={() => updateDraft({ plan: pkg.id })}
-                className={`relative rounded-2xl border bg-white p-5 cursor-pointer transition-all duration-200
-                  ${sel ? `${style.ring} border-transparent scale-[1.02]` : "border-zinc-200 hover:border-zinc-300 hover:shadow-md"}`}
-              >
-                {style.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${style.gradient} text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap`}>
-                    {style.badge}
-                  </div>
-                )}
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center`}>
-                    {style.icon}
-                  </div>
-                  {sel && (
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="w-3.5 h-3.5 text-white" />
-                    </div>
-                  )}
-                </div>
-                <h3 className="font-extrabold text-zinc-800 text-lg">{pkg.nameAr ?? pkg.name}</h3>
-                <div className="mt-2 mb-4">
-                  <span className={`text-2xl font-extrabold ${style.accent}`}>
-                    {pkg.id === null ? "مجاني" : `${Number(pkg.price).toLocaleString("ar")} ج.م`}
-                  </span>
-                  {pkg.id !== null && <span className="text-zinc-400 text-sm"> / {pkg.durationDays} يوم</span>}
-                </div>
-                <ul className="space-y-1.5 text-sm text-zinc-500">
-                  {pkg.id === null ? (
-                    <>
-                      <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-zinc-400" />نشر العقار</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-zinc-400" />30 يوم</li>
-                    </>
-                  ) : (
-                    <>
-                      <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" />ظهور مميز</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" />{pkg.durationDays} يوم</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" />عمولة {pkg.commissionRate}%</li>
-                    </>
-                  )}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Payment Method */}
-        <section className="border-t border-zinc-100 pt-6">
-          <h3 className="text-base font-bold text-zinc-800 mb-4">طريقة الدفع</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { id: "card", label: "بطاقة" },
-              { id: "wallet", label: "محفظة" },
-              { id: "transfer", label: "تحويل" },
-              { id: "cash", label: "كاش" },
-            ].map(pm => {
-              const sel = draft.paymentMethod === pm.id;
-              return (
-                <button key={pm.id} type="button" onClick={() => updateDraft({ paymentMethod: pm.id })}
-                  className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 text-sm font-semibold
-                    ${sel ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50"}`}>
-                  {PAYMENT_ICONS[pm.id]}
-                  {pm.label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Summary */}
-        <section className="border-t border-zinc-100 pt-6">
-          <h3 className="text-base font-bold text-zinc-800 mb-4">ملخص الإعلان</h3>
-          <div className="bg-zinc-50 rounded-2xl p-5 border border-zinc-100 space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-zinc-500">التصنيف</span>
-              <span className="font-semibold text-zinc-700">{MAIN_CATEGORIES.find(c => c.id === draft.mainCategory)?.label} — {draft.subCategory}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">النوع</span>
-              <span className="font-semibold text-zinc-700">{LISTING_TYPES.find(t => t.id === draft.listingType)?.label}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">الموقع</span>
-              <span className="font-semibold text-zinc-700">{draft.locCityName ?? "—"}{draft.locDistrict ? ` — ${draft.locDistrict}` : ""}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">السعر</span>
-              <span className="font-bold text-primary text-base">{draft.propPrice ? `${Number(draft.propPrice).toLocaleString("ar")} ج.م` : "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">المساحة</span>
-              <span className="font-semibold text-zinc-700">{draft.propArea ? `${draft.propArea} م²` : "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">الصور</span>
-              <span className="font-semibold text-zinc-700">{draft.images.length} صورة</span>
-            </div>
-            <div className="flex justify-between border-t border-zinc-200 pt-3">
-              <span className="text-zinc-500">الباقة</span>
-              <span className="font-bold text-zinc-800">
-                {draft.plan === null ? "مجانية" : sortedPackages.find(p => p.id === draft.plan)?.nameAr ?? "—"}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* Upload progress */}
-        {submitting && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm font-semibold text-zinc-600">
-              <span>جاري رفع الصور والبيانات…</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
-            </div>
-          </div>
-        )}
-
-        <Button
-          onClick={handleSubmit}
-          disabled={submitting}
-          size="lg"
-          className="w-full h-14 rounded-2xl text-base font-extrabold shadow-lg shadow-primary/20"
-        >
-          {submitting
-            ? <><Loader2 className="w-5 h-5 ml-2 animate-spin" />جاري النشر…</>
-            : <><CheckCircle2 className="w-5 h-5 ml-2" />نشر الإعلان الآن</>}
-        </Button>
-      </div>
-    );
+  const getPkgStyle = (pkg: Package, idx: number) => {
+    if (pkg.topBadge || pkg.priorityRank >= 2) return { gradient: "from-amber-500 to-orange-500", badge: "الأكثر طلباً 🔥", icon: <Crown className="w-5 h-5 text-amber-400" />, ring: "ring-2 ring-amber-400/60 shadow-xl shadow-amber-100", accent: "text-amber-600" };
+    if (pkg.priorityRank === 1 || idx === 1) return { gradient: "from-teal-500 to-cyan-600", badge: "الأفضل للمحترفين", icon: <Zap className="w-5 h-5 text-teal-400" />, ring: "ring-2 ring-teal-400/40 shadow-lg shadow-teal-100", accent: "text-teal-600" };
+    return { gradient: "from-slate-400 to-slate-500", badge: null, icon: <Shield className="w-5 h-5 text-slate-400" />, ring: "ring-1 ring-zinc-200", accent: "text-slate-500" };
   };
+
+  const renderStep2 = () => (
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-400">
+      <div className="text-center pb-2">
+        <h2 className="text-2xl font-extrabold text-zinc-800 mb-2">اختر باقة الإعلان</h2>
+        <p className="text-zinc-500">الباقات المميزة تضاعف ظهور عقارك أمام المشترين</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {[{ id: null, name: "أساسية", nameAr: "مجاني", price: "0", durationDays: 30, priorityRank: 0, topBadge: false, features: [], commissionRate: 10 } as any, ...sortedPackages].map((pkg, idx) => {
+          const style = pkg.id === null
+            ? { gradient: "from-zinc-400 to-zinc-500", badge: null, icon: <Shield className="w-5 h-5 text-zinc-400" />, ring: "ring-1 ring-zinc-200", accent: "text-zinc-500" }
+            : getPkgStyle(pkg, idx - 1);
+          const sel = draft.plan === pkg.id;
+          return (
+            <div key={pkg.id ?? "free"} onClick={() => updateDraft({ plan: pkg.id })}
+              className={`relative rounded-2xl border bg-white p-6 cursor-pointer transition-all duration-200
+                ${sel ? `${style.ring} border-transparent scale-[1.02]` : "border-zinc-200 hover:border-zinc-300 hover:shadow-md"}`}>
+              {style.badge && (
+                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${style.gradient} text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap`}>
+                  {style.badge}
+                </div>
+              )}
+              <div className="flex items-start justify-between mb-5">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center`}>{style.icon}</div>
+                {sel && <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center"><Check className="w-3.5 h-3.5 text-white" /></div>}
+              </div>
+              <h3 className="font-extrabold text-zinc-800 text-xl mb-1">{pkg.nameAr ?? pkg.name}</h3>
+              <div className="mb-5">
+                <span className={`text-3xl font-extrabold ${style.accent}`}>
+                  {pkg.id === null ? "مجاني" : `${Number(pkg.price).toLocaleString("ar")} ج.م`}
+                </span>
+                {pkg.id !== null && <span className="text-zinc-400 text-sm"> / {pkg.durationDays} يوم</span>}
+              </div>
+              <ul className="space-y-2 text-sm text-zinc-500">
+                {pkg.id === null ? (
+                  <>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-zinc-400 shrink-0" />نشر العقار</li>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-zinc-400 shrink-0" />30 يوم</li>
+                    <li className="flex items-center gap-2 text-zinc-300"><X className="w-4 h-4 shrink-0" />ظهور مميز</li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary shrink-0" />ظهور مميز في الأعلى</li>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary shrink-0" />{pkg.durationDays} يوم نشر</li>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary shrink-0" />عمولة {pkg.commissionRate}%</li>
+                  </>
+                )}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ملخص مختصر */}
+      <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-5 text-sm">
+        <h3 className="font-bold text-zinc-700 mb-3">ملخص العقار</h3>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <span className="text-zinc-400">التصنيف</span>
+          <span className="font-semibold text-zinc-700 text-left" dir="rtl">{MAIN_CATEGORIES.find(c => c.id === draft.mainCategory)?.label} — {draft.subCategory || "—"}</span>
+          <span className="text-zinc-400">النوع</span>
+          <span className="font-semibold text-zinc-700">{LISTING_TYPES.find(t => t.id === draft.listingType)?.label || "—"}</span>
+          <span className="text-zinc-400">الموقع</span>
+          <span className="font-semibold text-zinc-700">{draft.locCityName ?? "—"}{draft.locDistrict ? ` — ${draft.locDistrict}` : ""}</span>
+          <span className="text-zinc-400">السعر</span>
+          <span className="font-bold text-primary">{draft.propPrice ? `${Number(draft.propPrice).toLocaleString("ar")} ج.م` : "—"}</span>
+          <span className="text-zinc-400">الصور</span>
+          <span className="font-semibold text-zinc-700">{draft.images.length} صورة</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ═══════════════════════════════════════════
+      STEP 3 — طريقة الدفع والنشر
+  ═══════════════════════════════════════════ */
+  const renderStep3 = () => (
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-400">
+      <div className="text-center pb-2">
+        <h2 className="text-2xl font-extrabold text-zinc-800 mb-2">طريقة الدفع</h2>
+        <p className="text-zinc-500">اختر الطريقة المناسبة لك</p>
+      </div>
+
+      {/* طرق الدفع */}
+      <div className="grid grid-cols-2 gap-4">
+        {PAYMENT_METHOD_OPTIONS.map(pm => {
+          const sel = draft.paymentMethod === pm.id;
+          return (
+            <button key={pm.id} type="button" onClick={() => updateDraft({ paymentMethod: pm.id })}
+              className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 font-semibold text-sm
+                ${sel ? "border-primary bg-primary/5 text-primary shadow-md" : "border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50"}`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${sel ? "bg-primary text-white" : "bg-zinc-100 text-zinc-500"}`}>
+                {pm.icon}
+              </div>
+              {pm.label}
+              {sel && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center"><Check className="w-3 h-3 text-white" /></div>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ملخص نهائي */}
+      <div className="border border-zinc-200 rounded-2xl overflow-hidden">
+        <div className="bg-zinc-50 px-5 py-4 border-b border-zinc-100">
+          <h3 className="font-bold text-zinc-800">الملخص النهائي</h3>
+        </div>
+        <div className="p-5 space-y-3 text-sm">
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">التصنيف</span>
+            <span className="font-semibold text-zinc-700">{MAIN_CATEGORIES.find(c => c.id === draft.mainCategory)?.label} — {draft.subCategory || "—"}</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">نوع الصفقة</span>
+            <span className="font-semibold text-zinc-700">{LISTING_TYPES.find(t => t.id === draft.listingType)?.label || "—"}</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">الموقع</span>
+            <span className="font-semibold text-zinc-700">{draft.locCityName ?? "—"}{draft.locDistrict ? ` ، ${draft.locDistrict}` : ""}</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">السعر</span>
+            <span className="font-bold text-primary text-base">{draft.propPrice ? `${Number(draft.propPrice).toLocaleString("ar")} ج.م` : "—"}</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">المساحة</span>
+            <span className="font-semibold text-zinc-700">{draft.propArea ? `${draft.propArea} م²` : "—"}</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">الصور</span>
+            <span className="font-semibold text-zinc-700">{draft.images.length} صورة</span>
+          </div>
+          <div className="flex justify-between py-1 border-t border-zinc-100 pt-3">
+            <span className="text-zinc-500">الباقة</span>
+            <span className="font-bold text-zinc-800">
+              {draft.plan === null ? "مجانية" : sortedPackages.find(p => p.id === draft.plan)?.nameAr ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="text-zinc-500">طريقة الدفع</span>
+            <span className="font-semibold text-zinc-700">{PAYMENT_METHOD_OPTIONS.find(p => p.id === draft.paymentMethod)?.label}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress bar during submit */}
+      {submitting && (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm font-semibold text-zinc-600">
+            <span>جاري رفع الصور والبيانات…</span>
+            <span>{uploadProgress}%</span>
+          </div>
+          <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+          </div>
+        </div>
+      )}
+
+      {/* زر النشر */}
+      <Button onClick={handleSubmit} disabled={submitting} size="lg"
+        className="w-full h-16 rounded-2xl text-lg font-extrabold shadow-xl shadow-primary/20 bg-gradient-to-l from-primary to-teal-500">
+        {submitting
+          ? <><Loader2 className="w-5 h-5 ml-2 animate-spin" />جاري نشر الإعلان…</>
+          : <><CheckCircle2 className="w-6 h-6 ml-2" />نشر الإعلان الآن</>}
+      </Button>
+      <p className="text-center text-xs text-zinc-400">بالنشر أنت توافق على شروط وأحكام المنصة</p>
+    </div>
+  );
 
   /* ═══════════════════════════════════════════
       MAIN LAYOUT
@@ -1120,31 +982,32 @@ export default function RealEstateOnboarding() {
       <Header />
       <StepBar step={step} />
 
-      <div className="max-w-3xl mx-auto px-4 py-8 pb-24">
+      <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
-        {step === 4 && renderStep4()}
       </div>
 
-      {/* Fixed bottom nav */}
-      {step < 4 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 shadow-xl z-40">
-          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-            <Button variant="outline" onClick={handleBack} disabled={step === 1} className="h-11 px-6 rounded-xl font-semibold">
-              <ChevronRight className="w-4 h-4 ml-1" />
-              السابق
+      {/* Fixed bottom navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 shadow-2xl z-40">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          {step > 1 && (
+            <Button variant="outline" onClick={handleBack} className="h-12 px-5 rounded-xl font-semibold shrink-0">
+              <ChevronRight className="w-4 h-4 ml-1" />السابق
             </Button>
-            <div className="flex-1 text-center">
-              <p className="text-xs text-zinc-400 font-medium">الخطوة {step} من {TOTAL_STEPS}</p>
-            </div>
-            <Button onClick={handleNext} className="h-11 px-6 rounded-xl font-bold shadow-md shadow-primary/20">
-              التالي
-              <ChevronLeft className="w-4 h-4 mr-1" />
-            </Button>
+          )}
+          <div className="flex-1 flex items-center justify-center gap-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? "w-8 bg-primary" : i < step ? "w-4 bg-primary/40" : "w-4 bg-zinc-200"}`} />
+            ))}
           </div>
+          {step < TOTAL_STEPS && (
+            <Button onClick={handleNext} className="h-12 px-6 rounded-xl font-bold shadow-lg shadow-primary/20 shrink-0">
+              التالي <ChevronLeft className="w-4 h-4 mr-1" />
+            </Button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
