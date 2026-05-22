@@ -957,23 +957,9 @@ export default function SearchPage() {
         >
           <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/15 pointer-events-none" />
           <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-20">
-            <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-lg text-white tracking-wide
-              ${p.listingType === "sale" ? "bg-emerald-500" : "bg-blue-500"}`}>
-              {typeAr}
-            </span>
             {p.featured && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-500 text-white">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-amber-500 text-white">
                 <Crown className="w-2.5 h-2.5" /> مميز
-              </span>
-            )}
-            {p.urgent && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-red-500 text-white">
-                <Zap className="w-2.5 h-2.5" /> عاجل
-              </span>
-            )}
-            {p.verified && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-teal-600 text-white">
-                <Check className="w-2.5 h-2.5" /> موثّق
               </span>
             )}
           </div>
@@ -1124,12 +1110,7 @@ export default function SearchPage() {
         <PropertyImageGallery images={imgs} alt={p.title} fallback={DEFAULT_IMG} className="h-48">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
           <div className="absolute top-3 right-3 flex flex-col gap-1 z-20">
-            <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-lg text-white
-              ${p.listingType === "sale" ? "bg-emerald-500" : "bg-blue-500"}`}>
-              {LISTING_TYPE_MAP[p.listingType] ?? p.listingType}
-            </span>
-            {p.featured && <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-500 text-white"><Crown className="w-2.5 h-2.5" /> مميز</span>}
-            {p.urgent && <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-red-500 text-white"><Zap className="w-2.5 h-2.5" /> عاجل</span>}
+            {p.featured && <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-amber-500 text-white"><Crown className="w-2.5 h-2.5" /> مميز</span>}
           </div>
           <button onClick={e => toggleSave(p.id, e)}
             className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all

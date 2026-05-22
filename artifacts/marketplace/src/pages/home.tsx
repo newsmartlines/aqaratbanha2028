@@ -20,7 +20,7 @@ import {
   Loader2, Phone, Mail, Map, Heart, MessageCircle,
   Users, Briefcase, ShoppingBag, ClipboardList,
   BedDouble, Bath, Maximize2, Building2, TrendingUp,
-  Store, Trees, Scale, GitCompare, X as XIcon, Eye, Clock,
+  Store, Trees, Scale, GitCompare, X as XIcon, Eye, Clock, Crown,
 } from "lucide-react";
 import { api, type Provider, type Category, type Subcategory, type SiteSettings, type Region, type FavoriteItem } from "@/lib/api";
 import { AdBanner } from "@/components/AdBanner";
@@ -1070,21 +1070,6 @@ export default function Home() {
               })()}
             </motion.div>
 
-            {/* ── Stats strip ── */}
-            <div className="mt-6 flex items-center gap-6 flex-wrap justify-center">
-              {[
-                { label: "عقار متاح", value: platformStats?.properties },
-                { label: "مستخدم مسجل", value: platformStats?.users },
-              ].map((s, i) => (
-                <div key={i} className="flex items-baseline gap-1.5 text-white/90">
-                  <span className="text-xl font-black text-white drop-shadow">
-                    {s.value !== undefined ? s.value.toLocaleString("ar-EG") : "—"}
-                    {s.value !== undefined && <span className="text-sm">+</span>}
-                  </span>
-                  <span className="text-xs text-white/60">{s.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -1161,16 +1146,11 @@ export default function Home() {
                     >
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
 
-                      {/* Top badges */}
+                      {/* Top badges — مميز only */}
                       <div className="absolute top-3 right-3 flex gap-1.5 z-20">
-                        {listType && (
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-lg ${listType === "sale" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
-                            {listType === "sale" ? "للبيع" : "للإيجار"}
-                          </span>
-                        )}
-                        {(property as any).verified && (
-                          <span className="inline-flex items-center gap-1 bg-teal-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
-                            <CheckCircle2 className="w-3 h-3" /> موثق
+                        {(property as any).featured && (
+                          <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+                            <Crown className="w-3 h-3" /> مميز
                           </span>
                         )}
                       </div>
@@ -1187,15 +1167,6 @@ export default function Home() {
                         <Heart className={`w-3.5 h-3.5 ${homeFavIds.includes(property.id) ? "fill-white" : ""}`} />
                       </button>
 
-                      {/* Bottom-of-image row: type chip + WhatsApp */}
-                      <div className="absolute bottom-0 inset-x-0 px-3 pb-3 flex items-end justify-between z-20">
-                        {property.propertyType ? (
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30">
-                            {property.propertyType}
-                          </span>
-                        ) : <span />}
-
-                      </div>
                     </PropertyImageGallery>
 
                     {/* Content */}
@@ -1558,9 +1529,8 @@ export default function Home() {
 
         {/* ── COMMERCIAL & LANDS ── */}
         {(() => {
-          const commercial = homePropsRaw.filter(p => p.mainCategory === "تجاري");
-          const lands = homePropsRaw.filter(p => p.mainCategory === "أراضي");
-          if (commercial.length === 0 && lands.length === 0) return null;
+          const commercial = homePropsRaw.filter(p => p.mainCategory === "تجاري" || p.mainCategory === "commercial");
+          const lands = homePropsRaw.filter(p => p.mainCategory === "أراضي" || p.mainCategory === "land");
 
           const MiniCard = ({ property }: { property: any }) => {
             const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
@@ -1577,8 +1547,8 @@ export default function Home() {
                 <div className="relative h-40 overflow-hidden">
                   <img src={thumb} alt={property.title} className="w-full h-full object-cover" onError={e => { e.currentTarget.src = DEFAULT_IMG; }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  {listType && (
-                    <span className={`absolute top-2 right-2 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${listType === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{listType}</span>
+                  {(property as any).featured && (
+                    <span className="absolute top-2 right-2 inline-flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"><Crown className="w-2.5 h-2.5" /> مميز</span>
                   )}
                   {(property.area ?? 0) > 0 && (
                     <span className="absolute bottom-2 left-2 text-[11px] font-semibold bg-black/40 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{property.area} م²</span>
@@ -1599,8 +1569,7 @@ export default function Home() {
           return (
             <section className="py-14 bg-white border-y border-border/50">
               <div className="container mx-auto px-4 space-y-12">
-                {commercial.length > 0 && (
-                  <div>
+                <div>
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
@@ -1616,12 +1585,12 @@ export default function Home() {
                       </button>
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-                      {commercial.map(p => <MiniCard key={p.id} property={p} />)}
+                      {commercial.length > 0 ? commercial.map(p => <MiniCard key={p.id} property={p} />) : (
+                        <p className="text-sm text-muted-foreground py-6">لا توجد عقارات تجارية متاحة حالياً</p>
+                      )}
                     </div>
                   </div>
-                )}
-                {lands.length > 0 && (
-                  <div>
+                <div>
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
@@ -1637,10 +1606,11 @@ export default function Home() {
                       </button>
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-                      {lands.map(p => <MiniCard key={p.id} property={p} />)}
+                      {lands.length > 0 ? lands.map(p => <MiniCard key={p.id} property={p} />) : (
+                        <p className="text-sm text-muted-foreground py-6">لا توجد أراضي متاحة حالياً</p>
+                      )}
                     </div>
                   </div>
-                )}
               </div>
             </section>
           );
