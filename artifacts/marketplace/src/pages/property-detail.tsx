@@ -154,6 +154,8 @@ export default function PropertyDetail() {
   const [msgOpen, setMsgOpen] = useState(false);
   const [msgContent, setMsgContent] = useState("");
   const [msgSending, setMsgSending] = useState(false);
+  const [msgSent, setMsgSent] = useState(false);
+  const [msgError, setMsgError] = useState("");
 
   const { user } = useAuth();
 
@@ -1153,7 +1155,7 @@ export default function PropertyDetail() {
       </Dialog>
 
       {/* ── Message Modal ── */}
-      <Dialog open={msgOpen} onOpenChange={(o) => { if (!o) { setMsgOpen(false); } }}>
+      <Dialog open={msgOpen} onOpenChange={(o) => { if (!o) { setMsgOpen(false); setMsgSent(false); setMsgError(""); setMsgContent(""); } }}>
         <DialogContent className="max-w-md" dir="rtl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-primary">
@@ -1162,65 +1164,90 @@ export default function PropertyDetail() {
             </DialogTitle>
           </DialogHeader>
 
-          <form
-            className="space-y-4 pt-1"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (!msgContent.trim() || !property?.ownerUserId) return;
-              setMsgSending(true);
-              try {
-                await api.messages.send(property.ownerUserId, msgContent.trim(), property.id);
-                setMsgOpen(false);
-                setMsgContent("");
-                setLocation(`/user/inbox?otherId=${property.ownerUserId}&propertyId=${property.id}`);
-              } catch {
-                alert("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى");
-              } finally {
-                setMsgSending(false);
-              }
-            }}
-          >
-            {property && (
-              <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/15 mb-2">
-                <div className="w-10 h-10 rounded-lg overflow-hidden bg-primary/10 shrink-0">
-                  {property.gallery[0]
-                    ? <img src={property.gallery[0]} className="w-full h-full object-cover" alt="" />
-                    : <Home className="w-5 h-5 text-primary/40 m-auto mt-2.5" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">{property.title}</p>
-                  <p className="text-xs text-primary font-semibold">
-                    {property.priceNum > 0 ? `${property.priceNum.toLocaleString("ar-EG")} ج.م` : "السعر غير محدد"}
-                  </p>
-                </div>
+          {msgSent ? (
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
-            )}
-            <div className="space-y-1.5">
-              <Label htmlFor="msg-content">رسالتك</Label>
-              <Textarea
-                id="msg-content"
-                placeholder="اكتب رسالتك لصاحب الإعلان..."
-                rows={4}
-                value={msgContent}
-                onChange={(e) => setMsgContent(e.target.value)}
-                required
-                autoFocus
-              />
+              <div>
+                <p className="text-base font-bold text-gray-900 mb-1">تم إرسال رسالتك بنجاح!</p>
+                <p className="text-sm text-muted-foreground">سيتواصل معك صاحب الإعلان قريباً.</p>
+              </div>
+              <div className="flex gap-2 w-full pt-1">
+                <Button className="flex-1 rounded-xl" onClick={() => { setMsgOpen(false); setMsgSent(false); setMsgContent(""); }}>
+                  حسناً
+                </Button>
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setLocation(`/user/inbox?otherId=${property?.ownerUserId}&propertyId=${property?.id}`)}>
+                  فتح المحادثة
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2 pt-1">
-              <Button
-                type="submit"
-                className="flex-1 rounded-xl"
-                disabled={msgSending || !msgContent.trim()}
-              >
-                {msgSending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <MessageCircle className="w-4 h-4 ml-2" />}
-                إرسال وفتح المحادثة
-              </Button>
-              <Button type="button" variant="outline" className="rounded-xl" onClick={() => setMsgOpen(false)}>
-                إلغاء
-              </Button>
-            </div>
-          </form>
+          ) : (
+            <form
+              className="space-y-4 pt-1"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!msgContent.trim() || !property?.ownerUserId) return;
+                setMsgSending(true);
+                setMsgError("");
+                try {
+                  await api.messages.send(property.ownerUserId, msgContent.trim(), property.id);
+                  setMsgSent(true);
+                } catch {
+                  setMsgError("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى.");
+                } finally {
+                  setMsgSending(false);
+                }
+              }}
+            >
+              {property && (
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/15 mb-2">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-primary/10 shrink-0">
+                    {property.gallery[0]
+                      ? <img src={property.gallery[0]} className="w-full h-full object-cover" alt="" />
+                      : <Home className="w-5 h-5 text-primary/40 m-auto mt-2.5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">{property.title}</p>
+                    <p className="text-xs text-primary font-semibold">
+                      {property.priceNum > 0 ? `${property.priceNum.toLocaleString("ar-EG")} ج.م` : "السعر غير محدد"}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="msg-content">رسالتك</Label>
+                <Textarea
+                  id="msg-content"
+                  placeholder="اكتب رسالتك لصاحب الإعلان..."
+                  rows={4}
+                  value={msgContent}
+                  onChange={(e) => { setMsgContent(e.target.value); setMsgError(""); }}
+                  required
+                  autoFocus
+                />
+              </div>
+              {msgError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                  <span className="shrink-0">⚠️</span>
+                  {msgError}
+                </div>
+              )}
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-xl"
+                  disabled={msgSending || !msgContent.trim()}
+                >
+                  {msgSending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <MessageCircle className="w-4 h-4 ml-2" />}
+                  إرسال الرسالة
+                </Button>
+                <Button type="button" variant="outline" className="rounded-xl" onClick={() => { setMsgOpen(false); setMsgError(""); setMsgContent(""); }}>
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
