@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
-import { PropertyFormWizard, type FormMode } from "@/components/PropertyFormWizard";
+import { PropertyFormFull, type FormMode } from "@/components/property-form";
 
 export default function UserAddPropertyPage() {
   const [, setLocation] = useLocation();
@@ -28,7 +28,7 @@ export default function UserAddPropertyPage() {
     <div className="min-h-screen bg-gray-50" dir="rtl">
       <Header />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <PropertyFormWizard
+        <PropertyFormFull
           mode={mode}
           backPath="/user/dashboard"
           showPlans={true}

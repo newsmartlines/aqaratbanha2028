@@ -10,7 +10,7 @@ interface Step4MediaProps {
   register:         UseFormRegister<FormValues>;
   isCompany:        boolean;
   uploading:        boolean;
-  fileInputRef:     React.RefObject<HTMLInputElement>;
+  fileInputRef:     React.RefObject<HTMLInputElement | null>;
   removeImage:      (url: string) => void;
   handleFileUpload: (files: FileList | null) => void;
 }

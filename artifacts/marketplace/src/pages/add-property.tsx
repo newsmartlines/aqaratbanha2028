@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
-import { PropertyFormWizard, type FormMode } from "@/components/PropertyFormWizard";
-
-// ── Guest screen shown to unauthenticated visitors ──────────────────────────
+import { PropertyFormFull, type FormMode } from "@/components/property-form";
 
 function GuestScreen() {
   return (
@@ -79,8 +77,6 @@ function GuestScreen() {
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
-
 export default function AddPropertyPage() {
   const { user, loading } = useAuth();
 
@@ -100,10 +96,10 @@ export default function AddPropertyPage() {
     <div className="min-h-screen bg-gray-50" dir="rtl">
       <Header />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <PropertyFormWizard
+        <PropertyFormFull
           mode={mode}
           backPath="/"
-          showPlans={false}
+          showPlans={true}
         />
       </div>
       <RealEstateFooter />
