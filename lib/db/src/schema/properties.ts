@@ -2,10 +2,12 @@ import { pgTable, serial, text, numeric, integer, timestamp, boolean } from "dri
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { providersTable } from "./providers";
+import { usersTable } from "./users";
 
 export const propertiesTable = pgTable("properties", {
   id: serial("id").primaryKey(),
-  providerId: integer("provider_id").notNull().references(() => providersTable.id, { onDelete: "cascade" }),
+  providerId: integer("provider_id").references(() => providersTable.id, { onDelete: "cascade" }),
+  ownerUserId: integer("owner_user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   mainCategory: text("main_category").notNull(),

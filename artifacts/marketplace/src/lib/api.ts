@@ -835,6 +835,15 @@ export const api = {
         headers: userId ? { "x-user-id": String(userId) } : undefined,
       }),
   },
+  userProperties: {
+    list: () =>
+      fetchJson<any>(`/user/properties`).then((r: any) =>
+        Array.isArray(r) ? r : (r?.data ?? [])
+      ),
+    create: (data: Record<string, any>) =>
+      fetchJson(`/properties`, { method: "POST", body: JSON.stringify(data) }),
+  },
+
   propertyFavorites: {
     list: () => fetchJson<any[]>(`/property-favorites`),
     add: (propertyId: number) =>

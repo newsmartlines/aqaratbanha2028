@@ -402,10 +402,11 @@ router.post("/properties", async (req, res) => {
     if (!title) return res.status(400).json({ success: false, error: "العنوان مطلوب" });
     if (!mainCategory) return res.status(400).json({ success: false, error: "التصنيف الرئيسي مطلوب" });
     if (!listingType) return res.status(400).json({ success: false, error: "نوع القائمة مطلوب" });
-    if (!providerId) return res.status(400).json({ success: false, error: "معرّف المزود مطلوب" });
+    if (!providerId && !session.userId) return res.status(400).json({ success: false, error: "معرّف المزود أو المستخدم مطلوب" });
 
     const [property] = await db.insert(propertiesTable).values({
-      providerId: parseInt(providerId),
+      providerId: providerId ? parseInt(providerId) : null,
+      ownerUserId: !providerId ? session.userId : null,
       title,
       description,
       mainCategory,
@@ -486,6 +487,22 @@ router.delete("/properties/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to delete property" });
+  }
+});
+
+// ── GET /api/user/properties — current user's submitted properties ─────────
+router.get("/user/properties", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
+    const rows = await db
+      .select()
+      .from(propertiesTable)
+      .where(eq(propertiesTable.ownerUserId, session.userId))
+      .orderBy(desc(propertiesTable.createdAt));
+    res.json({ success: true, data: rows });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
   }
 });
 

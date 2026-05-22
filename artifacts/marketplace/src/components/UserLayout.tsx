@@ -11,6 +11,8 @@ import {
   MessageCircle as MessageCircleIcon,
   BellRing,
   ArrowRight,
+  Building2,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -26,6 +28,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const { user, logout, loading: authLoading } = useAuth();
   const dashboardNavigation = [
     { name: "الرئيسية", href: "/user/dashboard", icon: LayoutDashboard },
+    { name: "عقاراتي", href: "/user/my-properties", icon: Building2 },
     { name: "المفضلة", href: "/user/favorites", icon: Heart },
     { name: "تنبيهات البحث", href: "/user/saved-searches", icon: BellRing },
     { name: "مدفوعاتي", href: "/user/payments", icon: CreditCard },
@@ -73,6 +76,15 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
       {/* Dashboard nav links + back to site + logout — all scrollable */}
       <div className="flex-1 min-h-0 overflow-y-auto py-4 px-3 hide-scrollbar">
+        {/* Add property CTA */}
+        <Link
+          href="/user/add-property"
+          className="flex items-center px-3 py-2.5 mb-3 text-sm font-semibold rounded-xl transition-colors bg-teal-600 hover:bg-teal-500 text-white"
+        >
+          <Plus className="ml-3 shrink-0 h-5 w-5" />
+          أضف عقارك
+        </Link>
+
         <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-blue-300/40">القائمة</p>
         <nav className="space-y-1">
           {dashboardNavigation.map((item) => {
