@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 import { AdBanner } from "@/components/AdBanner";
 import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
@@ -74,6 +75,7 @@ type PropertyView = {
   agentDistrict: string;
   agentMemberSince: string | null;
   providerId: number | null;
+  ownerUserId: number | null;
   viewCount: number;
   createdAt: string | null;
 };
@@ -116,6 +118,7 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     agentDistrict: (p.agentDistrict as string) ?? "",
     agentMemberSince: (p.agentMemberSince as string) ?? null,
     providerId: (p.providerId as number) ?? null,
+    ownerUserId: (p.ownerUserId as number) ?? null,
     viewCount: (p.viewCount as number) ?? 0,
     createdAt: (p.createdAt as string) ?? null,
   };
@@ -145,6 +148,14 @@ export default function PropertyDetail() {
   const [reportMessage, setReportMessage] = useState("");
   const [reportSending, setReportSending] = useState(false);
   const [reportDone, setReportDone] = useState(false);
+
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgContent, setMsgContent] = useState("");
+  const [msgSending, setMsgSending] = useState(false);
+  const [msgSent, setMsgSent] = useState(false);
+
+  const { user } = useAuth();
+
   const viewTracked = useRef(false);
   const { items: compareItems, isIn: isInCompare } = useCompare();
 
@@ -798,6 +809,17 @@ export default function PropertyDetail() {
                   </a>
                 </Button>
               )}
+              {/* Message button - show when logged in and not owner */}
+              {user && property.ownerUserId && user.id !== property.ownerUserId && (
+                <Button
+                  variant="outline"
+                  className="w-full rounded-2xl h-12 text-base font-bold border-primary text-primary hover:bg-primary/5"
+                  onClick={() => { setMsgOpen(true); setMsgSent(false); setMsgContent(""); }}
+                >
+                  <MessageCircle className="w-4 h-4 ml-2" />
+                  راسل صاحب الإعلان
+                </Button>
+              )}
               {!property.agentPhone && !property.agentWhatsapp && (
                 <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
                   <Phone className="w-4 h-4 ml-2" />
@@ -1087,6 +1109,92 @@ export default function PropertyDetail() {
                   {reportSending ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال البلاغ"}
                 </Button>
                 <Button type="button" variant="outline" className="rounded-xl" onClick={() => setReportOpen(false)}>
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Message Modal ── */}
+      <Dialog open={msgOpen} onOpenChange={(o) => { if (!o) { setMsgOpen(false); } }}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <MessageCircle className="w-5 h-5 shrink-0" />
+              راسل صاحب الإعلان
+            </DialogTitle>
+          </DialogHeader>
+
+          {msgSent ? (
+            <div className="py-8 flex flex-col items-center gap-3 text-center">
+              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-7 h-7 text-green-600" />
+              </div>
+              <p className="font-bold text-gray-800 text-lg">تم إرسال الرسالة</p>
+              <p className="text-sm text-muted-foreground">يمكنك متابعة المحادثة من صفحة رسائلك</p>
+              <div className="flex gap-2 mt-2">
+                <Button className="rounded-xl" asChild>
+                  <a href="/user/inbox">الذهاب للرسائل</a>
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setMsgOpen(false)}>إغلاق</Button>
+              </div>
+            </div>
+          ) : (
+            <form
+              className="space-y-4 pt-1"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!msgContent.trim() || !property?.ownerUserId) return;
+                setMsgSending(true);
+                try {
+                  await api.messages.send(property.ownerUserId, msgContent.trim(), property.id);
+                  setMsgSent(true);
+                } catch {
+                  alert("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى");
+                } finally {
+                  setMsgSending(false);
+                }
+              }}
+            >
+              {property && (
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/15 mb-2">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-primary/10 shrink-0">
+                    {property.gallery[0]
+                      ? <img src={property.gallery[0]} className="w-full h-full object-cover" alt="" />
+                      : <Home className="w-5 h-5 text-primary/40 m-auto mt-2.5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">{property.title}</p>
+                    <p className="text-xs text-primary font-semibold">
+                      {property.priceNum > 0 ? `${property.priceNum.toLocaleString("ar-EG")} ج.م` : "السعر غير محدد"}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="msg-content">رسالتك</Label>
+                <Textarea
+                  id="msg-content"
+                  placeholder="اكتب رسالتك لصاحب الإعلان..."
+                  rows={4}
+                  value={msgContent}
+                  onChange={(e) => setMsgContent(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-xl"
+                  disabled={msgSending || !msgContent.trim()}
+                >
+                  {msgSending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <MessageCircle className="w-4 h-4 ml-2" />}
+                  إرسال الرسالة
+                </Button>
+                <Button type="button" variant="outline" className="rounded-xl" onClick={() => setMsgOpen(false)}>
                   إلغاء
                 </Button>
               </div>

@@ -334,8 +334,17 @@ export interface InboxThread {
   otherAvatar?: string;
   otherRole?: string;
   content?: string;
+  createdAt?: string;
   updatedAt?: string;
   unreadCount?: number;
+  propertyId?: number | null;
+  propertyTitle?: string | null;
+  propertyPrice?: string | null;
+  propertyImages?: string | null;
+  propertyListingType?: string | null;
+  propertyMainCategory?: string | null;
+  senderId?: number;
+  isRead?: boolean;
 }
 export interface Notification {
   id: number;
@@ -741,10 +750,25 @@ export const api = {
 
   messages: {
     inbox: async () => ensureArray<InboxThread>(await fetchJson(`/messages/inbox`)),
-    conversation: async (otherId: number) => ensureArray(await fetchJson(`/messages/conversation/${otherId}`)),
-    getChat: async (id: number) => ensureArray(await fetchJson(`/messages/conversation/${id}`)),
-    send: (receiverId: number, content: string) =>
-      fetchJson(`/messages`, { method: "POST", body: JSON.stringify({ receiverId, content }) }),
+    conversation: async (otherId: number, propertyId?: number | null) => {
+      const url = propertyId
+        ? `/messages/conversation/${otherId}?propertyId=${propertyId}`
+        : `/messages/conversation/${otherId}`;
+      const res = await fetchJson<{ data: unknown[]; property: unknown }>(url);
+      return res as { data: unknown[]; property: unknown };
+    },
+    send: (receiverId: number, content: string, propertyId?: number | null) =>
+      fetchJson(`/messages`, { method: "POST", body: JSON.stringify({ receiverId, content, propertyId }) }),
+    unreadCount: async () => {
+      const res = await fetchJson<number>(`/messages/unread-count`);
+      return typeof res === "number" ? res : (res as any)?.data ?? 0;
+    },
+    markRead: (otherId: number, propertyId?: number | null) => {
+      const url = propertyId
+        ? `/messages/conversation/${otherId}/read?propertyId=${propertyId}`
+        : `/messages/conversation/${otherId}/read`;
+      return fetchJson(url, { method: "PATCH", body: JSON.stringify({}) });
+    },
   },
 
   notifications: {

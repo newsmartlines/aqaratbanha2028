@@ -285,6 +285,7 @@ router.get("/properties/:id", async (req, res) => {
     let agentDistrict = "";
     let agentMemberSince: string | null = null;
     let providerIdForAgent: number | null = property.providerId;
+    let providerOwnerUserId: number | null = null;
 
     try {
       const [prov] = await db.select({
@@ -303,12 +304,16 @@ router.get("/properties/:id", async (req, res) => {
         agentCity = prov.city ?? "";
         agentDistrict = prov.district ?? "";
         agentMemberSince = prov.createdAt?.toISOString() ?? null;
+        providerOwnerUserId = prov.userId ?? null;
 
         const [usr] = await db.select({ name: usersTable.name })
           .from(usersTable).where(eq(usersTable.id, prov.userId));
         if (usr) agentName = usr.name ?? "";
       }
     } catch {}
+
+    // Resolve final ownerUserId: direct user property or via provider
+    const resolvedOwnerUserId = property.ownerUserId ?? providerOwnerUserId;
 
     res.json({
       success: true,
@@ -321,6 +326,7 @@ router.get("/properties/:id", async (req, res) => {
         agentDistrict,
         agentMemberSince,
         providerId: providerIdForAgent,
+        ownerUserId: resolvedOwnerUserId,
       },
     });
   } catch (err: any) {

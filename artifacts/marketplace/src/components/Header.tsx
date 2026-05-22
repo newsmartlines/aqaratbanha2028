@@ -25,6 +25,13 @@ export function Header() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: msgUnread = 0 } = useQuery({
+    queryKey: ["messages-unread-count"],
+    queryFn: api.messages.unreadCount,
+    refetchInterval: 15000,
+    enabled: !!user,
+  });
+
   const siteName = settings?.siteName ?? "عقارات بنها";
   const logoUrl = settings?.logoUrl;
 
@@ -72,7 +79,7 @@ export function Header() {
     { icon: PlusCircle, label: "أضف عقارك", href: "/add-property", highlight: true },
     { icon: Building2, label: "عقاراتي", href: "/user/my-properties" },
     { icon: Heart, label: "المفضلة", href: "/user/favorites" },
-    { icon: MessageCircle, label: "رسائلي", href: "/user/inbox" },
+    { icon: MessageCircle, label: "رسائلي", href: "/user/inbox", badge: msgUnread > 0 ? msgUnread : 0 },
     { icon: Settings, label: "الإعدادات", href: "/user/settings" },
   ];
 
@@ -150,7 +157,12 @@ export function Header() {
                           className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors text-right ${'highlight' in item && item.highlight ? "text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30 font-semibold" : "hover:bg-secondary/60"}`}
                         >
                           <item.icon className={`w-4 h-4 shrink-0 ${'highlight' in item && item.highlight ? "text-teal-600" : "text-muted-foreground"}`} />
-                          {item.label}
+                          <span className="flex-1 text-right">{item.label}</span>
+                          {'badge' in item && item.badge ? (
+                            <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                              {(item.badge as number) > 9 ? "9+" : item.badge as number}
+                            </span>
+                          ) : null}
                         </button>
                       </Link>
                     ))}

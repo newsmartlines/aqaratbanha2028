@@ -29,12 +29,13 @@ export default function ProviderInbox() {
     refetchInterval: 10000,
   });
 
-  const { data: conversation = [], isLoading: convLoading } = useQuery({
+  const { data: convData, isLoading: convLoading } = useQuery({
     queryKey: ["conversation", selectedId],
     queryFn: () => api.messages.conversation(selectedId!),
     enabled: !!selectedId,
     refetchInterval: 5000,
   });
+  const conversation: any[] = (convData as any)?.data ?? [];
 
   const sendMutation = useMutation({
     mutationFn: () => api.messages.send(selectedId!, draft.trim()),
