@@ -20,6 +20,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 interface UserLayoutProps {
   children: ReactNode;
@@ -29,6 +31,14 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, logout, loading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  const { data: msgUnreadData = 0 } = useQuery({
+    queryKey: ["messages-unread-count"],
+    queryFn: api.messages.unreadCount,
+    enabled: !!user,
+    refetchInterval: 15_000,
+  });
+  const msgUnread = typeof msgUnreadData === "number" ? msgUnreadData : 0;
 
   // Show welcome toast on first login after registration
   useEffect(() => {
@@ -46,14 +56,14 @@ export default function UserLayout({ children }: UserLayoutProps) {
   }, [user]);
 
   const dashboardNavigation = [
-    { name: "الرئيسية", href: "/user/dashboard", icon: LayoutDashboard },
-    { name: "عقاراتي", href: "/user/my-properties", icon: Building2 },
-    { name: "المفضلة", href: "/user/favorites", icon: Heart },
-    { name: "تنبيهات البحث", href: "/user/saved-searches", icon: BellRing },
-    { name: "مدفوعاتي", href: "/user/payments", icon: CreditCard },
-    { name: "رسائلي", href: "/user/inbox", icon: MessageCircleIcon },
-    { name: "الإعدادات", href: "/user/settings", icon: Settings },
-    { name: "المساعدة", href: "/user/support", icon: HelpCircle },
+    { name: "الرئيسية",       href: "/user/dashboard",       icon: LayoutDashboard, badge: 0 },
+    { name: "عقاراتي",        href: "/user/my-properties",   icon: Building2,       badge: 0 },
+    { name: "المفضلة",        href: "/user/favorites",       icon: Heart,           badge: 0 },
+    { name: "تنبيهات البحث",  href: "/user/saved-searches",  icon: BellRing,        badge: 0 },
+    { name: "مدفوعاتي",       href: "/user/payments",        icon: CreditCard,      badge: 0 },
+    { name: "رسائلي",         href: "/user/inbox",           icon: MessageCircleIcon, badge: msgUnread },
+    { name: "الإعدادات",      href: "/user/settings",        icon: Settings,        badge: 0 },
+    { name: "المساعدة",       href: "/user/support",         icon: HelpCircle,      badge: 0 },
   ];
 
   const handleLogout = async () => {
@@ -119,7 +129,12 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 }`}
               >
                 <item.icon className={`ml-3 shrink-0 h-5 w-5 ${isActive ? "text-blue-300" : "text-blue-300/60 group-hover:text-white"}`} />
-                {item.name}
+                <span className="flex-1">{item.name}</span>
+                {item.badge > 0 && (
+                  <span className="shrink-0 min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-[#0a1628] text-[10px] font-bold flex items-center justify-center">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

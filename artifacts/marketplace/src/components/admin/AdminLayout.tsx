@@ -324,6 +324,27 @@ function LanguageToggle() {
   );
 }
 
+function MessagesBadge() {
+  const { data: count = 0 } = useQuery({
+    queryKey: ["messages-unread-count"],
+    queryFn: api.messages.unreadCount,
+    refetchInterval: 15_000,
+  });
+  const n = typeof count === "number" ? count : 0;
+  return (
+    <Link href="/admin/messages">
+      <button className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" title="الرسائل">
+        <MessageSquare size={20} />
+        {n > 0 && (
+          <span className="absolute top-1 left-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center border border-white">
+            {n > 9 ? "9+" : n}
+          </span>
+        )}
+      </button>
+    </Link>
+  );
+}
+
 export function AdminLayout({ children, title }: { children: React.ReactNode; title?: string }) {
   const SIDEBAR_W = "w-64";
   const t = useT(layoutDict);
@@ -359,6 +380,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
 
         <div className="flex items-center gap-2">
           <LanguageToggle />
+          <MessagesBadge />
           <NotificationBell />
           <div className="h-7 w-px bg-slate-200 mx-1 hidden sm:block" />
           <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-1.5 border border-slate-200">

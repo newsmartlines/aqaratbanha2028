@@ -44,7 +44,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
       });
     }, 500);
   }, [user]);
-  // Unread count for sidebar badge
+  // Unread notifications count
   const { data: unreadData } = useQuery({
     queryKey: ["notifications-unread"],
     queryFn: api.notifications.unreadCount,
@@ -53,12 +53,21 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   });
   const unreadCount = typeof unreadData === "number" ? unreadData : 0;
 
+  // Unread messages count
+  const { data: msgUnreadData = 0 } = useQuery({
+    queryKey: ["messages-unread-count"],
+    queryFn: api.messages.unreadCount,
+    enabled: !!user,
+    refetchInterval: 15_000,
+  });
+  const msgUnread = typeof msgUnreadData === "number" ? msgUnreadData : 0;
+
   const dashboardNav = [
     { name: "لوحة التحكم",    href: "/provider/dashboard",        icon: LayoutDashboard,   badge: 0 },
     { name: "الاشتراك",       href: "/provider/subscription",     icon: Crown,             badge: 0 },
     { name: "عقاراتي",        href: "/dashboard/my-properties",   icon: Building2,         badge: 0 },
     { name: "الإشعارات",      href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
-    { name: "الرسائل",        href: "/dashboard/inbox",           icon: MessageCircleIcon, badge: 0 },
+    { name: "الرسائل",        href: "/dashboard/inbox",           icon: MessageCircleIcon, badge: msgUnread },
     { name: "تذاكر الدعم",    href: "/dashboard/support-tickets", icon: Ticket,            badge: 0 },
     { name: "المدفوعات",      href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
     { name: "الإعدادات",      href: "/dashboard/settings",        icon: Settings,          badge: 0 },
