@@ -179,48 +179,6 @@ export default function UserSettings() {
                         dir="ltr"
                       />
                     </div>
-                    <div className="space-y-2 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>المنطقة</Label>
-                        <Select
-                          value={regionId || "__none__"}
-                          onValueChange={(v) => {
-                            setRegionId(v === "__none__" ? "" : v);
-                            setCityId("");
-                          }}
-                        >
-                          <SelectTrigger className="bg-background">
-                            <SelectValue placeholder="اختر المنطقة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">—</SelectItem>
-                            {(regList as Region[]).map((r) => (
-                              <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>المدينة</Label>
-                        <Select
-                          value={cityId || "__none__"}
-                          onValueChange={(v) => setCityId(v === "__none__" ? "" : v)}
-                          disabled={!regionId}
-                        >
-                          <SelectTrigger className="bg-background">
-                            <SelectValue placeholder="اختر المدينة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">—</SelectItem>
-                            {((regList as Region[]).find((r) => r.id === parseInt(regionId, 10))?.cities ?? [])
-                              .filter((c) => c.enabled !== false)
-                              .map((c) => (
-                                <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
                   </div>
 
                   <div className="pt-4 flex justify-end">
