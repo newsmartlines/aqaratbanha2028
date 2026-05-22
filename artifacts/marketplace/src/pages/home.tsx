@@ -1078,30 +1078,9 @@ export default function Home() {
         </div>
 
         {/* ── REAL ESTATE LISTINGS ── */}
-        <section
-          className="py-20 bg-white relative overflow-hidden"
-          style={{
-            backgroundImage: "radial-gradient(circle, #cbd5e1 1.5px, transparent 1.5px)",
-            backgroundSize: "30px 30px",
-          }}
-        >
-          {/* Fade edges — keeps dots visible in the middle, fades at borders */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{
-              background: [
-                "linear-gradient(to bottom, white 0%, transparent 8%, transparent 92%, white 100%)",
-                "linear-gradient(to right,  white 0%, transparent 8%, transparent 92%, white 100%)",
-              ].join(", "),
-            }}
-          />
-          {/* Soft teal glow top-right */}
-          <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 70%)" }} />
-          {/* Soft accent glow bottom-left */}
-          <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%)" }} />
+        <section className="py-20 bg-white relative overflow-hidden">
 
-          <div className="container mx-auto px-4 relative z-10">
+          <div className="container mx-auto px-4">
             {/* Header */}
             <div className="flex items-end justify-between mb-12">
               <div>
@@ -1130,7 +1109,7 @@ export default function Home() {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : homePropsRaw.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground border border-dashed border-border/60 rounded-3xl bg-secondary/20">
+              <div className="text-center py-16 text-muted-foreground">
                 <Building2 className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
                 <p className="font-medium">لا توجد عقارات متاحة حالياً</p>
               </div>
@@ -1661,51 +1640,6 @@ export default function Home() {
 
         {/* ── AI: RECENTLY VIEWED ── */}
         <RecentlyViewedSection />
-
-        {/* ── HOW IT WORKS ── */}
-        <section className="py-24 bg-secondary/30">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">كيف يعمل "{siteName}"؟</h2>
-            <p className="text-muted-foreground text-lg mb-16 max-w-2xl mx-auto">خطوات بسيطة تفصلك عن إيجاد العقار المثالي أو بيع عقارك بأفضل سعر.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-              <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-border/50 border-t border-dashed border-border z-0"></div>
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-24 h-24 rounded-3xl bg-card border border-border shadow-lg flex items-center justify-center mb-6 text-3xl font-black text-primary">1</div>
-                <h3 className="text-xl font-bold mb-3">ابحث عن العقار</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">تصفح التصنيفات العقارية أو استخدم محرك البحث للعثور على العقار الذي يناسبك في منطقتك.</p>
-              </div>
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-24 h-24 rounded-3xl bg-card border border-border shadow-lg flex items-center justify-center mb-6 text-3xl font-black text-primary">2</div>
-                <h3 className="text-xl font-bold mb-3">تواصل مع الشركة</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">تواصل مع الشركة العقارية مباشرة، اتفق على التفاصيل، وقم بتأكيد طلبك بكل سهولة.</p>
-              </div>
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-24 h-24 rounded-3xl bg-primary shadow-xl shadow-primary/20 flex items-center justify-center mb-6 text-3xl font-black text-primary-foreground">3</div>
-                <h3 className="text-xl font-bold mb-3">استلم وابدأ رحلتك</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">احصل على العقار المناسب وابدأ رحلتك الجديدة بكل راحة وثقة مع ضمان الجودة.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── CTA ── */}
-        <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-          <div className="container mx-auto px-4 text-center relative z-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">{ctaText}</h2>
-            <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-              سجّل شركتك العقارية اليوم وابدأ في الوصول إلى آلاف الباحثين عن العقارات في منطقتك.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/20 rounded-full px-10 h-14 text-lg font-bold transition-transform hover:scale-105" onClick={() => setLocation("/company-register")}>
-                {ctaButtonText}
-              </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-full px-10 h-14 text-lg font-bold" onClick={() => setLocation("/properties")}>
-                تصفح العقارات
-              </Button>
-            </div>
-          </div>
-        </section>
 
         {/* ── AD: before footer ── */}
         <div className="container mx-auto px-4 py-4">
