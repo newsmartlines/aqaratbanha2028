@@ -365,7 +365,8 @@ export default function AiChat() {
   const [hasBounced, setHasBounced] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const acTimer = useRef<ReturnType<typeof setTimeout>>();
+  const acTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [, setLocation] = useLocation();
 
   useEffect(() => { const t = setTimeout(() => setHasBounced(true), 3500); return () => clearTimeout(t); }, []);
   useEffect(() => { setMessages(prev => prev.length === 1 && prev[0].id === "welcome" ? [{ ...prev[0], text: welcomeText, suggestions: quickReplies }] : prev); }, [welcomeText]);

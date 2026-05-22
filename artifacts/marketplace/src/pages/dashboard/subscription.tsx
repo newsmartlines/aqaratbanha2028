@@ -104,7 +104,7 @@ export default function ProviderSubscription() {
 
   const isCurrentPlan = (plan: BillingPlan) => {
     if (!sub?.isActive) return false;
-    return sub.billingPlanId === plan.id || sub.packageNameAr === (plan.nameAr ?? plan.name);
+    return (sub as any).billingPlanId === plan.id || sub.packageNameAr === (plan.nameAr ?? plan.name);
   };
 
   const hasUsedFreePlan = Boolean(

@@ -429,7 +429,7 @@ export function SmartSearch({
                   {(data?.trending ?? []).length > 0 && (
                     <>
                       <SectionHeader icon={<TrendingUp className="w-3 h-3" />} label="اقتراحات" />
-                      {(data.trending).map(t => {
+                      {(data!.trending).map(t => {
                         const idx = flatItems.findIndex(f => f.type === "trending" && f.text === t.text);
                         return (
                           <Row
@@ -449,7 +449,7 @@ export function SmartSearch({
                   {(data?.cities ?? []).length > 0 && (
                     <>
                       <SectionHeader icon={<MapPin className="w-3 h-3" />} label="المدن" />
-                      {(data.cities).map(c => {
+                      {(data!.cities).map(c => {
                         const idx = flatItems.findIndex(f => f.type === "city" && f.id === c.id);
                         return (
                           <Row
@@ -470,7 +470,7 @@ export function SmartSearch({
                   {(data?.areas ?? []).length > 0 && (
                     <>
                       <SectionHeader icon={<MapPin className="w-3 h-3" />} label="الأحياء والمناطق" />
-                      {(data.areas).map(a => {
+                      {(data!.areas).map(a => {
                         const idx = flatItems.findIndex(f => f.type === "area" && f.id === a.id);
                         return (
                           <Row
@@ -491,7 +491,7 @@ export function SmartSearch({
                   {(data?.categories ?? []).length > 0 && (
                     <>
                       <SectionHeader icon={<Tag className="w-3 h-3" />} label="أنواع العقارات" />
-                      {(data.categories).map(c => {
+                      {(data!.categories).map(c => {
                         const idx = flatItems.findIndex(f => f.type === "category" && f.id === c.id);
                         return (
                           <Row
@@ -512,7 +512,7 @@ export function SmartSearch({
                   {(data?.properties ?? []).length > 0 && (
                     <>
                       <SectionHeader icon={<Building2 className="w-3 h-3" />} label="العقارات" />
-                      {(data.properties).map(p => {
+                      {(data!.properties).map(p => {
                         const idx = flatItems.findIndex(f => f.type === "property" && f.id === p.id);
                         const badge = p.listingType === "sale"
                           ? { label: "للبيع", className: "bg-emerald-100 text-emerald-700" }

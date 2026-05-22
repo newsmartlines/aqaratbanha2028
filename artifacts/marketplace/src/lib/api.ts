@@ -492,6 +492,7 @@ export const api = {
         suspendedUsers: number;
         pendingOrders: number;
         openTickets: number;
+        pendingProperties: number;
       }>(`/admin/sidebar-counts`),
     payments: {
       list: (params?: { from?: string; to?: string; status?: string }) =>
@@ -776,7 +777,7 @@ export const api = {
 
   stats: {
     platform: () =>
-      fetchJson<{ providers: number; users: number; services: number; requests: number }>(`/stats`),
+      fetchJson<{ providers: number; users: number; services: number; requests: number; properties: number }>(`/stats`),
   },
 
   reviews: {

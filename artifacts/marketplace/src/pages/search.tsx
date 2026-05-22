@@ -996,7 +996,7 @@ export default function SearchPage() {
                 <>
                   <span className="text-2xl font-black text-zinc-900 leading-none">{priceStr}</span>
                   <span className="text-base font-semibold text-zinc-400">ج.م</span>
-                  {p.listingType === "rent" && <span className="text-xs text-zinc-400">/ {p.rentDuration === "monthly" ? "شهر" : p.rentDuration === "yearly" ? "سنة" : "/"}</span>}
+                  {p.listingType === "rent" && <span className="text-xs text-zinc-400">/ {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : "/"}</span>}
                 </>
               ) : (
                 <span className="text-sm font-semibold text-zinc-400">السعر عند التواصل</span>

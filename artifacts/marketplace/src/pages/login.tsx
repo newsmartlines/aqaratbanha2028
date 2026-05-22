@@ -192,6 +192,10 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
       setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
       return;
     }
+    if (regPhone && !/^(010|011|012|015)\d{8}$/.test(regPhone)) {
+      setError("رقم الهاتف غير صحيح — يجب أن يبدأ بـ 010 أو 011 أو 012 أو 015 ويكون 11 رقماً");
+      return;
+    }
     setLoading(true);
     try {
       const role = (accountType === "provider" || accountType === "real_estate") ? "provider" : "user";
@@ -515,52 +519,30 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                         value={regEmail} onChange={e => { setRegEmail(e.target.value); clearError(); }} disabled={loading} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="reg-phone">رقم الجوال <span className="text-muted-foreground text-xs">(اختياري)</span></Label>
-                      <Input id="reg-phone" type="tel" inputMode="numeric" placeholder="05XXXXXXXX" className="h-12" dir="ltr"
-                        value={regPhone} onChange={e => setRegPhone(e.target.value.replace(/\D/g, ""))} disabled={loading} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>المنطقة <span className="text-muted-foreground text-xs">(اختياري)</span></Label>
-                        <Select
-                          value={regRegionId || "__none__"}
-                          onValueChange={(v) => {
-                            setRegRegionId(v === "__none__" ? "" : v);
-                            setRegCityId("");
+                      <Label htmlFor="reg-phone">
+                        رقم الهاتف <span className="text-muted-foreground text-xs">(اختياري)</span>
+                      </Label>
+                      <div className="relative">
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-mono select-none">+20</span>
+                        <Input
+                          id="reg-phone"
+                          type="tel"
+                          inputMode="numeric"
+                          placeholder="01XXXXXXXXX"
+                          className="h-12 pr-12"
+                          dir="ltr"
+                          maxLength={11}
+                          value={regPhone}
+                          onChange={e => {
+                            const v = e.target.value.replace(/\D/g, "");
+                            setRegPhone(v);
                           }}
                           disabled={loading}
-                        >
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="اختر المنطقة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">—</SelectItem>
-                            {(regList as Region[]).map((r) => (
-                              <SelectItem key={r.id} value={String(r.id)}>{r.nameAr}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        />
                       </div>
-                      <div className="space-y-2">
-                        <Label>المدينة <span className="text-muted-foreground text-xs">(اختياري)</span></Label>
-                        <Select
-                          value={regCityId || "__none__"}
-                          onValueChange={(v) => setRegCityId(v === "__none__" ? "" : v)}
-                          disabled={loading || !regRegionId}
-                        >
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="اختر المدينة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">—</SelectItem>
-                            {((regList as Region[]).find((r) => r.id === parseInt(regRegionId, 10))?.cities ?? [])
-                              .filter((c) => c.enabled !== false)
-                              .map((c) => (
-                                <SelectItem key={c.id} value={String(c.id)}>{c.nameAr}</SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {regPhone && !/^(010|011|012|015)\d{8}$/.test(regPhone) && (
+                        <p className="text-xs text-destructive">يجب أن يبدأ بـ 010 أو 011 أو 012 أو 015 ويكون 11 رقماً</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="reg-password">كلمة المرور</Label>

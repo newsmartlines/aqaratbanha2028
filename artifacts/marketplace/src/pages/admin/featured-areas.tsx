@@ -24,7 +24,7 @@ type FeaturedArea = {
   propertyCount: number;
 };
 
-const EMPTY: Omit<FeaturedArea, "id" | "propertyCount"> = {
+const EMPTY: { nameAr: string; image: string; cityName: string; displayOrder: number; enabled: boolean } = {
   nameAr: "",
   image: "",
   cityName: "",
@@ -266,7 +266,7 @@ export default function AdminFeaturedAreas() {
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold">المدينة / المحافظة (اختياري)</Label>
                 <Input
-                  value={form.cityName}
+                  value={form.cityName ?? ""}
                   onChange={e => setForm(f => ({ ...f, cityName: e.target.value }))}
                   placeholder="مثال: القليوبية"
                   className="text-right"
@@ -277,7 +277,7 @@ export default function AdminFeaturedAreas() {
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold">رابط الصورة</Label>
                 <Input
-                  value={form.image}
+                  value={form.image ?? ""}
                   onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
                   placeholder="https://..."
                   className="text-left ltr"

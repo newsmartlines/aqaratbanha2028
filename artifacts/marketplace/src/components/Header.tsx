@@ -177,7 +177,7 @@ export function Header() {
                 <span className="cursor-pointer hover:text-primary transition-colors text-foreground">مستخدم جديد</span>
               </Link>
               <span className="text-border mx-1">|</span>
-              <Link href={user?.role === "provider" ? "/real-estate-onboarding" : "/register"}>
+              <Link href="/register">
                 <Button className="flex items-center gap-1 font-bold text-sm px-4 py-1.5 rounded-full text-white shadow-sm bg-primary hover:bg-primary/90 h-auto">
                   <span className="text-base leading-none">+</span>
                   <span>أضف عقارك</span>

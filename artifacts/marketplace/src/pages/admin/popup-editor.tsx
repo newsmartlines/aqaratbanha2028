@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -239,15 +239,14 @@ export default function PopupEditor() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useQuery<{ success: boolean; data: Popup }>({
+  const { data: popupData } = useQuery<{ success: boolean; data: Popup }>({
     queryKey: ["popup", editId],
     queryFn: () => fetch(`/api/admin/popups/${editId}`).then(r => r.json()),
     enabled: !!editId,
-    select: (res) => res,
-    onSuccess: (res: { success: boolean; data: Popup }) => {
-      if (res.data) setForm({ ...EMPTY, ...res.data });
-    },
-  } as Parameters<typeof useQuery>[0]);
+  });
+  useEffect(() => {
+    if (popupData?.data) setForm({ ...EMPTY, ...popupData.data });
+  }, [popupData]);
 
   const saveMut = useMutation({
     mutationFn: (body: Partial<Popup>) =>
