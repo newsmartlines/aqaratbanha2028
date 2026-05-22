@@ -4,7 +4,7 @@ import { Link, useLocation, Redirect } from "wouter";
 import {
   LayoutDashboard, Crown, List, Bell, Star,
   CreditCard, Settings, LogOut, Menu, X,
-  Briefcase, Home, Grid3X3, Info, Phone,
+  Briefcase, Home, Info, Phone,
   HelpCircle, AlertTriangle, MessageCircle as MessageCircleIcon,
   Ticket, Building2,
 } from "lucide-react";
@@ -38,12 +38,11 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   const siteName = (settings as any)?.siteName ?? "عقارات بنها";
 
   const siteNavLinks = [
-    { href: "/",           label: "الرئيسية",      icon: Home },
-    { href: "/categories", label: "التصنيفات",      icon: Grid3X3 },
-    { href: "/search",     label: "تصفح الخدمات",   icon: List },
-    { href: "/about",      label: "من نحن",          icon: Info },
-    { href: "/contact",    label: "تواصل معنا",      icon: Phone },
-    { href: "/faq",        label: "الأسئلة الشائعة", icon: HelpCircle },
+    { href: "/",            label: "الرئيسية",       icon: Home },
+    { href: "/properties",  label: "تصفح العقارات",  icon: List },
+    { href: "/about",       label: "من نحن",          icon: Info },
+    { href: "/contact",     label: "تواصل معنا",      icon: Phone },
+    { href: "/faq",         label: "الأسئلة الشائعة", icon: HelpCircle },
   ];
 
   // Unread count for header bell + sidebar badge
@@ -56,18 +55,17 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   const unreadCount = typeof unreadData === "number" ? unreadData : 0;
 
   const dashboardNav = [
-    { name: "لوحة التحكم",   href: "/provider/dashboard",       icon: LayoutDashboard, badge: 0 },
-    { name: "الاشتراك",      href: "/provider/subscription",    icon: Crown,           badge: 0 },
-    { name: "عقاراتي",        href: "/dashboard/my-properties",  icon: Building2,       badge: 0 },
-    { name: "خدماتي",        href: "/dashboard/services",       icon: List,            badge: 0 },
-    { name: "الطلبات",       href: "/dashboard/orders",         icon: Bell,            badge: 0 },
-    { name: "الإشعارات",     href: "/dashboard/notifications",  icon: Bell,            badge: unreadCount },
-    { name: "الرسائل",       href: "/dashboard/inbox",          icon: MessageCircleIcon, badge: 0 },
-    { name: "تذاكر الدعم",   href: "/dashboard/support-tickets", icon: Ticket,          badge: 0 },
-    { name: "التقييمات",     href: "/dashboard/reviews",        icon: Star,            badge: 0 },
-    { name: "المدفوعات",     href: "/dashboard/payments",       icon: CreditCard,      badge: 0 },
-    { name: "الإعدادات",     href: "/dashboard/settings",       icon: Settings,        badge: 0 },
-    { name: "المساعدة",      href: "/dashboard/support",        icon: HelpCircle,      badge: 0 },
+    { name: "لوحة التحكم",   href: "/provider/dashboard",        icon: LayoutDashboard,   badge: 0 },
+    { name: "الاشتراك",      href: "/provider/subscription",     icon: Crown,             badge: 0 },
+    { name: "عقاراتي",       href: "/dashboard/my-properties",   icon: Building2,         badge: 0 },
+    { name: "الطلبات",       href: "/dashboard/orders",          icon: Bell,              badge: 0 },
+    { name: "الإشعارات",     href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
+    { name: "الرسائل",       href: "/dashboard/inbox",           icon: MessageCircleIcon, badge: 0 },
+    { name: "تذاكر الدعم",   href: "/dashboard/support-tickets", icon: Ticket,            badge: 0 },
+    { name: "التقييمات",     href: "/dashboard/reviews",         icon: Star,              badge: 0 },
+    { name: "المدفوعات",     href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
+    { name: "الإعدادات",     href: "/dashboard/settings",        icon: Settings,          badge: 0 },
+    { name: "المساعدة",      href: "/dashboard/support",         icon: HelpCircle,        badge: 0 },
   ];
 
   const handleLogout = async () => {
@@ -82,7 +80,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
     return <Redirect to="/" />;
   }
 
-  const displayName = user?.name ?? "مقدم الخدمة";
+  const displayName = user?.name ?? "الشركة العقارية";
   const avatarSrc = user?.avatar
     ? user.avatar
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
@@ -113,7 +111,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">{displayName}</p>
             <span className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/15 text-teal-100 border border-white/20">
-              <Briefcase className="w-2.5 h-2.5" /> مقدم خدمة
+              <Briefcase className="w-2.5 h-2.5" /> شركة عقارية
             </span>
           </div>
         </div>
@@ -227,7 +225,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
                 <img src={avatarSrc} alt="avatar" className="w-full h-full object-contain bg-teal-100" />
               </div>
               <span className="text-sm font-medium text-teal-900 max-w-[120px] truncate">{displayName}</span>
-              <span className="text-[10px] font-semibold bg-teal-600 text-white px-1.5 py-0.5 rounded-full hidden md:block">مزود</span>
+              <span className="text-[10px] font-semibold bg-teal-600 text-white px-1.5 py-0.5 rounded-full hidden md:block">شركة</span>
             </div>
 
             {/* Mobile site nav toggle */}
@@ -303,7 +301,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
                 <SidebarContent />
               </SheetContent>
             </Sheet>
-            <span className="text-sm font-semibold text-foreground">لوحة مزود الخدمة</span>
+            <span className="text-sm font-semibold text-foreground">لوحة الشركة العقارية</span>
           </div>
 
           <main className="flex-1 pb-10">

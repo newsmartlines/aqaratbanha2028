@@ -190,9 +190,9 @@ export default function ProviderDashboard() {
             <h3 className="text-lg font-bold text-foreground">نظرة عامة على نشاطك</h3>
             <p className="text-muted-foreground text-sm mt-0.5">إحصائيات حسابك اليوم</p>
           </div>
-          <Link href="/dashboard/services">
+          <Link href="/dashboard/my-properties">
             <Button variant="outline" className="shrink-0 rounded-xl text-sm">
-              إدارة الخدمات
+              عقاراتي
             </Button>
           </Link>
         </div>

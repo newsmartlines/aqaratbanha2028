@@ -873,10 +873,8 @@ export default function AdminSettings() {
                   <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700 space-y-1">
                     <p className="font-semibold">عند التعطيل سيُخفى:</p>
                     <ul className="list-disc list-inside space-y-0.5 text-xs">
-                      <li>رابط التسجيل كمزود خدمة في صفحة التسجيل</li>
-                      <li>صفحة /services والخدمات في قائمة التنقل</li>
-                      <li>صفحات ملفات المزودين (/provider/:id)</li>
-                      <li>روابط التسجيل للمزودين من الصفحة الرئيسية</li>
+                      <li>زر "سجّل شركتك" في صفحة تسجيل الدخول</li>
+                      <li>أزرار التسجيل للشركات العقارية من الصفحة الرئيسية</li>
                     </ul>
                   </div>
                 )}

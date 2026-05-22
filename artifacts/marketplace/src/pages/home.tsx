@@ -1670,23 +1670,23 @@ export default function Home() {
         <section className="py-24 bg-secondary/30">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">كيف يعمل "{siteName}"؟</h2>
-            <p className="text-muted-foreground text-lg mb-16 max-w-2xl mx-auto">خطوات بسيطة تفصلك عن الحصول على أفضل الخدمات أو البدء في تقديم خدماتك.</p>
+            <p className="text-muted-foreground text-lg mb-16 max-w-2xl mx-auto">خطوات بسيطة تفصلك عن إيجاد العقار المثالي أو بيع عقارك بأفضل سعر.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
               <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-border/50 border-t border-dashed border-border z-0"></div>
               <div className="relative z-10 flex flex-col items-center">
                 <div className="w-24 h-24 rounded-3xl bg-card border border-border shadow-lg flex items-center justify-center mb-6 text-3xl font-black text-primary">1</div>
-                <h3 className="text-xl font-bold mb-3">ابحث عن الخدمة</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">تصفح التصنيفات أو استخدم محرك البحث للعثور على الخدمة التي تحتاجها في منطقتك.</p>
+                <h3 className="text-xl font-bold mb-3">ابحث عن العقار</h3>
+                <p className="text-muted-foreground leading-relaxed px-4">تصفح التصنيفات العقارية أو استخدم محرك البحث للعثور على العقار الذي يناسبك في منطقتك.</p>
               </div>
               <div className="relative z-10 flex flex-col items-center">
                 <div className="w-24 h-24 rounded-3xl bg-card border border-border shadow-lg flex items-center justify-center mb-6 text-3xl font-black text-primary">2</div>
-                <h3 className="text-xl font-bold mb-3">تواصل واحجز</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">تواصل مع مقدم الخدمة مباشرة، اتفق على التفاصيل، وقم بتأكيد طلبك بكل سهولة.</p>
+                <h3 className="text-xl font-bold mb-3">تواصل مع الشركة</h3>
+                <p className="text-muted-foreground leading-relaxed px-4">تواصل مع الشركة العقارية مباشرة، اتفق على التفاصيل، وقم بتأكيد طلبك بكل سهولة.</p>
               </div>
               <div className="relative z-10 flex flex-col items-center">
                 <div className="w-24 h-24 rounded-3xl bg-primary shadow-xl shadow-primary/20 flex items-center justify-center mb-6 text-3xl font-black text-primary-foreground">3</div>
-                <h3 className="text-xl font-bold mb-3">استلم وتمتع</h3>
-                <p className="text-muted-foreground leading-relaxed px-4">احصل على العقار المناسب وابدأ رحلتك الجديدة بكل راحة وثقة.</p>
+                <h3 className="text-xl font-bold mb-3">استلم وابدأ رحلتك</h3>
+                <p className="text-muted-foreground leading-relaxed px-4">احصل على العقار المناسب وابدأ رحلتك الجديدة بكل راحة وثقة مع ضمان الجودة.</p>
               </div>
             </div>
           </div>
@@ -1698,14 +1698,14 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center relative z-10">
             <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">{ctaText}</h2>
             <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-              سجّل نشاطك التجاري أو خدماتك اليوم، وابدأ في الوصول إلى آلاف العملاء في منطقتك.
+              سجّل شركتك العقارية اليوم وابدأ في الوصول إلى آلاف الباحثين عن العقارات في منطقتك.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/20 rounded-full px-10 h-14 text-lg font-bold transition-transform hover:scale-105" onClick={() => setLocation("/provider/register")}>
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/20 rounded-full px-10 h-14 text-lg font-bold transition-transform hover:scale-105" onClick={() => setLocation("/company-register")}>
                 {ctaButtonText}
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-full px-10 h-14 text-lg font-bold" onClick={() => setLocation("/search")}>
-                تصفح الخدمات
+              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-full px-10 h-14 text-lg font-bold" onClick={() => setLocation("/properties")}>
+                تصفح العقارات
               </Button>
             </div>
           </div>
@@ -1722,7 +1722,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
               <div className="md:col-span-2">
                 <h3 className="text-2xl font-extrabold text-white mb-3">{siteName}</h3>
-                <p className="text-slate-400 leading-relaxed max-w-sm">الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية مع خدمات التشطيبات والديكور.</p>
+                <p className="text-slate-400 leading-relaxed max-w-sm">الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية من خلال شركات عقارية موثّقة.</p>
                 <div className="flex gap-3 mt-5">
                   {["twitter", "instagram", "whatsapp"].map(s => (
                     <div key={s} className="w-10 h-10 rounded-full bg-white/10 hover:bg-primary/80 flex items-center justify-center cursor-pointer transition-colors">
@@ -1734,7 +1734,7 @@ export default function Home() {
               <div>
                 <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">روابط سريعة</h4>
                 <ul className="space-y-2 text-slate-400 text-sm">
-                  {[["الرئيسية", "/"], ["التصنيفات", "/categories"], ["من نحن", "/about"], ["تواصل معنا", "/contact"]].map(([label, href]) => (
+                  {[["الرئيسية", "/"], ["العقارات", "/properties"], ["من نحن", "/about"], ["تواصل معنا", "/contact"]].map(([label, href]) => (
                     <li key={href}><Link href={href} className="hover:text-white transition-colors">{label}</Link></li>
                   ))}
                 </ul>

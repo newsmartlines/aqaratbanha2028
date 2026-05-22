@@ -17,7 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
-import { useServicesEnabled, useSiteSettings } from "@/App";
+import { useSiteSettings } from "@/App";
 
 interface AuthProps {
   defaultTab?: "login" | "register";
@@ -35,14 +35,13 @@ function safeReturnTo(path: string | null, role: string): string | null {
   if (!path || !path.startsWith("/")) return null;
   if (path.startsWith("/login") || path.startsWith("/register") || path.startsWith("/admin/login")) return null;
   if (role === "user" && (path.startsWith("/admin") || path.startsWith("/dashboard") || path.startsWith("/provider/dashboard"))) return null;
-  if (role === "provider" && (path.startsWith("/admin") || path.startsWith("/user/"))) return null;
+  if (role === "provider" && (path.startsWith("/admin") || path.startsWith("/user/") || path.startsWith("/provider/register"))) return null;
   if (role === "admin" && !path.startsWith("/admin")) return null;
-  if (role === "provider" && path.startsWith("/provider/register")) return path;
+  if (role === "provider" && path.startsWith("/real-estate-onboarding")) return path;
   return path;
 }
 
 export default function AuthPage({ defaultTab = "login" }: AuthProps) {
-  const servicesEnabled = useServicesEnabled();
   const siteSettings = useSiteSettings();
   const registrationEnabled = siteSettings ? siteSettings.allowRegistration !== "false" : true;
   const [view, setView] = useState<View>(defaultTab === "register" ? "register" : "login");
@@ -102,7 +101,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
 
   const siteNavLinks = [
     { href: "/", label: "الرئيسية" },
-    { href: "/categories", label: "التصنيفات" },
+    { href: "/properties", label: "العقارات" },
     { href: "/about", label: "من نحن" },
     { href: "/contact", label: "تواصل معنا" },
     { href: "/faq", label: "الأسئلة الشائعة" },
@@ -229,8 +228,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
       if (role === "provider") {
         // New providers must complete onboarding (profile, services, package selection
         // → STC Pay redirect for paid plans) before landing on the dashboard.
-        const baseOnboarding = accountType === "real_estate" ? "/real-estate-onboarding" : "/onboarding";
-        const dest = safeReturnTo(returnTo, "provider") ?? baseOnboarding;
+        const dest = safeReturnTo(returnTo, "provider") ?? "/real-estate-onboarding";
         setLocation(dest);
       } else {
         const dest = safeReturnTo(returnTo, "user") ?? getRedirectPath("user");
@@ -307,10 +305,10 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
               </Link>
             ))}
           </nav>
-          {servicesEnabled && registrationEnabled && (
-            <Link href="/provider/register">
+          {registrationEnabled && (
+            <Link href="/company-register">
               <span className="hidden sm:inline-flex px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer transition-colors shadow-sm">
-                كن مقدم خدمة
+                سجّل شركتك
               </span>
             </Link>
           )}
@@ -335,7 +333,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
 
         {/* Trust badges */}
         <div className="absolute bottom-12 flex flex-col gap-3 w-full px-12">
-          {[["🔒", "تسجيل دخول آمن ومشفر"], ["✅", "أكثر من 500 مزود خدمة موثق"], ["⭐", "تقييمات حقيقية من مستخدمين"]].map(([icon, text]) => (
+          {[["🔒", "تسجيل دخول آمن ومشفر"], ["✅", "أكثر من 500 شركة عقارية موثّقة"], ["⭐", "تقييمات حقيقية من مستخدمين"]].map(([icon, text]) => (
             <div key={text} className="flex items-center gap-2 text-primary-foreground/70 text-sm">
               <span>{icon}</span><span>{text}</span>
             </div>
@@ -470,30 +468,11 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                           <h3 className="font-bold text-lg">مستخدم عادي</h3>
                           <span className="text-[10px] bg-accent/10 text-accent font-bold px-2 py-0.5 rounded-full">مجاني</span>
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">ابحث عن الخدمات وتواصل مع مقدميها بكل سهولة.</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">ابحث عن العقارات وتواصل مع الشركات العقارية بكل سهولة.</p>
                       </div>
                     </div>
                   </Card>
 
-                  {servicesEnabled && registrationEnabled && (
-                    <Card
-                      className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-200 relative overflow-hidden"
-                      onClick={() => setAccountType("provider")}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-full bg-background text-muted-foreground flex items-center justify-center shrink-0">
-                          <Briefcase className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg">مقدم خدمة</h3>
-                            <span className="text-[10px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">مزود</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">اعرض خدماتك وتواصل مع العملاء وضاعف دخلك.</p>
-                        </div>
-                      </div>
-                    </Card>
-                  )}
 
                   <Card
                     className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-amber-300/40 transition-all duration-200 relative overflow-hidden"

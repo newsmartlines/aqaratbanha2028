@@ -16,24 +16,16 @@ import AiChat from "@/components/AiChat";
 // ── Site-settings context ───────────────────────────────────────────────────
 export const SiteSettingsContext = createContext<SiteSettings | null>(null);
 export function useSiteSettings() { return useContext(SiteSettingsContext); }
-export function useServicesEnabled() {
-  const s = useSiteSettings();
-  return s ? s.servicesModuleEnabled !== "false" : true;
-}
 import Home from "@/pages/home";
 import Home2 from "@/pages/home2";
 import SearchPage from "@/pages/search";
-import ProviderPage from "@/pages/provider";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
-import OnboardingPage from "@/pages/onboarding";
 import RealEstateOnboardingPage from "@/pages/real-estate-onboarding";
-import ProviderRegisterPage from "@/pages/provider-register";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProviders from "@/pages/admin/providers";
-import AdminListings from "@/pages/admin/listings";
 import AdminCommission from "@/pages/admin/commission";
 import AdminPayments from "@/pages/admin/payments";
 import AdminReports from "@/pages/admin/reports";
@@ -41,7 +33,6 @@ import AdminComplaints from "@/pages/admin/complaints";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminSettings from "@/pages/admin/settings";
 import AdminUsers from "@/pages/admin/users";
-import AdminCategories from "@/pages/admin/categories";
 import AdminRealEstateCategories from "@/pages/admin/real-estate-categories";
 import AdminOrders from "@/pages/admin/orders";
 import AdminLocations from "@/pages/admin/locations";
@@ -49,7 +40,6 @@ import ProviderDashboard from "@/pages/dashboard/index";
 import ProviderSubscription from "@/pages/dashboard/subscription";
 import ProviderCheckout from "@/pages/dashboard/checkout";
 import CheckoutResult from "@/pages/dashboard/checkout-result";
-import ProviderServices from "@/pages/dashboard/services";
 import ProviderOrders from "@/pages/dashboard/orders";
 import ProviderReviews from "@/pages/dashboard/reviews";
 import ProviderPayments from "@/pages/dashboard/payments";
@@ -85,8 +75,6 @@ import PropertyDetail from "@/pages/property-detail";
 import ComparePage from "@/pages/compare";
 import AdvertiserPage from "@/pages/advertiser";
 import PropertiesPage from "@/pages/properties";
-import ServicesPage from "@/pages/services";
-import CategoriesPage from "@/pages/categories";
 import AboutPage from "@/pages/about";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
@@ -165,18 +153,10 @@ function AdminProtectedRoute({ component: Component }: { component: ComponentTyp
     return <Redirect to={`/admin/login?returnTo=${encodeURIComponent(location)}`} />;
   }
 
-  // Allow main admin OR any staff member with a staffRole
   if (user.role !== "admin" && !user.staffRole) {
     return <Redirect to={roleHome(user.role)} />;
   }
 
-  return <Component />;
-}
-
-/** Redirects to "/" when the services module is disabled in site settings. */
-function ServicesGate({ component: Component }: { component: ComponentType }) {
-  const servicesEnabled = useServicesEnabled();
-  if (!servicesEnabled) return <Redirect to="/" />;
   return <Component />;
 }
 
@@ -188,29 +168,12 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/home2" component={Home2} />
       <Route path="/search" component={SearchPage} />
-      <Route path="/provider/register">
-        {() => <ServicesGate component={ProviderRegisterPage} />}
-      </Route>
-      {/* Must be before `/provider/:id` — otherwise "dashboard" is parsed as a provider id */}
-      <Route path="/provider/dashboard">
-        {() => <RoleProtectedRoute component={ProviderDashboard} roles={["provider"]} />}
-      </Route>
-      <Route path="/provider/subscription">
-        {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
-      </Route>
-      <Route path="/provider/:id">
-        {() => <ServicesGate component={ProviderPage} />}
-      </Route>
       <Route path="/add-property" component={AddPropertyPage} />
       <Route path="/map-search" component={MapSearchPage} />
       <Route path="/properties" component={PropertiesPage} />
       <Route path="/property/:id" component={PropertyDetail} />
       <Route path="/compare" component={ComparePage} />
       <Route path="/advertiser/:id" component={AdvertiserPage} />
-      <Route path="/services">
-        {() => <ServicesGate component={ServicesPage} />}
-      </Route>
-      <Route path="/categories" component={CategoriesPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/faq" component={FaqPage} />
@@ -228,13 +191,16 @@ function Router() {
       <Route path="/company-register" component={CompanyRegisterPage} />
       <Route path="/admin/login" component={AdminLogin} />
 
-      {/* Onboarding — signed-in providers only */}
-      <Route path="/onboarding">
-        {() => <RoleProtectedRoute component={OnboardingPage} roles={["provider"]} />}
-      </Route>
+      {/* Real-estate onboarding */}
       <Route path="/real-estate-onboarding" component={RealEstateOnboardingPage} />
 
-      {/* Provider dashboard (canonical paths) */}
+      {/* Provider dashboard */}
+      <Route path="/provider/dashboard">
+        {() => <RoleProtectedRoute component={ProviderDashboard} roles={["provider"]} />}
+      </Route>
+      <Route path="/provider/subscription">
+        {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
+      </Route>
       <Route path="/dashboard">
         {() => <RoleProtectedRoute component={ProviderDashboard} roles={["provider"]} />}
       </Route>
@@ -249,9 +215,6 @@ function Router() {
       </Route>
       <Route path="/dashboard/my-properties">
         {() => <RoleProtectedRoute component={MyPropertiesPage} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/services">
-        {() => <RoleProtectedRoute component={ProviderServices} roles={["provider"]} />}
       </Route>
       <Route path="/dashboard/orders">
         {() => <RoleProtectedRoute component={ProviderOrders} roles={["provider"]} />}
@@ -278,7 +241,7 @@ function Router() {
         {() => <RoleProtectedRoute component={ProviderSupportTicketsPage} roles={["provider"]} />}
       </Route>
 
-      {/* User area — regular accounts only */}
+      {/* User area */}
       <Route path="/user/dashboard">
         {() => <RoleProtectedRoute component={UserDashboard} roles={["user"]} />}
       </Route>
@@ -310,7 +273,7 @@ function Router() {
         {() => <RoleProtectedRoute component={UserSavedSearches} roles={["user"]} />}
       </Route>
 
-      {/* Admin routes — accessible to main admin OR any staff member with staffRole */}
+      {/* Admin routes */}
       <Route path="/admin/dashboard">
         {() => <AdminProtectedRoute component={AdminDashboard} />}
       </Route>
@@ -319,9 +282,6 @@ function Router() {
       </Route>
       <Route path="/admin/providers/:id/edit">
         {() => <AdminProtectedRoute component={AdminProviderEdit} />}
-      </Route>
-      <Route path="/admin/listings">
-        {() => <AdminProtectedRoute component={AdminListings} />}
       </Route>
       <Route path="/admin/properties">
         {() => <AdminProtectedRoute component={AdminProperties} />}
@@ -359,8 +319,8 @@ function Router() {
       <Route path="/admin/users">
         {() => <AdminProtectedRoute component={AdminUsers} />}
       </Route>
-      <Route path="/admin/categories">
-        {() => <AdminProtectedRoute component={AdminCategories} />}
+      <Route path="/admin/real-estate-categories">
+        {() => <AdminProtectedRoute component={AdminRealEstateCategories} />}
       </Route>
       <Route path="/admin/orders">
         {() => <AdminProtectedRoute component={AdminOrders} />}
@@ -373,9 +333,6 @@ function Router() {
       </Route>
       <Route path="/admin/staff">
         {() => <AdminProtectedRoute component={AdminStaff} />}
-      </Route>
-      <Route path="/admin/real-estate-categories">
-        {() => <AdminProtectedRoute component={AdminRealEstateCategories} />}
       </Route>
       <Route path="/admin/email-templates">
         {() => <AdminProtectedRoute component={AdminEmailTemplates} />}

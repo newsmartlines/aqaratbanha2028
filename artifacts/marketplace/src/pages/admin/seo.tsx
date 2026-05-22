@@ -65,7 +65,7 @@ const TOP_PAGES = [
   { page: "/home2",           views: 8200,  change: 34 },
   { page: "/property/1",      views: 5100,  change: -8 },
   { page: "/search",          views: 4300,  change: 12 },
-  { page: "/categories",      views: 2800,  change: 5  },
+  { page: "/company-register", views: 2800,  change: 5  },
 ];
 
 const ROBOTS_DEFAULT = `User-agent: *

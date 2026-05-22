@@ -134,7 +134,7 @@ export function Header() {
                     <p className="text-sm font-semibold truncate">{user.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     <span className="inline-flex mt-1 items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
-                      {user.role === "admin" ? "مسؤول" : user.role === "provider" ? "مقدم خدمة" : "مستخدم"}
+                      {user.role === "admin" ? "مسؤول" : user.role === "provider" ? "شركة عقارية" : "مستخدم"}
                     </span>
                   </div>
 

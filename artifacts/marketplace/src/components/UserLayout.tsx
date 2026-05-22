@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   Home,
-  Grid3X3,
   Info,
   Phone,
   HelpCircle,
@@ -44,7 +43,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
   const siteNavLinks = [
     { href: "/", label: "الرئيسية", icon: Home },
-    { href: "/categories", label: "التصنيفات", icon: Grid3X3 },
+    { href: "/properties", label: "العقارات", icon: Home },
     { href: "/about", label: "من نحن", icon: Info },
     { href: "/contact", label: "تواصل معنا", icon: Phone },
     { href: "/faq", label: "الأسئلة الشائعة", icon: HelpCircle },
