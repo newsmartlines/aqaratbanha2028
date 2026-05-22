@@ -497,7 +497,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
 
                   <Card
                     className="p-4 cursor-pointer border-2 border-transparent bg-secondary/30 hover:bg-secondary/50 hover:border-amber-300/40 transition-all duration-200 relative overflow-hidden"
-                    onClick={() => setAccountType("real_estate")}
+                    onClick={() => setLocation("/company-register")}
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-full bg-background text-muted-foreground flex items-center justify-center shrink-0">
