@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Link, useLocation, Redirect } from "wouter";
 import {
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserLayoutProps {
   children: ReactNode;
@@ -27,6 +28,23 @@ interface UserLayoutProps {
 export default function UserLayout({ children }: UserLayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, logout, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+
+  // Show welcome toast on first login after registration
+  useEffect(() => {
+    if (!user) return;
+    const name = localStorage.getItem("newUserWelcome");
+    if (!name) return;
+    localStorage.removeItem("newUserWelcome");
+    setTimeout(() => {
+      toast({
+        title: `أهلاً وسهلاً، ${name}! 🎉`,
+        description: "تم إنشاء حسابك بنجاح. يمكنك الآن البحث عن العقارات وإدارة مفضلتك.",
+        duration: 6000,
+      });
+    }, 500);
+  }, [user]);
+
   const dashboardNavigation = [
     { name: "الرئيسية", href: "/user/dashboard", icon: LayoutDashboard },
     { name: "عقاراتي", href: "/user/my-properties", icon: Building2 },

@@ -30,7 +30,7 @@ type View = "login" | "register" | "forgot" | "reset";
 function getRedirectPath(role: string): string {
   if (role === "admin") return "/admin/dashboard";
   if (role === "provider") return "/provider/dashboard";
-  return "/";
+  return "/user/dashboard";
 }
 
 function safeReturnTo(path: string | null, role: string): string | null {
@@ -215,16 +215,18 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
         }
         await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
       }
+      // Mark as new user so dashboard shows welcome message
+      localStorage.setItem("newUserWelcome", merged.name || regName.trim());
+
       toast({
-        title: "تم إنشاء الحساب بنجاح",
-        description:
-          role === "provider" && merged.providerId == null
-            ? "مرحباً بك. إذا لم تُفتح لوحة التحكم بشكل صحيح، حدّث الصفحة أو أعد تسجيل الدخول."
-            : "مرحباً بك في عقارات بنها!",
+        title: "تم إنشاء الحساب بنجاح 🎉",
+        description: "جاري التحويل إلى لوحة التحكم...",
       });
+
+      // Brief pause for a smooth transition feel
+      await new Promise((r) => setTimeout(r, 1200));
+
       if (role === "provider") {
-        // New providers must complete onboarding (profile, services, package selection
-        // → STC Pay redirect for paid plans) before landing on the dashboard.
         const dest = safeReturnTo(returnTo, "provider") ?? "/real-estate-onboarding";
         setLocation(dest);
       } else {

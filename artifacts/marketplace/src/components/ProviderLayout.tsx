@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Link, useLocation, Redirect } from "wouter";
 import {
   LayoutDashboard, Crown, Bell,
@@ -11,6 +11,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,22 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, setUser, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Show welcome toast on first login after registration
+  useEffect(() => {
+    if (!user) return;
+    const name = localStorage.getItem("newUserWelcome");
+    if (!name) return;
+    localStorage.removeItem("newUserWelcome");
+    setTimeout(() => {
+      toast({
+        title: `أهلاً وسهلاً، ${name}! 🎉`,
+        description: "تم تسجيل شركتك بنجاح. ابدأ بإضافة عقاراتك الآن.",
+        duration: 6000,
+      });
+    }, 500);
+  }, [user]);
   // Unread count for sidebar badge
   const { data: unreadData } = useQuery({
     queryKey: ["notifications-unread"],

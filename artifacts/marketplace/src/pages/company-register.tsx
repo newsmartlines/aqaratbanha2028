@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,71 @@ import {
 import toast from "react-hot-toast";
 
 const TOTAL_STEPS = 3;
+
+/* ─── Auto-redirect welcome screen ─── */
+function AutoRedirectScreen({ name, onRedirect }: { name: string; onRedirect: () => void }) {
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    if (countdown <= 0) { onRedirect(); return; }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown, onRedirect]);
+
+  const progress = ((3 - countdown) / 3) * 100;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center p-6" dir="rtl">
+      <div className="max-w-sm w-full text-center space-y-8 animate-in zoom-in-95 fade-in duration-500">
+
+        {/* Animated checkmark */}
+        <div className="relative w-28 h-28 mx-auto">
+          <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#e2e8f0" strokeWidth="6" />
+            <circle
+              cx="50" cy="50" r="44" fill="none" stroke="#0d9488" strokeWidth="6"
+              strokeDasharray={`${2 * Math.PI * 44}`}
+              strokeDashoffset={`${2 * Math.PI * 44 * (1 - progress / 100)}`}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-linear"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center shadow">
+              <CheckCircle2 className="w-9 h-9 text-emerald-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="space-y-2">
+          <h1 className="text-2xl font-extrabold text-zinc-800">
+            مرحباً بك، {name || "بخير"}! 🎉
+          </h1>
+          <p className="text-zinc-500 leading-relaxed">
+            تم تسجيل شركتك بنجاح. جاري نقلك إلى لوحة التحكم…
+          </p>
+        </div>
+
+        {/* Countdown */}
+        <div className="flex items-center justify-center gap-2 text-sm text-zinc-400">
+          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          <span>سيتم التحويل خلال <span className="font-bold text-primary tabular-nums">{countdown}</span> ثوانٍ</span>
+        </div>
+
+        {/* Manual button */}
+        <Button
+          size="lg"
+          className="w-full h-12 rounded-2xl font-bold text-base shadow-md shadow-primary/20"
+          onClick={onRedirect}
+        >
+          <Building2 className="w-5 h-5 ml-2" />
+          الذهاب إلى لوحة التحكم الآن
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 /* ─── Password strength ─── */
 function getPasswordStrength(pw: string) {
@@ -370,6 +435,8 @@ export default function CompanyRegisterPage() {
 
       const me = await api.auth.me();
       setUser(me as any);
+      // Mark as new user so dashboard shows welcome message
+      localStorage.setItem("newUserWelcome", (me as any).name || form.companyName.trim() || form.name.trim());
       setDone(true);
     } catch (err: any) {
       toast.error(err?.message ?? "حدث خطأ، يرجى المحاولة مرة أخرى");
@@ -378,27 +445,12 @@ export default function CompanyRegisterPage() {
     }
   };
 
-  /* ── Success ── */
+  /* ── Success — auto-redirect ── */
   if (done) return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-6" dir="rtl">
-      <div className="max-w-md w-full text-center space-y-6 animate-in zoom-in-95 duration-500">
-        <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mx-auto shadow-lg">
-          <CheckCircle2 className="w-14 h-14 text-emerald-500" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-zinc-800 mb-2">تم تسجيل شركتك بنجاح!</h1>
-          <p className="text-zinc-500 text-lg leading-relaxed">مرحباً بك في عقارات بنها. يمكنك الآن نشر عقاراتك والوصول إلى آلاف العملاء.</p>
-        </div>
-        <div className="space-y-3 pt-2">
-          <Button size="lg" className="w-full h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/20" onClick={() => setLocation("/dashboard")}>
-            <Building2 className="w-5 h-5 ml-2" />الذهاب إلى لوحة التحكم
-          </Button>
-          <Button variant="outline" size="lg" className="w-full h-12 rounded-2xl text-base font-semibold" onClick={() => setLocation("/real-estate-onboarding")}>
-            أضف عقارك الأول الآن
-          </Button>
-        </div>
-      </div>
-    </div>
+    <AutoRedirectScreen
+      name={form.companyName.trim() || form.name.trim()}
+      onRedirect={() => setLocation("/provider/dashboard")}
+    />
   );
 
   /* ── Step labels ── */
