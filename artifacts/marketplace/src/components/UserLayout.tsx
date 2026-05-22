@@ -6,11 +6,7 @@ import {
   Settings,
   LogOut,
   Menu,
-  Home,
-  Info,
-  Phone,
   HelpCircle,
-  X,
   CreditCard,
   MessageCircle as MessageCircleIcon,
   BellRing,
@@ -19,9 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useState } from "react";
+import { Header } from "@/components/Header";
 
 interface UserLayoutProps {
   children: ReactNode;
@@ -30,24 +24,6 @@ interface UserLayoutProps {
 export default function UserLayout({ children }: UserLayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, logout, loading: authLoading } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const { data: settings } = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: api.settings.list,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
-
-  const siteNavLinks = [
-    { href: "/", label: "الرئيسية", icon: Home },
-    { href: "/properties", label: "العقارات", icon: Home },
-    { href: "/about", label: "من نحن", icon: Info },
-    { href: "/contact", label: "تواصل معنا", icon: Phone },
-    { href: "/faq", label: "الأسئلة الشائعة", icon: HelpCircle },
-  ];
-
   const dashboardNavigation = [
     { name: "الرئيسية", href: "/user/dashboard", icon: LayoutDashboard },
     { name: "المفضلة", href: "/user/favorites", icon: Heart },
@@ -145,105 +121,15 @@ export default function UserLayout({ children }: UserLayoutProps) {
   return (
     <div className="min-h-screen bg-background font-sans" dir="rtl">
 
-      {/* ══════════════════════════════════════════════
-          TOP BANNER — Logo + Main Site Navigation
-      ══════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-8 h-8 rounded-xl bg-[#0a1628] flex items-center justify-center text-white font-bold text-lg shadow group-hover:bg-[#0d1f3a] transition-colors">
-              د
-            </div>
-            <span className="font-extrabold text-xl text-[#0a1628] tracking-tight hidden sm:block">
-              {siteName}
-            </span>
-          </Link>
-
-          {/* Desktop nav links */}
-          <nav className="hidden md:flex items-center gap-1">
-            {siteNavLinks.map((link) => {
-              const isActive = location === link.href;
-              return (
-                <Link key={link.href} href={link.href}>
-                  <span className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                    isActive
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                  }`}>
-                    {link.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Right side: user + mobile trigger */}
-          <div className="flex items-center gap-2">
-            {/* User avatar + name (desktop) */}
-            <div className="hidden sm:flex items-center gap-2 bg-indigo-50 rounded-xl px-3 py-1.5 border border-indigo-100">
-              <div className="w-6 h-6 rounded-full overflow-hidden shrink-0">
-                <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
-              </div>
-              <span className="text-sm font-medium text-[#0a1628] max-w-[120px] truncate">{user?.name}</span>
-            </div>
-
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-              onClick={() => setMobileMenuOpen(o => !o)}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
-            {/* Mobile sidebar trigger */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="lg:hidden border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-xs px-2.5 gap-1">
-                  <LayoutDashboard className="w-3.5 h-3.5" />
-                  لوحتي
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-[#0a1628] border-none text-white h-full overflow-hidden">
-                <SidebarContent />
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-
-        {/* Mobile nav dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 py-2 px-4 shadow-md animate-in slide-in-from-top-1 duration-150">
-            <nav className="flex flex-col gap-1">
-              {siteNavLinks.map((link) => {
-                const isActive = location === link.href;
-                return (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors ${
-                        isActive ? "bg-indigo-50 text-indigo-700" : "text-slate-700 hover:bg-slate-50"
-                      }`}
-                    >
-                      <link.icon className={`w-4 h-4 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
-                      {link.label}
-                    </span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
-      </header>
+      <Header />
 
       {/* ══════════════════════════════════════════════
           BODY — Right Sidebar + Content
       ══════════════════════════════════════════════ */}
-      <div className="flex min-h-[calc(100vh-56px)]">
+      <div className="flex min-h-[calc(100vh-64px)]">
 
         {/* Fixed sidebar — desktop only */}
-        <div className="hidden lg:flex lg:w-72 lg:flex-col lg:fixed lg:top-14 lg:bottom-0 right-0 z-40">
+        <div className="hidden lg:flex lg:w-72 lg:flex-col lg:fixed lg:top-16 lg:bottom-0 right-0 z-40">
           <SidebarContent />
         </div>
 

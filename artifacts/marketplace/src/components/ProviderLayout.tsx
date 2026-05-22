@@ -1,13 +1,13 @@
-import { useState } from "react";
 import { ReactNode } from "react";
 import { Link, useLocation, Redirect } from "wouter";
 import {
-  LayoutDashboard, Crown, List, Bell, Star,
-  CreditCard, Settings, LogOut, Menu, X,
-  Briefcase, Home, Info, Phone,
+  LayoutDashboard, Crown, Bell, Star,
+  CreditCard, Settings, LogOut, Menu,
+  Briefcase, Home,
   HelpCircle, AlertTriangle, MessageCircle as MessageCircleIcon,
   Ticket, Building2,
 } from "lucide-react";
+import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
@@ -27,25 +27,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, setUser, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const { data: settings } = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: api.settings.list,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
-
-  const siteNavLinks = [
-    { href: "/",            label: "الرئيسية",       icon: Home },
-    { href: "/properties",  label: "تصفح العقارات",  icon: List },
-    { href: "/about",       label: "من نحن",          icon: Info },
-    { href: "/contact",     label: "تواصل معنا",      icon: Phone },
-    { href: "/faq",         label: "الأسئلة الشائعة", icon: HelpCircle },
-  ];
-
-  // Unread count for header bell + sidebar badge
+  // Unread count for sidebar badge
   const { data: unreadData } = useQuery({
     queryKey: ["notifications-unread"],
     queryFn: api.notifications.unreadCount,
@@ -168,121 +150,15 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
   return (
     <div className="min-h-screen bg-background font-sans" dir="rtl">
 
-      {/* ══════════════════════════════════════════
-          TOP BANNER — Logo + Main Site Navigation
-      ══════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-8 h-8 rounded-xl bg-teal-700 flex items-center justify-center text-white font-bold text-lg shadow group-hover:bg-teal-600 transition-colors">
-              د
-            </div>
-            <span className="font-extrabold text-xl text-teal-800 tracking-tight hidden sm:block">
-              {siteName}
-            </span>
-          </Link>
-
-          {/* Desktop site nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {siteNavLinks.map((link) => {
-              const isActive = link.href === "/" ? location === "/" : location.startsWith(link.href);
-              return (
-                <Link key={link.href} href={link.href}>
-                  <span className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                    isActive
-                      ? "bg-teal-50 text-teal-700"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                  }`}>
-                    {link.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Right side: bell + provider pill + mobile triggers */}
-          <div className="flex items-center gap-2">
-            {/* Notifications bell */}
-            <Link href="/dashboard/notifications">
-              <button
-                aria-label="الإشعارات"
-                className="relative p-2 rounded-xl text-teal-700 hover:bg-teal-50 transition-colors"
-              >
-                <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
-            </Link>
-
-            {/* Provider avatar pill (desktop) */}
-            <div className="hidden sm:flex items-center gap-2 bg-teal-50 rounded-xl px-3 py-1.5 border border-teal-100">
-              <div className="w-6 h-6 rounded-full overflow-hidden shrink-0">
-                <img src={avatarSrc} alt="avatar" className="w-full h-full object-contain bg-teal-100" />
-              </div>
-              <span className="text-sm font-medium text-teal-900 max-w-[120px] truncate">{displayName}</span>
-              <span className="text-[10px] font-semibold bg-teal-600 text-white px-1.5 py-0.5 rounded-full hidden md:block">شركة</span>
-            </div>
-
-            {/* Mobile site nav toggle */}
-            <button
-              className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-              onClick={() => setMobileMenuOpen(o => !o)}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
-            {/* Mobile dashboard sidebar trigger */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="lg:hidden border-teal-200 text-teal-700 hover:bg-teal-50 text-xs px-2.5 gap-1">
-                  <LayoutDashboard className="w-3.5 h-3.5" />
-                  لوحتي
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-teal-900 border-none text-white h-full overflow-hidden">
-                <SidebarContent />
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-
-        {/* Mobile site nav dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 py-2 px-4 shadow-md animate-in slide-in-from-top-1 duration-150">
-            <nav className="flex flex-col gap-1">
-              {siteNavLinks.map((link) => {
-                const isActive = link.href === "/" ? location === "/" : location.startsWith(link.href);
-                return (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors ${
-                        isActive ? "bg-teal-50 text-teal-700" : "text-slate-700 hover:bg-slate-50"
-                      }`}
-                    >
-                      <link.icon className={`w-4 h-4 ${isActive ? "text-teal-600" : "text-slate-400"}`} />
-                      {link.label}
-                    </span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
-      </header>
+      <Header />
 
       {/* ══════════════════════════════════════════
           BODY — Main Content + Right Sidebar
       ══════════════════════════════════════════ */}
-      <div className="flex min-h-[calc(100vh-56px)]">
+      <div className="flex min-h-[calc(100vh-64px)]">
 
         {/* Fixed right sidebar — desktop only */}
-        <div className="hidden lg:flex lg:w-72 lg:flex-col lg:fixed lg:top-14 lg:bottom-0 right-0 z-40">
+        <div className="hidden lg:flex lg:w-72 lg:flex-col lg:fixed lg:top-16 lg:bottom-0 right-0 z-40">
           <SidebarContent />
         </div>
 
@@ -290,7 +166,7 @@ export default function ProviderLayout({ children }: ProviderLayoutProps) {
         <div className="flex flex-col flex-1 lg:pr-72 w-full">
 
           {/* Mobile sub-header: dashboard sidebar trigger + page label */}
-          <div className="lg:hidden sticky top-14 z-30 flex h-12 items-center gap-3 border-b bg-background px-4 shadow-sm">
+          <div className="lg:hidden sticky top-16 z-30 flex h-12 items-center gap-3 border-b bg-background px-4 shadow-sm">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
