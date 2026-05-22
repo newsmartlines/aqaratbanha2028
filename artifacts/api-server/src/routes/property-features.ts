@@ -93,14 +93,22 @@ router.get("/property-features", async (req, res) => {
   }
 });
 
+// ── Helper: extract token and verify admin ────────────────────────────────────
+
+async function requireAdmin(req: any): Promise<boolean> {
+  const token =
+    (req.cookies as Record<string, string> | undefined)?.session ??
+    (req.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, "");
+  if (!token) return false;
+  const session = await getSession(token);
+  return !!(session && (session as any).role === "admin");
+}
+
 // ── Admin: all features / services (including inactive) ──────────────────────
 
 router.get("/admin/property-features", async (req, res) => {
   await ensureSeeded();
-  const session = await getSession(req);
-  if (!session?.user || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
     const type = (req.query.type as string) || "feature";
     const rows = await db
@@ -118,10 +126,7 @@ router.get("/admin/property-features", async (req, res) => {
 // ── Admin: create ─────────────────────────────────────────────────────────────
 
 router.post("/admin/property-features", async (req, res) => {
-  const session = await getSession(req);
-  if (!session?.user || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
     const { type, name, icon, sortOrder } = req.body;
     const [row] = await db
@@ -138,10 +143,7 @@ router.post("/admin/property-features", async (req, res) => {
 // ── Admin: update ─────────────────────────────────────────────────────────────
 
 router.put("/admin/property-features/:id", async (req, res) => {
-  const session = await getSession(req);
-  if (!session?.user || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
     const id = parseInt(req.params.id);
     const updates: Partial<typeof propertyFeaturesTable.$inferInsert> = {};
@@ -164,10 +166,7 @@ router.put("/admin/property-features/:id", async (req, res) => {
 // ── Admin: toggle active/inactive ─────────────────────────────────────────────
 
 router.patch("/admin/property-features/:id/toggle", async (req, res) => {
-  const session = await getSession(req);
-  if (!session?.user || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
     const id = parseInt(req.params.id);
     const [existing] = await db
@@ -191,10 +190,7 @@ router.patch("/admin/property-features/:id/toggle", async (req, res) => {
 // ── Admin: reorder ────────────────────────────────────────────────────────────
 
 router.patch("/admin/property-features/reorder", async (req, res) => {
-  const session = await getSession(req);
-  if (!session?.user || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
     const items: { id: number; sortOrder: number }[] = req.body.items;
     await Promise.all(
@@ -215,10 +211,7 @@ router.patch("/admin/property-features/reorder", async (req, res) => {
 // ── Admin: delete ─────────────────────────────────────────────────────────────
 
 router.delete("/admin/property-features/:id", async (req, res) => {
-  const session = await getSession(req);
-  if (!session?.user || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
     const id = parseInt(req.params.id);
     await db.delete(propertyFeaturesTable).where(eq(propertyFeaturesTable.id, id));
