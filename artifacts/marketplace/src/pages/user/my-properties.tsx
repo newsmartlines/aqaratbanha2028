@@ -14,7 +14,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
 
-type StatusKey = "pending" | "published" | "rejected" | string;
+type StatusKey = "pending" | "approved" | "rejected" | string;
 
 const STATUS_CONFIG: Record<string, {
   label: string;
@@ -23,12 +23,12 @@ const STATUS_CONFIG: Record<string, {
   bannerCls: string;
   bannerMsg: string;
 }> = {
-  published: {
+  approved: {
     label: "تمت الموافقة",
     icon: CheckCircle2,
     badgeCls: "bg-emerald-100 text-emerald-700 border-emerald-200",
     bannerCls: "bg-emerald-50 border-emerald-200 text-emerald-700",
-    bannerMsg: "عقارك منشور ومرئي للجمهور. يمكنك تعديله في أي وقت.",
+    bannerMsg: "عقارك معتمد ومرئي للجمهور. يمكنك تعديله في أي وقت.",
   },
   pending: {
     label: "قيد المراجعة",
@@ -96,14 +96,14 @@ export default function MyPropertiesPage() {
 
   const counts = {
     all: (properties as any[]).length,
-    published: (properties as any[]).filter((p: any) => p.status === "published").length,
+    published: (properties as any[]).filter((p: any) => p.status === "approved").length,
     pending: (properties as any[]).filter((p: any) => p.status === "pending").length,
     rejected: (properties as any[]).filter((p: any) => p.status === "rejected").length,
   };
 
   const STATUS_TABS = [
     { key: "all", label: "الكل", count: counts.all, cls: "text-slate-700 border-slate-300" },
-    { key: "published", label: "تمت الموافقة", count: counts.published, cls: "text-emerald-700 border-emerald-300" },
+    { key: "approved", label: "تمت الموافقة", count: counts.published, cls: "text-emerald-700 border-emerald-300" },
     { key: "pending", label: "قيد المراجعة", count: counts.pending, cls: "text-amber-700 border-amber-300" },
     { key: "rejected", label: "مرفوض", count: counts.rejected, cls: "text-red-700 border-red-300" },
   ];
@@ -150,7 +150,7 @@ export default function MyPropertiesPage() {
               <p className="text-2xl font-bold text-slate-800">{counts.all}</p>
               <p className="text-xs text-slate-500 mt-0.5">الكل</p>
             </div>
-            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => setFilterStatus("published")}>
+            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => setFilterStatus("approved")}>
               <p className="text-2xl font-bold text-emerald-700">{counts.published}</p>
               <p className="text-xs text-emerald-600/80 mt-0.5">موافق عليه</p>
             </div>
@@ -329,7 +329,7 @@ export default function MyPropertiesPage() {
                       </Link>
 
                       {/* View — only for published */}
-                      {prop.status === "published" && (
+                      {prop.status === "approved" && (
                         <Link href={`/property/${prop.id}`}>
                           <Button variant="outline" size="sm" className="rounded-lg text-xs h-8 px-2.5 gap-1">
                             <Eye className="w-3 h-3" />

@@ -91,7 +91,7 @@ export default function EditPropertyPage() {
     mutationFn: (data: any) => api.properties.update(parseInt(id!), data),
     onSuccess: (result: any) => {
       const updated = result?.data ?? result;
-      const wasPublished = prop?.status === "published";
+      const wasPublished = prop?.status === "approved";
       queryClient.invalidateQueries({ queryKey: ["user-properties"] });
       queryClient.invalidateQueries({ queryKey: ["property", id] });
       if (wasPublished && updated?.status === "pending") {
@@ -149,7 +149,7 @@ export default function EditPropertyPage() {
     );
   }
 
-  const wasPublished = prop.status === "published";
+  const wasPublished = prop.status === "approved";
 
   return (
     <UserLayout>
@@ -180,14 +180,14 @@ export default function EditPropertyPage() {
             <Badge
               variant="outline"
               className={
-                prop.status === "published"
+                prop.status === "approved"
                   ? "text-emerald-700 border-emerald-200 bg-emerald-50"
                   : prop.status === "rejected"
                   ? "text-red-700 border-red-200 bg-red-50"
                   : "text-amber-700 border-amber-200 bg-amber-50"
               }
             >
-              {prop.status === "published" ? "منشور" : prop.status === "rejected" ? "مرفوض" : "قيد المراجعة"}
+              {prop.status === "approved" ? "معتمد" : prop.status === "rejected" ? "مرفوض" : "قيد المراجعة"}
             </Badge>
           )}
         </div>

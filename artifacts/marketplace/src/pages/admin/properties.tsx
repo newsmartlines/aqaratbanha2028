@@ -73,8 +73,8 @@ function fmtPrice(price: string | null): string {
 }
 
 function statusBadge(status: string) {
-  if (status === "published") return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">منشور</Badge>;
-  if (status === "pending")   return <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">قيد المراجعة</Badge>;
+  if (status === "approved") return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">معتمد</Badge>;
+  if (status === "pending")  return <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">قيد المراجعة</Badge>;
   return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">مرفوض</Badge>;
 }
 
@@ -146,7 +146,7 @@ export default function AdminProperties() {
 
   const stats = useMemo(() => ({
     total: properties.length,
-    published: properties.filter(p => p.status === "published").length,
+    published: properties.filter(p => p.status === "approved").length,
     pending: properties.filter(p => p.status === "pending").length,
     featured: properties.filter(p => p.featured).length,
     forSale: properties.filter(p => p.listingType === "sale").length,
@@ -167,7 +167,7 @@ export default function AdminProperties() {
     try {
       await api.properties.patchStatus(p.id, status);
       setProperties(prev => prev.map(x => x.id === p.id ? { ...x, status } : x));
-      if (status === "published") {
+      if (status === "approved") {
         toast.success(`✅ تمت الموافقة على: ${p.title} — تم إشعار المالك`);
       } else if (status === "rejected") {
         toast.success(`❌ تم رفض: ${p.title} — تم إشعار المالك`);
@@ -213,7 +213,7 @@ export default function AdminProperties() {
         images: form.img ? JSON.stringify([form.img]) : null,
         featured: form.featured,
         providerId: parseInt(form.providerId),
-        status: "published",
+        status: "approved",
       });
       setProperties(prev => [newProp as unknown as DbProperty, ...prev]);
       setAddOpen(false);
@@ -356,7 +356,7 @@ export default function AdminProperties() {
                   <Button
                     size="sm"
                     className="h-7 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
-                    onClick={() => handleStatus(p, "published")}
+                    onClick={() => handleStatus(p, "approved")}
                   >
                     <CheckCircle2 className="w-3 h-3" />
                     موافقة
@@ -391,7 +391,7 @@ export default function AdminProperties() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         {[
           { label: "إجمالي العقارات", value: stats.total, icon: Building2, color: "text-slate-700 bg-slate-100" },
-          { label: "منشور", value: stats.published, icon: CheckCircle2, color: "text-emerald-700 bg-emerald-50" },
+          { label: "معتمد", value: stats.published, icon: CheckCircle2, color: "text-emerald-700 bg-emerald-50" },
           { label: "قيد المراجعة", value: stats.pending, icon: AlertCircle, color: "text-amber-700 bg-amber-50" },
           { label: "مميز", value: stats.featured, icon: Star, color: "text-yellow-700 bg-yellow-50" },
           { label: "للبيع", value: stats.forSale, icon: Home, color: "text-blue-700 bg-blue-50" },
@@ -446,7 +446,7 @@ export default function AdminProperties() {
                 <SelectTrigger className="w-36"><SelectValue placeholder="الحالة" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الحالات</SelectItem>
-                  <SelectItem value="published">منشور</SelectItem>
+                  <SelectItem value="approved">معتمد</SelectItem>
                   <SelectItem value="pending">قيد المراجعة</SelectItem>
                   <SelectItem value="rejected">مرفوض</SelectItem>
                 </SelectContent>
@@ -584,12 +584,12 @@ export default function AdminProperties() {
                         </Button>
 
                         {/* Publish */}
-                        {p.status !== "published" && (
+                        {p.status !== "approved" && (
                           <Button
                             variant="ghost" size="sm"
                             className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-8 px-2"
-                            onClick={() => handleStatus(p, "published")}
-                            title="نشر"
+                            onClick={() => handleStatus(p, "approved")}
+                            title="اعتماد"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                           </Button>

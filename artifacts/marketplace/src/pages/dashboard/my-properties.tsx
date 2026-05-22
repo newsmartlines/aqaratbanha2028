@@ -49,8 +49,8 @@ interface Property {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending:   { label: "قيد الموافقة", color: "bg-amber-100 text-amber-700 border-amber-200" },
-  published: { label: "منشور",        color: "bg-green-100 text-green-700 border-green-200" },
+  pending:   { label: "قيد الموافقة",  color: "bg-amber-100 text-amber-700 border-amber-200" },
+  approved:  { label: "تمت الموافقة", color: "bg-green-100 text-green-700 border-green-200" },
   active:    { label: "نشط",          color: "bg-green-100 text-green-700 border-green-200" },
   sold:      { label: "مُباع",         color: "bg-blue-100 text-blue-700 border-blue-200" },
   rented:    { label: "مُؤجَّر",        color: "bg-purple-100 text-purple-700 border-purple-200" },
@@ -126,7 +126,7 @@ export default function MyPropertiesPage() {
     sale:       allProps.filter(p => p.listingType === "sale").length,
     featured:   allProps.filter(p => p.featured).length,
     pending:    allProps.filter(p => p.status === "pending").length,
-    published:  allProps.filter(p => p.status === "published" || p.status === "active").length,
+    published:  allProps.filter(p => p.status === "approved" || p.status === "active").length,
     total:      allProps.length,
     totalViews: allProps.reduce((sum, p) => sum + (p.viewCount ?? 0), 0),
   }), [allProps]);
@@ -255,7 +255,7 @@ export default function MyPropertiesPage() {
                 <SelectContent>
                   <SelectItem value="all">كل الحالات</SelectItem>
                   <SelectItem value="pending">قيد الموافقة</SelectItem>
-                  <SelectItem value="published">منشور</SelectItem>
+                  <SelectItem value="approved">تمت الموافقة</SelectItem>
                   <SelectItem value="active">نشط</SelectItem>
                   <SelectItem value="sold">مُباع</SelectItem>
                   <SelectItem value="rented">مُؤجَّر</SelectItem>
@@ -454,7 +454,7 @@ export default function MyPropertiesPage() {
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button
-                                      onClick={() => statusMut.mutate({ id: prop.id, status: "published" })}
+                                      onClick={() => statusMut.mutate({ id: prop.id, status: "approved" })}
                                       disabled={statusMut.isPending}
                                       className="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors"
                                     >
@@ -466,7 +466,7 @@ export default function MyPropertiesPage() {
                               )}
 
                               {/* Mark sold/rented */}
-                              {(prop.status === "published" || prop.status === "active") && (
+                              {(prop.status === "approved" || prop.status === "active") && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button

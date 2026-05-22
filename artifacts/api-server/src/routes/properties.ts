@@ -181,13 +181,13 @@ router.get("/properties", async (req, res) => {
 
     const conditions: any[] = [];
 
-    // status=all → no filter (admin). status=<value> → exact match. no status → default to published
+    // status=all → no filter (admin). status=<value> → exact match. no status → default to approved
     if (status === "all") {
       // show everything — no filter
     } else if (status) {
       conditions.push(eq(propertiesTable.status, status));
     } else {
-      conditions.push(eq(propertiesTable.status, "published"));
+      conditions.push(eq(propertiesTable.status, "approved"));
     }
     if (category) conditions.push(eq(propertiesTable.mainCategory, category));
     if (subCategory) conditions.push(eq(propertiesTable.subCategory, subCategory));
@@ -511,9 +511,9 @@ router.put("/properties/:id", async (req, res) => {
     delete updateData.createdAt;
     delete updateData.id;
 
-    // Non-admin editing a published property → reset to pending for re-review
+    // Non-admin editing an approved property → reset to pending for re-review
     const sessionRole = (session as any).role;
-    if (sessionRole !== "admin" && existing.status === "published") {
+    if (sessionRole !== "admin" && existing.status === "approved") {
       updateData.status = "pending";
     }
 
@@ -566,8 +566,8 @@ router.patch("/properties/:id/status", async (req, res) => {
     const [updated] = await db.update(propertiesTable).set({ status }).where(eq(propertiesTable.id, id)).returning();
 
     const ownerUserId = property.ownerUserId;
-    if (ownerUserId && (status === "published" || status === "rejected")) {
-      const isApproved = status === "published";
+    if (ownerUserId && (status === "approved" || status === "rejected")) {
+      const isApproved = status === "approved";
       await db.insert(notificationsTable).values({
         userId: ownerUserId,
         title: isApproved ? "✅ تمت الموافقة على عقارك" : "❌ تم رفض عقارك",

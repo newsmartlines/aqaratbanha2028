@@ -222,7 +222,7 @@ export default function MapSearchPage() {
 
   const { data: raw } = useQuery({
     queryKey: ["map-properties"],
-    queryFn: () => (api.properties as any).list({ status: "published", limit: "200" }),
+    queryFn: () => (api.properties as any).list({ status: "approved", limit: "200" }),
     staleTime: 30_000,
   });
 
