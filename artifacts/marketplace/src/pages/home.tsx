@@ -1294,10 +1294,10 @@ export default function Home() {
                 <div>
                   <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-semibold mb-3">
                     <MapPin className="w-3.5 h-3.5" />
-                    تصفح بالمنطقة
+                    بحث بالمنطقة
                   </div>
                   <h2 className="text-2xl md:text-3xl font-extrabold text-[#0a0a0a] leading-tight">
-                    أهم المناطق
+                    علشان لو بتحب تدور بالمنطقة
                   </h2>
                   <p className="text-gray-500 text-sm mt-1.5">اختر منطقتك وتصفح العقارات المتاحة</p>
                 </div>
@@ -1310,13 +1310,45 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Horizontal scroll strip */}
-              <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory">
+              {/* Horizontal drag-to-scroll strip */}
+              <div
+                className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide cursor-grab active:cursor-grabbing select-none"
+                ref={(el) => {
+                  if (!el) return;
+                  let isDown = false;
+                  let startX = 0;
+                  let scrollLeft = 0;
+                  let moved = false;
+                  const onDown = (e: MouseEvent) => {
+                    isDown = true;
+                    moved = false;
+                    startX = e.pageX - el.offsetLeft;
+                    scrollLeft = el.scrollLeft;
+                    el.style.cursor = "grabbing";
+                  };
+                  const onUp = () => {
+                    isDown = false;
+                    el.style.cursor = "grab";
+                  };
+                  const onMove = (e: MouseEvent) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - el.offsetLeft;
+                    const walk = (x - startX) * 1.2;
+                    if (Math.abs(walk) > 5) moved = true;
+                    el.scrollLeft = scrollLeft - walk;
+                  };
+                  el.addEventListener("mousedown", onDown);
+                  window.addEventListener("mouseup", onUp);
+                  el.addEventListener("mousemove", onMove);
+                  el.addEventListener("click", (e) => { if (moved) e.stopPropagation(); }, true);
+                }}
+              >
                 {featuredAreas.map((area) => (
                   <button
                     key={area.id}
                     onClick={() => setLocation(`/properties?district=${encodeURIComponent(area.nameAr)}`)}
-                    className="group relative shrink-0 w-44 sm:w-52 md:w-60 h-60 rounded-lg overflow-hidden snap-start cursor-pointer"
+                    className="relative shrink-0 w-44 sm:w-52 md:w-60 h-60 rounded-lg overflow-hidden cursor-pointer"
                   >
                     {/* Background image */}
                     {area.image ? (
@@ -1324,6 +1356,7 @@ export default function Home() {
                         src={area.image}
                         alt={area.nameAr}
                         className="absolute inset-0 w-full h-full object-cover"
+                        draggable={false}
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-teal-200" />
@@ -1350,10 +1383,6 @@ export default function Home() {
                           {area.cityName}
                         </p>
                       )}
-                      <p className="mt-2 text-xs text-white/60 flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                        عرض العقارات
-                        <ArrowLeft className="w-3 h-3" />
-                      </p>
                     </div>
                   </button>
                 ))}
