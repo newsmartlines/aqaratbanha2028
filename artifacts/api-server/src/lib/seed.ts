@@ -626,7 +626,7 @@ async function seedProperties() {
       district: "وسط البلد", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4667", longitude: "31.1833",
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: true, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
       providerId: pid(1), title: "شقة 2 غرف سوبر لوكس للبيع - بنها",
@@ -637,7 +637,7 @@ async function seedProperties() {
       district: "شارع الجمهورية", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4690", longitude: "31.1820",
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(2), title: "شقة 4 غرف بموقع مميز - بنها",
@@ -648,7 +648,7 @@ async function seedProperties() {
       district: "الحي العاشر", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4650", longitude: "31.1850",
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: true, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(3), title: "شقة 3 غرف تشطيب كامل - القناطر الخيرية",
@@ -658,7 +658,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
       providerId: pid(4), title: "شقة غرفتين ريسيبشن للبيع - قليوب",
@@ -668,7 +668,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "وسط قليوب", address: "قليوب", regionId: qR, cityId: qC,
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: false, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
     {
       providerId: pid(5), title: "شقة استوديو مفروشة للبيع - بنها",
@@ -678,7 +678,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "مفروش",
       district: "شارع الجيش", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_APT, features: JSON.stringify(["مفروش بالكامل", "تكييف", "إنترنت", "غسالة", "ثلاجة"]),
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(0), title: "شقة 3 غرف خام - الخانكة",
@@ -688,7 +688,7 @@ async function seedProperties() {
       finishing: "خام", furnished: "غير مفروش",
       district: "مركز الخانكة", address: "الخانكة", regionId: qR, cityId: khC,
       images: IMGS_APT, features: JSON.stringify(["موقف سيارات", "أمن وحراسة"]),
-      status: "approved", featured: false, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(1), title: "شقة 3 غرف نص تشطيب - طوخ",
@@ -698,7 +698,7 @@ async function seedProperties() {
       finishing: "نص تشطيب", furnished: "غير مفروش",
       district: "مركز طوخ", address: "طوخ", regionId: qR, cityId: tC,
       images: IMGS_APT, features: JSON.stringify(["موقف سيارات"]),
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
 
     // ── شقق للإيجار ──────────────────────────────────────────────────────────
@@ -711,7 +711,7 @@ async function seedProperties() {
       district: "الحي الثامن", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4680", longitude: "31.1840",
       images: IMGS_APT, features: JSON.stringify(["مفروش بالكامل", "تكييف", "إنترنت فايبر", "غسالة", "مصعد"]),
-      status: "approved", featured: true, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
       providerId: pid(3), title: "شقة للإيجار 2 غرفة غير مفروشة - بنها",
@@ -721,7 +721,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "شارع الرياضة", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(4), title: "شقة للإيجار 4 غرف مفروشة - بنها",
@@ -731,7 +731,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "مفروش",
       district: "فيلتس", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_APT, features: JSON.stringify(["مفروش بالكامل", "تكييف مركزي", "إنترنت فايبر", "مصعد", "أمن وحراسة", "موقف سيارات"]),
-      status: "approved", featured: true, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(5), title: "شقة إيجار غرفة وصالة - قليوب",
@@ -741,7 +741,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "قليوب الجديدة", address: "قليوب", regionId: qR, cityId: qC,
       images: IMGS_APT, features: JSON.stringify(["مصعد", "أمن وحراسة"]),
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
       providerId: pid(0), title: "شقة للإيجار 3 غرف - القناطر الخيرية",
@@ -751,7 +751,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "كورنيش القناطر", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       images: IMGS_APT, features: FEATS_APT,
-      status: "approved", featured: false, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
 
     // ── فيلات للبيع ──────────────────────────────────────────────────────────
@@ -764,7 +764,7 @@ async function seedProperties() {
       district: "العبور السكنية", address: "العبور", regionId: cR, cityId: obC,
       latitude: "30.2167", longitude: "31.5333",
       images: IMGS_VILLA, features: FEATS_VILLA,
-      status: "approved", featured: true, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: true, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(2), title: "فيلا توين هاوس للبيع - بنها الجديدة",
@@ -774,7 +774,7 @@ async function seedProperties() {
       finishing: "نص تشطيب", furnished: "غير مفروش",
       district: "بنها الجديدة", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_VILLA, features: FEATS_VILLA,
-      status: "approved", featured: true, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(3), title: "فيلا دوبلكس 6 غرف - مدينة بدر",
@@ -784,7 +784,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "مدينة بدر الجديدة", address: "مدينة بدر", regionId: cR, cityId: bdC,
       images: IMGS_DUPLEX, features: FEATS_VILLA,
-      status: "approved", featured: true, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: true, phone: "01334567890", whatsapp: "01334567890",
     },
     {
       providerId: pid(4), title: "فيلا 4 غرف بحديقة - القناطر الخيرية",
@@ -794,7 +794,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       images: IMGS_VILLA, features: FEATS_VILLA,
-      status: "approved", featured: false, phone: "01445678901", whatsapp: "01445678901",
+      status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901",
     },
     {
       providerId: pid(5), title: "فيلا 5 غرف في كمبوند - التجمع الخامس",
@@ -804,7 +804,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "التجمع الثالث", address: "التجمع الخامس", regionId: cR, cityId: tjC,
       images: IMGS_VILLA, features: FEATS_VILLA,
-      status: "approved", featured: true, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
 
     // ── دوبلكس وروف ──────────────────────────────────────────────────────────
@@ -816,7 +816,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "الحي التاسع", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_DUPLEX, features: FEATS_DUPLEX,
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(1), title: "روف 3 غرف بتراس واسع - بنها",
@@ -826,7 +826,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "شارع سعد زغلول", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_DUPLEX, features: FEATS_DUPLEX,
-      status: "approved", featured: false, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(2), title: "دوبلكس 5 غرف في الشيخ زايد",
@@ -836,7 +836,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "الحي الثامن", address: "الشيخ زايد", regionId: gR, cityId: zC,
       images: IMGS_DUPLEX, features: FEATS_DUPLEX,
-      status: "approved", featured: true, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: true, phone: "01334567890", whatsapp: "01334567890",
     },
 
     // ── أراضي للبيع ──────────────────────────────────────────────────────────
@@ -847,7 +847,7 @@ async function seedProperties() {
       price: "600000", area: "300",
       district: "المنطقة الصناعية", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_LAND, features: FEATS_LAND,
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
       providerId: pid(4), title: "قطعة أرض 500م للبيع - القناطر",
@@ -856,7 +856,7 @@ async function seedProperties() {
       price: "900000", area: "500",
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       images: IMGS_LAND, features: FEATS_LAND,
-      status: "approved", featured: true, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
       providerId: pid(5), title: "أرض 750م للبيع - طوخ الصناعية",
@@ -865,7 +865,7 @@ async function seedProperties() {
       price: "1200000", area: "750",
       district: "طوخ الصناعية", address: "طوخ", regionId: qR, cityId: tC,
       images: IMGS_LAND, features: FEATS_LAND,
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(0), title: "أرض زراعية 2 فدان - الخانكة",
@@ -874,7 +874,7 @@ async function seedProperties() {
       price: "2500000", area: "8400",
       district: "ريف الخانكة", address: "الخانكة", regionId: qR, cityId: khC,
       images: IMGS_LAND, features: JSON.stringify(["تربة خصبة", "مروية", "على ترعة"]),
-      status: "approved", featured: false, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(1), title: "أرض سكنية 200م - شبين القناطر",
@@ -883,7 +883,7 @@ async function seedProperties() {
       price: "350000", area: "200",
       district: "شبين القناطر", address: "شبرا الخيمة", regionId: qR, cityId: shC,
       images: IMGS_LAND, features: FEATS_LAND,
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
 
     // ── عقارات تجارية ────────────────────────────────────────────────────────
@@ -895,7 +895,7 @@ async function seedProperties() {
       district: "السوق التجاري", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4660", longitude: "31.1845",
       images: IMGS_COMM, features: FEATS_COMM,
-      status: "approved", featured: true, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
       providerId: pid(3), title: "مكتب للبيع 120م - بنها",
@@ -904,7 +904,7 @@ async function seedProperties() {
       price: "900000", area: "120", floor: 4, totalFloors: 12,
       district: "شارع التحرير", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_COMM, features: FEATS_COMM,
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
       providerId: pid(4), title: "محل للإيجار - الشارع الرئيسي بنها",
@@ -913,7 +913,7 @@ async function seedProperties() {
       price: "8000", area: "60",
       district: "وسط البلد", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_COMM, features: FEATS_COMM,
-      status: "approved", featured: false, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(5), title: "مستودع للإيجار - المنطقة الصناعية بنها",
@@ -922,7 +922,7 @@ async function seedProperties() {
       price: "12000", area: "300",
       district: "المنطقة الصناعية", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_COMM, features: JSON.stringify(["ارتفاع 5 متر", "بوابة كبيرة", "كهرباء ثلاثة فاز", "موقف سيارات"]),
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
       providerId: pid(0), title: "مكتب للإيجار 90م - القناطر الخيرية",
@@ -931,7 +931,7 @@ async function seedProperties() {
       price: "4500", area: "90", floor: 2, totalFloors: 6,
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       images: IMGS_COMM, features: FEATS_COMM,
-      status: "approved", featured: false, phone: "01001234567", whatsapp: "01001234567",
+      status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
     {
       providerId: pid(1), title: "محل تجاري في شبرا الخيمة - للإيجار",
@@ -940,7 +940,7 @@ async function seedProperties() {
       price: "5000", area: "45",
       district: "شبرا الخيمة الأولى", address: "شبرا الخيمة", regionId: qR, cityId: shC,
       images: IMGS_COMM, features: JSON.stringify(["واجهة تجارية", "موقع مميز", "قريب من المترو"]),
-      status: "approved", featured: false, phone: "01112345678", whatsapp: "01112345678",
+      status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
 
     // ── دور أرضي ─────────────────────────────────────────────────────────────
@@ -952,7 +952,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "مركز كفر شكر", address: "كفر شكر", regionId: qR,
       images: IMGS_APT, features: JSON.stringify(["حديقة خاصة", "مدخل مستقل", "موقف سيارات", "مخزن"]),
-      status: "approved", featured: false, phone: "01223456789", whatsapp: "01223456789",
+      status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
       providerId: pid(3), title: "دور أرضي 3 غرف للإيجار - بنها",
@@ -962,7 +962,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "حي الزهور", address: "بنها", regionId: qR, cityId: bC,
       images: IMGS_APT, features: JSON.stringify(["مدخل مستقل", "حديقة", "موقف سيارات"]),
-      status: "approved", featured: false, phone: "01334567890", whatsapp: "01334567890",
+      status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
   ]);
 
