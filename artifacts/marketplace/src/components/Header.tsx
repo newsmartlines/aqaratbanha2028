@@ -7,7 +7,8 @@ import { api, mediaUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import {
   Menu, X, ChevronDown, User, Heart, ShoppingBag,
-  LogOut, Settings, LayoutDashboard, Star,
+  LogOut, Settings, LayoutDashboard, Star, Building2,
+  MessageCircle, PlusCircle,
 } from "lucide-react";
 
 export function Header() {
@@ -68,9 +69,11 @@ export function Header() {
   ];
 
   const userMenuItems = [
-    { icon: User, label: "ملفي الشخصي", href: "/user/dashboard" },
-    { icon: ShoppingBag, label: "طلباتي", href: "/user/requests" },
+    { icon: PlusCircle, label: "أضف عقارك", href: "/user/add-property", highlight: true },
+    { icon: Building2, label: "عقاراتي", href: "/user/my-properties" },
     { icon: Heart, label: "المفضلة", href: "/user/favorites" },
+    { icon: MessageCircle, label: "رسائلي", href: "/user/inbox" },
+    { icon: Settings, label: "الإعدادات", href: "/user/settings" },
   ];
 
   const menuItems = user?.role === "provider" ? providerMenuItems :
@@ -144,9 +147,9 @@ export function Header() {
                       <Link key={item.href} href={item.href}>
                         <button
                           onClick={() => setDropdownOpen(false)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-secondary/60 transition-colors text-right"
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors text-right ${'highlight' in item && item.highlight ? "text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30 font-semibold" : "hover:bg-secondary/60"}`}
                         >
-                          <item.icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <item.icon className={`w-4 h-4 shrink-0 ${'highlight' in item && item.highlight ? "text-teal-600" : "text-muted-foreground"}`} />
                           {item.label}
                         </button>
                       </Link>
