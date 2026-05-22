@@ -3,8 +3,6 @@ import { Link, useLocation, Redirect } from "wouter";
 import {
   LayoutDashboard,
   Heart,
-  Bell,
-  Star,
   Settings,
   LogOut,
   Menu,
@@ -16,6 +14,7 @@ import {
   CreditCard,
   MessageCircle as MessageCircleIcon,
   BellRing,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -52,11 +51,9 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const dashboardNavigation = [
     { name: "الرئيسية", href: "/user/dashboard", icon: LayoutDashboard },
     { name: "المفضلة", href: "/user/favorites", icon: Heart },
-    { name: "طلباتي", href: "/user/requests", icon: Bell },
     { name: "تنبيهات البحث", href: "/user/saved-searches", icon: BellRing },
     { name: "مدفوعاتي", href: "/user/payments", icon: CreditCard },
     { name: "رسائلي", href: "/user/inbox", icon: MessageCircleIcon },
-    { name: "تقييماتي", href: "/user/reviews", icon: Star },
     { name: "الإعدادات", href: "/user/settings", icon: Settings },
     { name: "المساعدة", href: "/user/support", icon: HelpCircle },
   ];
@@ -76,11 +73,11 @@ export default function UserLayout({ children }: UserLayoutProps) {
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.name ?? "user")}`;
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-indigo-900 text-white overflow-hidden">
+    <div className="flex h-full flex-col bg-[#0a1628] text-white overflow-hidden">
       {/* Sidebar header — hidden on desktop since banner shows logo */}
       <div className="flex h-14 shrink-0 items-center px-5 border-b border-white/10 lg:hidden">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-indigo-900 font-bold text-lg">✦</div>
+          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#0a1628] font-bold text-lg">✦</div>
           <span className="font-bold text-xl tracking-tight text-white">عقارتي</span>
         </Link>
       </div>
@@ -93,14 +90,14 @@ export default function UserLayout({ children }: UserLayoutProps) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">{user?.name ?? "المستخدم"}</p>
-            <p className="text-xs text-indigo-200/70">عميل</p>
+            <p className="text-xs text-blue-200/60">عميل</p>
           </div>
         </div>
       </div>
 
-      {/* Dashboard nav links */}
+      {/* Dashboard nav links + back to site + logout — all scrollable */}
       <div className="flex-1 min-h-0 overflow-y-auto py-4 px-3 hide-scrollbar">
-        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-indigo-300/50">القائمة</p>
+        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-blue-300/40">القائمة</p>
         <nav className="space-y-1">
           {dashboardNavigation.map((item) => {
             const isActive = location === item.href;
@@ -110,27 +107,37 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 href={item.href}
                 className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-colors ${
                   isActive
-                    ? "bg-indigo-500/20 text-indigo-200"
-                    : "text-indigo-100/70 hover:bg-white/5 hover:text-white"
+                    ? "bg-white/10 text-white"
+                    : "text-blue-100/70 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <item.icon className={`ml-3 shrink-0 h-5 w-5 ${isActive ? "text-indigo-300" : "text-indigo-300/70 group-hover:text-white"}`} />
+                <item.icon className={`ml-3 shrink-0 h-5 w-5 ${isActive ? "text-blue-300" : "text-blue-300/60 group-hover:text-white"}`} />
                 {item.name}
               </Link>
             );
           })}
-        </nav>
-      </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-white/10">
-        <button
-          onClick={handleLogout}
-          className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-xl text-red-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-right"
-        >
-          <LogOut className="ml-3 shrink-0 h-5 w-5 text-red-400/70 group-hover:text-red-400" />
-          تسجيل الخروج
-        </button>
+          {/* Divider */}
+          <div className="my-3 border-t border-white/10" />
+
+          {/* Back to site */}
+          <Link
+            href="/"
+            className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-colors text-blue-100/70 hover:bg-white/5 hover:text-white"
+          >
+            <ArrowRight className="ml-3 shrink-0 h-5 w-5 text-blue-300/60 group-hover:text-white" />
+            العودة للموقع
+          </Link>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-xl text-red-300/80 hover:bg-red-500/10 hover:text-red-400 transition-colors text-right"
+          >
+            <LogOut className="ml-3 shrink-0 h-5 w-5 text-red-400/60 group-hover:text-red-400" />
+            تسجيل الخروج
+          </button>
+        </nav>
       </div>
     </div>
   );
@@ -146,10 +153,10 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-8 h-8 rounded-xl bg-indigo-900 flex items-center justify-center text-white font-bold text-lg shadow group-hover:bg-indigo-800 transition-colors">
+            <div className="w-8 h-8 rounded-xl bg-[#0a1628] flex items-center justify-center text-white font-bold text-lg shadow group-hover:bg-[#0d1f3a] transition-colors">
               د
             </div>
-            <span className="font-extrabold text-xl text-indigo-900 tracking-tight hidden sm:block">
+            <span className="font-extrabold text-xl text-[#0a1628] tracking-tight hidden sm:block">
               {siteName}
             </span>
           </Link>
@@ -179,7 +186,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
               <div className="w-6 h-6 rounded-full overflow-hidden shrink-0">
                 <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
               </div>
-              <span className="text-sm font-medium text-indigo-900 max-w-[120px] truncate">{user?.name}</span>
+              <span className="text-sm font-medium text-[#0a1628] max-w-[120px] truncate">{user?.name}</span>
             </div>
 
             {/* Mobile hamburger */}
@@ -198,7 +205,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                   لوحتي
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-indigo-900 border-none text-white h-full overflow-hidden">
+              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-[#0a1628] border-none text-white h-full overflow-hidden">
                 <SidebarContent />
               </SheetContent>
             </Sheet>
@@ -250,7 +257,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-indigo-900 border-none text-white h-full overflow-hidden">
+              <SheetContent side="right" className="p-0 w-72 border-l-0 bg-[#0a1628] border-none text-white h-full overflow-hidden">
                 <SidebarContent />
               </SheetContent>
             </Sheet>
