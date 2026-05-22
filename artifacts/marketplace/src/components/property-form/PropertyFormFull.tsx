@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { FormSection } from "./shared/FormSection";
 import { TileButton } from "./shared/TileButton";
+import { FeatureIcon } from "@/components/FeatureIcon";
 import { MapPicker } from "./shared/MapPicker";
 import { PaymentDialog } from "./shared/PaymentDialog";
 import { Step5Plans } from "./steps/Step5Plans";
@@ -490,7 +491,9 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                       active ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-200 text-foreground"
                     }`}
                   >
-                    <span className="text-base shrink-0 leading-none">{am.icon ?? "🏠"}</span>
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${active ? "bg-teal-600/10" : "bg-secondary"}`}>
+                      <FeatureIcon name={am.icon} className={`w-3.5 h-3.5 ${active ? "text-teal-600" : "text-muted-foreground"}`} />
+                    </div>
                     {am.name}
                   </button>
                 );
@@ -509,11 +512,11 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                   <button
                     key={svc.id} type="button"
                     onClick={() => toggleArr("nearbyServices", svc.name)}
-                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all flex items-center gap-1 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
                       active ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-300 text-foreground"
                     }`}
                   >
-                    <span className="text-sm leading-none">{svc.icon ?? ""}</span>
+                    <FeatureIcon name={svc.icon} className={`w-3 h-3 shrink-0 ${active ? "text-teal-600" : "text-muted-foreground"}`} />
                     {svc.name}
                   </button>
                 );

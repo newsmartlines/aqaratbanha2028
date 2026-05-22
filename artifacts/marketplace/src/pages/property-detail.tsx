@@ -17,6 +17,7 @@ import {
   Layers, Car, Home, TrendingUp, Eye, Clock, Loader2, Scale, ShieldCheck,
 } from "lucide-react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
+import { FeatureIconByName } from "@/components/FeatureIcon";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
@@ -591,9 +592,11 @@ export default function PropertyDetail() {
                 <h2 className="text-lg font-bold text-gray-900 mb-5">المرافق والمزايا</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {property.amenities.map((a, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>{a}</span>
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 border border-border/50 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+                        <FeatureIconByName featureName={a} className="w-3.5 h-3.5 text-teal-600" />
+                      </div>
+                      <span className="font-medium">{a}</span>
                     </div>
                   ))}
                 </div>

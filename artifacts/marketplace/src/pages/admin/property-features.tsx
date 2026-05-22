@@ -16,9 +16,15 @@ import {
 import {
   Plus, Pencil, Trash2, Eye, EyeOff,
   ChevronUp, ChevronDown, Search, Tag, MapPin,
-  Loader2, GripVertical, ToggleLeft, ToggleRight, CheckCircle2,
+  Loader2, GripVertical, CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import {
+  FeatureIcon,
+  FEATURE_ICONS_LIST,
+  SERVICE_ICONS_LIST,
+  FEATURE_ICON_MAP,
+} from "@/components/FeatureIcon";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,52 +39,59 @@ type Feature = {
 
 type Tab = "feature" | "service";
 
-const EMPTY = { name: "", icon: "🏠", status: "active" };
+const EMPTY = { name: "", icon: "Home", status: "active" };
 
-// ─── Common emoji pickers ─────────────────────────────────────────────────────
+// ─── Icon Picker ──────────────────────────────────────────────────────────────
 
-const FEATURE_EMOJIS = [
-  "🛗", "🚗", "🏊", "🏠", "❄️", "📡", "💂", "⚡", "💧", "🏋️",
-  "🪟", "🌿", "🤖", "🔒", "🛋️", "🌞", "🔑", "🚿", "🛁", "🛏",
-  "📹", "🔥", "⚙️", "🌊", "🎮", "🍳", "🏗", "🏢", "🌳", "🌺",
-];
-const SERVICE_EMOJIS = [
-  "🕌", "🏫", "🏥", "💊", "🛒", "🏬", "🏦", "🌳", "🚌", "🍽️",
-  "🏃", "⛽", "🎓", "🏪", "🏨", "🎭", "🚉", "✈️", "🏋️", "🎯",
-];
-
-// ─── Emoji Picker Grid ────────────────────────────────────────────────────────
-
-function EmojiPicker({ value, onChange, emojis }: {
+function IconPicker({ value, onChange, tab }: {
   value: string;
-  onChange: (e: string) => void;
-  emojis: string[];
+  onChange: (v: string) => void;
+  tab: Tab;
 }) {
+  const icons = tab === "feature" ? FEATURE_ICONS_LIST : SERVICE_ICONS_LIST;
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-3xl">{value}</span>
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="اكتب إيموجي أو رمز..."
-          className="h-9 rounded-lg w-32"
-        />
+      <div className="flex items-center gap-3 mb-3 p-2.5 bg-slate-50 rounded-xl border border-border">
+        <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
+          <FeatureIcon name={value} className="w-5 h-5 text-teal-600" />
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-slate-500 mb-1">اسم الأيقونة</p>
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="مثال: Waves"
+            className="h-8 rounded-lg text-sm"
+            dir="ltr"
+          />
+        </div>
       </div>
-      <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-border">
-        {emojis.map((em) => (
-          <button
-            key={em}
-            type="button"
-            onClick={() => onChange(em)}
-            className={`text-xl w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-110 ${
-              value === em ? "bg-teal-100 ring-2 ring-teal-400 scale-110" : "hover:bg-slate-100"
-            }`}
-          >
-            {em}
-          </button>
-        ))}
+      <div className="grid grid-cols-7 gap-1.5 p-2 bg-slate-50 rounded-xl border border-border max-h-40 overflow-y-auto">
+        {icons.map((iconName) => {
+          const active = value === iconName;
+          return (
+            <button
+              key={iconName}
+              type="button"
+              title={iconName}
+              onClick={() => onChange(iconName)}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-110 ${
+                active
+                  ? "bg-teal-600 shadow-sm ring-2 ring-teal-400 ring-offset-1 scale-110"
+                  : "hover:bg-slate-200 bg-white border border-slate-200"
+              }`}
+            >
+              <FeatureIcon
+                name={iconName}
+                className={`w-4 h-4 ${active ? "text-white" : "text-slate-600"}`}
+              />
+            </button>
+          );
+        })}
       </div>
+      <p className="text-[11px] text-slate-400 mt-1.5 text-center">
+        اضغط على الأيقونة للاختيار، أو اكتب اسمها يدوياً أعلاه
+      </p>
     </div>
   );
 }
@@ -103,9 +116,9 @@ function FeatureRow({
     <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all group ${
       isActive
         ? "bg-white border-slate-200 hover:border-teal-200 hover:shadow-sm"
-        : "bg-slate-50 border-slate-200 opacity-60"
+        : "bg-slate-50 border-slate-200 opacity-55"
     }`}>
-      {/* Drag handle / order */}
+      {/* Order arrows */}
       <div className="flex flex-col gap-0.5 text-slate-300 shrink-0">
         <button
           type="button"
@@ -126,12 +139,19 @@ function FeatureRow({
       </div>
 
       {/* Icon */}
-      <span className="text-2xl w-8 text-center shrink-0">{item.icon ?? "🏠"}</span>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+        isActive ? "bg-teal-50 border border-teal-100" : "bg-slate-100"
+      }`}>
+        <FeatureIcon
+          name={item.icon}
+          className={`w-4 h-4 ${isActive ? "text-teal-600" : "text-slate-400"}`}
+        />
+      </div>
 
-      {/* Name */}
+      {/* Name + icon name */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-slate-800 text-sm">{item.name}</p>
-        <p className="text-xs text-slate-400">ترتيب: {item.sortOrder}</p>
+        <p className="text-[11px] text-slate-400 font-mono">{item.icon ?? "—"}</p>
       </div>
 
       {/* Status badge */}
@@ -191,8 +211,6 @@ export default function AdminPropertyFeatures() {
   const [deleteTarget, setDeleteTarget] = useState<Feature | null>(null);
   const [form, setForm] = useState({ ...EMPTY });
 
-  // ── Queries ────────────────────────────────────────────────────────────────
-
   const queryKey = ["admin-property-features", tab];
 
   const { data: items = [], isLoading } = useQuery<Feature[]>({
@@ -202,27 +220,17 @@ export default function AdminPropertyFeatures() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey });
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
-
   const createMut = useMutation({
     mutationFn: (d: typeof EMPTY) =>
       api.propertyFeatures.create({ type: tab, ...d, sortOrder: items.length + 1 }),
-    onSuccess: () => {
-      invalidate();
-      setModalOpen(false);
-      toast.success("تمت الإضافة بنجاح");
-    },
+    onSuccess: () => { invalidate(); setModalOpen(false); toast.success("تمت الإضافة بنجاح"); },
     onError: () => toast.error("حدث خطأ أثناء الإضافة"),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<typeof EMPTY> }) =>
       api.propertyFeatures.update(id, data),
-    onSuccess: () => {
-      invalidate();
-      setModalOpen(false);
-      toast.success("تم التعديل بنجاح");
-    },
+    onSuccess: () => { invalidate(); setModalOpen(false); toast.success("تم التعديل بنجاح"); },
     onError: () => toast.error("حدث خطأ أثناء التعديل"),
   });
 
@@ -230,7 +238,6 @@ export default function AdminPropertyFeatures() {
     mutationFn: (id: number) => api.propertyFeatures.toggle(id),
     onSuccess: () => {
       invalidate();
-      // Also invalidate the public list so the form wizard updates
       qc.invalidateQueries({ queryKey: ["property-features", tab] });
     },
     onError: () => toast.error("حدث خطأ"),
@@ -258,17 +265,15 @@ export default function AdminPropertyFeatures() {
     },
   });
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
-
   const openAdd = () => {
     setEditing(null);
-    setForm({ ...EMPTY, icon: tab === "service" ? "🕌" : "🏠" });
+    setForm({ name: "", icon: tab === "service" ? "Building2" : "Home", status: "active" });
     setModalOpen(true);
   };
 
   const openEdit = (item: Feature) => {
     setEditing(item);
-    setForm({ name: item.name, icon: item.icon ?? "🏠", status: item.status });
+    setForm({ name: item.name, icon: item.icon ?? "Home", status: item.status });
     setModalOpen(true);
   };
 
@@ -292,8 +297,6 @@ export default function AdminPropertyFeatures() {
     reorderMut.mutate(reordered);
   };
 
-  // ── Filtering ──────────────────────────────────────────────────────────────
-
   const sorted = useMemo(
     () => [...items].sort((a, b) => a.sortOrder - b.sortOrder),
     [items]
@@ -302,21 +305,18 @@ export default function AdminPropertyFeatures() {
   const visible = useMemo(() => {
     let list = sorted;
     if (filter === "active") list = list.filter((i) => i.status === "active");
-    if (filter === "hidden") list = list.filter((i) => i.status === "hidden");
-    if (search.trim())
-      list = list.filter((i) => i.name.includes(search.trim()));
+    if (filter === "hidden") list = list.filter((i) => i.status !== "active");
+    if (search.trim()) list = list.filter((i) => i.name.includes(search.trim()));
     return list;
   }, [sorted, filter, search]);
 
-  const activeCount  = items.filter((i) => i.status === "active").length;
-  const hiddenCount  = items.filter((i) => i.status === "hidden").length;
-  const tabEmojis    = tab === "feature" ? FEATURE_EMOJIS : SERVICE_EMOJIS;
-
-  // ── Render ─────────────────────────────────────────────────────────────────
+  const activeCount = items.filter((i) => i.status === "active").length;
+  const hiddenCount = items.filter((i) => i.status !== "active").length;
 
   return (
     <AdminLayout>
       <div className="p-6 space-y-6" dir="rtl">
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -336,38 +336,32 @@ export default function AdminPropertyFeatures() {
 
         {/* Tabs */}
         <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl w-fit">
-          <button
-            type="button"
-            onClick={() => { setTab("feature"); setSearch(""); setFilter("all"); }}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              tab === "feature"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <Tag className="w-4 h-4" />
-            مميزات العقار
-          </button>
-          <button
-            type="button"
-            onClick={() => { setTab("service"); setSearch(""); setFilter("all"); }}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              tab === "service"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <MapPin className="w-4 h-4" />
-            الخدمات القريبة
-          </button>
+          {([
+            { id: "feature" as Tab, label: "مميزات العقار",   Icon: Tag    },
+            { id: "service" as Tab, label: "الخدمات القريبة", Icon: MapPin },
+          ] as const).map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => { setTab(id); setSearch(""); setFilter("all"); }}
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                tab === id
+                  ? "bg-white text-slate-800 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: "الإجمالي", value: items.length, color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
-            { label: "ظاهر",     value: activeCount,  color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
-            { label: "مخفي",     value: hiddenCount,  color: "text-amber-700",   bg: "bg-amber-50 border-amber-200" },
+            { label: "الإجمالي", value: items.length,  color: "text-slate-700",   bg: "bg-slate-50 border-slate-200"   },
+            { label: "ظاهر",     value: activeCount,   color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
+            { label: "مخفي",     value: hiddenCount,   color: "text-amber-700",   bg: "bg-amber-50 border-amber-200"   },
           ].map((s) => (
             <div key={s.label} className={`rounded-xl border p-4 ${s.bg}`}>
               <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
@@ -376,7 +370,7 @@ export default function AdminPropertyFeatures() {
           ))}
         </div>
 
-        {/* Search + filter bar */}
+        {/* Search + filter */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -413,7 +407,11 @@ export default function AdminPropertyFeatures() {
             </div>
           ) : visible.length === 0 ? (
             <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-              <div className="text-4xl mb-3">{tab === "feature" ? "🏠" : "📍"}</div>
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                {tab === "feature"
+                  ? <Tag className="w-6 h-6 text-slate-400" />
+                  : <MapPin className="w-6 h-6 text-slate-400" />}
+              </div>
               <p className="font-semibold text-slate-600">
                 {search ? "لا توجد نتائج مطابقة" : `لا توجد ${tab === "feature" ? "مميزات" : "خدمات"} بعد`}
               </p>
@@ -425,7 +423,7 @@ export default function AdminPropertyFeatures() {
               )}
             </div>
           ) : (
-            visible.map((item, idx) => {
+            visible.map((item) => {
               const originalIdx = sorted.findIndex((s) => s.id === item.id);
               return (
                 <FeatureRow
@@ -444,7 +442,6 @@ export default function AdminPropertyFeatures() {
           )}
         </div>
 
-        {/* Hint */}
         {items.length > 0 && (
           <p className="text-xs text-slate-400 text-center flex items-center justify-center gap-2">
             <GripVertical className="w-3.5 h-3.5" />
@@ -455,7 +452,7 @@ export default function AdminPropertyFeatures() {
 
       {/* ── Add / Edit Modal ─────────────────────────────────────────────────── */}
       <Dialog open={modalOpen} onOpenChange={(o) => { if (!o) setModalOpen(false); }}>
-        <DialogContent className="sm:max-w-[460px]" dir="rtl">
+        <DialogContent className="sm:max-w-[480px]" dir="rtl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
               {editing ? <Pencil className="w-4 h-4 text-teal-600" /> : <Plus className="w-4 h-4 text-teal-600" />}
@@ -477,13 +474,13 @@ export default function AdminPropertyFeatures() {
               />
             </div>
 
-            {/* Icon */}
+            {/* Icon Picker */}
             <div>
-              <Label className="text-sm font-semibold mb-2 block">الأيقونة (إيموجي)</Label>
-              <EmojiPicker
+              <Label className="text-sm font-semibold mb-2 block">الأيقونة</Label>
+              <IconPicker
                 value={form.icon}
-                onChange={(e) => setForm((p) => ({ ...p, icon: e }))}
-                emojis={tabEmojis}
+                onChange={(v) => setForm((p) => ({ ...p, icon: v }))}
+                tab={tab}
               />
             </div>
 
@@ -492,15 +489,17 @@ export default function AdminPropertyFeatures() {
               <Label className="text-sm font-semibold mb-3 block">الحالة</Label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "active", label: "ظاهر",  desc: "يظهر للمستخدمين",   color: "border-emerald-400 bg-emerald-50" },
-                  { value: "hidden", label: "مخفي",  desc: "لا يظهر للمستخدمين", color: "border-slate-300 bg-slate-50" },
+                  { value: "active", label: "ظاهر", desc: "يظهر للمستخدمين",    color: "border-emerald-400 bg-emerald-50" },
+                  { value: "hidden", label: "مخفي", desc: "لا يظهر للمستخدمين", color: "border-slate-300 bg-slate-50"    },
                 ].map((s) => (
                   <button
                     key={s.value}
                     type="button"
                     onClick={() => setForm((p) => ({ ...p, status: s.value }))}
                     className={`relative p-3 rounded-xl border-2 text-right transition-all ${
-                      form.status === s.value ? s.color + " shadow-sm" : "border-border hover:border-slate-300"
+                      form.status === s.value
+                        ? s.color + " shadow-sm"
+                        : "border-border hover:border-slate-300"
                     }`}
                   >
                     {form.status === s.value && (
@@ -515,11 +514,7 @@ export default function AdminPropertyFeatures() {
           </div>
 
           <DialogFooter className="gap-2 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setModalOpen(false)}
-              className="rounded-xl"
-            >
+            <Button variant="outline" onClick={() => setModalOpen(false)} className="rounded-xl">
               إلغاء
             </Button>
             <Button
@@ -543,9 +538,7 @@ export default function AdminPropertyFeatures() {
             <AlertDialogTitle>حذف {tab === "feature" ? "الميزة" : "الخدمة"}</AlertDialogTitle>
             <AlertDialogDescription>
               هل أنت متأكد من حذف{" "}
-              <span className="font-semibold text-slate-800">
-                {deleteTarget?.icon} {deleteTarget?.name}
-              </span>
+              <span className="font-semibold text-slate-800">{deleteTarget?.name}</span>
               ؟ لا يمكن التراجع عن هذا الإجراء.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -557,9 +550,7 @@ export default function AdminPropertyFeatures() {
             >
               {deleteMut.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                "حذف"
-              )}
+              ) : "حذف"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

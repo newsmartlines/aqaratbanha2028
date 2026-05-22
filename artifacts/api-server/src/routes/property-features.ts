@@ -6,56 +6,68 @@ import { getSession } from "./auth";
 
 const router = Router();
 
-// ── Default seed data ─────────────────────────────────────────────────────────
+// ── Default seed data (v2 — Lucide icon names) ────────────────────────────────
 
 const DEFAULT_FEATURES = [
-  { type: "feature", name: "مصعد",          icon: "🛗", sortOrder: 1 },
-  { type: "feature", name: "موقف سيارات",  icon: "🚗", sortOrder: 2 },
-  { type: "feature", name: "مسبح",          icon: "🏊", sortOrder: 3 },
-  { type: "feature", name: "جراج مغطى",    icon: "🏠", sortOrder: 4 },
-  { type: "feature", name: "تكييف مركزي",  icon: "❄️", sortOrder: 5 },
-  { type: "feature", name: "إنترنت",         icon: "📡", sortOrder: 6 },
-  { type: "feature", name: "حارس أمن",      icon: "💂", sortOrder: 7 },
-  { type: "feature", name: "مولد كهرباء",  icon: "⚡", sortOrder: 8 },
-  { type: "feature", name: "خزان مياه",    icon: "💧", sortOrder: 9 },
-  { type: "feature", name: "نادي رياضي",   icon: "🏋️", sortOrder: 10 },
-  { type: "feature", name: "شرفة",           icon: "🪟", sortOrder: 11 },
-  { type: "feature", name: "حديقة خاصة",  icon: "🌿", sortOrder: 12 },
-  { type: "feature", name: "نظام منزل ذكي", icon: "🤖", sortOrder: 13 },
-  { type: "feature", name: "أمن 24 ساعة",  icon: "🔒", sortOrder: 14 },
-  { type: "feature", name: "مفروش",          icon: "🛋️", sortOrder: 15 },
-  { type: "service", name: "مسجد",           icon: "🕌", sortOrder: 1 },
-  { type: "service", name: "مدرسة",          icon: "🏫", sortOrder: 2 },
-  { type: "service", name: "مستشفى",         icon: "🏥", sortOrder: 3 },
-  { type: "service", name: "صيدلية",         icon: "💊", sortOrder: 4 },
-  { type: "service", name: "سوبر ماركت",   icon: "🛒", sortOrder: 5 },
-  { type: "service", name: "مول تجاري",    icon: "🏬", sortOrder: 6 },
-  { type: "service", name: "بنك",            icon: "🏦", sortOrder: 7 },
-  { type: "service", name: "حديقة عامة",  icon: "🌳", sortOrder: 8 },
-  { type: "service", name: "مواصلات عامة", icon: "🚌", sortOrder: 9 },
-  { type: "service", name: "مطاعم",          icon: "🍽️", sortOrder: 10 },
-  { type: "service", name: "نادي رياضي",   icon: "🏃", sortOrder: 11 },
-  { type: "service", name: "محطة وقود",    icon: "⛽", sortOrder: 12 },
-];
+  // ─── مميزات العقار ──────────────────────────────────────────────────────────
+  { type: "feature", name: "مسبح",            icon: "Waves",          sortOrder: 1  },
+  { type: "feature", name: "جراج مغطى",       icon: "Car",            sortOrder: 2  },
+  { type: "feature", name: "حديقة خاصة",      icon: "TreePine",       sortOrder: 3  },
+  { type: "feature", name: "مصعد",             icon: "ArrowUpDown",    sortOrder: 4  },
+  { type: "feature", name: "شرفة",             icon: "Building",       sortOrder: 5  },
+  { type: "feature", name: "مكيف مركزي",      icon: "Wind",           sortOrder: 6  },
+  { type: "feature", name: "أمن 24 ساعة",     icon: "Shield",         sortOrder: 7  },
+  { type: "feature", name: "غرفة خادمة",      icon: "BedDouble",      sortOrder: 8  },
+  { type: "feature", name: "غرفة سائق",       icon: "BedSingle",      sortOrder: 9  },
+  { type: "feature", name: "مستودع",           icon: "Package",        sortOrder: 10 },
+  { type: "feature", name: "بوابة ذكية",      icon: "DoorOpen",       sortOrder: 11 },
+  { type: "feature", name: "نظام منزل ذكي",   icon: "Cpu",            sortOrder: 12 },
+  { type: "feature", name: "مطبخ مجهز",       icon: "UtensilsCrossed",sortOrder: 13 },
+  { type: "feature", name: "غرفة غسيل",       icon: "WashingMachine", sortOrder: 14 },
+  { type: "feature", name: "طاقة شمسية",      icon: "Sun",            sortOrder: 15 },
+  { type: "feature", name: "موقف خاص",        icon: "CarFront",       sortOrder: 16 },
+  { type: "feature", name: "صالة رياضية",     icon: "Dumbbell",       sortOrder: 17 },
+  { type: "feature", name: "ملعب",             icon: "Trophy",         sortOrder: 18 },
+  // ─── الخدمات الطرفية القريبة ─────────────────────────────────────────────
+  { type: "service", name: "مسجد",             icon: "Building2",      sortOrder: 1  },
+  { type: "service", name: "مدرسة",            icon: "School",         sortOrder: 2  },
+  { type: "service", name: "مستشفى",           icon: "Hospital",       sortOrder: 3  },
+  { type: "service", name: "مول تجاري",        icon: "ShoppingBag",    sortOrder: 4  },
+  { type: "service", name: "مطاعم",            icon: "Utensils",       sortOrder: 5  },
+  { type: "service", name: "كافيهات",          icon: "Coffee",         sortOrder: 6  },
+  { type: "service", name: "محطة وقود",        icon: "Fuel",           sortOrder: 7  },
+  { type: "service", name: "صيدلية",           icon: "Pill",           sortOrder: 8  },
+  { type: "service", name: "جامعة",            icon: "GraduationCap",  sortOrder: 9  },
+  { type: "service", name: "بنك",              icon: "Landmark",       sortOrder: 10 },
+  { type: "service", name: "سوبر ماركت",       icon: "ShoppingCart",   sortOrder: 11 },
+] as const;
 
-// Auto-seed on first run — idempotent: inserts only names that don't exist yet
+// ── Auto-seed on first request — detects stale v1 (emoji) data ───────────────
+
 let seeded = false;
+
 async function ensureSeeded() {
   if (seeded) return;
   try {
-    const existing = await db
-      .select({ name: propertyFeaturesTable.name, type: propertyFeaturesTable.type })
-      .from(propertyFeaturesTable);
-    const existingSet = new Set(existing.map((r) => `${r.type}:${r.name}`));
-    const toInsert = DEFAULT_FEATURES.filter(
-      (f) => !existingSet.has(`${f.type}:${f.name}`)
-    );
-    if (toInsert.length > 0) {
-      await db.insert(propertyFeaturesTable).values(
-        toInsert.map((f) => ({ ...f, status: "active" }))
-      );
-      console.log(`[property-features] Seeded ${toInsert.length} missing features/services`);
+    const existing = await db.select().from(propertyFeaturesTable);
+
+    // Detect old emoji-based seed (v1) or empty DB
+    const hasNewSeed = existing.some((r) => r.icon === "Waves");
+    const hasOldData = existing.length > 0 && !hasNewSeed;
+
+    if (hasOldData) {
+      // Wipe v1 data and re-seed with v2 Lucide icons
+      await db.delete(propertyFeaturesTable);
+      console.log("[property-features] Cleared old emoji-based seed data");
     }
+
+    if (!hasNewSeed) {
+      await db
+        .insert(propertyFeaturesTable)
+        .values(DEFAULT_FEATURES.map((f) => ({ ...f, status: "active" as const })));
+      console.log(`[property-features] Seeded ${DEFAULT_FEATURES.length} features/services (v2 Lucide)`);
+    }
+
     seeded = true;
   } catch (err) {
     console.error("[property-features] Seed error:", err);
@@ -73,22 +85,22 @@ router.get("/property-features", async (req, res) => {
       .from(propertyFeaturesTable)
       .where(eq(propertyFeaturesTable.type, type))
       .orderBy(asc(propertyFeaturesTable.sortOrder));
-    // Public: only active
+    // Return only active
     res.json(rows.filter((r) => r.status === "active"));
   } catch (err) {
     console.error("[property-features GET]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// ── Admin: all features / services ───────────────────────────────────────────
+// ── Admin: all features / services (including inactive) ──────────────────────
 
 router.get("/admin/property-features", async (req, res) => {
-  const session = await getSession(req);
-  if (!session?.role || session.role !== "admin") {
-    return res.status(401).json({ error: "unauthorized" });
-  }
   await ensureSeeded();
+  const session = await getSession(req);
+  if (!session?.user || session.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   try {
     const type = (req.query.type as string) || "feature";
     const rows = await db
@@ -99,7 +111,7 @@ router.get("/admin/property-features", async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error("[admin/property-features GET]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -107,20 +119,19 @@ router.get("/admin/property-features", async (req, res) => {
 
 router.post("/admin/property-features", async (req, res) => {
   const session = await getSession(req);
-  if (!session?.role || session.role !== "admin") {
-    return res.status(401).json({ error: "unauthorized" });
+  if (!session?.user || session.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
   }
   try {
-    const { type = "feature", name, icon = "🏠", status = "active", sortOrder = 0 } = req.body;
-    if (!name?.trim()) return res.status(400).json({ error: "name required" });
+    const { type, name, icon, sortOrder } = req.body;
     const [row] = await db
       .insert(propertyFeaturesTable)
-      .values({ type, name: name.trim(), icon, status, sortOrder: Number(sortOrder) })
+      .values({ type, name, icon, sortOrder: sortOrder ?? 99, status: "active" })
       .returning();
     res.json(row);
   } catch (err) {
     console.error("[admin/property-features POST]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -128,17 +139,16 @@ router.post("/admin/property-features", async (req, res) => {
 
 router.put("/admin/property-features/:id", async (req, res) => {
   const session = await getSession(req);
-  if (!session?.role || session.role !== "admin") {
-    return res.status(401).json({ error: "unauthorized" });
+  if (!session?.user || session.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
   }
   try {
     const id = parseInt(req.params.id);
-    const { name, icon, status, sortOrder } = req.body;
     const updates: Partial<typeof propertyFeaturesTable.$inferInsert> = {};
-    if (name !== undefined) updates.name = name.trim();
-    if (icon !== undefined) updates.icon = icon;
-    if (status !== undefined) updates.status = status;
-    if (sortOrder !== undefined) updates.sortOrder = Number(sortOrder);
+    if (req.body.name      !== undefined) updates.name      = req.body.name;
+    if (req.body.icon      !== undefined) updates.icon      = req.body.icon;
+    if (req.body.sortOrder !== undefined) updates.sortOrder = req.body.sortOrder;
+    if (req.body.status    !== undefined) updates.status    = req.body.status;
     const [row] = await db
       .update(propertyFeaturesTable)
       .set(updates)
@@ -147,25 +157,25 @@ router.put("/admin/property-features/:id", async (req, res) => {
     res.json(row);
   } catch (err) {
     console.error("[admin/property-features PUT]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// ── Admin: toggle status ──────────────────────────────────────────────────────
+// ── Admin: toggle active/inactive ─────────────────────────────────────────────
 
 router.patch("/admin/property-features/:id/toggle", async (req, res) => {
   const session = await getSession(req);
-  if (!session?.role || session.role !== "admin") {
-    return res.status(401).json({ error: "unauthorized" });
+  if (!session?.user || session.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
   }
   try {
     const id = parseInt(req.params.id);
-    const [current] = await db
+    const [existing] = await db
       .select()
       .from(propertyFeaturesTable)
       .where(eq(propertyFeaturesTable.id, id));
-    if (!current) return res.status(404).json({ error: "not found" });
-    const newStatus = current.status === "active" ? "hidden" : "active";
+    if (!existing) return res.status(404).json({ error: "Not found" });
+    const newStatus = existing.status === "active" ? "inactive" : "active";
     const [row] = await db
       .update(propertyFeaturesTable)
       .set({ status: newStatus })
@@ -174,20 +184,19 @@ router.patch("/admin/property-features/:id/toggle", async (req, res) => {
     res.json(row);
   } catch (err) {
     console.error("[admin/property-features PATCH toggle]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// ── Admin: bulk reorder ───────────────────────────────────────────────────────
+// ── Admin: reorder ────────────────────────────────────────────────────────────
 
 router.patch("/admin/property-features/reorder", async (req, res) => {
   const session = await getSession(req);
-  if (!session?.role || session.role !== "admin") {
-    return res.status(401).json({ error: "unauthorized" });
+  if (!session?.user || session.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
   }
   try {
-    const items: Array<{ id: number; sortOrder: number }> = req.body;
-    if (!Array.isArray(items)) return res.status(400).json({ error: "array required" });
+    const items: { id: number; sortOrder: number }[] = req.body.items;
     await Promise.all(
       items.map((item) =>
         db
@@ -199,7 +208,7 @@ router.patch("/admin/property-features/reorder", async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error("[admin/property-features PATCH reorder]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -207,8 +216,8 @@ router.patch("/admin/property-features/reorder", async (req, res) => {
 
 router.delete("/admin/property-features/:id", async (req, res) => {
   const session = await getSession(req);
-  if (!session?.role || session.role !== "admin") {
-    return res.status(401).json({ error: "unauthorized" });
+  if (!session?.user || session.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
   }
   try {
     const id = parseInt(req.params.id);
@@ -216,7 +225,7 @@ router.delete("/admin/property-features/:id", async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error("[admin/property-features DELETE]", err);
-    res.status(500).json({ error: "failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
