@@ -635,7 +635,7 @@ export default function PropertyDetail() {
                   <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
                 </div>
               </div>
-              <div className="relative h-72 md:h-96">
+              <div className="relative h-72 md:h-96" style={{ isolation: "isolate" }}>
                 {/* Always render the map underneath */}
                 <MapContainer
                   center={[property.lat, property.lng]}
