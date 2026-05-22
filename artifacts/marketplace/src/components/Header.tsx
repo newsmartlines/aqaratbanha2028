@@ -69,7 +69,7 @@ export function Header() {
   ];
 
   const userMenuItems = [
-    { icon: PlusCircle, label: "أضف عقارك", href: "/user/add-property", highlight: true },
+    { icon: PlusCircle, label: "أضف عقارك", href: "/add-property", highlight: true },
     { icon: Building2, label: "عقاراتي", href: "/user/my-properties" },
     { icon: Heart, label: "المفضلة", href: "/user/favorites" },
     { icon: MessageCircle, label: "رسائلي", href: "/user/inbox" },
@@ -180,7 +180,7 @@ export function Header() {
                 <span className="cursor-pointer hover:text-primary transition-colors text-foreground">مستخدم جديد</span>
               </Link>
               <span className="text-border mx-1">|</span>
-              <Link href="/register">
+              <Link href="/add-property">
                 <Button className="flex items-center gap-1 font-bold text-sm px-4 py-1.5 rounded-full text-white shadow-sm bg-primary hover:bg-primary/90 h-auto">
                   <span className="text-base leading-none">+</span>
                   <span>أضف عقارك</span>
@@ -243,7 +243,7 @@ export function Header() {
                   </Link>
                 </>
               )}
-              <Link href={user?.role === "provider" ? "/real-estate-onboarding" : "/register"} onClick={() => setMobileOpen(false)}>
+              <Link href="/add-property" onClick={() => setMobileOpen(false)}>
                 <span className="block mx-4 mt-2 px-4 py-2.5 text-sm font-bold text-white rounded-full text-center cursor-pointer" style={{background: 'linear-gradient(135deg, #12B5D0 0%, #0060A0 100%)'}}>
                   + أضف عقارك
                 </span>

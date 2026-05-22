@@ -78,7 +78,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       <div className="flex-1 min-h-0 overflow-y-auto py-4 px-3 hide-scrollbar">
         {/* Add property CTA */}
         <Link
-          href="/user/add-property"
+          href="/add-property"
           className="flex items-center px-3 py-2.5 mb-3 text-sm font-semibold rounded-xl transition-colors bg-teal-600 hover:bg-teal-500 text-white"
         >
           <Plus className="ml-3 shrink-0 h-5 w-5" />

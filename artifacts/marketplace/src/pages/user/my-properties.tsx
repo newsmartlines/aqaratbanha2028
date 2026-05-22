@@ -134,7 +134,7 @@ export default function MyPropertiesPage() {
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
               تحديث
             </Button>
-            <Link href="/user/add-property">
+            <Link href="/add-property">
               <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2">
                 <Plus className="w-4 h-4" />
                 إضافة عقار
@@ -226,7 +226,7 @@ export default function MyPropertiesPage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">لا توجد عقارات معلنة</h3>
               <p className="text-sm text-muted-foreground mb-6">أضف أول عقار لك وابدأ في استقبال العروض</p>
-              <Link href="/user/add-property">
+              <Link href="/add-property">
                 <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2">
                   <Plus className="w-4 h-4" />
                   أضف عقارك الأول

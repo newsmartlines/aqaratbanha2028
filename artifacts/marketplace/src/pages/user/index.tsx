@@ -145,7 +145,7 @@ export default function UserDashboard() {
                   تصفح العقارات
                 </Button>
               </Link>
-              <Link href="/user/add-property">
+              <Link href="/add-property">
                 <Button className="bg-white text-teal-700 hover:bg-white/90 rounded-xl gap-2 text-sm font-bold">
                   <Plus className="w-4 h-4" />
                   أضف عقارك
@@ -186,7 +186,7 @@ export default function UserDashboard() {
                 <CardTitle className="text-base">روابط سريعة</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 pt-0">
-                <Link href="/user/add-property">
+                <Link href="/add-property">
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-teal-500/10 hover:bg-teal-500/15 transition-colors border border-teal-200/50 dark:border-teal-800/50 cursor-pointer">
                     <div className="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center text-white shrink-0">
                       <Plus className="w-4 h-4" />
