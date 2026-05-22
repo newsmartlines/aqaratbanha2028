@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
 import { useSiteSettings } from "@/App";
+import { Header } from "@/components/Header";
 
 interface AuthProps {
   defaultTab?: "login" | "register";
@@ -97,15 +98,6 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
     queryFn: api.settings.list,
     staleTime: 5 * 60 * 1000,
   });
-  const siteName = (settings as any)?.siteName ?? "عقارات بنها";
-
-  const siteNavLinks = [
-    { href: "/", label: "الرئيسية" },
-    { href: "/properties", label: "العقارات" },
-    { href: "/about", label: "من نحن" },
-    { href: "/contact", label: "تواصل معنا" },
-    { href: "/faq", label: "الأسئلة الشائعة" },
-  ];
 
   // Support ?returnTo= query param for post-login redirect
   const returnTo = typeof window !== "undefined"
@@ -292,32 +284,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
     <div className="min-h-[100dvh] flex flex-col font-sans selection:bg-primary/20 selection:text-primary bg-background" dir="rtl">
 
       {/* ── Top Banner: Logo + Site Navigation ── */}
-      <header className="shrink-0 bg-white border-b border-slate-200 shadow-sm z-50">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow group-hover:opacity-90 transition-opacity">
-              د
-            </div>
-            <span className="font-extrabold text-xl text-primary tracking-tight hidden sm:block">{siteName}</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-1">
-            {siteNavLinks.map(link => (
-              <Link key={link.href} href={link.href}>
-                <span className="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer transition-colors">
-                  {link.label}
-                </span>
-              </Link>
-            ))}
-          </nav>
-          {registrationEnabled && (
-            <Link href="/company-register">
-              <span className="hidden sm:inline-flex px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer transition-colors shadow-sm">
-                سجّل شركتك
-              </span>
-            </Link>
-          )}
-        </div>
-      </header>
+      <Header />
 
       {/* ── Split-screen content ── */}
       <div className="flex flex-1">
@@ -355,14 +322,6 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
               العودة إلى الرئيسية
-            </Link>
-          </div>
-
-          {/* Mobile logo */}
-          <div className="flex lg:hidden justify-center mb-10">
-            <Link href="/" className="flex items-center gap-2 cursor-pointer">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-md">✦</div>
-              <span className="font-bold text-3xl tracking-tight text-primary">عقارات بنها</span>
             </Link>
           </div>
 
