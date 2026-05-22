@@ -770,6 +770,22 @@ export default function Home() {
     setHeroCityName(null);
   }, [heroRegionId]);
 
+  // Load Facebook SDK for Page Plugin
+  useEffect(() => {
+    if (document.getElementById("fb-jssdk")) return;
+    (window as any).fbAsyncInit = function () {
+      (window as any).FB?.init({ xfbml: true, version: "v18.0" });
+    };
+    const s = document.createElement("script");
+    s.id = "fb-jssdk";
+    s.async = true;
+    s.defer = true;
+    s.crossOrigin = "anonymous";
+    s.src = "https://connect.facebook.net/ar_AR/sdk.js";
+    document.body.appendChild(s);
+    return () => { document.getElementById("fb-jssdk")?.remove(); };
+  }, []);
+
   const { data: favoritesData = [] } = useQuery<FavoriteItem[]>({
     queryKey: ["favorites", user?.id],
     queryFn: () => api.favorites.list(user!.id),
@@ -1645,6 +1661,58 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4">
           <AdBanner position="homepage_before_footer" />
         </div>
+
+        {/* ── FACEBOOK PAGE PLUGIN ── */}
+        <div id="fb-root" />
+        <section className="py-16 bg-gradient-to-br from-[#1877F2]/8 via-white to-[#1877F2]/5 border-t border-[#1877F2]/10">
+          <div className="container mx-auto px-4">
+            <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+
+              {/* Left: Text */}
+              <div className="flex-1 text-center lg:text-right order-2 lg:order-1">
+                <div className="inline-flex items-center gap-2 bg-[#1877F2]/10 text-[#1877F2] rounded-full px-4 py-1.5 text-sm font-bold mb-4">
+                  <svg className="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  تابعنا على فيسبوك
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3 leading-snug">
+                  كن أول من يعلم بأحدث العقارات
+                </h2>
+                <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto lg:mx-0">
+                  تابع صفحتنا على فيسبوك وابقَ على اطلاع دائم بأحدث عروض البيع والإيجار في بنها والقليوبية.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center lg:justify-start">
+                  <a
+                    href="https://www.facebook.com/aqaratbanha"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#1665d8] text-white font-bold rounded-xl px-6 py-3 transition-colors shadow-lg shadow-[#1877F2]/20 text-sm"
+                  >
+                    <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    متابعة الصفحة
+                  </a>
+                </div>
+              </div>
+
+              {/* Right: FB Page Plugin */}
+              <div className="order-1 lg:order-2 shrink-0 flex justify-center">
+                <div className="rounded-2xl overflow-hidden shadow-xl shadow-[#1877F2]/10 border border-[#1877F2]/15">
+                  <div
+                    className="fb-page"
+                    data-href="https://www.facebook.com/aqaratbanha"
+                    data-tabs=""
+                    data-width="340"
+                    data-height="220"
+                    data-small-header="true"
+                    data-adapt-container-width="false"
+                    data-hide-cover="false"
+                    data-show-facepile="true"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
 
         {/* ── FOOTER ── */}
         <footer className="bg-slate-900 text-white py-16">
