@@ -36,6 +36,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
 
 /* ─── WhatsApp Icon ─────────────────────────────────────────────── */
 const WaIcon = () => (
@@ -133,34 +134,7 @@ const AGE_OPTS = [
   { value: "10", max: "20", label: "10 — 20 سنة" },
   { value: "20", max: "100", label: "أكثر من 20 سنة" },
 ];
-const AMENITIES = [
-  { key: "elevator", label: "مصعد", icon: "🛗" },
-  { key: "garage", label: "جراج", icon: "🚗" },
-  { key: "balcony", label: "بلكونة", icon: "🪟" },
-  { key: "garden", label: "حديقة", icon: "🌿" },
-  { key: "pool", label: "حمام سباحة", icon: "🏊" },
-  { key: "security", label: "أمن", icon: "💂" },
-  { key: "cameras", label: "كاميرات", icon: "📹" },
-  { key: "ac", label: "تكييف", icon: "❄️" },
-  { key: "kitchen", label: "مطبخ", icon: "🍳" },
-  { key: "roof", label: "رووف", icon: "🏠" },
-  { key: "maid_room", label: "غرفة خادمة", icon: "🛏" },
-  { key: "internet", label: "إنترنت", icon: "📡" },
-  { key: "electricity", label: "كهرباء", icon: "⚡" },
-  { key: "water", label: "مياه", icon: "💧" },
-  { key: "gas", label: "غاز", icon: "🔥" },
-  { key: "reception", label: "ريسبشن", icon: "🏢" },
-];
-const NEARBY_SERVICES = [
-  { key: "mosque", label: "مسجد" },
-  { key: "school", label: "مدارس" },
-  { key: "hospital", label: "مستشفى" },
-  { key: "mall", label: "مول" },
-  { key: "metro", label: "مترو" },
-  { key: "bus", label: "أتوبيس" },
-  { key: "park", label: "حديقة عامة" },
-  { key: "supermarket", label: "سوبرماركت" },
-];
+// AMENITIES and NEARBY_SERVICES are loaded dynamically from the API (see SearchPage)
 const SORT_OPTS = [
   { value: "newest", label: "الأحدث أولاً" },
   { value: "price_asc", label: "السعر: الأقل أولاً" },
@@ -446,6 +420,20 @@ export default function SearchPage() {
       return json.data ?? [];
     },
     staleTime: 15_000,
+  });
+
+  type DynFeature = { id: number; name: string; icon: string | null };
+
+  const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-features", "feature"],
+    queryFn:  () => api.propertyFeatures.list("feature"),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: servicesData = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-features", "service"],
+    queryFn:  () => api.propertyFeatures.list("service"),
+    staleTime: 5 * 60_000,
   });
 
   const results = useMemo(() => {
@@ -844,44 +832,51 @@ export default function SearchPage() {
         </div>
       </Section>
 
-      {/* المميزات والمرافق */}
+      {/* المميزات والمرافق — dynamic from DB */}
+      {amenitiesData.length > 0 && (
       <Section title="المميزات والمرافق" open={false} badge={filters.amenities.length}>
         <div className="grid grid-cols-2 gap-1.5">
-          {AMENITIES.map(a => (
+          {amenitiesData.map(a => (
             <button
-              key={a.key}
-              onClick={() => toggleAmenity(a.key)}
+              key={a.id}
+              onClick={() => toggleAmenity(a.name)}
               className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all
-                ${filters.amenities.includes(a.key)
+                ${filters.amenities.includes(a.name)
                   ? "bg-primary/8 border-primary text-primary"
                   : "border-zinc-200 text-zinc-600 bg-white hover:border-primary/40"}`}
             >
-              <span className="text-sm leading-none">{a.icon}</span>
-              <span className="truncate">{a.label}</span>
-              {filters.amenities.includes(a.key) && <Check className="w-3 h-3 shrink-0 mr-auto" />}
+              <span className="text-sm leading-none">{a.icon ?? "🏠"}</span>
+              <span className="truncate">{a.name}</span>
+              {filters.amenities.includes(a.name) && <Check className="w-3 h-3 shrink-0 mr-auto" />}
             </button>
           ))}
         </div>
       </Section>
+      )}
 
-      {/* قرب الخدمات */}
+      {/* قرب الخدمات — dynamic from DB */}
+      {servicesData.length > 0 && (
       <Section title="قرب الخدمات والمواصلات" open={false} badge={filters.nearbyServices.length}>
         <div className="grid grid-cols-2 gap-1.5">
-          {NEARBY_SERVICES.map(s => (
+          {servicesData.map(s => (
             <button
-              key={s.key}
-              onClick={() => toggleNearby(s.key)}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all
-                ${filters.nearbyServices.includes(s.key)
+              key={s.id}
+              onClick={() => toggleNearby(s.name)}
+              className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all
+                ${filters.nearbyServices.includes(s.name)
                   ? "bg-primary/8 border-primary text-primary"
                   : "border-zinc-200 text-zinc-600 bg-white hover:border-primary/40"}`}
             >
-              <span>{s.label}</span>
-              {filters.nearbyServices.includes(s.key) && <Check className="w-3 h-3 shrink-0" />}
+              <span className="flex items-center gap-1.5">
+                <span className="text-sm leading-none">{s.icon ?? "📍"}</span>
+                <span>{s.name}</span>
+              </span>
+              {filters.nearbyServices.includes(s.name) && <Check className="w-3 h-3 shrink-0" />}
             </button>
           ))}
         </div>
       </Section>
+      )}
 
       {/* إعلانات خاصة */}
       <Section title="إعلانات خاصة">

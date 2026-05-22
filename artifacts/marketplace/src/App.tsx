@@ -64,6 +64,7 @@ import AdminMessages from "@/pages/admin/messages";
 import AdminPlansCommissions from "@/pages/admin/plans-commissions";
 import AdminChatbot from "@/pages/admin/chatbot";
 import AdminFeaturedAreas from "@/pages/admin/featured-areas";
+import AdminPropertyFeatures from "@/pages/admin/property-features";
 import AdminDemoContent from "@/pages/admin/demo-content";
 import AdminBackup from "@/pages/admin/backup";
 import AdminWpImport from "@/pages/admin/wp-import";
@@ -360,6 +361,9 @@ function Router() {
       </Route>
       <Route path="/admin/featured-areas">
         {() => <AdminProtectedRoute component={AdminFeaturedAreas} />}
+      </Route>
+      <Route path="/admin/property-features">
+        {() => <AdminProtectedRoute component={AdminPropertyFeatures} />}
       </Route>
       <Route path="/admin/demo-content">
         {() => <AdminProtectedRoute component={AdminDemoContent} />}

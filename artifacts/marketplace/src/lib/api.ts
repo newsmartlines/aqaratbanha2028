@@ -923,6 +923,23 @@ export const api = {
     delete: (id: number) => fetchJson(`/admin/featured-areas/${id}`, { method: "DELETE" }),
   },
 
+  propertyFeatures: {
+    list: (type: "feature" | "service") =>
+      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number }>>(`/property-features?type=${type}`),
+    adminList: (type: "feature" | "service") =>
+      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number }>>(`/admin/property-features?type=${type}`),
+    create: (data: { type: string; name: string; icon?: string; status?: string; sortOrder?: number }) =>
+      fetchJson("/admin/property-features", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: { name?: string; icon?: string; status?: string; sortOrder?: number }) =>
+      fetchJson(`/admin/property-features/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    toggle: (id: number) =>
+      fetchJson(`/admin/property-features/${id}/toggle`, { method: "PATCH" }),
+    reorder: (items: Array<{ id: number; sortOrder: number }>) =>
+      fetchJson("/admin/property-features/reorder", { method: "PATCH", body: JSON.stringify(items) }),
+    delete: (id: number) =>
+      fetchJson(`/admin/property-features/${id}`, { method: "DELETE" }),
+  },
+
   search: {
     suggestions: (q: string) =>
       fetchJson<{

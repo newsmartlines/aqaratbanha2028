@@ -4,10 +4,9 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   Building2, Home, Warehouse, Briefcase, ShoppingBag, Trees, MapPin,
-  ImagePlus, CheckCircle2, X, ChevronLeft, Sofa, Car, Wind, Wifi,
-  Shield, Zap, Droplets, Dumbbell, Tag, Loader2, Crown, CreditCard,
+  ImagePlus, CheckCircle2, X, ChevronLeft, Tag, Loader2, Crown, CreditCard,
   Smartphone, Check, Star, TrendingUp, Eye, Award, BarChart2, Bot,
-  Rocket, Navigation, Phone,
+  Rocket, Navigation, Phone, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,23 +35,7 @@ const PROPERTY_TYPES = [
   { value: "استراحة",   label: "استراحة",   icon: Home,        desc: "للإيجار اليومي" },
 ];
 
-const AMENITIES = [
-  { value: "مصعد",         label: "مصعد",         icon: Building2 },
-  { value: "موقف سيارات", label: "موقف سيارات", icon: Car },
-  { value: "تكييف مركزي", label: "تكييف مركزي", icon: Wind },
-  { value: "إنترنت",       label: "إنترنت",       icon: Wifi },
-  { value: "حارس أمن",    label: "حارس أمن",    icon: Shield },
-  { value: "مولد كهرباء", label: "مولد كهرباء", icon: Zap },
-  { value: "خزان مياه",   label: "خزان مياه",   icon: Droplets },
-  { value: "نادي رياضي",  label: "نادي رياضي",  icon: Dumbbell },
-  { value: "مفروش",        label: "مفروش",        icon: Sofa },
-  { value: "حديقة خاصة", label: "حديقة خاصة", icon: Trees },
-];
-
-const NEARBY_SERVICES = [
-  "مسجد", "مدرسة", "مستشفى", "صيدلية", "سوبر ماركت",
-  "بنك", "حديقة عامة", "مواصلات عامة", "مطعم", "نادي رياضي",
-];
+// AMENITIES and NEARBY_SERVICES are loaded dynamically from the API
 
 const FINISHING = [
   { value: "super_lux",     label: "سوبر لوكس",  desc: "تشطيبات راقية جداً" },
@@ -492,6 +475,20 @@ export function PropertyFormWizard({
     queryKey: ["billingPlansPublic"],
     queryFn:  () => api.billingPlans.publicList(),
     enabled:  showPlans,
+    staleTime: 5 * 60_000,
+  });
+
+  type DynFeature = { id: number; name: string; icon: string | null };
+
+  const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-features", "feature"],
+    queryFn:  () => api.propertyFeatures.list("feature"),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: servicesData = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-features", "service"],
+    queryFn:  () => api.propertyFeatures.list("service"),
     staleTime: 5 * 60_000,
   });
 
@@ -994,55 +991,57 @@ export function PropertyFormWizard({
         </div>
       )}
 
-      {/* مميزات العقار */}
+      {/* مميزات العقار — dynamic from DB */}
+      {amenitiesData.length > 0 && (
       <div>
         <Label className="text-sm font-semibold mb-3 block">مميزات العقار</Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {AMENITIES.map((am) => {
-            const Icon   = am.icon;
-            const active = (v.features as string[]).includes(am.value);
+          {amenitiesData.map((am) => {
+            const active = (v.features as string[]).includes(am.name);
             return (
               <button
-                key={am.value} type="button"
-                onClick={() => toggleArr("features", am.value)}
+                key={am.id} type="button"
+                onClick={() => toggleArr("features", am.name)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                   active
                     ? "border-teal-600 bg-teal-50 text-teal-700"
                     : "border-border hover:border-teal-200 text-foreground"
                 }`}
               >
-                <Icon className={`w-4 h-4 shrink-0 ${
-                  active ? "text-teal-600" : "text-muted-foreground"
-                }`} />
-                {am.label}
+                <span className="text-base shrink-0 leading-none">{am.icon ?? "🏠"}</span>
+                {am.name}
               </button>
             );
           })}
         </div>
       </div>
+      )}
 
-      {/* الخدمات الطرفية */}
+      {/* الخدمات الطرفية — dynamic from DB */}
+      {servicesData.length > 0 && (
       <div>
         <Label className="text-sm font-semibold mb-3 block">الخدمات الطرفية القريبة</Label>
         <div className="flex flex-wrap gap-2">
-          {NEARBY_SERVICES.map((svc) => {
-            const active = (v.nearbyServices as string[]).includes(svc);
+          {servicesData.map((svc) => {
+            const active = (v.nearbyServices as string[]).includes(svc.name);
             return (
               <button
-                key={svc} type="button"
-                onClick={() => toggleArr("nearbyServices", svc)}
-                className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                key={svc.id} type="button"
+                onClick={() => toggleArr("nearbyServices", svc.name)}
+                className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all flex items-center gap-1 ${
                   active
                     ? "border-teal-600 bg-teal-50 text-teal-700"
                     : "border-border hover:border-teal-300 text-foreground"
                 }`}
               >
-                {svc}
+                <span className="text-sm leading-none">{svc.icon ?? ""}</span>
+                {svc.name}
               </button>
             );
           })}
         </div>
       </div>
+      )}
 
       {/* وصف العقار */}
       <div>
