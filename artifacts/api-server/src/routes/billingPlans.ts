@@ -39,6 +39,10 @@ function sanitizePlanBody(raw: any) {
   for (const field of numericNullable) {
     if (body[field] === "" || body[field] === undefined) body[field] = null;
   }
+  // Strip date fields — the frontend sends them as ISO strings which Drizzle
+  // can't serialize back to timestamps. updatedAt is set explicitly in the handler.
+  delete body.createdAt;
+  delete body.updatedAt;
   // Remove any non-schema keys that might have leaked in
   delete body.description; // not in insert (has a default)
   return body;
