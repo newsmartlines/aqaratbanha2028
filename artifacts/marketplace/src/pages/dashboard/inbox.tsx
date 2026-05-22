@@ -69,7 +69,7 @@ export default function ProviderInbox() {
     refetchInterval: 4000,
   });
 
-  const conversation: any[] = (convData as any)?.data ?? [];
+  const conversation: any[] = (convData as any)?.messages ?? [];
   const convProperty: any = (convData as any)?.property ?? null;
 
   const sendMutation = useMutation({

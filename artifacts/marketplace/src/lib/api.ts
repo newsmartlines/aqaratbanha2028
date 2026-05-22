@@ -754,8 +754,8 @@ export const api = {
       const url = propertyId
         ? `/messages/conversation/${otherId}?propertyId=${propertyId}`
         : `/messages/conversation/${otherId}`;
-      const res = await fetchJson<{ data: unknown[]; property: unknown }>(url);
-      return res as { data: unknown[]; property: unknown };
+      const res = await fetchJson<{ messages: unknown[]; property: unknown }>(url);
+      return res as { messages: unknown[]; property: unknown };
     },
     send: (receiverId: number, content: string, propertyId?: number | null) =>
       fetchJson(`/messages`, { method: "POST", body: JSON.stringify({ receiverId, content, propertyId }) }),

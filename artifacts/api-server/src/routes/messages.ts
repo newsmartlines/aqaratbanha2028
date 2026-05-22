@@ -132,15 +132,15 @@ router.get("/messages/conversation/:otherId", async (req: Request, res: Response
     let property = null;
     if (propertyId) {
       try {
-        const [p] = await db.execute(sql`
+        const result = await db.execute(sql`
           SELECT id, title, price, images, listing_type AS "listingType", main_category AS "mainCategory"
           FROM properties WHERE id = ${propertyId}
         `);
-        property = p ?? null;
+        property = result.rows[0] ?? null;
       } catch {}
     }
 
-    res.json({ success: true, data: msgs, property: property || null });
+    res.json({ success: true, data: { messages: msgs, property: property || null } });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, error: "Failed to fetch conversation" });
@@ -173,8 +173,12 @@ router.post("/messages", async (req: Request, res: Response) => {
     try {
       const [sender] = await db.select({ name: usersTable.name })
         .from(usersTable).where(eq(usersTable.id, me.userId));
+      const [receiver] = await db.select({ role: usersTable.role })
+        .from(usersTable).where(eq(usersTable.id, parseInt(receiverId)));
+      const isReceiverProvider = receiver?.role === "provider";
       let notifMessage = `أرسل لك ${sender?.name ?? "مستخدم"} رسالة جديدة`;
-      let link = `/user/inbox?otherId=${me.userId}`;
+      const inboxPath = isReceiverProvider ? `/dashboard/inbox` : `/user/inbox`;
+      let link = `${inboxPath}?otherId=${me.userId}`;
       if (propertyId) link += `&propertyId=${propertyId}`;
 
       await db.insert(notificationsTable).values({
