@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, DragEvent } from "react";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -827,6 +828,7 @@ export default function RealEstateOnboarding() {
           )}
         </div>
       </div>
+      <RealEstateFooter />
     </div>
   );
 }

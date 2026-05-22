@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
@@ -264,6 +265,7 @@ export default function MapSearchPage() {
   }, [zoom, setLocation]);
 
   return (
+    <>
     <div className="h-screen flex flex-col overflow-hidden" dir="rtl">
       <Header />
 
@@ -394,5 +396,7 @@ export default function MapSearchPage() {
         )}
       </div>
     </div>
+    <RealEstateFooter />
+    </>
   );
 }

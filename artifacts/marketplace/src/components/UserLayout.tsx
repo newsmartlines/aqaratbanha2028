@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Link, useLocation, Redirect } from "wouter";
 import {
   LayoutDashboard,
@@ -167,6 +168,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
           </main>
         </div>
       </div>
+      <RealEstateFooter />
     </div>
   );
 }

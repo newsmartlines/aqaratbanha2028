@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
@@ -769,6 +770,7 @@ export default function CompanyRegisterPage() {
           </p>
         )}
       </div>
+      <RealEstateFooter />
     </div>
   );
 }

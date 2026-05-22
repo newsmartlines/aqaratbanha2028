@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -672,6 +673,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
         </div>
       </div>
       </div>{/* end split-screen flex */}
+      <RealEstateFooter />
     </div>
   );
 }

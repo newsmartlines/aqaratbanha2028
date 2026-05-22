@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -1785,6 +1786,7 @@ export default function Home() {
       </AnimatePresence>
 
       </main>
+      <RealEstateFooter />
     </div>
   );
 }

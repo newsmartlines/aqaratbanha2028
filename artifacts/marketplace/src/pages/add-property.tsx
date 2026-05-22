@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Link, useLocation } from "wouter";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
 import {
   Building2, Home, Warehouse, Briefcase, ShoppingBag, Trees,
   MapPin, Phone, ImagePlus, CheckCircle2, AlertCircle, X,
@@ -119,6 +120,7 @@ function GuestScreen() {
           </div>
         </div>
       </div>
+      <RealEstateFooter />
     </div>
   );
 }
@@ -279,6 +281,7 @@ export default function AddPropertyPage() {
             </div>
           </div>
         </div>
+        <RealEstateFooter />
       </div>
     );
   }
@@ -660,6 +663,7 @@ export default function AddPropertyPage() {
           )}
         </div>
       </div>
+      <RealEstateFooter />
     </div>
   );
 }
