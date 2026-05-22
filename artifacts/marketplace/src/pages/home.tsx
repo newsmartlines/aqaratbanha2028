@@ -1312,7 +1312,7 @@ export default function Home() {
 
               {/* Horizontal drag-to-scroll strip */}
               <div
-                className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide cursor-grab active:cursor-grabbing select-none"
+                className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] cursor-grab active:cursor-grabbing select-none"
                 ref={(el) => {
                   if (!el) return;
                   let isDown = false;
@@ -1348,41 +1348,31 @@ export default function Home() {
                   <button
                     key={area.id}
                     onClick={() => setLocation(`/properties?district=${encodeURIComponent(area.nameAr)}`)}
-                    className="relative shrink-0 w-44 sm:w-52 md:w-60 h-60 rounded-lg overflow-hidden cursor-pointer"
+                    className="shrink-0 w-44 sm:w-52 text-right"
                   >
-                    {/* Background image */}
-                    {area.image ? (
-                      <img
-                        src={area.image}
-                        alt={area.nameAr}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-teal-200" />
-                    )}
-
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-                    {/* Property count badge top-right */}
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-white/90 backdrop-blur-sm text-primary text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
-                        {area.propertyCount > 0 ? `${area.propertyCount} عقار` : "عقارات"}
-                      </span>
+                    {/* Image — no overlay, no mask */}
+                    <div className="w-full h-52 sm:h-60 rounded-xl overflow-hidden mb-2">
+                      {area.image ? (
+                        <img
+                          src={area.image}
+                          alt={area.nameAr}
+                          className="w-full h-full object-cover"
+                          draggable={false}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/30 via-primary/10 to-teal-200" />
+                      )}
                     </div>
 
-                    {/* Bottom text */}
-                    <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
-                      <p className="text-white font-bold text-lg leading-tight drop-shadow-md">
+                    {/* Name + count below image */}
+                    <div className="flex items-center justify-between px-0.5">
+                      <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
+                        {area.propertyCount > 0 ? area.propertyCount : ""}
+                        {area.propertyCount > 0 && " إعلانات"}
+                      </span>
+                      <p className="font-bold text-[#0a0a0a] text-sm leading-tight">
                         {area.nameAr}
                       </p>
-                      {area.cityName && (
-                        <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 justify-end">
-                          <MapPin className="w-3 h-3" />
-                          {area.cityName}
-                        </p>
-                      )}
                     </div>
                   </button>
                 ))}
