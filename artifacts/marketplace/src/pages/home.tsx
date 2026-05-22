@@ -527,10 +527,9 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
   const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") + " ج.م" : "السعر عند التواصل";
   const typeAr = p.listingType === "rent" ? "للإيجار" : "للبيع";
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
+    <div
       onClick={onClick}
-      className="w-56 shrink-0 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-shadow duration-300"
+      className="w-56 shrink-0 bg-white rounded-lg border border-slate-200/80 overflow-hidden cursor-pointer transition-colors duration-150 hover:border-slate-300"
     >
       <div className="relative h-36 overflow-hidden bg-slate-100">
         <img src={thumb} alt={p.title} loading="lazy"
@@ -551,7 +550,7 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
           </p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -1155,7 +1154,7 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: idx * 0.07 }}
                 >
                   <div
-                    className="group relative bg-white border border-border rounded-3xl overflow-hidden hover:border-primary/30 hover:shadow-2xl transition-all duration-300 cursor-pointer"
+                    className="group relative bg-white border border-border/70 rounded-xl overflow-hidden hover:border-border transition-colors duration-150 cursor-pointer"
                     onClick={() => setLocation(`/property/${property.id}`)}
                   >
                     {/* Image gallery — taller */}
@@ -1224,18 +1223,18 @@ export default function Home() {
 
                       {/* Specs pills */}
                       <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                        <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                        <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
                           <BedDouble className="w-3 h-3 text-slate-400" />
                           {(property as any).rooms ? `${(property as any).rooms} غرفة` : "—"}
                         </span>
                         {(property.bathrooms ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                          <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
                             <Bath className="w-3 h-3 text-slate-400" />
                             {property.bathrooms} حمام
                           </span>
                         )}
                         {(property.area ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium">
+                          <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
                             <Maximize2 className="w-3 h-3 text-slate-400" />
                             {Number(property.area).toLocaleString("ar-EG")} م²
                           </span>
@@ -1348,20 +1347,17 @@ export default function Home() {
               {/* Horizontal scroll strip */}
               <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory">
                 {featuredAreas.map((area) => (
-                  <motion.button
+                  <button
                     key={area.id}
                     onClick={() => setLocation(`/properties?district=${encodeURIComponent(area.nameAr)}`)}
-                    whileHover={{ y: -4 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                    className="group relative shrink-0 w-44 sm:w-52 md:w-60 h-60 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow snap-start cursor-pointer"
+                    className="group relative shrink-0 w-44 sm:w-52 md:w-60 h-60 rounded-lg overflow-hidden snap-start cursor-pointer"
                   >
                     {/* Background image */}
                     {area.image ? (
                       <img
                         src={area.image}
                         alt={area.nameAr}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-teal-200" />
@@ -1393,7 +1389,7 @@ export default function Home() {
                         <ArrowLeft className="w-3 h-3" />
                       </p>
                     </div>
-                  </motion.button>
+                  </button>
                 ))}
               </div>
 
@@ -1580,11 +1576,11 @@ export default function Home() {
             const listType = property.listingType ?? "";
             return (
               <div
-                className="group shrink-0 w-64 bg-white border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer"
+                className="group shrink-0 w-64 bg-white border border-border/70 rounded-xl overflow-hidden hover:border-border transition-colors duration-150 cursor-pointer"
                 onClick={() => setLocation(`/property/${property.id}`)}
               >
                 <div className="relative h-40 overflow-hidden">
-                  <img src={thumb} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e => { e.currentTarget.src = DEFAULT_IMG; }} />
+                  <img src={thumb} alt={property.title} className="w-full h-full object-cover" onError={e => { e.currentTarget.src = DEFAULT_IMG; }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   {listType && (
                     <span className={`absolute top-2 right-2 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${listType === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{listType}</span>

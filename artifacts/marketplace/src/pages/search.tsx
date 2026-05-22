@@ -942,13 +942,13 @@ export default function SearchPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: Math.min(idx, 5) * 0.05 }}
-        className={`group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-row
-          transition-all duration-300 hover:-translate-y-0.5
+        className={`group relative bg-white rounded-xl overflow-hidden cursor-pointer flex flex-row
+          transition-colors duration-150
           ${p.featured
-            ? "shadow-md shadow-amber-100/80 border border-amber-200 hover:shadow-xl"
+            ? "border border-amber-200 hover:border-amber-300"
             : p.urgent
-            ? "shadow-md shadow-red-100/80 border border-red-200 hover:shadow-xl"
-            : "shadow-sm border border-zinc-200/80 hover:shadow-lg hover:border-zinc-300"}`}
+            ? "border border-red-200 hover:border-red-300"
+            : "border border-zinc-200/80 hover:border-zinc-300"}`}
         onClick={() => setLocation(`/property/${p.id}`)}
       >
         <PropertyImageGallery
@@ -1116,10 +1116,10 @@ export default function SearchPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: Math.min(idx, 6) * 0.06 }}
         onClick={() => setLocation(`/property/${p.id}`)}
-        className={`group bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1
-          ${p.featured ? "shadow-md border border-amber-200 hover:shadow-xl"
-          : p.urgent ? "shadow-md border border-red-200 hover:shadow-xl"
-          : "shadow-sm border border-zinc-200/80 hover:shadow-lg"}`}
+        className={`group bg-white rounded-xl overflow-hidden cursor-pointer transition-colors duration-150
+          ${p.featured ? "border border-amber-200 hover:border-amber-300"
+          : p.urgent ? "border border-red-200 hover:border-red-300"
+          : "border border-zinc-200/80 hover:border-zinc-300"}`}
       >
         <PropertyImageGallery images={imgs} alt={p.title} fallback={DEFAULT_IMG} className="h-48">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
