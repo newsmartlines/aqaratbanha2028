@@ -84,34 +84,37 @@ export function AdBanner({ position, className = "" }: AdBannerProps) {
   const isBox = ad.adType === "box";
   const isNative = ad.adType === "native";
 
-  /* Native (inline card) */
+  /* Native (inline card) — خلفية بيضاء نظيفة مع حد ملون */
   if (isNative) {
     return (
       <div
-        className={`relative w-full overflow-hidden rounded-2xl border border-dashed cursor-pointer group transition-all duration-300 hover:shadow-lg ${className}`}
-        style={{ borderColor: bg + "60", background: bg + "08" }}
+        className={`relative w-full overflow-hidden rounded-xl border cursor-pointer group transition-colors duration-150 bg-white ${className}`}
+        style={{ borderColor: bg + "50" }}
         onClick={() => {
           trackClick(ad.id);
           if (ad.linkUrl && ad.linkUrl !== "#") window.open(ad.linkUrl, ad.linkTarget || "_blank");
         }}
         dir="rtl"
       >
+        {/* Colored accent bar on the right */}
+        <div className="absolute inset-y-0 right-0 w-1 rounded-l-full" style={{ background: bg }} />
+
         {/* Sponsored badge */}
         <span
           className="absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 rounded-full z-10"
           style={{ background: bg, color: fg }}
         >
-          {ad.badgeText || "إعلان"}
+          {ad.badgeText || "إعلان مميز"}
         </span>
 
-        <div className="flex items-center gap-4 p-4">
+        <div className="flex items-center gap-4 p-4 pr-5">
           {/* Icon or image */}
           {ad.imageUrl ? (
-            <img src={ad.imageUrl} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0 shadow-sm" />
+            <img src={ad.imageUrl} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
           ) : (
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: bg }}>
-              <Megaphone className="w-7 h-7" style={{ color: fg }} />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: bg + "15" }}>
+              <Megaphone className="w-6 h-6" style={{ color: bg }} />
             </div>
           )}
           <div className="flex-1 min-w-0">
@@ -120,8 +123,8 @@ export function AdBanner({ position, className = "" }: AdBannerProps) {
           </div>
           {ad.buttonText && (
             <span
-              className="shrink-0 text-xs font-bold px-4 py-2 rounded-xl transition-opacity group-hover:opacity-90"
-              style={{ background: bg, color: fg }}
+              className="shrink-0 text-xs font-bold px-4 py-2 rounded-lg"
+              style={{ background: bg + "15", color: bg }}
             >
               {ad.buttonText}
             </span>

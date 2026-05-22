@@ -344,7 +344,7 @@ export default function AdminPopups() {
 
       {/* ── Create/Edit Modal ── */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">
               {editing ? "تعديل البوب آب" : "إنشاء بوب آب جديد"}

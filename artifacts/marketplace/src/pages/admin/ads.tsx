@@ -58,6 +58,52 @@ const EMPTY_AD: Partial<AdSpot> = {
   buttonText: "اعرف أكثر", customHtml: "", sortOrder: 0,
 };
 
+/* ── Live Preview — defined OUTSIDE the component so React never recreates it ── */
+function LivePreview({ ad }: { ad: Partial<AdSpot> }) {
+  const bg = ad.bgColor || "#0d9488";
+  const fg = ad.textColor || "#ffffff";
+  return (
+    <div
+      className="rounded-xl overflow-hidden cursor-pointer"
+      style={{ background: bg }}
+    >
+      <div className="relative">
+        <div className="absolute -left-8 -top-8 w-32 h-32 rounded-full opacity-10" style={{ background: fg }} />
+        <div className="relative z-10 p-4 flex items-center gap-4">
+          {ad.imageUrl ? (
+            <img src={ad.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0 shadow" />
+          ) : (
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,255,255,0.2)" }}>
+              <Megaphone className="w-5 h-5" style={{ color: fg }} />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-extrabold text-sm truncate" style={{ color: fg }}>
+              {ad.title || "عنوان الإعلان"}
+            </p>
+            {ad.subtitle && (
+              <p className="text-xs opacity-75 truncate" style={{ color: fg }}>{ad.subtitle}</p>
+            )}
+          </div>
+          {ad.buttonText && (
+            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg"
+              style={{ background: "rgba(255,255,255,0.2)", color: fg }}>
+              {ad.buttonText}
+            </span>
+          )}
+        </div>
+        {ad.badgeText && (
+          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(0,0,0,0.2)", color: fg }}>
+            {ad.badgeText}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminAds() {
   const qc = useQueryClient();
   const [editAd, setEditAd] = useState<Partial<AdSpot> | null>(null);
@@ -131,49 +177,6 @@ export default function AdminAds() {
   const ctr = (e: AdSpot) => e.impressions && e.clicks
     ? `${((e.clicks / e.impressions) * 100).toFixed(1)}%` : "—";
 
-  /* ── Live Preview (simplified) ── */
-  const LivePreview = ({ ad }: { ad: Partial<AdSpot> }) => {
-    const bg = ad.bgColor || "#0d9488";
-    const fg = ad.textColor || "#ffffff";
-    return (
-      <div className="rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg"
-        style={{ background: bg }}>
-        <div className="relative">
-          <div className="absolute -left-8 -top-8 w-32 h-32 rounded-full opacity-10" style={{ background: fg }} />
-          <div className="relative z-10 p-4 flex items-center gap-4">
-            {ad.imageUrl ? (
-              <img src={ad.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0 shadow" />
-            ) : (
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(255,255,255,0.2)" }}>
-                <Megaphone className="w-5 h-5" style={{ color: fg }} />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="font-extrabold text-sm truncate" style={{ color: fg }}>
-                {ad.title || "عنوان الإعلان"}
-              </p>
-              {ad.subtitle && (
-                <p className="text-xs opacity-75 truncate" style={{ color: fg }}>{ad.subtitle}</p>
-              )}
-            </div>
-            {ad.buttonText && (
-              <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg"
-                style={{ background: "rgba(255,255,255,0.2)", color: fg }}>
-                {ad.buttonText}
-              </span>
-            )}
-          </div>
-          {ad.badgeText && (
-            <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(0,0,0,0.2)", color: fg }}>
-              {ad.badgeText}
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   /* ── Render ── */
   return (
@@ -314,7 +317,7 @@ export default function AdminAds() {
 
       {/* ── Edit / Create Dialog ── */}
       <Dialog open={!!editAd} onOpenChange={v => !v && setEditAd(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white" dir="rtl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-primary" />
@@ -485,7 +488,7 @@ export default function AdminAds() {
 
       {/* ── Preview Modal ── */}
       <Dialog open={!!previewAd} onOpenChange={v => !v && setPreviewAd(null)}>
-        <DialogContent className="max-w-lg" dir="rtl">
+        <DialogContent className="max-w-lg bg-white" dir="rtl">
           <DialogHeader>
             <DialogTitle>معاينة الإعلان</DialogTitle>
           </DialogHeader>
