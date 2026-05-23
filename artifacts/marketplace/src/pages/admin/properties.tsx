@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "wouter";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -96,6 +97,7 @@ const emptyForm = {
 
 export default function AdminProperties() {
   const [properties, setProperties] = useState<DbProperty[]>([]);
+  const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -464,7 +466,7 @@ export default function AdminProperties() {
               <Button
                 size="sm"
                 className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5"
-                onClick={() => { setForm({ ...emptyForm }); setAddOpen(true); }}
+                onClick={() => setLocation("/admin/properties/new")}
               >
                 <Plus className="w-4 h-4" /> إضافة عقار
               </Button>

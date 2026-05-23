@@ -56,6 +56,7 @@ import AdminSupportTickets from "@/pages/admin/support-tickets";
 import AdminProviderEdit from "@/pages/admin/provider-edit";
 import AdminProperties from "@/pages/admin/properties";
 import AdminPropertyEdit from "@/pages/admin/property-edit";
+import AdminPropertyAdd from "@/pages/admin/property-add";
 import AdminWatermark from "@/pages/admin/watermark";
 import AdminSeo from "@/pages/admin/seo";
 import AdminGoogleKit from "@/pages/admin/google-kit";
@@ -299,6 +300,9 @@ function Router() {
       </Route>
       <Route path="/admin/properties">
         {() => <AdminProtectedRoute component={AdminProperties} />}
+      </Route>
+      <Route path="/admin/properties/new">
+        {() => <AdminProtectedRoute component={AdminPropertyAdd} />}
       </Route>
       <Route path="/admin/properties/:id/edit">
         {() => <AdminProtectedRoute component={AdminPropertyEdit} />}

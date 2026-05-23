@@ -453,6 +453,7 @@ router.post("/properties", async (req, res) => {
       nearbyServices: Array.isArray(nearbyServices) ? JSON.stringify(nearbyServices) : nearbyServices,
       contactMethods: Array.isArray(contactMethods) ? JSON.stringify(contactMethods) : contactMethods,
       status: (status as string) || "pending",
+      approvedAt: ((status as string) === "approved" || (status as string) === "active") ? new Date() : null,
     }).returning();
 
     sendWhatsAppNotification(property).catch(() => {});
