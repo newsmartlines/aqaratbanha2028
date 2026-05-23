@@ -35,8 +35,9 @@ export interface FormValues {
   street:         string;
   latitude:       string;
   longitude:      string;
+  contactName:    string;
   phone:          string;
-  whatsapp:       string;
+  contactMethod:  string[];
   videoUrl:       string;
   images:         string[];
   // Land-specific fields

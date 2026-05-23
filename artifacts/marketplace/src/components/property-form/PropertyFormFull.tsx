@@ -17,7 +17,7 @@ import { Step5Plans } from "./steps/Step5Plans";
 import { usePropertyForm } from "./use-property-form";
 import {
   ADVERTISER_TYPES, FINISHING, CONDITIONS,
-  DIRECTIONS, CITIES, CITY_AREAS,
+  DIRECTIONS, CITY_AREAS,
 } from "./constants";
 import { LAND_TYPE_OPTIONS, getPropertyTypeConfig } from "./property-type-config";
 import type { PropertyFormWizardProps } from "./types";
@@ -623,46 +623,96 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
 
         {/* ── 9. معلومات التواصل ──────────────────────────────────── */}
         <FormSection title="معلومات التواصل" required>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4">
+
+            {/* الاسم */}
+            <div>
+              <Label htmlFor="f-cname" className="text-sm font-semibold mb-1.5 block">
+                الاسم <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="f-cname"
+                placeholder="الاسم الكامل"
+                {...register("contactName")}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            {/* رقم الهاتف المحمول مع مفتاح مصر */}
             <div>
               <Label htmlFor="f-phone" className="text-sm font-semibold mb-1.5 block">
-                رقم الهاتف <span className="text-red-500">*</span>
+                رقم الهاتف المحمول <span className="text-red-500">*</span>
               </Label>
-              <Input id="f-phone" placeholder="01XXXXXXXXX" {...register("phone")} className="h-11 rounded-xl" dir="ltr" />
+              <div className="flex items-stretch" dir="ltr">
+                <div
+                  className="h-11 px-3.5 flex items-center rounded-r-xl border border-l-0 bg-gray-50 text-sm font-semibold text-gray-500 select-none shrink-0"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                >
+                  +20
+                </div>
+                <Input
+                  id="f-phone"
+                  placeholder="1XXXXXXXXX"
+                  {...register("phone")}
+                  className="h-11 rounded-l-xl rounded-r-none flex-1"
+                  dir="ltr"
+                />
+              </div>
             </div>
+
+            {/* طريقة التواصل */}
             <div>
-              <Label htmlFor="f-whatsapp" className="text-sm font-semibold mb-1.5 block">واتساب (اختياري)</Label>
-              <Input id="f-whatsapp" placeholder="01XXXXXXXXX" {...register("whatsapp")} className="h-11 rounded-xl" dir="ltr" />
+              <Label className="text-sm font-semibold mb-2 block">طريقة التواصل</Label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: "phone",    label: "رقم الموبايل" },
+                  { key: "whatsapp", label: "واتساب"       },
+                  { key: "chat",     label: "شات المنصة"   },
+                  { key: "call",     label: "اتصال مباشر"  },
+                ].map((m) => {
+                  const active = (v.contactMethod ?? []).includes(m.key);
+                  return (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => {
+                        const cur: string[] = v.contactMethod ?? [];
+                        set("contactMethod", active
+                          ? cur.filter((x) => x !== m.key)
+                          : [...cur, m.key]
+                        );
+                      }}
+                      className="px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 focus:outline-none"
+                      style={{
+                        borderColor: active ? "#059669" : "#e5e7eb",
+                        background:  active ? "rgba(236,253,245,0.85)" : "#fff",
+                        color:       active ? "#065f46" : "#4b5563",
+                        boxShadow:   active ? "0 0 0 1px #059669" : "none",
+                      }}
+                    >
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
           </div>
         </FormSection>
 
-        </div>{/* end inner space-y-4 */}
-        </div>{/* end animated reveal wrapper */}
-
-      </div>
-
-      {/* Error banner */}
-      {error && (
-        <div className="fixed bottom-20 left-4 right-4 max-w-2xl mx-auto bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 z-50">
-          {error}
-        </div>
-      )}
-
-      {/* Fixed bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 z-40 shadow-lg">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+        {/* ── زر النشر — تحت الاستمارة مباشرةً ─────────────────── */}
+        <div className="flex items-center gap-3 pt-3 pb-10">
           <button
             type="button"
             onClick={goBack}
-            className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-gray-900 px-4 py-2.5 rounded-lg border border-gray-200 bg-white transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-gray-900 px-5 py-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors shrink-0"
           >
             <ChevronLeft className="w-4 h-4" />
             رجوع
           </button>
           <div className="flex-1" />
           {!canSubmitForm && (
-            <p className="text-xs text-muted-foreground hidden sm:block">
+            <p className="text-xs text-gray-400 hidden sm:block">
               أكمل الحقول المطلوبة للمتابعة
             </p>
           )}
@@ -670,7 +720,13 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
             type="button"
             onClick={handleFormNext}
             disabled={!canSubmitForm || submitting}
-            className="flex items-center gap-2 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 rounded-lg transition-colors shrink-0"
+            className="flex items-center gap-2 text-sm font-bold text-white px-8 py-3 rounded-xl shadow-sm transition-all duration-150 shrink-0 focus:outline-none"
+            style={{
+              background: canSubmitForm && !submitting
+                ? "linear-gradient(135deg,#059669 0%,#0d9488 100%)"
+                : "#d1d5db",
+              cursor: canSubmitForm && !submitting ? "pointer" : "not-allowed",
+            }}
           >
             {submitting ? (
               <><Loader2 className="w-4 h-4 animate-spin" />جارٍ الإرسال...</>
@@ -681,7 +737,18 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
             )}
           </button>
         </div>
+
+        </div>{/* end inner space-y-4 */}
+        </div>{/* end animated reveal wrapper */}
+
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="fixed bottom-6 left-4 right-4 max-w-2xl mx-auto bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 z-50 shadow-lg">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

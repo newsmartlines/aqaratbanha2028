@@ -34,7 +34,7 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     features: [], nearbyServices: [],
     city: "بنها", district: "", address: "", street: "",
     latitude: "", longitude: "",
-    phone: user?.phone ?? "", whatsapp: "",
+    contactName: user?.name ?? "", phone: user?.phone ?? "", contactMethod: ["phone"],
     videoUrl: "", images: [],
     landType: "", landWidth: "", landDepth: "", buildRatio: "",
   };
@@ -146,7 +146,6 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
       latitude:       f.latitude       || undefined,
       longitude:      f.longitude      || undefined,
       phone:          f.phone          || undefined,
-      whatsapp:       f.whatsapp       || undefined,
       videoUrl:       f.videoUrl       || undefined,
       landType:       f.landType       || undefined,
       landWidth:      f.landWidth      || undefined,

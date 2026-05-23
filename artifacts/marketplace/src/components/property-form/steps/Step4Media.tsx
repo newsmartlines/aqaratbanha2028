@@ -97,16 +97,6 @@ export function Step4Media({
               className="h-11 rounded-xl" dir="ltr"
             />
           </div>
-          <div>
-            <Label htmlFor="f-whatsapp" className="text-sm font-semibold mb-2 block">
-              رقم الواتساب (اختياري)
-            </Label>
-            <Input
-              id="f-whatsapp" placeholder="01XXXXXXXXX"
-              {...register("whatsapp")}
-              className="h-11 rounded-xl" dir="ltr"
-            />
-          </div>
         </div>
       </div>
 
