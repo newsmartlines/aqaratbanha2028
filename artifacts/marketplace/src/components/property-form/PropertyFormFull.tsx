@@ -47,6 +47,8 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
 
   const cfg = getPropertyTypeConfig(v.mainCategory);
 
+  const isFormUnlocked = !!v.propertyGroup && !!v.mainCategory && !!v.listingType;
+
   const canSubmitForm = !!v.listingType && !!v.mainCategory && !!v.title && !!v.area && !!v.city && !!v.phone;
 
 
@@ -249,6 +251,20 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
             )}
           </div>
         </FormSection>
+
+        {/* ── Sections 2–9: only visible after all 3 type selections are made ── */}
+        <div
+          style={{
+            overflow: isFormUnlocked ? "visible" : "hidden",
+            maxHeight: isFormUnlocked ? "9999px" : "0px",
+            opacity: isFormUnlocked ? 1 : 0,
+            transition: isFormUnlocked
+              ? "opacity 0.5s ease 0.1s, max-height 0.6s ease 0.05s"
+              : "opacity 0.2s ease, max-height 0.3s ease",
+          }}
+          aria-hidden={!isFormUnlocked}
+        >
+        <div className="space-y-4 pt-1">
 
         {/* ── 2. تفاصيل الإعلان ─────────────────────────────────── */}
         <FormSection title="تفاصيل الإعلان" required>
@@ -569,24 +585,6 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
         <FormSection title="الموقع" required>
           <div className="space-y-4">
             <div>
-              <Label className="text-sm font-semibold mb-2 block">المدينة <span className="text-red-500">*</span></Label>
-              <div className="grid grid-cols-3 gap-2">
-                {CITIES.map((city) => (
-                  <button
-                    key={city} type="button"
-                    onClick={() => set("city", city)}
-                    className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
-                      v.city === city
-                        ? "border-teal-600 bg-teal-50 text-teal-700"
-                        : "border-border hover:border-teal-300 hover:bg-secondary/40"
-                    }`}
-                  >
-                    {city}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
               <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">المنطقة</Label>
               <select
                 id="f-district"
@@ -638,6 +636,9 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
             </div>
           </div>
         </FormSection>
+
+        </div>{/* end inner space-y-4 */}
+        </div>{/* end animated reveal wrapper */}
 
       </div>
 
