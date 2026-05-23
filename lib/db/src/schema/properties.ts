@@ -55,6 +55,7 @@ export const propertiesTable = pgTable("properties", {
   urgent: boolean("urgent").default(false),
   viewCount: integer("view_count").default(0).notNull(),
   phoneClickCount: integer("phone_click_count").default(0).notNull(),
+  whatsappClickCount: integer("whatsapp_click_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   approvedAt: timestamp("approved_at"),
 });

@@ -397,6 +397,19 @@ router.post("/properties/:id/phone-click", async (req, res) => {
   }
 });
 
+// ── POST /api/properties/:id/whatsapp-click — increment whatsapp click count ─
+router.post("/properties/:id/whatsapp-click", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.update(propertiesTable)
+      .set({ whatsappClickCount: sql`${propertiesTable.whatsappClickCount} + 1` })
+      .where(eq(propertiesTable.id, id));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
 // ── POST /api/properties ──────────────────────────────────────────────────
 router.post("/properties", async (req, res) => {
   try {

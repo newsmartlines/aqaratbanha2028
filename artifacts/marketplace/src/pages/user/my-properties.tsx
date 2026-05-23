@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import {
   Building2, MapPin, Eye, Plus, Trash2, Clock, CheckCircle2,
-  XCircle, AlertCircle, Search, Home, Pencil, RefreshCw,
+  XCircle, AlertCircle, Search, Home, Pencil, RefreshCw, Phone,
 } from "lucide-react";
 import UserLayout from "@/components/UserLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -327,10 +327,18 @@ export default function MyPropertiesPage() {
 
                     {/* Meta row */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" />
-                        {prop.viewCount ?? 0} مشاهدة
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-3 h-3" />
+                          {prop.viewCount ?? 0} مشاهدة
+                        </span>
+                        {(prop.phoneClickCount ?? 0) > 0 && (
+                          <span className="flex items-center gap-1 text-teal-600">
+                            <Phone className="w-3 h-3" />
+                            {prop.phoneClickCount} ضغطة اتصال
+                          </span>
+                        )}
+                      </div>
                       <span>{prop.createdAt ? fmtDate(prop.createdAt) : ""}</span>
                     </div>
 

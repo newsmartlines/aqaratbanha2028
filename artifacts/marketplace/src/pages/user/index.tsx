@@ -8,6 +8,7 @@ import {
   MapPin,
   Eye,
   Clock,
+  Phone,
   CheckCircle2,
   BellRing,
   Home,
@@ -77,6 +78,14 @@ export default function UserDashboard() {
       icon: Eye,
       color: "text-indigo-500",
       bg: "bg-indigo-500/10",
+      href: "/user/my-properties",
+    },
+    {
+      name: "ضغطات الاتصال",
+      value: String(myProperties.reduce((sum: number, p: any) => sum + (p.phoneClickCount ?? 0), 0)),
+      icon: Phone,
+      color: "text-teal-600",
+      bg: "bg-teal-500/10",
       href: "/user/my-properties",
     },
   ];

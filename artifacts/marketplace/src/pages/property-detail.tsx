@@ -65,6 +65,8 @@ type PropertyView = {
   description: string;
   amenities: string[];
   nearbyServices: string[];
+  contactMethods: string[];
+  phoneClickCount: number;
   price: string;
   priceNum: number;
   agentPhone: string;
@@ -86,6 +88,7 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
   const images = tryJson<string[]>(p.images as string, []);
   const features = tryJson<string[]>(p.features as string, []);
   const nearbyServices = tryJson<string[]>(p.nearbyServices as string, []);
+  const contactMethods = tryJson<string[]>(p.contactMethods as string, []);
   const priceNum = parseFloat((p.price as string) ?? "0") || 0;
   const gallery = images.length > 0 ? images : [DEFAULT_IMG];
 
@@ -110,6 +113,8 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     description: (p.description as string) ?? "",
     amenities: Array.isArray(features) ? features : [],
     nearbyServices: Array.isArray(nearbyServices) ? nearbyServices : [],
+    contactMethods: Array.isArray(contactMethods) ? contactMethods : [],
+    phoneClickCount: (p.phoneClickCount as number) ?? 0,
     price: priceNum > 0 ? priceNum.toLocaleString("ar-EG") : "غير محدد",
     priceNum,
     agentPhone: (p.phone as string) ?? "",
@@ -819,6 +824,7 @@ export default function PropertyDetail() {
                   { icon: MapPin, label: "الموقع", value: property.location },
                   { icon: TrendingUp, label: "الحالة", value: property.type },
                   { icon: Eye, label: "المشاهدات", value: `${(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة` },
+                  { icon: Phone, label: "ضغطات الاتصال", value: `${(property.phoneClickCount ?? 0).toLocaleString("ar-EG")} ضغطة` },
                   { icon: Clock, label: "تاريخ النشر", value: property.createdAt ? new Date(property.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
@@ -829,70 +835,112 @@ export default function PropertyDetail() {
                 ))}
               </div>
 
-              {/* Phone reveal row — full row is clickable */}
-              {property.agentPhone && (
-                <button
-                  onClick={() => {
-                    if (!phoneRevealed) {
-                      setPhoneRevealed(true);
-                      api.propertyStats.phoneClick(id).catch(() => {});
-                    } else {
-                      window.location.href = `tel:${property.agentPhone}`;
-                    }
-                  }}
-                  className="w-full flex items-center gap-3 mb-3 bg-gray-50 hover:bg-primary/5 rounded-2xl px-4 py-3 border border-gray-200 hover:border-primary/40 transition-all group cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0">
-                    {phoneRevealed
-                      ? <Phone className="w-4 h-4 text-primary" />
-                      : <Eye className="w-4 h-4 text-primary" />}
-                  </div>
-                  <div className="flex-1 text-right">
-                    {phoneRevealed ? (
-                      <span dir="ltr" className="block font-mono text-base font-bold tracking-widest text-gray-900">{property.agentPhone}</span>
-                    ) : (
-                      <>
-                        <span className="block text-xs text-muted-foreground mb-0.5">اضغط لإظهار رقم التليفون</span>
-                        <span dir="ltr" className="block font-mono text-sm font-bold tracking-widest text-gray-500">{property.agentPhone.slice(0, 3) + " *** *** ***"}</span>
-                      </>
+              {/* ── طرق التواصل ── */}
+              {(() => {
+                const cm = property.contactMethods;
+                const showCall = cm.length === 0 || cm.includes("call");
+                const showWhatsapp = cm.length === 0 || cm.includes("whatsapp");
+                const showChat = cm.length === 0 || cm.includes("chat");
+                const showEmail = cm.includes("email");
+                const hasAny = showCall || showWhatsapp || showChat || showEmail;
+
+                return (
+                  <div className="space-y-2">
+                    {/* طرق التواصل المتاحة */}
+                    {cm.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span className="text-xs text-muted-foreground">طرق التواصل:</span>
+                        {showCall && <span className="inline-flex items-center gap-1 text-[11px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-medium"><Phone className="w-3 h-3" />اتصال</span>}
+                        {showWhatsapp && <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full font-medium"><MessageCircle className="w-3 h-3" />واتساب</span>}
+                        {showChat && <span className="inline-flex items-center gap-1 text-[11px] bg-primary/5 text-primary border border-primary/15 px-2 py-0.5 rounded-full font-medium"><MessageCircle className="w-3 h-3" />محادثة</span>}
+                        {showEmail && <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full font-medium">✉ إيميل</span>}
+                      </div>
+                    )}
+
+                    {/* Phone reveal button */}
+                    {showCall && property.agentPhone && (
+                      <button
+                        onClick={() => {
+                          if (!phoneRevealed) {
+                            setPhoneRevealed(true);
+                            api.propertyStats.phoneClick(id).catch(() => {});
+                          } else {
+                            window.location.href = `tel:${property.agentPhone}`;
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 bg-gray-50 hover:bg-primary/5 rounded-2xl px-4 py-3 border border-gray-200 hover:border-primary/40 transition-all group cursor-pointer"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0">
+                          {phoneRevealed
+                            ? <Phone className="w-4 h-4 text-primary" />
+                            : <Eye className="w-4 h-4 text-primary" />}
+                        </div>
+                        <div className="flex-1 text-right">
+                          {phoneRevealed ? (
+                            <span dir="ltr" className="block font-mono text-base font-bold tracking-widest text-gray-900">{property.agentPhone}</span>
+                          ) : (
+                            <>
+                              <span className="block text-xs text-muted-foreground mb-0.5">اضغط لإظهار رقم التليفون</span>
+                              <span dir="ltr" className="block font-mono text-sm font-bold tracking-widest text-gray-500">{property.agentPhone.slice(0, 3) + " *** *** ***"}</span>
+                            </>
+                          )}
+                        </div>
+                        {phoneRevealed && <span className="text-xs text-primary font-semibold">اتصل الآن</span>}
+                      </button>
+                    )}
+
+                    {/* WhatsApp button */}
+                    {showWhatsapp && property.agentWhatsapp && (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                        asChild
+                        onClick={() => { api.propertyStats.whatsappClick(id).catch(() => {}); }}
+                      >
+                        <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                          <MessageCircle className="w-4 h-4 ml-2" />
+                          واتساب
+                        </a>
+                      </Button>
+                    )}
+
+                    {/* Chat button */}
+                    {showChat && property.ownerUserId && user?.id !== property.ownerUserId && (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-2xl h-12 text-base font-bold border-primary text-primary hover:bg-primary/5"
+                        onClick={() => {
+                          if (!user) {
+                            setLocation(`/login?redirect=/property/${property.id}`);
+                            return;
+                          }
+                          setMsgOpen(true);
+                          setMsgContent("");
+                        }}
+                      >
+                        <MessageCircle className="w-4 h-4 ml-2" />
+                        محادثة
+                      </Button>
+                    )}
+
+                    {/* Email button */}
+                    {showEmail && (
+                      <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-amber-500 text-amber-700 hover:bg-amber-50" asChild>
+                        <a href="mailto:?subject=استفسار عن عقار">
+                          ✉ مراسلة بالبريد
+                        </a>
+                      </Button>
+                    )}
+
+                    {!hasAny && (
+                      <Button className="w-full rounded-2xl h-12 text-base font-bold shadow-md shadow-primary/20">
+                        <Phone className="w-4 h-4 ml-2" />
+                        تواصل مع المعلن
+                      </Button>
                     )}
                   </div>
-                  {phoneRevealed && <span className="text-xs text-primary font-semibold">اتصل الآن</span>}
-                </button>
-              )}
-
-              {property.agentWhatsapp && (
-                <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50" asChild>
-                  <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                    <MessageCircle className="w-4 h-4 ml-2" />
-                    واتساب
-                  </a>
-                </Button>
-              )}
-              {/* Chat button */}
-              {property.ownerUserId && user?.id !== property.ownerUserId && (
-                <Button
-                  variant="outline"
-                  className="w-full rounded-2xl h-12 text-base font-bold border-primary text-primary hover:bg-primary/5"
-                  onClick={() => {
-                    if (!user) {
-                      setLocation(`/login?redirect=/property/${property.id}`);
-                      return;
-                    }
-                    setMsgOpen(true);
-                    setMsgContent("");
-                  }}
-                >
-                  <MessageCircle className="w-4 h-4 ml-2" />
-                  محادثة
-                </Button>
-              )}
-              {!property.agentPhone && !property.agentWhatsapp && (
-                <Button className="w-full rounded-2xl h-12 text-base font-bold mb-3 shadow-md shadow-primary/20">
-                  <Phone className="w-4 h-4 ml-2" />
-                  تواصل مع المعلن
-                </Button>
-              )}
+                );
+              })()}
             </div>
 
             {/* Safety Tips Card */}

@@ -890,6 +890,8 @@ export const api = {
       fetchJson(`/properties/${propertyId}/view`, { method: "POST" }),
     phoneClick: (propertyId: number) =>
       fetchJson(`/properties/${propertyId}/phone-click`, { method: "POST" }),
+    whatsappClick: (propertyId: number) =>
+      fetchJson(`/properties/${propertyId}/whatsapp-click`, { method: "POST" }),
   },
 
   billingPlans: {

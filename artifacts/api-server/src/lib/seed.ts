@@ -539,6 +539,10 @@ const NEARBY_COMM = JSON.stringify(["بنك", "مول تجاري", "مطاعم",
 const NEARBY_LAND = JSON.stringify(["مسجد", "مدرسة", "سوبر ماركت"]);
 const NEARBY_DUPLEX = JSON.stringify(["مسجد", "مدرسة", "سوبر ماركت", "صيدلية", "مطاعم"]);
 
+const CONTACT_ALL = JSON.stringify(["call", "whatsapp", "chat"]);
+const CONTACT_CALL_WA = JSON.stringify(["call", "whatsapp"]);
+const CONTACT_WA_CHAT = JSON.stringify(["whatsapp", "chat"]);
+
 const IMGS_APT = JSON.stringify([
   "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80",
   "https://images.unsplash.com/photo-1502005097973-6a7082348e28?w=800&q=80",
@@ -631,7 +635,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش", paymentMethod: "نقدي أو تقسيط",
       district: "وسط البلد", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4667", longitude: "31.1833",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
@@ -642,7 +646,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "شارع الجمهورية", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4690", longitude: "31.1820",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
@@ -653,7 +657,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "الحي العاشر", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4650", longitude: "31.1850",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
@@ -664,7 +668,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       latitude: "30.328709", longitude: "31.118075",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
@@ -675,7 +679,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "وسط قليوب", address: "قليوب", regionId: qR, cityId: qC,
       latitude: "30.341349", longitude: "31.222926",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
     {
@@ -732,7 +736,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "شارع الرياضة", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.471257", longitude: "31.171548",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
@@ -765,7 +769,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "كورنيش القناطر", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       latitude: "30.318800", longitude: "31.120904",
-      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT,
+      images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
 
@@ -778,7 +782,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "العبور السكنية", address: "العبور", regionId: cR, cityId: obC,
       latitude: "30.2167", longitude: "31.5333",
-      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA,
+      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01112345678", whatsapp: "01112345678",
     },
     {
@@ -789,7 +793,7 @@ async function seedProperties() {
       finishing: "نص تشطيب", furnished: "غير مفروش",
       district: "بنها الجديدة", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.471948", longitude: "31.176231",
-      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA,
+      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
@@ -800,7 +804,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "مدينة بدر الجديدة", address: "مدينة بدر", regionId: cR, cityId: bdC,
       latitude: "30.110234", longitude: "31.746250",
-      images: IMGS_DUPLEX, features: FEATS_VILLA, nearbyServices: NEARBY_DUPLEX,
+      images: IMGS_DUPLEX, features: FEATS_VILLA, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: true, phone: "01334567890", whatsapp: "01334567890",
     },
     {
@@ -811,7 +815,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       latitude: "30.311380", longitude: "31.126932",
-      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA,
+      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901",
     },
     {
@@ -822,7 +826,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "التجمع الثالث", address: "التجمع الخامس", regionId: cR, cityId: tjC,
       latitude: "30.028468", longitude: "31.474707",
-      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA,
+      images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
 
@@ -835,7 +839,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "الحي التاسع", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.477670", longitude: "31.163851",
-      images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX,
+      images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
@@ -846,7 +850,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "شارع سعد زغلول", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.474351", longitude: "31.166068",
-      images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX,
+      images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
@@ -857,7 +861,7 @@ async function seedProperties() {
       finishing: "مشطب", furnished: "غير مفروش",
       district: "الحي الثامن", address: "الشيخ زايد", regionId: gR, cityId: zC,
       latitude: "30.042545", longitude: "30.955090",
-      images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX,
+      images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: true, phone: "01334567890", whatsapp: "01334567890",
     },
 
@@ -869,7 +873,7 @@ async function seedProperties() {
       price: "600000", area: "300",
       district: "المنطقة الصناعية", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.482254", longitude: "31.171036",
-      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND,
+      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
@@ -879,7 +883,7 @@ async function seedProperties() {
       price: "900000", area: "500",
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       latitude: "30.313030", longitude: "31.104409",
-      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND,
+      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
@@ -889,7 +893,7 @@ async function seedProperties() {
       price: "1200000", area: "750",
       district: "طوخ الصناعية", address: "طوخ", regionId: qR, cityId: tC,
       latitude: "30.351269", longitude: "31.155403",
-      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND,
+      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
@@ -909,7 +913,7 @@ async function seedProperties() {
       price: "350000", area: "200",
       district: "شبين القناطر", address: "شبرا الخيمة", regionId: qR, cityId: shC,
       latitude: "30.121126", longitude: "31.239992",
-      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND,
+      images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
 
@@ -921,7 +925,7 @@ async function seedProperties() {
       price: "1500000", area: "80",
       district: "السوق التجاري", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.4660", longitude: "31.1845",
-      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM,
+      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
@@ -931,7 +935,7 @@ async function seedProperties() {
       price: "900000", area: "120", floor: 4, totalFloors: 12,
       district: "شارع التحرير", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.448606", longitude: "31.179679",
-      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM,
+      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
@@ -941,7 +945,7 @@ async function seedProperties() {
       price: "8000", area: "60",
       district: "وسط البلد", address: "بنها", regionId: qR, cityId: bC,
       latitude: "30.456865", longitude: "31.197738",
-      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM,
+      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
@@ -961,7 +965,7 @@ async function seedProperties() {
       price: "4500", area: "90", floor: 2, totalFloors: 6,
       district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
       latitude: "30.323485", longitude: "31.098712",
-      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM,
+      images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
     {
