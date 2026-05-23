@@ -79,25 +79,22 @@ export function Step5Plans({
           <p>لا توجد باقات متاحة حالياً</p>
         </div>
       ) : (
-        <div className="overflow-x-auto pb-2 -mx-1">
-          <div
-            className="flex gap-3 px-1"
-            style={{ minWidth: `${sorted.length * 200}px` }}
-          >
-            {sorted.map((plan) => (
-              <div
-                key={plan.id}
-                className="flex-1"
-                style={{ minWidth: 180, maxWidth: sorted.length <= 3 ? "none" : 220 }}
-              >
-                <PlanCard
-                  plan={plan}
-                  selected={selectedPlan?.id === plan.id}
-                  onSelect={() => setSelectedPlan(plan)}
-                />
-              </div>
-            ))}
-          </div>
+        <div
+          className={`grid gap-3 ${
+            sorted.length === 1 ? "grid-cols-1 max-w-sm mx-auto" :
+            sorted.length === 2 ? "grid-cols-2" :
+            sorted.length === 3 ? "grid-cols-1 sm:grid-cols-3" :
+            "grid-cols-2 sm:grid-cols-4"
+          }`}
+        >
+          {sorted.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              selected={selectedPlan?.id === plan.id}
+              onSelect={() => setSelectedPlan(plan)}
+            />
+          ))}
         </div>
       )}
 
