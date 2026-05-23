@@ -249,54 +249,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           </div>
         </FormSection>
 
-        {/* ── 2. الموقع ──────────────────────────────────────────── */}
-        <FormSection title="الموقع" required>
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-semibold mb-2 block">المدينة <span className="text-red-500">*</span></Label>
-              <div className="grid grid-cols-3 gap-2">
-                {CITIES.map((city) => (
-                  <button
-                    key={city} type="button"
-                    onClick={() => set("city", city)}
-                    className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
-                      v.city === city
-                        ? "border-teal-600 bg-teal-50 text-teal-700"
-                        : "border-border hover:border-teal-300 hover:bg-secondary/40"
-                    }`}
-                  >
-                    {city}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="f-street" className="text-sm font-semibold mb-1.5 block">اسم الشارع</Label>
-              <Input id="f-street" placeholder="شارع الجمهورية..." {...register("street")} className="h-11 rounded-xl" />
-            </div>
-            <div>
-              <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>
-              <AddressAutocomplete
-                id="f-address"
-                placeholder="ابحث عن العنوان أو اكتب تفاصيل الموقع..."
-                value={v.address ?? ""}
-                onChange={(val) => setValue("address", val)}
-                onSelect={(lat, lng, displayName) => {
-                  setValue("address", displayName);
-                  setValue("latitude", String(lat));
-                  setValue("longitude", String(lng));
-                }}
-              />
-            </div>
-            <MapPicker
-              lat={v.latitude} lng={v.longitude}
-              onPick={(lat, lng) => { setValue("latitude", String(lat)); setValue("longitude", String(lng)); }}
-              onClear={() => { setValue("latitude", ""); setValue("longitude", ""); }}
-            />
-          </div>
-        </FormSection>
-
-        {/* ── 3. تفاصيل الإعلان ─────────────────────────────────── */}
+        {/* ── 2. تفاصيل الإعلان ─────────────────────────────────── */}
         <FormSection title="تفاصيل الإعلان" required>
           <div className="space-y-4">
             <div>
@@ -334,8 +287,8 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           </div>
         </FormSection>
 
-        {/* ── 4. المساحات والأسعار ──────────────────────────────── */}
-        <FormSection title="المساحات والأسعار">
+        {/* ── 3. المساحات والأسعار ──────────────────────────────── */}
+        <FormSection title={cfg.isLand ? "مساحة الأرض والسعر" : "المساحات والأسعار"}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -344,114 +297,113 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
               </div>
               <div>
                 <Label htmlFor="f-area" className="text-sm font-semibold mb-1.5 block">
-                  المساحة (م²) <span className="text-red-500">*</span>
+                  {cfg.isLand ? "المساحة الإجمالية (م²)" : "المساحة (م²)"} <span className="text-red-500">*</span>
                 </Label>
                 <Input id="f-area" type="number" placeholder="120" {...register("area")} className="h-11 rounded-xl" />
               </div>
             </div>
-            {/* Land type & dimensions */}
-            {cfg.showLandType && (
-              <div>
-                <Label className="text-sm font-semibold mb-2 block">نوع الأرض</Label>
-                <div className="flex flex-wrap gap-2">
-                  {LAND_TYPE_OPTIONS.map((opt) => (
-                    <button key={opt.value} type="button" onClick={() => set("landType", opt.value)}
-                      className={`px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
-                        v.landType === opt.value ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-300"
-                      }`}>{opt.label}</button>
-                  ))}
-                </div>
-              </div>
-            )}
+
+            {/* أبعاد الأرض — للأراضي فقط */}
             {cfg.showLandDimensions && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">الطول (م)</p>
-                  <Input type="number" placeholder="20" {...register("landDepth")} className="h-11 rounded-xl text-center" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">العرض (م)</p>
-                  <Input type="number" placeholder="15" {...register("landWidth")} className="h-11 rounded-xl text-center" />
+              <div>
+                <Label className="text-sm font-semibold mb-2 block">أبعاد الأرض</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">الطول (م)</p>
+                    <Input type="number" placeholder="20" {...register("landDepth")} className="h-11 rounded-xl text-center" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">العرض (م)</p>
+                    <Input type="number" placeholder="15" {...register("landWidth")} className="h-11 rounded-xl text-center" />
+                  </div>
                 </div>
               </div>
             )}
+
+            {/* نسبة البناء — للأراضي فقط */}
             {cfg.showBuildRatio && (
               <div>
-                <Label htmlFor="f-build-ratio" className="text-sm font-semibold mb-1.5 block">نسبة البناء (%)</Label>
-                <Input id="f-build-ratio" type="number" placeholder="60" {...register("buildRatio")} className="h-11 rounded-xl max-w-[160px]" />
+                <Label htmlFor="f-build-ratio" className="text-sm font-semibold mb-1.5 block">نسبة البناء المسموحة (%)</Label>
+                <Input id="f-build-ratio" type="number" placeholder="60" {...register("buildRatio")} className="h-11 rounded-xl max-w-[200px]" />
               </div>
             )}
-            {/* Room details */}
+
+            {/* الغرف / الحمامات / الطابق — للوحدات فقط */}
             {(cfg.showRooms || cfg.showBathrooms || cfg.showFloor) && (
-              <div className="grid grid-cols-3 gap-3">
-                {cfg.showRooms && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">{cfg.roomsLabel}</p>
-                    <Input type="number" placeholder="3" {...register("rooms")} className="h-11 rounded-xl text-center" />
-                  </div>
-                )}
-                {cfg.showBathrooms && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">الحمامات</p>
-                    <Input type="number" placeholder="2" {...register("bathrooms")} className="h-11 rounded-xl text-center" />
-                  </div>
-                )}
-                {cfg.showFloor && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">{cfg.floorLabel}</p>
-                    <Input type="number" placeholder="3" {...register("floor")} className="h-11 rounded-xl text-center" />
-                  </div>
-                )}
-                {cfg.showTotalFloors && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">إجمالي الأدوار</p>
-                    <Input type="number" placeholder="10" {...register("totalFloors")} className="h-11 rounded-xl text-center" />
-                  </div>
-                )}
-                {isCompany && cfg.showBuildYear && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
-                    <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl text-center" />
-                  </div>
-                )}
+              <div>
+                <Label className="text-sm font-semibold mb-2 block">تفاصيل الوحدة</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {cfg.showRooms && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">{cfg.roomsLabel}</p>
+                      <Input type="number" placeholder="3" {...register("rooms")} className="h-11 rounded-xl text-center" />
+                    </div>
+                  )}
+                  {cfg.showBathrooms && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">الحمامات</p>
+                      <Input type="number" placeholder="2" {...register("bathrooms")} className="h-11 rounded-xl text-center" />
+                    </div>
+                  )}
+                  {cfg.showFloor && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">{cfg.floorLabel}</p>
+                      <Input type="number" placeholder="3" {...register("floor")} className="h-11 rounded-xl text-center" />
+                    </div>
+                  )}
+                  {cfg.showTotalFloors && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">إجمالي الأدوار</p>
+                      <Input type="number" placeholder="10" {...register("totalFloors")} className="h-11 rounded-xl text-center" />
+                    </div>
+                  )}
+                  {isCompany && cfg.showBuildYear && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
+                      <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl text-center" />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </FormSection>
 
-        {/* ── 5. التفاصيل الإضافية ──────────────────────────────── */}
-        <FormSection title="التفاصيل الإضافية">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-sm font-semibold mb-1.5 block">حالة التشطيب</Label>
-                <Select value={v.finishing} onValueChange={(val) => set("finishing", val)}>
-                  <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
-                  <SelectContent>
-                    {FINISHING.map((f) => (
-                      <SelectItem key={f.value} value={f.value}>
-                        <span className="font-medium">{f.label}</span>
-                        <span className="text-xs text-muted-foreground mr-2">{f.desc}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {cfg.showFurnished && (
-                <div>
-                  <Label className="text-sm font-semibold mb-1.5 block">الأثاث</Label>
-                  <Select value={v.furnished} onValueChange={(val) => set("furnished", val)}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="furnished">مفروشة بالكامل</SelectItem>
-                      <SelectItem value="semi_furnished">نصف مفروشة</SelectItem>
-                      <SelectItem value="unfurnished">غير مفروشة</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              {isCompany && (
-                <>
+        {/* ── 4. التفاصيل الإضافية — تُخفى تلقائياً إن لم يكن فيها شيء ── */}
+        {(cfg.showFinishing || cfg.showFurnished || (isCompany && (cfg.showCondition || cfg.showDirection)) || (v.listingType === "rent" && cfg.showPaymentMethod) || cfg.showFacade) && (
+          <FormSection title="التفاصيل الإضافية">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                {cfg.showFinishing && (
+                  <div>
+                    <Label className="text-sm font-semibold mb-1.5 block">حالة التشطيب</Label>
+                    <Select value={v.finishing} onValueChange={(val) => set("finishing", val)}>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
+                      <SelectContent>
+                        {FINISHING.map((f) => (
+                          <SelectItem key={f.value} value={f.value}>
+                            <span className="font-medium">{f.label}</span>
+                            <span className="text-xs text-muted-foreground mr-2">{f.desc}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {cfg.showFurnished && (
+                  <div>
+                    <Label className="text-sm font-semibold mb-1.5 block">الأثاث</Label>
+                    <Select value={v.furnished} onValueChange={(val) => set("furnished", val)}>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="furnished">مفروشة بالكامل</SelectItem>
+                        <SelectItem value="semi_furnished">نصف مفروشة</SelectItem>
+                        <SelectItem value="unfurnished">غير مفروشة</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {isCompany && cfg.showCondition && (
                   <div>
                     <Label className="text-sm font-semibold mb-1.5 block">حالة العقار</Label>
                     <Select value={v.condition} onValueChange={(val) => set("condition", val)}>
@@ -463,6 +415,8 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                       </SelectContent>
                     </Select>
                   </div>
+                )}
+                {isCompany && cfg.showDirection && (
                   <div>
                     <Label className="text-sm font-semibold mb-1.5 block">اتجاه العقار</Label>
                     <Select value={v.direction} onValueChange={(val) => set("direction", val)}>
@@ -474,29 +428,42 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                       </SelectContent>
                     </Select>
                   </div>
-                </>
+                )}
+                {cfg.showFacade && (
+                  <div className="col-span-2">
+                    <Label className="text-sm font-semibold mb-2 block">واجهة {cfg.isLand ? "الأرض" : "العقار"}</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["شمال","جنوب","شرق","غرب","شمال شرق","شمال غرب","جنوب شرق","جنوب غرب"].map((f) => (
+                        <button key={f} type="button" onClick={() => set("facade", f)}
+                          className={`py-2 rounded-xl border text-xs font-medium transition-all ${
+                            v.facade === f ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-300"
+                          }`}>{f}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {v.listingType === "rent" && cfg.showPaymentMethod && (
+                <div>
+                  <Label className="text-sm font-semibold mb-1.5 block">فترة الإيجار</Label>
+                  <Select value={v.paymentMethod} onValueChange={(val) => set("paymentMethod", val)}>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">يومي</SelectItem>
+                      <SelectItem value="monthly">شهري</SelectItem>
+                      <SelectItem value="quarterly">ربع سنوي</SelectItem>
+                      <SelectItem value="yearly">سنوي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
             </div>
-            {v.listingType === "rent" && (
-              <div>
-                <Label className="text-sm font-semibold mb-1.5 block">فترة الإيجار</Label>
-                <Select value={v.paymentMethod} onValueChange={(val) => set("paymentMethod", val)}>
-                  <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="daily">يومي</SelectItem>
-                    <SelectItem value="monthly">شهري</SelectItem>
-                    <SelectItem value="quarterly">ربع سنوي</SelectItem>
-                    <SelectItem value="yearly">سنوي</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
-        </FormSection>
+          </FormSection>
+        )}
 
-        {/* ── 6. مميزات العقار ────────────────────────────────────── */}
+        {/* ── 5. المميزات — عنوان ديناميكي حسب النوع ─────────────── */}
         {amenitiesData.length > 0 && (
-          <FormSection title="مميزات العقار">
+          <FormSection title={cfg.isLand ? "مميزات الأرض" : cfg.isCommercial ? "مميزات الوحدة التجارية" : "مميزات العقار"}>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {amenitiesData.map((am) => {
                 const active = (v.features as string[]).includes(am.name);
@@ -519,7 +486,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           </FormSection>
         )}
 
-        {/* ── 7. الخدمات الطرفية ──────────────────────────────────── */}
+        {/* ── 6. الخدمات الطرفية ──────────────────────────────────── */}
         {servicesData.length > 0 && (
           <FormSection title="الخدمات الطرفية القريبة">
             <div className="flex flex-wrap gap-2">
@@ -542,8 +509,8 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           </FormSection>
         )}
 
-        {/* ── 8. صور العقار والتواصل ──────────────────────────────── */}
-        <FormSection title="صور العقار">
+        {/* ── 7. الصور — عنوان ديناميكي ───────────────────────────── */}
+        <FormSection title={cfg.isLand ? "صور الأرض" : "صور العقار"}>
           <div className="space-y-5">
             <div>
               <p className="text-xs text-muted-foreground mb-3">أضف حتى 10 صور — الصورة الأولى تكون الغلاف</p>
@@ -587,8 +554,6 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                 </>
               )}
             </div>
-
-            {/* Company only: video URL */}
             {isCompany && (
               <div>
                 <Label htmlFor="f-video" className="text-sm font-semibold mb-1.5 block">رابط فيديو يوتيوب (اختياري)</Label>
@@ -596,6 +561,57 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                 <p className="text-xs text-muted-foreground mt-1">أضف فيديو جولة افتراضية أو عرض المشروع</p>
               </div>
             )}
+          </div>
+        </FormSection>
+
+        {/* ── 8. الموقع والخريطة — في الآخر ──────────────────────── */}
+        <FormSection title="الموقع" required>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-semibold mb-2 block">المدينة <span className="text-red-500">*</span></Label>
+              <div className="grid grid-cols-3 gap-2">
+                {CITIES.map((city) => (
+                  <button
+                    key={city} type="button"
+                    onClick={() => set("city", city)}
+                    className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
+                      v.city === city
+                        ? "border-teal-600 bg-teal-50 text-teal-700"
+                        : "border-border hover:border-teal-300 hover:bg-secondary/40"
+                    }`}
+                  >
+                    {city}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">الحي / المنطقة</Label>
+              <Input id="f-district" placeholder="حي النزهة، حي الجامعة..." {...register("district")} className="h-11 rounded-xl" />
+            </div>
+            <div>
+              <Label htmlFor="f-street" className="text-sm font-semibold mb-1.5 block">اسم الشارع</Label>
+              <Input id="f-street" placeholder="شارع الجمهورية..." {...register("street")} className="h-11 rounded-xl" />
+            </div>
+            <div>
+              <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>
+              <AddressAutocomplete
+                id="f-address"
+                placeholder="ابحث عن العنوان أو اكتب تفاصيل الموقع..."
+                value={v.address ?? ""}
+                onChange={(val) => setValue("address", val)}
+                onSelect={(lat, lng, displayName) => {
+                  setValue("address", displayName);
+                  setValue("latitude", String(lat));
+                  setValue("longitude", String(lng));
+                }}
+              />
+            </div>
+            <MapPicker
+              lat={v.latitude} lng={v.longitude}
+              onPick={(lat, lng) => { setValue("latitude", String(lat)); setValue("longitude", String(lng)); }}
+              onClear={() => { setValue("latitude", ""); setValue("longitude", ""); }}
+            />
           </div>
         </FormSection>
 

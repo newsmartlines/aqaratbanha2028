@@ -134,7 +134,7 @@ const LAND: PropertyTypeConfig = {
   showDirection:      true,
   showFacade:         true,
   showPaymentMethod:  true,
-  showLandType:       true,
+  showLandType:       false,
   showLandDimensions: true,
   showBuildRatio:     true,
   isLand:             true,
