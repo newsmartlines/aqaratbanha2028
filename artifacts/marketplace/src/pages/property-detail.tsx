@@ -64,6 +64,7 @@ type PropertyView = {
   lng: number;
   description: string;
   amenities: string[];
+  nearbyServices: string[];
   price: string;
   priceNum: number;
   agentPhone: string;
@@ -84,6 +85,7 @@ type PropertyView = {
 function mapDbToView(p: Record<string, unknown>): PropertyView {
   const images = tryJson<string[]>(p.images as string, []);
   const features = tryJson<string[]>(p.features as string, []);
+  const nearbyServices = tryJson<string[]>(p.nearbyServices as string, []);
   const priceNum = parseFloat((p.price as string) ?? "0") || 0;
   const gallery = images.length > 0 ? images : [DEFAULT_IMG];
 
@@ -107,6 +109,7 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     lng: parseFloat((p.longitude as string) ?? "31.2357") || 31.2357,
     description: (p.description as string) ?? "",
     amenities: Array.isArray(features) ? features : [],
+    nearbyServices: Array.isArray(nearbyServices) ? nearbyServices : [],
     price: priceNum > 0 ? priceNum.toLocaleString("ar-EG") : "غير محدد",
     priceNum,
     agentPhone: (p.phone as string) ?? "",
@@ -588,17 +591,44 @@ export default function PropertyDetail() {
               </div>
             )}
 
-            {/* Amenities */}
+            {/* مميزات العقار */}
             {property.amenities.length > 0 && (
               <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-900 mb-5">المرافق والمزايا</h2>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">مميزات العقار</h2>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[...new Set(property.amenities)].map((a, i) => (
-                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 border border-border/50 text-sm text-gray-800">
-                      <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-teal-50/60 border border-teal-100 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0">
                         <FeatureIconByName featureName={a} className="w-3.5 h-3.5 text-teal-600" />
                       </div>
                       <span className="font-medium">{a}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* الخدمات القريبة */}
+            {property.nearbyServices.length > 0 && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">الخدمات القريبة</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[...new Set(property.nearbyServices)].map((s, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-blue-50/60 border border-blue-100 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0">
+                        <FeatureIconByName featureName={s} className="w-3.5 h-3.5 text-blue-600" />
+                      </div>
+                      <span className="font-medium">{s}</span>
                     </div>
                   ))}
                 </div>
