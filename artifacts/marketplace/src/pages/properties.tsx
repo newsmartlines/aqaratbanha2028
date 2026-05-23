@@ -297,6 +297,7 @@ export default function PropertiesPage() {
   });
   const [selectedArea, setSelectedArea] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
+  const [currentPage, setCurrentPage] = useState(1);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "area">("default");
@@ -427,6 +428,45 @@ export default function PropertiesPage() {
     if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
     return list;
   }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
+
+  const ITEMS_PER_PAGE = 30;
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setCurrentPage(1); }, [filtered]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedItems = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const PaginationBar = () => totalPages <= 1 ? null : (
+    <div className="flex items-center justify-center gap-1.5 mt-8 flex-wrap" dir="rtl">
+      <button
+        onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        disabled={currentPage === 1}
+        className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all bg-white"
+      >السابق</button>
+      {Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter(p => totalPages <= 7 || p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+        .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+          if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+          acc.push(p);
+          return acc;
+        }, [])
+        .map((item, idx) => item === "..." ? (
+          <span key={`e${idx}`} className="px-2 text-gray-400 text-sm">…</span>
+        ) : (
+          <button
+            key={item}
+            onClick={() => { setCurrentPage(item as number); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${currentPage === item ? "bg-primary text-white shadow-sm" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+          >{item}</button>
+        ))}
+      <button
+        onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        disabled={currentPage === totalPages}
+        className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all bg-white"
+      >التالي</button>
+    </div>
+  );
 
   const activeCount = [
     selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict,
@@ -878,6 +918,11 @@ export default function PropertiesPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-gray-600 text-sm">
                   تم العثور على <span className="font-extrabold text-gray-900 text-base">{filtered.length}</span> عقار
+                  {totalPages > 1 && (
+                    <span className="text-gray-500 text-xs mr-1">
+                      — صفحة {currentPage} من {totalPages}
+                    </span>
+                  )}
                 </span>
                 {/* Active filter chips */}
                 {selectedType && (
@@ -946,7 +991,7 @@ export default function PropertiesPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
-                      {filtered.map((p, idx) => (
+                      {paginatedItems.map((p, idx) => (
                         <motion.div
                           key={p.id}
                           initial={{ opacity: 0, y: 16 }}
@@ -1146,6 +1191,7 @@ export default function PropertiesPage() {
                       ))}
                     </div>
                   )}
+                  <PaginationBar />
                 </motion.div>
               )}
 
@@ -1161,7 +1207,7 @@ export default function PropertiesPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                      {filtered.map((p, idx) => (
+                      {paginatedItems.map((p, idx) => (
                         <motion.div
                           key={p.id}
                           initial={{ opacity: 0, y: 20 }}
@@ -1289,6 +1335,7 @@ export default function PropertiesPage() {
                       ))}
                     </div>
                   )}
+                  <PaginationBar />
                 </motion.div>
               )}
 

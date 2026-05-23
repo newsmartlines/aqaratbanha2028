@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1674,51 +1674,6 @@ export default function Home() {
           <AdBanner position="homepage_before_footer" />
         </div>
 
-        {/* ── FOOTER ── */}
-        <footer className="bg-slate-900 text-white py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-              <div className="md:col-span-2">
-                <h3 className="text-2xl font-extrabold text-white mb-3">{siteName}</h3>
-                <p className="text-slate-400 leading-relaxed max-w-sm">الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية من خلال شركات عقارية موثّقة.</p>
-                <div className="flex gap-3 mt-5">
-                  {["twitter", "instagram", "whatsapp"].map(s => (
-                    <div key={s} className="w-10 h-10 rounded-full bg-white/10 hover:bg-primary/80 flex items-center justify-center cursor-pointer transition-colors">
-                      <span className="text-xs font-bold">{s[0].toUpperCase()}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">روابط سريعة</h4>
-                <ul className="space-y-2 text-slate-400 text-sm">
-                  {[["الرئيسية", "/"], ["العقارات", "/properties"], ["من نحن", "/about"], ["تواصل معنا", "/contact"]].map(([label, href]) => (
-                    <li key={href}><Link href={href} className="hover:text-white transition-colors">{label}</Link></li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">تواصل معنا</h4>
-                <ul className="space-y-2 text-slate-400 text-sm">
-                  <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" />info@aqarat-banha.com</li>
-                  <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" />920XXXXXX</li>
-                  <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />القاهرة، جمهورية مصر العربية</li>
-                </ul>
-              </div>
-            </div>
-            <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-sm">
-              <p>© 2026 {siteName}. جميع الحقوق محفوظة.</p>
-              <div className="flex gap-6">
-                {["سياسة الخصوصية", "شروط الاستخدام", "الأسئلة الشائعة"].map(item => (
-                  <a key={item} href="#" className="hover:text-white transition-colors">{item}</a>
-                ))}
-              </div>
-            </div>
-            <div className="border-t border-white/5 mt-6 pt-6 text-center text-slate-600 text-xs">
-              تصميم وبرمجة <span className="text-teal-500 font-semibold">سمارت يلانز للنظم المتطورة</span> 2026
-            </div>
-          </div>
-        </footer>
       {/* ── Floating Compare Bar ── */}
       <AnimatePresence>
         {compareItems.length > 0 && (
