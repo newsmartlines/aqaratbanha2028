@@ -38,6 +38,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { resolveMainCategory, getFieldRules, type FieldConfigRow } from "@/lib/property-field-rules";
+import { DynamicFilterPanel } from "@/components/property-form/DynamicFilterPanel";
 
 /* ─── WhatsApp Icon ─────────────────────────────────────────────── */
 const WaIcon = () => (
@@ -286,6 +287,47 @@ function Pill({ active, onClick, children, sm }: {
   );
 }
 
+/* ─── Dynamic features/services panel for search sidebar ────────── */
+function DynamicFeaturesPanel({ group, category, amenities, nearbyServices, onAmenitiesChange, onNearbyChange }: {
+  group: string; category: string;
+  amenities: string[]; nearbyServices: string[];
+  onAmenitiesChange: (vals: string[]) => void;
+  onNearbyChange: (vals: string[]) => void;
+}) {
+  const { data: featuresList = [] } = useQuery<any[]>({
+    queryKey: ["dynamic-filters", group, category, "feature"],
+    queryFn: () => api.propertyFeatures.dynamicFilters(group, category, "feature"),
+    staleTime: 5 * 60_000,
+  });
+  const { data: servicesList = [] } = useQuery<any[]>({
+    queryKey: ["dynamic-filters", "all", "", "service"],
+    queryFn: () => api.propertyFeatures.dynamicFilters("all", "", "service"),
+    staleTime: 5 * 60_000,
+  });
+  return (
+    <>
+      {featuresList.length > 0 && (
+        <Section title="المميزات والمرافق" open={false} badge={amenities.length}>
+          <DynamicFilterPanel
+            group={group} category={category}
+            selected={amenities} onChange={onAmenitiesChange}
+            compact
+          />
+        </Section>
+      )}
+      {servicesList.length > 0 && (
+        <Section title="قرب الخدمات والمواصلات" open={false} badge={nearbyServices.length}>
+          <DynamicFilterPanel
+            group="all" category=""
+            selected={nearbyServices} onChange={onNearbyChange}
+            featureType="service" compact
+          />
+        </Section>
+      )}
+    </>
+  );
+}
+
 /* ─── Toggle option ────────────────────────────────────────────────── */
 function ToggleOpt({ active, onClick, children }: {
   active: boolean; onClick: () => void; children: React.ReactNode;
@@ -423,8 +465,6 @@ export default function SearchPage() {
     staleTime: 15_000,
   });
 
-  type DynFeature = { id: number; name: string; icon: string | null };
-
   const activeMainCategory = useMemo(
     () => resolveMainCategory(filters.category, filters.subCategory),
     [filters.category, filters.subCategory]
@@ -440,22 +480,6 @@ export default function SearchPage() {
     () => getFieldRules(filters.category, filters.subCategory, fieldConfigs),
     [filters.category, filters.subCategory, fieldConfigs]
   );
-
-  const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
-    queryKey: ["property-features", "feature", activeMainCategory ?? "all"],
-    queryFn:  () => activeMainCategory
-      ? api.propertyFeatures.listByType("feature", activeMainCategory)
-      : api.propertyFeatures.list("feature"),
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: servicesData = [] } = useQuery<DynFeature[]>({
-    queryKey: ["property-features", "service", activeMainCategory ?? "all"],
-    queryFn:  () => activeMainCategory
-      ? api.propertyFeatures.listByType("service", activeMainCategory)
-      : api.propertyFeatures.list("service"),
-    staleTime: 5 * 60_000,
-  });
 
   const results = useMemo(() => {
     let arr = [...properties];
@@ -877,51 +901,15 @@ export default function SearchPage() {
         </div>
       </Section>
 
-      {/* المميزات والمرافق — dynamic from DB */}
-      {amenitiesData.length > 0 && (
-      <Section title="المميزات والمرافق" open={false} badge={filters.amenities.length}>
-        <div className="grid grid-cols-2 gap-1.5">
-          {amenitiesData.map(a => (
-            <button
-              key={a.id}
-              onClick={() => toggleAmenity(a.name)}
-              className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all
-                ${filters.amenities.includes(a.name)
-                  ? "bg-primary/8 border-primary text-primary"
-                  : "border-zinc-200 text-zinc-600 bg-white hover:border-primary/40"}`}
-            >
-              <span className="text-sm leading-none">{a.icon ?? "🏠"}</span>
-              <span className="truncate">{a.name}</span>
-              {filters.amenities.includes(a.name) && <Check className="w-3 h-3 shrink-0 mr-auto" />}
-            </button>
-          ))}
-        </div>
-      </Section>
-      )}
-
-      {/* قرب الخدمات — dynamic from DB */}
-      {servicesData.length > 0 && (
-      <Section title="قرب الخدمات والمواصلات" open={false} badge={filters.nearbyServices.length}>
-        <div className="grid grid-cols-2 gap-1.5">
-          {servicesData.map(s => (
-            <button
-              key={s.id}
-              onClick={() => toggleNearby(s.name)}
-              className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all
-                ${filters.nearbyServices.includes(s.name)
-                  ? "bg-primary/8 border-primary text-primary"
-                  : "border-zinc-200 text-zinc-600 bg-white hover:border-primary/40"}`}
-            >
-              <span className="flex items-center gap-1.5">
-                <span className="text-sm leading-none">{s.icon ?? "📍"}</span>
-                <span>{s.name}</span>
-              </span>
-              {filters.nearbyServices.includes(s.name) && <Check className="w-3 h-3 shrink-0" />}
-            </button>
-          ))}
-        </div>
-      </Section>
-      )}
+      {/* المميزات والمرافق — dynamic filters engine */}
+      <DynamicFeaturesPanel
+        group={filters.category !== "all" ? filters.category : "all"}
+        category={activeMainCategory ?? ""}
+        amenities={filters.amenities}
+        nearbyServices={filters.nearbyServices}
+        onAmenitiesChange={(vals) => setFilters((f) => ({ ...f, amenities: vals }))}
+        onNearbyChange={(vals) => setFilters((f) => ({ ...f, nearbyServices: vals }))}
+      />
 
       {/* إعلانات خاصة */}
       <Section title="إعلانات خاصة">

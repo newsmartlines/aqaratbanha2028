@@ -931,18 +931,22 @@ export const api = {
 
   propertyFeatures: {
     list: (type: "feature" | "service") =>
-      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null }>>(`/property-features?type=${type}`),
+      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null; filterType: string; filterOptions: string | null; filterGroup: string }>>(`/property-features?type=${type}`),
     listByType: (type: "feature" | "service", propertyType?: string) =>
-      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null }>>(
+      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null; filterType: string; filterOptions: string | null; filterGroup: string }>>(
         `/property-features?type=${type}${propertyType ? `&propertyType=${encodeURIComponent(propertyType)}` : ""}`
       ),
+    dynamicFilters: (group: string, category: string, featureType?: string) =>
+      fetchJson<Array<{ id: number; name: string; icon: string | null; filterType: string; filterOptions: string | null; filterGroup: string }>>(
+        `/dynamic-filters?group=${encodeURIComponent(group)}&category=${encodeURIComponent(category)}${featureType ? `&type=${featureType}` : ""}`
+      ),
     adminList: (type: "feature" | "service") =>
-      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null }>>(`/admin/property-features?type=${type}`),
+      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null; filterType: string; filterOptions: string | null; filterGroup: string }>>(`/admin/property-features?type=${type}`),
     adminListAll: () =>
-      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null }>>(`/admin/property-features/all`),
-    create: (data: { type: string; name: string; icon?: string; status?: string; sortOrder?: number; applicableTypes?: string | null }) =>
+      fetchJson<Array<{ id: number; type: string; name: string; icon: string | null; status: string; sortOrder: number; applicableTypes: string | null; filterType: string; filterOptions: string | null; filterGroup: string }>>(`/admin/property-features/all`),
+    create: (data: { type: string; name: string; icon?: string; status?: string; sortOrder?: number; applicableTypes?: string | null; filterType?: string; filterOptions?: string | null; filterGroup?: string }) =>
       fetchJson("/admin/property-features", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: { name?: string; icon?: string; status?: string; sortOrder?: number; applicableTypes?: string | null }) =>
+    update: (id: number, data: { name?: string; icon?: string; status?: string; sortOrder?: number; applicableTypes?: string | null; filterType?: string; filterOptions?: string | null; filterGroup?: string }) =>
       fetchJson(`/admin/property-features/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     toggle: (id: number) =>
       fetchJson(`/admin/property-features/${id}/toggle`, { method: "PATCH" }),

@@ -10,6 +10,7 @@ import {
 import { FormSection } from "./shared/FormSection";
 import { PropertyTypeSelector } from "./shared/PropertyTypeSelector";
 import { FeatureIcon } from "@/components/FeatureIcon";
+import { DynamicFilterPanel } from "./DynamicFilterPanel";
 import { MapPicker } from "./shared/MapPicker";
 import { AddressAutocomplete } from "./shared/AddressAutocomplete";
 import { PaymentDialog } from "./shared/PaymentDialog";
@@ -478,51 +479,28 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           </FormSection>
         )}
 
-        {/* ── 5. المميزات — عنوان ديناميكي حسب النوع ─────────────── */}
+        {/* ── 5. المميزات — dynamic filters engine ──────────────────── */}
         {amenitiesData.length > 0 && (
           <FormSection title={cfg.isLand ? "مميزات الأرض" : cfg.isCommercial ? "مميزات الوحدة التجارية" : "مميزات العقار"}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {amenitiesData.map((am) => {
-                const active = (v.features as string[]).includes(am.name);
-                return (
-                  <button
-                    key={am.id} type="button"
-                    onClick={() => toggleArr("features", am.name)}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                      active ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-200 text-foreground"
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${active ? "bg-teal-600/10" : "bg-secondary"}`}>
-                      <FeatureIcon name={am.icon} className={`w-3.5 h-3.5 ${active ? "text-teal-600" : "text-muted-foreground"}`} />
-                    </div>
-                    {am.name}
-                  </button>
-                );
-              })}
-            </div>
+            <DynamicFilterPanel
+              group={cfg.isLand ? "land" : cfg.isCommercial ? "commercial" : "residential"}
+              category={v.mainCategory}
+              selected={v.features as string[]}
+              onChange={(vals) => setValue("features", vals)}
+            />
           </FormSection>
         )}
 
         {/* ── 6. الخدمات الطرفية ──────────────────────────────────── */}
         {servicesData.length > 0 && (
           <FormSection title="الخدمات الطرفية القريبة">
-            <div className="flex flex-wrap gap-2">
-              {servicesData.map((svc) => {
-                const active = (v.nearbyServices as string[]).includes(svc.name);
-                return (
-                  <button
-                    key={svc.id} type="button"
-                    onClick={() => toggleArr("nearbyServices", svc.name)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                      active ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-300 text-foreground"
-                    }`}
-                  >
-                    <FeatureIcon name={svc.icon} className={`w-3 h-3 shrink-0 ${active ? "text-teal-600" : "text-muted-foreground"}`} />
-                    {svc.name}
-                  </button>
-                );
-              })}
-            </div>
+            <DynamicFilterPanel
+              group="all"
+              category=""
+              selected={v.nearbyServices as string[]}
+              onChange={(vals) => setValue("nearbyServices", vals)}
+              featureType="service"
+            />
           </FormSection>
         )}
 

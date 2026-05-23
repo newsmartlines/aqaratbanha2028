@@ -6,10 +6,31 @@ import { getSession } from "./auth";
 
 const router = Router();
 
-// ── Default seed data (v3 — with applicableTypes) ──────────────────────────
+// ── Property group type helpers ───────────────────────────────────────────────
+
+const RESIDENTIAL_TYPES = ["شقة","فيلا","دوبلكس","بنتهاوس","استوديو","تاون هاوس","روف","غرفة","استراحة","عمارة"];
+const COMMERCIAL_TYPES  = ["محل تجاري","مكتب","مستودع","معرض","عيادة","مطعم","فندق","مجمع تجاري"];
+const LAND_TYPES        = ["أرض سكنية","أرض زراعية","أرض تجارية","أرض صناعية"];
+
+function inferFilterGroup(applicableTypes: string | null | undefined): string {
+  if (!applicableTypes) return "all";
+  try {
+    const types: string[] = JSON.parse(applicableTypes);
+    if (!types.length) return "all";
+    const inRes  = types.some(t => RESIDENTIAL_TYPES.includes(t));
+    const inCom  = types.some(t => COMMERCIAL_TYPES.includes(t));
+    const inLand = types.some(t => LAND_TYPES.includes(t));
+    if (inLand && !inRes && !inCom) return "land";
+    if (inCom && !inRes && !inLand) return "commercial";
+    if (inRes && !inCom && !inLand) return "residential";
+    return "all";
+  } catch { return "all"; }
+}
+
+// ── Default seed data (v3 — with applicableTypes) ────────────────────────────
 
 const DEFAULT_FEATURES = [
-  // ─── مميزات سكنية (شقة، فيلا، دوبلكس...) ───────────────────────────────
+  // ─── مميزات سكنية ────────────────────────────────────────────────────────
   { type: "feature", name: "مسبح",            icon: "Waves",           sortOrder: 1,  applicableTypes: JSON.stringify(["فيلا","استراحة","عمارة","مجمع تجاري","فندق"]) },
   { type: "feature", name: "جراج مغطى",       icon: "Car",             sortOrder: 2,  applicableTypes: JSON.stringify(["شقة","فيلا","دوبلكس","روف","عمارة","مكتب","عيادة"]) },
   { type: "feature", name: "حديقة خاصة",      icon: "TreePine",        sortOrder: 3,  applicableTypes: JSON.stringify(["فيلا","استراحة","عمارة"]) },
@@ -39,7 +60,7 @@ const DEFAULT_FEATURES = [
   { type: "feature", name: "كاميرات مراقبة",  icon: "Camera",          sortOrder: 3,  applicableTypes: JSON.stringify(["مكتب","محل تجاري","مجمع تجاري","مستودع","فندق"]) },
   { type: "feature", name: "غرفة اجتماعات",   icon: "Users",           sortOrder: 4,  applicableTypes: JSON.stringify(["مكتب","عيادة"]) },
   { type: "feature", name: "مولد كهرباء",     icon: "BatteryCharging", sortOrder: 5,  applicableTypes: JSON.stringify(["مكتب","عيادة","فندق","مجمع تجاري","مستودع"]) },
-  // ─── الخدمات الطرفية القريبة (تنطبق على الكل) ───────────────────────────
+  // ─── الخدمات الطرفية القريبة ─────────────────────────────────────────────
   { type: "service", name: "مسجد",             icon: "Building2",       sortOrder: 1,  applicableTypes: null },
   { type: "service", name: "مدرسة",            icon: "School",          sortOrder: 2,  applicableTypes: null },
   { type: "service", name: "مستشفى",           icon: "Hospital",        sortOrder: 3,  applicableTypes: null },
@@ -53,6 +74,47 @@ const DEFAULT_FEATURES = [
   { type: "service", name: "سوبر ماركت",       icon: "ShoppingCart",    sortOrder: 11, applicableTypes: null },
 ] as const;
 
+// ── v4 extra features (dynamic filter types) ─────────────────────────────────
+
+const V4_FEATURES = [
+  // ─── أرض زراعية — select filters ─────────────────────────────────────────
+  {
+    type: "feature", name: "مصدر المياه", icon: "Droplets", sortOrder: 30,
+    applicableTypes: JSON.stringify(["أرض زراعية"]),
+    filterType: "select",
+    filterGroup: "land",
+    filterOptions: JSON.stringify([
+      { value: "river",  label: "نهر / ترعة"       },
+      { value: "well",   label: "بئر"               },
+      { value: "gov",    label: "مياه حكومية"       },
+      { value: "canal",  label: "قناة ري"            },
+    ]),
+  },
+  {
+    type: "feature", name: "نوع التربة", icon: "Layers", sortOrder: 31,
+    applicableTypes: JSON.stringify(["أرض زراعية"]),
+    filterType: "select",
+    filterGroup: "land",
+    filterOptions: JSON.stringify([
+      { value: "clay",   label: "طينية"             },
+      { value: "sandy",  label: "رملية"             },
+      { value: "loam",   label: "طميية (خصبة)"      },
+      { value: "mixed",  label: "متنوعة"            },
+    ]),
+  },
+  // ─── أرض زراعية — bool filters ───────────────────────────────────────────
+  { type: "feature", name: "تربة خصبة",        icon: "Leaf",       sortOrder: 32, applicableTypes: JSON.stringify(["أرض زراعية"]),               filterType: "bool", filterGroup: "land"         },
+  { type: "feature", name: "يوجد أشجار/نخيل", icon: "TreePine",   sortOrder: 33, applicableTypes: JSON.stringify(["أرض زراعية"]),               filterType: "bool", filterGroup: "land"         },
+  { type: "feature", name: "مسورة",             icon: "Shield",     sortOrder: 34, applicableTypes: JSON.stringify(["أرض زراعية","أرض سكنية"]),  filterType: "bool", filterGroup: "land"         },
+  { type: "feature", name: "تصريح زراعي",       icon: "FileCheck",  sortOrder: 35, applicableTypes: JSON.stringify(["أرض زراعية"]),               filterType: "bool", filterGroup: "land"         },
+  { type: "feature", name: "بئر مياه",          icon: "Droplets",   sortOrder: 36, applicableTypes: JSON.stringify(["أرض زراعية"]),               filterType: "bool", filterGroup: "land"         },
+  // ─── تجارية — bool filters ────────────────────────────────────────────────
+  { type: "feature", name: "موقف سيارات",      icon: "CarFront",   sortOrder: 20, applicableTypes: JSON.stringify(["محل تجاري","مجمع تجاري","مستودع","مطعم"]),                     filterType: "bool", filterGroup: "commercial" },
+  { type: "feature", name: "تراخيص جاهزة",     icon: "BadgeCheck", sortOrder: 21, applicableTypes: JSON.stringify(["محل تجاري","مجمع تجاري","مطعم","عيادة"]),                     filterType: "bool", filterGroup: "commercial" },
+  { type: "feature", name: "صالح كمطعم",        icon: "Utensils",   sortOrder: 22, applicableTypes: JSON.stringify(["محل تجاري","مجمع تجاري"]),                                    filterType: "bool", filterGroup: "commercial" },
+  { type: "feature", name: "تكييف مركزي",       icon: "Wind",       sortOrder: 23, applicableTypes: JSON.stringify(["محل تجاري","مكتب","عيادة","مجمع تجاري"]),                     filterType: "bool", filterGroup: "commercial" },
+] as const;
+
 // ── Auto-seed / migrate ──────────────────────────────────────────────────────
 
 let seeded = false;
@@ -61,10 +123,10 @@ async function ensureSeeded() {
   if (seeded) return;
   try {
     const existing = await db.select().from(propertyFeaturesTable);
-    const hasV3 = existing.some((r) => r.icon === "Waves" && r.applicableTypes !== undefined);
-    const isV2  = existing.some((r) => r.icon === "Waves" && r.applicableTypes === null);
+    const hasV3   = existing.some((r) => r.icon === "Waves" && r.applicableTypes !== undefined);
+    const isV2    = existing.some((r) => r.icon === "Waves" && r.applicableTypes === null);
     const isEmpty = existing.length === 0;
-    const isV1 = existing.length > 0 && !existing.some((r) => r.icon === "Waves");
+    const isV1    = existing.length > 0 && !existing.some((r) => r.icon === "Waves");
 
     if (isV1 || isEmpty) {
       if (isV1) await db.delete(propertyFeaturesTable);
@@ -73,7 +135,6 @@ async function ensureSeeded() {
       );
       console.log(`[property-features] Seeded v3 (${DEFAULT_FEATURES.length} entries)`);
     } else if (isV2) {
-      // Migrate v2 → v3: update applicableTypes
       for (const def of DEFAULT_FEATURES) {
         await db
           .update(propertyFeaturesTable)
@@ -82,6 +143,33 @@ async function ensureSeeded() {
       }
       console.log("[property-features] Migrated v2 → v3 (added applicableTypes)");
     }
+
+    // ── v4 migration: add filterGroup/filterType + new dynamic filter features
+    if (hasV3 || isV2) {
+      const current = await db.select().from(propertyFeaturesTable);
+      const hasV4 = current.some((r) => r.filterGroup && r.filterGroup !== "all");
+      const hasV4Features = current.some((r) => r.name === "مصدر المياه");
+      if (!hasV4) {
+        // Update filterGroup on existing rows
+        for (const row of current) {
+          const group = inferFilterGroup(row.applicableTypes);
+          if (group !== "all") {
+            await db
+              .update(propertyFeaturesTable)
+              .set({ filterGroup: group })
+              .where(eq(propertyFeaturesTable.id, row.id));
+          }
+        }
+        console.log("[property-features] v4: updated filterGroup on existing rows");
+      }
+      if (!hasV4Features) {
+        await db.insert(propertyFeaturesTable).values(
+          V4_FEATURES.map((f) => ({ ...f, status: "active" as const }))
+        );
+        console.log(`[property-features] v4: inserted ${V4_FEATURES.length} dynamic filter features`);
+      }
+    }
+
     seeded = true;
   } catch (err) {
     console.error("[property-features] Seed error:", err);
@@ -101,13 +189,16 @@ async function requireAdmin(req: any): Promise<boolean> {
 
 function featureAppliesToType(applicableTypes: string | null | undefined, propertyType: string | undefined): boolean {
   if (!propertyType) return true;
-  if (!applicableTypes) return true; // null = all types
+  if (!applicableTypes) return true;
   try {
     const types: string[] = JSON.parse(applicableTypes);
     return types.length === 0 || types.includes(propertyType);
-  } catch {
-    return true;
-  }
+  } catch { return true; }
+}
+
+function featureAppliesToGroup(filterGroup: string | null | undefined, group: string): boolean {
+  if (!filterGroup || filterGroup === "all") return true;
+  return filterGroup === group;
 }
 
 // ── Public: active features / services (filtered by propertyType) ────────────
@@ -132,7 +223,39 @@ router.get("/property-features", async (req, res) => {
   }
 });
 
-// ── Admin: all features (with applicableTypes) ───────────────────────────────
+// ── Public: dynamic filters (group + category aware) ─────────────────────────
+// Returns features with full filterType/filterOptions metadata for smart rendering
+
+router.get("/dynamic-filters", async (req, res) => {
+  await ensureSeeded();
+  try {
+    const group    = (req.query.group    as string) || "all";
+    const category = (req.query.category as string) || "";
+    const type     = (req.query.type     as string) || "feature";
+
+    const rows = await db
+      .select()
+      .from(propertyFeaturesTable)
+      .where(eq(propertyFeaturesTable.type, type))
+      .orderBy(asc(propertyFeaturesTable.sortOrder));
+
+    const filtered = rows.filter((r) => {
+      if (r.status !== "active") return false;
+      if (!featureAppliesToGroup(r.filterGroup, group)) return false;
+      if (category) {
+        if (!featureAppliesToType(r.applicableTypes, category)) return false;
+      }
+      return true;
+    });
+
+    res.json(filtered);
+  } catch (err) {
+    console.error("[dynamic-filters GET]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ── Admin: all features ───────────────────────────────────────────────────────
 
 router.get("/admin/property-features", async (req, res) => {
   await ensureSeeded();
@@ -151,7 +274,7 @@ router.get("/admin/property-features", async (req, res) => {
   }
 });
 
-// ── Admin: get ALL (features + services) for type-config management ──────────
+// ── Admin: get ALL (features + services) ─────────────────────────────────────
 
 router.get("/admin/property-features/all", async (req, res) => {
   await ensureSeeded();
@@ -173,10 +296,20 @@ router.get("/admin/property-features/all", async (req, res) => {
 router.post("/admin/property-features", async (req, res) => {
   if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
   try {
-    const { type, name, icon, sortOrder, applicableTypes } = req.body;
+    const { type, name, icon, sortOrder, applicableTypes, filterType, filterOptions, filterGroup } = req.body;
     const [row] = await db
       .insert(propertyFeaturesTable)
-      .values({ type, name, icon, sortOrder: sortOrder ?? 99, status: "active", applicableTypes: applicableTypes ?? null })
+      .values({
+        type,
+        name,
+        icon,
+        sortOrder: sortOrder ?? 99,
+        status: "active",
+        applicableTypes: applicableTypes ?? null,
+        filterType: filterType ?? "checkbox",
+        filterOptions: filterOptions ?? null,
+        filterGroup: filterGroup ?? "all",
+      })
       .returning();
     res.json(row);
   } catch (err) {
@@ -185,7 +318,7 @@ router.post("/admin/property-features", async (req, res) => {
   }
 });
 
-// ── Admin: update (includes applicableTypes) ─────────────────────────────────
+// ── Admin: update ─────────────────────────────────────────────────────────────
 
 router.put("/admin/property-features/:id", async (req, res) => {
   if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
@@ -197,6 +330,9 @@ router.put("/admin/property-features/:id", async (req, res) => {
     if (req.body.sortOrder       !== undefined) updates.sortOrder       = req.body.sortOrder;
     if (req.body.status          !== undefined) updates.status          = req.body.status;
     if (req.body.applicableTypes !== undefined) updates.applicableTypes = req.body.applicableTypes;
+    if (req.body.filterType      !== undefined) updates.filterType      = req.body.filterType;
+    if (req.body.filterOptions   !== undefined) updates.filterOptions   = req.body.filterOptions;
+    if (req.body.filterGroup     !== undefined) updates.filterGroup     = req.body.filterGroup;
     const [row] = await db
       .update(propertyFeaturesTable)
       .set(updates)
@@ -263,8 +399,6 @@ router.delete("/admin/property-features/:id", async (req, res) => {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ── Property Field Configs ────────────────────────────────────────────────────
-// Controls which structural fields (rooms, bathrooms, floor, etc.) are shown
-// per property type in search filters, property form, and map search.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const ALL_FIELD_KEYS = [
@@ -322,7 +456,7 @@ async function ensureFieldConfigsSeeded() {
   }
 }
 
-// ── Public: get all field configs (cached by client for 10 min) ───────────────
+// ── Public: get all field configs ─────────────────────────────────────────────
 
 router.get("/property-field-configs", async (_req, res) => {
   await ensureFieldConfigsSeeded();
@@ -355,30 +489,4 @@ router.get("/admin/property-field-configs", async (req, res) => {
   }
 });
 
-// ── Admin: bulk upsert field configs ─────────────────────────────────────────
-
-router.put("/admin/property-field-configs/bulk", async (req, res) => {
-  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
-  try {
-    const rows: Array<{ mainCategory: string; fieldKey: string; isVisible: boolean }> = req.body.rows ?? [];
-    if (!Array.isArray(rows) || rows.length === 0) {
-      return res.status(400).json({ error: "rows array required" });
-    }
-    await db.delete(propertyFieldConfigsTable);
-    let sortOrder = 0;
-    const insertRows = rows.map((r) => ({
-      mainCategory: r.mainCategory,
-      fieldKey: r.fieldKey,
-      isVisible: r.isVisible,
-      sortOrder: sortOrder++,
-    }));
-    await db.insert(propertyFieldConfigsTable).values(insertRows);
-    fieldConfigsSeeded = true;
-    res.json({ ok: true, count: insertRows.length });
-  } catch (err) {
-    console.error("[admin/property-field-configs PUT bulk]", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-export default router;
+export { router as propertyFeaturesRouter };
