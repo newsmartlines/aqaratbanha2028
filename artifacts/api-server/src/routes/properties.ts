@@ -242,7 +242,7 @@ router.get("/properties", async (req, res) => {
       }
     }
 
-    let orderClause: any = desc(propertiesTable.createdAt);
+    let orderClause: any = sql`COALESCE(${propertiesTable.approvedAt}, ${propertiesTable.createdAt}) DESC NULLS LAST`;
     if (sortBy === "price_asc") orderClause = sql`CAST(${propertiesTable.price} AS numeric) ASC NULLS LAST`;
     else if (sortBy === "price_desc") orderClause = sql`CAST(${propertiesTable.price} AS numeric) DESC NULLS LAST`;
     else if (sortBy === "popular") orderClause = desc(propertiesTable.viewCount);
@@ -575,7 +575,11 @@ router.patch("/properties/:id/status", async (req, res) => {
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!property) return res.status(404).json({ success: false, error: "Property not found" });
 
-    const [updated] = await db.update(propertiesTable).set({ status }).where(eq(propertiesTable.id, id)).returning();
+    const isApproving = status === "approved" || status === "active";
+    const [updated] = await db.update(propertiesTable)
+      .set({ status, ...(isApproving ? { approvedAt: new Date() } : {}) })
+      .where(eq(propertiesTable.id, id))
+      .returning();
 
     const ownerUserId = property.ownerUserId;
     if (ownerUserId && (status === "approved" || status === "active" || status === "rejected")) {

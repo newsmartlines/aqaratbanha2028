@@ -55,6 +55,7 @@ export const propertiesTable = pgTable("properties", {
   viewCount: integer("view_count").default(0).notNull(),
   phoneClickCount: integer("phone_click_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  approvedAt: timestamp("approved_at"),
 });
 
 export const insertPropertySchema = createInsertSchema(propertiesTable).omit({ id: true, createdAt: true });
