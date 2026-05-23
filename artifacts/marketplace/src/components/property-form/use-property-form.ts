@@ -169,7 +169,25 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
   const handleSubmit = async () => {
     if (showPlans) {
       if (!selectedPlan) return;
-      if (parseFloat(selectedPlan.price) > 0) { setShowPayment(true); return; }
+      if (parseFloat(selectedPlan.price) > 0) {
+        setSubmitting(true);
+        setError(null);
+        try {
+          await doCreate();
+          const qs = new URLSearchParams({
+            planName: selectedPlan.nameAr ?? selectedPlan.name ?? "",
+            price:    String(selectedPlan.price),
+            duration: String(selectedPlan.durationDays),
+            currency: selectedPlan.currency ?? "EGP",
+            returnTo: backPath || "/user/my-properties",
+          }).toString();
+          setLocation(`/pay/listing?${qs}`);
+        } catch (e: any) {
+          setError(e?.message ?? "حدث خطأ أثناء إرسال الطلب");
+          setSubmitting(false);
+        }
+        return;
+      }
     }
     setSubmitting(true);
     setError(null);

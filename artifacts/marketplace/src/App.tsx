@@ -39,6 +39,7 @@ import AdminLocations from "@/pages/admin/locations";
 import ProviderDashboard from "@/pages/dashboard/index";
 import ProviderSubscription from "@/pages/dashboard/subscription";
 import SubscriptionPayPage from "@/pages/pay/subscription";
+import ListingPayPage from "@/pages/pay/listing";
 import ProviderCheckout from "@/pages/dashboard/checkout";
 import CheckoutResult from "@/pages/dashboard/checkout-result";
 import ProviderOrders from "@/pages/dashboard/orders";
@@ -215,6 +216,7 @@ function Router() {
         {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
       </Route>
       <Route path="/pay/subscription" component={SubscriptionPayPage} />
+      <Route path="/pay/listing" component={ListingPayPage} />
       <Route path="/dashboard/checkout">
         {() => <RoleProtectedRoute component={ProviderCheckout} roles={["provider"]} />}
       </Route>

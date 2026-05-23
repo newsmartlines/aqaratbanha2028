@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -122,14 +122,25 @@ export default function SubscriptionPayPage() {
   const duration = params.get("duration") ?? "30";
   const currency = params.get("currency") ?? "EGP";
 
+  const KEY_MAP: Record<Gateway, string> = {
+    vodafone_cash:  "vodafoneCashEnabled",
+    fawry:          "fawryEnabled",
+    instapay:       "instaPayEnabled",
+    bank_transfer:  "bankTransferEnabled",
+  };
+
   const enabledGateways = GATEWAYS.filter(g => {
-    const key = g.id === "bank_transfer" ? "bankTransferEnabled" : g.id === "vodafone_cash" ? "vodafoneCashEnabled" : g.id === "instapay" ? "instaPayEnabled" : `${g.id}Enabled`;
-    return settings?.[key] === "true" || settings?.[key] === undefined;
+    const val = settings?.[KEY_MAP[g.id]] as unknown;
+    return val === true || val === "true" || val === undefined || val === null;
   });
 
-  const [activeGateway, setActiveGateway] = useState<Gateway | null>(
-    enabledGateways[0]?.id ?? null
-  );
+  const [activeGateway, setActiveGateway] = useState<Gateway | null>(null);
+
+  useEffect(() => {
+    if (!activeGateway && enabledGateways.length > 0) {
+      setActiveGateway(enabledGateways[0].id);
+    }
+  }, [enabledGateways.length]);
   const [phase, setPhase] = useState<"payment" | "uploading" | "done">("payment");
   const [receipt, setReceipt] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
