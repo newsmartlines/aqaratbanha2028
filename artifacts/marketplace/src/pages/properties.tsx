@@ -78,6 +78,7 @@ type DbProp = {
   features: string | null;
   floor: number | null;
   createdAt: string | null;
+  approvedAt: string | null;
   viewCount: number | null;
   agentName?: string | null;
   agentAvatar?: string | null;
@@ -110,6 +111,7 @@ type DisplayProp = {
   features: string[];
   floor: number | null;
   createdAt: string | null;
+  approvedAt: string | null;
   viewCount: number;
   agentName: string;
   agentAvatar: string;
@@ -162,6 +164,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     features: tryJsonArr(row.features),
     floor: row.floor ?? null,
     createdAt: row.createdAt ?? null,
+    approvedAt: (row as any).approvedAt ?? null,
     viewCount: row.viewCount ?? 0,
   };
 }
@@ -302,7 +305,7 @@ export default function PropertiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "area">("default");
+  const [sortBy, setSortBy] = useState<"newest" | "featured" | "price_asc" | "price_desc" | "area" | "popular">("newest");
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
   const [saveSearchName, setSaveSearchName] = useState("بحث محفوظ");
   const [saveSearchEmail, setSaveSearchEmail] = useState("");
@@ -464,9 +467,23 @@ export default function PropertiesPage() {
       }
       return true;
     });
-    if (sortBy === "price_asc") list = [...list].sort((a, b) => a.priceNum - b.priceNum);
-    if (sortBy === "price_desc") list = [...list].sort((a, b) => b.priceNum - a.priceNum);
-    if (sortBy === "area") list = [...list].sort((a, b) => b.area - a.area);
+    // Sort
+    const dateOf = (p: DisplayProp) =>
+      new Date(p.approvedAt ?? p.createdAt ?? 0).getTime();
+
+    if (sortBy === "newest")
+      list = [...list].sort((a, b) => dateOf(b) - dateOf(a));
+    else if (sortBy === "featured")
+      list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured) || dateOf(b) - dateOf(a));
+    else if (sortBy === "price_asc")
+      list = [...list].sort((a, b) => a.priceNum - b.priceNum);
+    else if (sortBy === "price_desc")
+      list = [...list].sort((a, b) => b.priceNum - a.priceNum);
+    else if (sortBy === "area")
+      list = [...list].sort((a, b) => b.area - a.area);
+    else if (sortBy === "popular")
+      list = [...list].sort((a, b) => b.viewCount - a.viewCount);
+
     return list;
   }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
 
@@ -585,10 +602,12 @@ export default function PropertiesPage() {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="h-10 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 text-gray-600 focus:outline-none focus:border-primary/40 cursor-pointer"
             >
-              <option value="default">الأحدث أولاً</option>
-              <option value="price_asc">السعر: الأقل أولاً</option>
-              <option value="price_desc">السعر: الأعلى أولاً</option>
-              <option value="area">المساحة: الأكبر أولاً</option>
+              <option value="newest">🕐 الأحدث أولاً</option>
+              <option value="featured">⭐ المميزة أولاً</option>
+              <option value="popular">🔥 الأكثر مشاهدة</option>
+              <option value="price_asc">💰 السعر: الأقل أولاً</option>
+              <option value="price_desc">💰 السعر: الأعلى أولاً</option>
+              <option value="area">📐 المساحة: الأكبر أولاً</option>
             </select>
 
             {/* Save search button */}

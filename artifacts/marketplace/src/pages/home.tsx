@@ -1136,7 +1136,13 @@ export default function Home() {
               </div>
             ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {homePropsRaw.slice(0, 9).map((property, idx) => {
+              {[...homePropsRaw]
+                .sort((a: any, b: any) =>
+                  new Date(b.approvedAt ?? b.createdAt ?? 0).getTime() -
+                  new Date(a.approvedAt ?? a.createdAt ?? 0).getTime()
+                )
+                .slice(0, 9)
+                .map((property, idx) => {
                 const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
                 const thumb = imgs[0] ?? DEFAULT_IMG;
                 const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
