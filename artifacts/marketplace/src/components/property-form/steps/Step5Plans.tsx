@@ -114,7 +114,7 @@ export function Step5Plans({
             <p className="text-xs text-muted-foreground mt-0.5">
               {parseFloat(selectedPlan.price) === 0
                 ? "الإعلان مجاني — سيُراجع فريقنا إعلانك قبل النشر"
-                : `ستدفع ${selectedPlan.price} ${selectedPlan.currency} عبر STC Pay لتفعيل الباقة`}
+                : `ستدفع ${selectedPlan.price} ${selectedPlan.currency} عبر بوابة الدفع لتفعيل الباقة`}
             </p>
           </div>
           {parseFloat(selectedPlan.price) > 0

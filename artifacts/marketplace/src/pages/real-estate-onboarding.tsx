@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Header } from "@/components/Header";
 import {
   Upload, X, GripVertical, Loader2, Check, ChevronLeft, ChevronRight, Navigation, Play,
-  CreditCard, Smartphone, Building2 as BankIcon, ShieldCheck, Star, Crown, Zap,
+  CreditCard, ShieldCheck, Star, Crown, Zap,
   CheckCircle2, Clock, AlertCircle, BadgeCheck, ClipboardList, Send, Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -248,13 +248,16 @@ export default function RealEstateOnboarding() {
 
   // Payment flow state
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "paid" | "failed">("idle");
-  const [pmMethod, setPmMethod] = useState<"card" | "instapay" | "stcpay">("card");
-  const [cardNum, setCardNum]     = useState("");
-  const [cardName, setCardName]   = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc]     = useState("");
-  const [mobileNum, setMobileNum] = useState("");
-  const [wasPaid, setWasPaid]     = useState(false);
+  const [receipt, setReceipt]   = useState<string | null>(null);
+  const [receiptUploading, setReceiptUploading] = useState(false);
+  const [wasPaid, setWasPaid]   = useState(false);
+  const receiptRef = useRef<HTMLInputElement>(null);
+
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings-onboarding"],
+    queryFn: api.settings.list,
+    staleTime: 5 * 60_000,
+  });
 
   const fileRef = useRef<HTMLInputElement>(null);
   const imgFilesRef = useRef<File[]>([]);
@@ -426,22 +429,23 @@ export default function RealEstateOnboarding() {
   };
 
   /* ── Process payment then submit ── */
-  const handlePayment = async () => {
-    // Basic validation
-    if (pmMethod === "card") {
-      if (cardNum.replace(/\s/g, "").length < 16) { toast.error("رقم البطاقة غير مكتمل"); return; }
-      if (!cardName.trim()) { toast.error("أدخل اسم حامل البطاقة"); return; }
-      if (!cardExpiry.trim()) { toast.error("أدخل تاريخ الانتهاء"); return; }
-      if (cardCvc.length < 3) { toast.error("أدخل رمز CVV"); return; }
-    } else {
-      if (!/^(010|011|012|015)\d{8}$/.test(mobileNum.replace(/\s/g, ""))) {
-        toast.error("أدخل رقم هاتف مصري صحيح (11 رقم يبدأ بـ 010/011/012/015)");
-        return;
-      }
+  const handleReceiptUpload = async (files: FileList | null) => {
+    if (!files?.[0]) return;
+    setReceiptUploading(true);
+    try {
+      const res = await api.upload.propertyImage(files[0]);
+      setReceipt(res.url);
+      toast.success("تم رفع إيصال الدفع");
+    } catch {
+      toast.error("فشل رفع الإيصال، حاول مرة أخرى");
+    } finally {
+      setReceiptUploading(false);
     }
+  };
+
+  const handlePayment = async () => {
     setPaymentStatus("processing");
-    // Simulate payment gateway processing
-    await new Promise(r => setTimeout(r, 2500));
+    await new Promise(r => setTimeout(r, 800));
     setPaymentStatus("paid");
     setWasPaid(true);
     await handleSubmit();
@@ -983,7 +987,6 @@ export default function RealEstateOnboarding() {
   );
 
   // ── Formatted card number
-  const fmtCard = (v: string) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
 
   const step3 = (
     <div className="space-y-7">
@@ -1030,97 +1033,142 @@ export default function RealEstateOnboarding() {
         </div>
       </div>
 
-      {/* ── PAID PLAN: Payment method selector + form ── */}
-      {!isFreeSelected && paymentStatus !== "processing" && paymentStatus !== "paid" && (
-        <>
-          {/* Method tabs */}
-          <div>
-            <p className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-gray-400" />طريقة الدفع
+      {/* ── PAID PLAN: Payment instructions ── */}
+      {!isFreeSelected && paymentStatus !== "processing" && paymentStatus !== "paid" && (() => {
+        const gateway = (siteSettings?.paymentGateway ?? "vodafone_cash") as string;
+        const GATEWAY_META: Record<string, { label: string; color: string; bg: string; border: string; emoji: string }> = {
+          vodafone_cash:  { label: "فودافون كاش",  color: "text-red-700",    bg: "bg-red-50",    border: "border-red-200",    emoji: "📱" },
+          fawry:          { label: "فوري",           color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200", emoji: "⚡" },
+          instapay:       { label: "انستاباي",       color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200",   emoji: "💙" },
+          bank_transfer:  { label: "تحويل بنكي",    color: "text-green-700",  bg: "bg-green-50",  border: "border-green-200",  emoji: "🏦" },
+        };
+        const meta = GATEWAY_META[gateway] ?? GATEWAY_META.vodafone_cash;
+        const amount = selectedBillingPlan ? Number(selectedBillingPlan.price).toLocaleString("ar-EG") : "";
+        const currency = selectedBillingPlan?.currency ?? "EGP";
+
+        return (
+          <div className="space-y-4">
+            <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-gray-400" />تعليمات الدفع
             </p>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: "card" as const, label: "بطاقة بنكية", icon: "💳" },
-                { id: "instapay" as const, label: "InstaPay", icon: "⚡" },
-                { id: "stcpay" as const, label: "STC Pay", icon: "📱" },
-              ].map(m => (
-                <button key={m.id} type="button" onClick={() => setPmMethod(m.id)}
-                  className={`py-3 rounded-xl border-2 font-semibold text-sm transition-all flex flex-col items-center gap-1
-                    ${pmMethod === m.id ? "border-teal-600 bg-teal-50 text-teal-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"}`}>
-                  <span className="text-xl">{m.icon}</span>
-                  <span className="text-xs">{m.label}</span>
+
+            {/* Gateway card */}
+            <div className={`rounded-2xl border ${meta.border} ${meta.bg} p-5 space-y-3`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{meta.emoji}</span>
+                  <span className={`font-bold text-base ${meta.color}`}>{meta.label}</span>
+                </div>
+                <div className="text-left">
+                  <p className={`text-xl font-black ${meta.color}`}>{amount}</p>
+                  <p className="text-xs text-gray-500">{currency}</p>
+                </div>
+              </div>
+
+              {/* Vodafone Cash */}
+              {gateway === "vodafone_cash" && siteSettings?.vodafoneCashNumber && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between bg-white rounded-xl border border-red-100 px-3 py-2">
+                    <div>
+                      <p className="text-xs text-gray-400">رقم المحفظة</p>
+                      <p className="font-bold text-gray-800 font-mono" dir="ltr">{siteSettings.vodafoneCashNumber}</p>
+                    </div>
+                    <button type="button" onClick={() => { navigator.clipboard.writeText(siteSettings.vodafoneCashNumber!); toast.success("تم النسخ"); }} className="text-xs text-red-600 font-semibold hover:text-red-800">نسخ</button>
+                  </div>
+                  {siteSettings.vodafoneCashName && (
+                    <p className="text-xs text-red-700">باسم: <strong>{siteSettings.vodafoneCashName}</strong></p>
+                  )}
+                  <p className="text-xs text-gray-500">افتح تطبيق فودافون كاش → تحويل → أدخل الرقم → أرسل المبلغ</p>
+                </div>
+              )}
+
+              {/* Fawry */}
+              {gateway === "fawry" && siteSettings?.fawryCode && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between bg-white rounded-xl border border-orange-100 px-3 py-2">
+                    <div>
+                      <p className="text-xs text-gray-400">كود فوري</p>
+                      <p className="font-bold text-gray-800 font-mono" dir="ltr">{siteSettings.fawryCode}</p>
+                    </div>
+                    <button type="button" onClick={() => { navigator.clipboard.writeText(siteSettings.fawryCode!); toast.success("تم النسخ"); }} className="text-xs text-orange-600 font-semibold hover:text-orange-800">نسخ</button>
+                  </div>
+                  {siteSettings.fawryMerchantName && <p className="text-xs text-orange-700">التاجر: <strong>{siteSettings.fawryMerchantName}</strong></p>}
+                  <p className="text-xs text-gray-500">توجه لأقرب نقطة فوري أو استخدم التطبيق وأدخل الكود</p>
+                </div>
+              )}
+
+              {/* InstaPay */}
+              {gateway === "instapay" && siteSettings?.instaPayIPA && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between bg-white rounded-xl border border-blue-100 px-3 py-2">
+                    <div>
+                      <p className="text-xs text-gray-400">معرّف InstaPay</p>
+                      <p className="font-bold text-gray-800 font-mono" dir="ltr">{siteSettings.instaPayIPA}</p>
+                    </div>
+                    <button type="button" onClick={() => { navigator.clipboard.writeText(siteSettings.instaPayIPA!); toast.success("تم النسخ"); }} className="text-xs text-blue-600 font-semibold hover:text-blue-800">نسخ</button>
+                  </div>
+                  {siteSettings.instaPayName && <p className="text-xs text-blue-700">باسم: <strong>{siteSettings.instaPayName}</strong></p>}
+                  <p className="text-xs text-gray-500">افتح InstaPay أو بنكك → تحويل فوري → أدخل المعرّف</p>
+                </div>
+              )}
+
+              {/* Bank Transfer */}
+              {gateway === "bank_transfer" && (
+                <div className="space-y-2">
+                  {siteSettings?.bankName && <p className="text-xs text-green-700">البنك: <strong>{siteSettings.bankName}</strong></p>}
+                  {siteSettings?.bankAccountName && <p className="text-xs text-green-700">الحساب: <strong>{siteSettings.bankAccountName}</strong></p>}
+                  {siteSettings?.bankAccountNumber && (
+                    <div className="flex items-center justify-between bg-white rounded-xl border border-green-100 px-3 py-2">
+                      <div>
+                        <p className="text-xs text-gray-400">رقم الحساب</p>
+                        <p className="font-bold text-gray-800 font-mono" dir="ltr">{siteSettings.bankAccountNumber}</p>
+                      </div>
+                      <button type="button" onClick={() => { navigator.clipboard.writeText(siteSettings.bankAccountNumber!); toast.success("تم النسخ"); }} className="text-xs text-green-600 font-semibold hover:text-green-800">نسخ</button>
+                    </div>
+                  )}
+                  {siteSettings?.bankIBAN && (
+                    <div className="flex items-center justify-between bg-white rounded-xl border border-green-100 px-3 py-2">
+                      <div>
+                        <p className="text-xs text-gray-400">IBAN</p>
+                        <p className="font-bold text-gray-800 font-mono text-sm" dir="ltr">{siteSettings.bankIBAN}</p>
+                      </div>
+                      <button type="button" onClick={() => { navigator.clipboard.writeText(siteSettings.bankIBAN!); toast.success("تم النسخ"); }} className="text-xs text-green-600 font-semibold hover:text-green-800">نسخ</button>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">حوّل المبلغ عبر الإنترنت البنكي أو فرع البنك</p>
+                </div>
+              )}
+
+              {siteSettings?.paymentInstructions && (
+                <p className="text-xs text-gray-500 border-t border-gray-200 pt-2">{siteSettings.paymentInstructions}</p>
+              )}
+            </div>
+
+            {/* Receipt upload */}
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-2">ارفع إيصال الدفع (اختياري)</p>
+              <input ref={receiptRef} type="file" accept="image/*,application/pdf" className="hidden"
+                onChange={e => handleReceiptUpload(e.target.files)} />
+              {receipt ? (
+                <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
+                  <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0" />
+                  <p className="text-sm text-teal-700 font-medium flex-1">تم رفع الإيصال</p>
+                  <button type="button" onClick={() => setReceipt(null)} className="text-gray-400 hover:text-red-500">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => receiptRef.current?.click()} disabled={receiptUploading}
+                  className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 hover:border-teal-400 hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2 text-gray-400 hover:text-teal-600">
+                  {receiptUploading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">جارٍ الرفع...</span></>
+                    : <><Upload className="w-4 h-4" /><span className="text-sm">اضغط لرفع الإيصال (صورة أو PDF)</span></>}
                 </button>
-              ))}
+              )}
             </div>
           </div>
-
-          {/* Card form */}
-          {pmMethod === "card" && (
-            <div className="space-y-4 bg-gray-50 rounded-2xl p-5 border border-gray-100">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">رقم البطاقة</label>
-                <div className="relative">
-                  <Input value={cardNum} onChange={e => setCardNum(fmtCard(e.target.value))}
-                    placeholder="0000 0000 0000 0000"
-                    maxLength={19}
-                    className="h-12 rounded-xl border-gray-200 pr-10 font-mono text-base tracking-widest" dir="ltr" />
-                  <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">اسم حامل البطاقة</label>
-                <Input value={cardName} onChange={e => setCardName(e.target.value)}
-                  placeholder="كما هو مكتوب على البطاقة"
-                  className="h-12 rounded-xl border-gray-200" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">تاريخ الانتهاء</label>
-                  <Input value={cardExpiry}
-                    onChange={e => {
-                      let v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                      if (v.length >= 3) v = v.slice(0,2) + "/" + v.slice(2);
-                      setCardExpiry(v);
-                    }}
-                    placeholder="MM/YY" maxLength={5}
-                    className="h-12 rounded-xl border-gray-200 font-mono" dir="ltr" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">رمز CVV</label>
-                  <Input value={cardCvc} onChange={e => setCardCvc(e.target.value.replace(/\D/g,"").slice(0,4))}
-                    placeholder="123" maxLength={4} type="password"
-                    className="h-12 rounded-xl border-gray-200 font-mono" dir="ltr" />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-400 pt-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>مشفّر بـ SSL 256-bit — بياناتك محمية ولن تُحفظ</span>
-              </div>
-            </div>
-          )}
-
-          {/* InstaPay / STC Pay */}
-          {(pmMethod === "instapay" || pmMethod === "stcpay") && (
-            <div className="space-y-4 bg-gray-50 rounded-2xl p-5 border border-gray-100">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                  {pmMethod === "instapay" ? "رقم المحفظة (InstaPay)" : "رقم الجوال المسجل في STC Pay"}
-                </label>
-                <div className="relative">
-                  <Input value={mobileNum} onChange={e => setMobileNum(e.target.value.replace(/\D/g,"").slice(0,11))}
-                    placeholder={pmMethod === "instapay" ? "01XXXXXXXXX" : "05XXXXXXXX"}
-                    className="h-12 rounded-xl border-gray-200 pr-10 font-mono text-base tracking-wide" dir="ltr" />
-                  <Smartphone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>ستصلك رسالة تأكيد على الرقم المسجّل لإتمام الدفع</span>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+        );
+      })()}
 
       {/* ── Processing overlay ── */}
       {paymentStatus === "processing" && (

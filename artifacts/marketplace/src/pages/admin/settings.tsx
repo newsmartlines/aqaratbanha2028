@@ -16,6 +16,7 @@ import {
   ImageIcon, Palette, KeyRound, Mail, Share2, Search, AlertTriangle, Eye, EyeOff,
   Send, Wifi, WifiOff, Instagram, Youtube, Facebook, Twitter, Linkedin, Shield,
   Star, MapPin, BedDouble, Bath, Maximize2, ArrowLeft, Link2, ToggleRight, ExternalLink,
+  CreditCard, Smartphone, Zap, Building2 as BankIcon, Banknote,
 } from "lucide-react";
 import { AppearanceTab } from "./settings-appearance";
 import { useToast } from "@/hooks/use-toast";
@@ -293,6 +294,9 @@ export default function AdminSettings() {
           </TabsTrigger>
           <TabsTrigger value="spotlight" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold text-amber-600 data-[state=active]:text-amber-700">
             <Star className="w-4 h-4 me-1.5 fill-amber-400" />عقار مميز
+          </TabsTrigger>
+          <TabsTrigger value="payment" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold text-teal-700 data-[state=active]:text-teal-800">
+            <CreditCard className="w-4 h-4 me-1.5" />بوابة الدفع
           </TabsTrigger>
           <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold">
             <Palette className="w-4 h-4 me-1.5" />{t("appearance")}
@@ -1292,6 +1296,167 @@ export default function AdminSettings() {
             >
               {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               حفظ إعدادات العقار المميز
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ── Payment Gateway ─────────────────────────────────────── */}
+        <TabsContent value="payment">
+          <div className="space-y-6">
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-teal-600" />
+                  بوابة الدفع النشطة
+                </CardTitle>
+                <CardDescription>
+                  اختر طريقة الدفع التي سيستخدمها المعلنون لإتمام اشتراكاتهم
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                  {[
+                    { id: "vodafone_cash", label: "فودافون كاش", icon: <Smartphone className="w-6 h-6 text-red-500" />, color: "border-red-400 bg-red-50 text-red-700" },
+                    { id: "fawry", label: "فوري", icon: <Zap className="w-6 h-6 text-orange-500" />, color: "border-orange-400 bg-orange-50 text-orange-700" },
+                    { id: "instapay", label: "انستاباي", icon: <CreditCard className="w-6 h-6 text-blue-500" />, color: "border-blue-400 bg-blue-50 text-blue-700" },
+                    { id: "bank_transfer", label: "تحويل بنكي", icon: <BankIcon className="w-6 h-6 text-green-600" />, color: "border-green-400 bg-green-50 text-green-700" },
+                  ].map(g => {
+                    const active = (form.paymentGateway ?? "vodafone_cash") === g.id;
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, paymentGateway: g.id }))}
+                        className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                          active ? g.color + " shadow-md" : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+                        }`}
+                      >
+                        {active && (
+                          <CheckCircle2 className="absolute top-2 left-2 w-4 h-4 text-current opacity-70" />
+                        )}
+                        {g.icon}
+                        <span className="text-xs font-bold">{g.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Vodafone Cash settings */}
+                {(form.paymentGateway ?? "vodafone_cash") === "vodafone_cash" && (
+                  <div className="space-y-4 p-4 bg-red-50 rounded-2xl border border-red-100">
+                    <p className="font-bold text-red-700 flex items-center gap-2 text-sm">
+                      <Smartphone className="w-4 h-4" />إعدادات فودافون كاش
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>رقم المحفظة</Label>
+                        <Input dir="ltr" value={form.vodafoneCashNumber ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashNumber: e.target.value }))} placeholder="01001234567" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>الاسم الظاهر</Label>
+                        <Input value={form.vodafoneCashName ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashName: e.target.value }))} placeholder="عقارات بنها" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Fawry settings */}
+                {form.paymentGateway === "fawry" && (
+                  <div className="space-y-4 p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                    <p className="font-bold text-orange-700 flex items-center gap-2 text-sm">
+                      <Zap className="w-4 h-4" />إعدادات فوري
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>كود فوري</Label>
+                        <Input dir="ltr" value={form.fawryCode ?? ""} onChange={e => setForm(f => ({ ...f, fawryCode: e.target.value }))} placeholder="12345" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>اسم التاجر</Label>
+                        <Input value={form.fawryMerchantName ?? ""} onChange={e => setForm(f => ({ ...f, fawryMerchantName: e.target.value }))} placeholder="عقارات بنها" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* InstaPay settings */}
+                {form.paymentGateway === "instapay" && (
+                  <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p className="font-bold text-blue-700 flex items-center gap-2 text-sm">
+                      <CreditCard className="w-4 h-4" />إعدادات انستاباي
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>معرّف InstaPay (IPA)</Label>
+                        <Input dir="ltr" value={form.instaPayIPA ?? ""} onChange={e => setForm(f => ({ ...f, instaPayIPA: e.target.value }))} placeholder="merchant@instapay" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>الاسم الظاهر</Label>
+                        <Input value={form.instaPayName ?? ""} onChange={e => setForm(f => ({ ...f, instaPayName: e.target.value }))} placeholder="عقارات بنها" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bank Transfer settings */}
+                {form.paymentGateway === "bank_transfer" && (
+                  <div className="space-y-4 p-4 bg-green-50 rounded-2xl border border-green-100">
+                    <p className="font-bold text-green-700 flex items-center gap-2 text-sm">
+                      <BankIcon className="w-4 h-4" />إعدادات التحويل البنكي
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>اسم البنك</Label>
+                        <Input value={form.bankName ?? ""} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} placeholder="البنك الأهلي المصري" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>اسم صاحب الحساب</Label>
+                        <Input value={form.bankAccountName ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountName: e.target.value }))} placeholder="شركة عقارات بنها" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>رقم الحساب</Label>
+                        <Input dir="ltr" value={form.bankAccountNumber ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountNumber: e.target.value }))} placeholder="1234567890" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>IBAN (اختياري)</Label>
+                        <Input dir="ltr" value={form.bankIBAN ?? ""} onChange={e => setForm(f => ({ ...f, bankIBAN: e.target.value }))} placeholder="EG380019001280000000123456789" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Extra instructions */}
+                <div className="mt-4 space-y-1.5">
+                  <Label>تعليمات إضافية للمعلن (اختياري)</Label>
+                  <Input
+                    value={form.paymentInstructions ?? ""}
+                    onChange={e => setForm(f => ({ ...f, paymentInstructions: e.target.value }))}
+                    placeholder="مثال: اكتب رقم إعلانك في ملاحظات التحويل"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={() => handleSave({
+                paymentGateway: form.paymentGateway,
+                vodafoneCashNumber: form.vodafoneCashNumber,
+                vodafoneCashName: form.vodafoneCashName,
+                fawryCode: form.fawryCode,
+                fawryMerchantName: form.fawryMerchantName,
+                instaPayIPA: form.instaPayIPA,
+                instaPayName: form.instaPayName,
+                bankName: form.bankName,
+                bankAccountName: form.bankAccountName,
+                bankAccountNumber: form.bankAccountNumber,
+                bankIBAN: form.bankIBAN,
+                paymentInstructions: form.paymentInstructions,
+              })}
+              disabled={saveMutation.isPending}
+              className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
+            >
+              {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              حفظ إعدادات بوابة الدفع
             </Button>
           </div>
         </TabsContent>
