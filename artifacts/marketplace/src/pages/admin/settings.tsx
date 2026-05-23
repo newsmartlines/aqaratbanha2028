@@ -1302,150 +1302,214 @@ export default function AdminSettings() {
 
         {/* ── Payment Gateway ─────────────────────────────────────── */}
         <TabsContent value="payment">
-          <div className="space-y-6">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-teal-600" />
-                  بوابة الدفع النشطة
-                </CardTitle>
-                <CardDescription>
-                  اختر طريقة الدفع التي سيستخدمها المعلنون لإتمام اشتراكاتهم
-                </CardDescription>
+          <div className="space-y-5">
+
+            {/* Overview banner */}
+            <div className="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3.5">
+              <CreditCard className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-bold text-teal-800 text-sm">طرق الدفع المتاحة للمعلنين</p>
+                <p className="text-xs text-teal-600 mt-0.5">فعّل أو عطّل كل طريقة بشكل مستقل — الطرق المفعّلة ستظهر كتابز في صفحة الدفع</p>
+              </div>
+            </div>
+
+            {/* ── Vodafone Cash ── */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <div className={`h-1 w-full ${form.vodafoneCashEnabled !== "false" ? "bg-red-500" : "bg-gray-200"}`} />
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2.5 text-base">
+                    <div className="w-9 h-9 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center">
+                      <Smartphone className="w-5 h-5 text-red-500" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">فودافون كاش</p>
+                      <p className="text-xs font-normal text-gray-400">محفظة إلكترونية</p>
+                    </div>
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {form.vodafoneCashEnabled !== "false"
+                      ? <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-0.5">مفعّل</span>
+                      : <span className="text-xs font-bold text-gray-400 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5">معطّل</span>}
+                    <Switch
+                      checked={form.vodafoneCashEnabled !== "false"}
+                      onCheckedChange={v => setForm(f => ({ ...f, vodafoneCashEnabled: v ? "true" : "false" }))}
+                    />
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  {[
-                    { id: "vodafone_cash", label: "فودافون كاش", icon: <Smartphone className="w-6 h-6 text-red-500" />, color: "border-red-400 bg-red-50 text-red-700" },
-                    { id: "fawry", label: "فوري", icon: <Zap className="w-6 h-6 text-orange-500" />, color: "border-orange-400 bg-orange-50 text-orange-700" },
-                    { id: "instapay", label: "انستاباي", icon: <CreditCard className="w-6 h-6 text-blue-500" />, color: "border-blue-400 bg-blue-50 text-blue-700" },
-                    { id: "bank_transfer", label: "تحويل بنكي", icon: <BankIcon className="w-6 h-6 text-green-600" />, color: "border-green-400 bg-green-50 text-green-700" },
-                  ].map(g => {
-                    const active = (form.paymentGateway ?? "vodafone_cash") === g.id;
-                    return (
-                      <button
-                        key={g.id}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, paymentGateway: g.id }))}
-                        className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                          active ? g.color + " shadow-md" : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
-                        }`}
-                      >
-                        {active && (
-                          <CheckCircle2 className="absolute top-2 left-2 w-4 h-4 text-current opacity-70" />
-                        )}
-                        {g.icon}
-                        <span className="text-xs font-bold">{g.label}</span>
-                      </button>
-                    );
-                  })}
+              {form.vodafoneCashEnabled !== "false" && (
+                <CardContent className="pt-0 space-y-3 border-t border-gray-50">
+                  <div className="grid md:grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">رقم المحفظة</Label>
+                      <Input dir="ltr" value={form.vodafoneCashNumber ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashNumber: e.target.value }))} placeholder="01001234567" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">الاسم الظاهر</Label>
+                      <Input value={form.vodafoneCashName ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashName: e.target.value }))} placeholder="عقارات بنها" />
+                    </div>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* ── Fawry ── */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <div className={`h-1 w-full ${form.fawryEnabled === "true" ? "bg-orange-500" : "bg-gray-200"}`} />
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2.5 text-base">
+                    <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
+                      <Zap className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">فوري</p>
+                      <p className="text-xs font-normal text-gray-400">نقاط الدفع والتطبيق</p>
+                    </div>
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {form.fawryEnabled === "true"
+                      ? <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-0.5">مفعّل</span>
+                      : <span className="text-xs font-bold text-gray-400 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5">معطّل</span>}
+                    <Switch
+                      checked={form.fawryEnabled === "true"}
+                      onCheckedChange={v => setForm(f => ({ ...f, fawryEnabled: v ? "true" : "false" }))}
+                    />
+                  </div>
                 </div>
-
-                {/* Vodafone Cash settings */}
-                {(form.paymentGateway ?? "vodafone_cash") === "vodafone_cash" && (
-                  <div className="space-y-4 p-4 bg-red-50 rounded-2xl border border-red-100">
-                    <p className="font-bold text-red-700 flex items-center gap-2 text-sm">
-                      <Smartphone className="w-4 h-4" />إعدادات فودافون كاش
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>رقم المحفظة</Label>
-                        <Input dir="ltr" value={form.vodafoneCashNumber ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashNumber: e.target.value }))} placeholder="01001234567" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>الاسم الظاهر</Label>
-                        <Input value={form.vodafoneCashName ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashName: e.target.value }))} placeholder="عقارات بنها" />
-                      </div>
+              </CardHeader>
+              {form.fawryEnabled === "true" && (
+                <CardContent className="pt-0 space-y-3 border-t border-gray-50">
+                  <div className="grid md:grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">كود فوري</Label>
+                      <Input dir="ltr" value={form.fawryCode ?? ""} onChange={e => setForm(f => ({ ...f, fawryCode: e.target.value }))} placeholder="12345" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">اسم التاجر</Label>
+                      <Input value={form.fawryMerchantName ?? ""} onChange={e => setForm(f => ({ ...f, fawryMerchantName: e.target.value }))} placeholder="عقارات بنها" />
                     </div>
                   </div>
-                )}
+                </CardContent>
+              )}
+            </Card>
 
-                {/* Fawry settings */}
-                {form.paymentGateway === "fawry" && (
-                  <div className="space-y-4 p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                    <p className="font-bold text-orange-700 flex items-center gap-2 text-sm">
-                      <Zap className="w-4 h-4" />إعدادات فوري
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>كود فوري</Label>
-                        <Input dir="ltr" value={form.fawryCode ?? ""} onChange={e => setForm(f => ({ ...f, fawryCode: e.target.value }))} placeholder="12345" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>اسم التاجر</Label>
-                        <Input value={form.fawryMerchantName ?? ""} onChange={e => setForm(f => ({ ...f, fawryMerchantName: e.target.value }))} placeholder="عقارات بنها" />
-                      </div>
+            {/* ── InstaPay ── */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <div className={`h-1 w-full ${form.instaPayEnabled !== "false" ? "bg-blue-500" : "bg-gray-200"}`} />
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2.5 text-base">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-blue-500" />
                     </div>
-                  </div>
-                )}
-
-                {/* InstaPay settings */}
-                {form.paymentGateway === "instapay" && (
-                  <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                    <p className="font-bold text-blue-700 flex items-center gap-2 text-sm">
-                      <CreditCard className="w-4 h-4" />إعدادات انستاباي
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>معرّف InstaPay (IPA)</Label>
-                        <Input dir="ltr" value={form.instaPayIPA ?? ""} onChange={e => setForm(f => ({ ...f, instaPayIPA: e.target.value }))} placeholder="merchant@instapay" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>الاسم الظاهر</Label>
-                        <Input value={form.instaPayName ?? ""} onChange={e => setForm(f => ({ ...f, instaPayName: e.target.value }))} placeholder="عقارات بنها" />
-                      </div>
+                    <div>
+                      <p className="font-bold text-gray-800">انستاباي</p>
+                      <p className="text-xs font-normal text-gray-400">تحويل فوري بين البنوك</p>
                     </div>
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {form.instaPayEnabled !== "false"
+                      ? <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-0.5">مفعّل</span>
+                      : <span className="text-xs font-bold text-gray-400 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5">معطّل</span>}
+                    <Switch
+                      checked={form.instaPayEnabled !== "false"}
+                      onCheckedChange={v => setForm(f => ({ ...f, instaPayEnabled: v ? "true" : "false" }))}
+                    />
                   </div>
-                )}
-
-                {/* Bank Transfer settings */}
-                {form.paymentGateway === "bank_transfer" && (
-                  <div className="space-y-4 p-4 bg-green-50 rounded-2xl border border-green-100">
-                    <p className="font-bold text-green-700 flex items-center gap-2 text-sm">
-                      <BankIcon className="w-4 h-4" />إعدادات التحويل البنكي
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>اسم البنك</Label>
-                        <Input value={form.bankName ?? ""} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} placeholder="البنك الأهلي المصري" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>اسم صاحب الحساب</Label>
-                        <Input value={form.bankAccountName ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountName: e.target.value }))} placeholder="شركة عقارات بنها" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>رقم الحساب</Label>
-                        <Input dir="ltr" value={form.bankAccountNumber ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountNumber: e.target.value }))} placeholder="1234567890" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>IBAN (اختياري)</Label>
-                        <Input dir="ltr" value={form.bankIBAN ?? ""} onChange={e => setForm(f => ({ ...f, bankIBAN: e.target.value }))} placeholder="EG380019001280000000123456789" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Extra instructions */}
-                <div className="mt-4 space-y-1.5">
-                  <Label>تعليمات إضافية للمعلن (اختياري)</Label>
-                  <Input
-                    value={form.paymentInstructions ?? ""}
-                    onChange={e => setForm(f => ({ ...f, paymentInstructions: e.target.value }))}
-                    placeholder="مثال: اكتب رقم إعلانك في ملاحظات التحويل"
-                  />
                 </div>
+              </CardHeader>
+              {form.instaPayEnabled !== "false" && (
+                <CardContent className="pt-0 space-y-3 border-t border-gray-50">
+                  <div className="grid md:grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">معرّف InstaPay (IPA)</Label>
+                      <Input dir="ltr" value={form.instaPayIPA ?? ""} onChange={e => setForm(f => ({ ...f, instaPayIPA: e.target.value }))} placeholder="merchant@instapay" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">الاسم الظاهر</Label>
+                      <Input value={form.instaPayName ?? ""} onChange={e => setForm(f => ({ ...f, instaPayName: e.target.value }))} placeholder="عقارات بنها" />
+                    </div>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* ── Bank Transfer ── */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <div className={`h-1 w-full ${form.bankTransferEnabled !== "false" ? "bg-green-500" : "bg-gray-200"}`} />
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2.5 text-base">
+                    <div className="w-9 h-9 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center">
+                      <BankIcon className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">تحويل بنكي</p>
+                      <p className="text-xs font-normal text-gray-400">تحويل مباشر لحساب البنك</p>
+                    </div>
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {form.bankTransferEnabled !== "false"
+                      ? <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-0.5">مفعّل</span>
+                      : <span className="text-xs font-bold text-gray-400 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5">معطّل</span>}
+                    <Switch
+                      checked={form.bankTransferEnabled !== "false"}
+                      onCheckedChange={v => setForm(f => ({ ...f, bankTransferEnabled: v ? "true" : "false" }))}
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              {form.bankTransferEnabled !== "false" && (
+                <CardContent className="pt-0 space-y-3 border-t border-gray-50">
+                  <div className="grid md:grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">اسم البنك</Label>
+                      <Input value={form.bankName ?? ""} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} placeholder="البنك الأهلي المصري" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">اسم صاحب الحساب</Label>
+                      <Input value={form.bankAccountName ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountName: e.target.value }))} placeholder="شركة عقارات بنها" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">رقم الحساب</Label>
+                      <Input dir="ltr" value={form.bankAccountNumber ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountNumber: e.target.value }))} placeholder="1234567890" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">IBAN (اختياري)</Label>
+                      <Input dir="ltr" value={form.bankIBAN ?? ""} onChange={e => setForm(f => ({ ...f, bankIBAN: e.target.value }))} placeholder="EG380019001280000000123456789" />
+                    </div>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* Extra instructions */}
+            <Card className="border-slate-200 shadow-sm">
+              <CardContent className="pt-5 space-y-1.5">
+                <Label className="text-sm font-semibold">تعليمات إضافية للمعلن <span className="text-gray-400 font-normal">(اختياري)</span></Label>
+                <Input
+                  value={form.paymentInstructions ?? ""}
+                  onChange={e => setForm(f => ({ ...f, paymentInstructions: e.target.value }))}
+                  placeholder="مثال: اكتب رقم إعلانك في ملاحظات التحويل"
+                />
+                <p className="text-xs text-gray-400">تظهر هذه الرسالة أسفل كل طريقة دفع في صفحة الدفع</p>
               </CardContent>
             </Card>
 
             <Button
               onClick={() => handleSave({
-                paymentGateway: form.paymentGateway,
+                vodafoneCashEnabled: form.vodafoneCashEnabled ?? "true",
                 vodafoneCashNumber: form.vodafoneCashNumber,
                 vodafoneCashName: form.vodafoneCashName,
+                fawryEnabled: form.fawryEnabled ?? "false",
                 fawryCode: form.fawryCode,
                 fawryMerchantName: form.fawryMerchantName,
+                instaPayEnabled: form.instaPayEnabled ?? "true",
                 instaPayIPA: form.instaPayIPA,
                 instaPayName: form.instaPayName,
+                bankTransferEnabled: form.bankTransferEnabled ?? "true",
                 bankName: form.bankName,
                 bankAccountName: form.bankAccountName,
                 bankAccountNumber: form.bankAccountNumber,
@@ -1456,7 +1520,7 @@ export default function AdminSettings() {
               className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
             >
               {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              حفظ إعدادات بوابة الدفع
+              حفظ إعدادات طرق الدفع
             </Button>
           </div>
         </TabsContent>

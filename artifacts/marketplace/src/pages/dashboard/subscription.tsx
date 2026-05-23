@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { PaymentDialog } from "@/components/property-form/shared/PaymentDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -73,7 +72,6 @@ export default function ProviderSubscription() {
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);   // for free plans
-  const [paymentOpen, setPaymentOpen] = useState(false);   // for paid plans
 
   const { data: stats, isLoading: statsLoading } = useQuery<ProviderStats>({
     queryKey: ["providerStats", providerId],
@@ -121,7 +119,14 @@ export default function ProviderSubscription() {
     }
     setSelectedPlan(plan);
     if (parseFloat(String(plan.price)) > 0) {
-      setPaymentOpen(true);   // paid → Egyptian payment dialog
+      const qs = new URLSearchParams({
+        planName: plan.nameAr ?? plan.name ?? "",
+        price: String(plan.price),
+        duration: String(plan.durationDays),
+        currency: plan.currency ?? "EGP",
+        planId: String(plan.id),
+      }).toString();
+      setLocation(`/pay/subscription?${qs}`);
     } else {
       setConfirmOpen(true);   // free → simple confirm dialog
     }
@@ -489,18 +494,6 @@ export default function ProviderSubscription() {
           </DialogContent>
         </Dialog>
 
-        {/* ─── Paid Plan Payment Dialog (Egyptian Gateways) ─── */}
-        <PaymentDialog
-          open={paymentOpen}
-          plan={selectedPlan}
-          onClose={() => { setPaymentOpen(false); setSelectedPlan(null); }}
-          onSuccess={() => {
-            setPaymentOpen(false);
-            queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
-            toast({ title: "تم استلام طلب الدفع! 🎉", description: "سيتم مراجعة الدفع وتفعيل الباقة خلال 24 ساعة." });
-            setSelectedPlan(null);
-          }}
-        />
 
       </div>
     </ProviderLayout>
