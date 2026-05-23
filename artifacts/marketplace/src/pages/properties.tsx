@@ -43,6 +43,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { api, type Category, type Area, type Subcategory } from "@/lib/api";
+import {
+  getFieldRulesForMainCategory,
+  getFieldRulesForCategorySlug,
+  type FieldConfigRow,
+} from "@/lib/property-field-rules";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FeatureIcon } from "@/components/FeatureIcon";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
@@ -355,10 +360,32 @@ export default function PropertiesPage() {
     staleTime: 5 * 60_000,
   });
 
-  const allDynFeatures = useMemo(() => [
-    ...dbFeatures.filter((f) => f.status === "active"),
-    ...dbServices.filter((f) => f.status === "active"),
-  ], [dbFeatures, dbServices]);
+  const { data: fieldConfigs = [] } = useQuery<FieldConfigRow[]>({
+    queryKey: ["property-field-configs"],
+    queryFn:  () => api.propertyFieldConfigs.list(),
+    staleTime: 10 * 60_000,
+  });
+
+  const propFieldRules = useMemo(() => {
+    if (selectedSubKind) return getFieldRulesForMainCategory(selectedSubKind, fieldConfigs);
+    if (selectedKind)    return getFieldRulesForCategorySlug(selectedKind, fieldConfigs);
+    return null;
+  }, [selectedSubKind, selectedKind, fieldConfigs]);
+
+  const allDynFeatures = useMemo(() => {
+    const all = [
+      ...dbFeatures.filter((f) => f.status === "active"),
+      ...dbServices.filter((f) => f.status === "active"),
+    ];
+    if (!selectedSubKind) return all;
+    return all.filter((f) => {
+      if (!f.applicableTypes) return true;
+      try {
+        const types = JSON.parse(f.applicableTypes) as string[];
+        return types.length === 0 || types.includes(selectedSubKind);
+      } catch { return true; }
+    });
+  }, [dbFeatures, dbServices, selectedSubKind]);
 
   useEffect(() => {
     api.properties.list({ status: "active" })
@@ -796,6 +823,7 @@ export default function PropertiesPage() {
                 </FilterSection>
 
                 {/* ── عدد الغرف ── */}
+                {(!propFieldRules || propFieldRules.rooms) && (
                 <FilterSection title="عدد غرف النوم">
                   <div className="flex flex-wrap gap-1.5">
                     {BEDS_OPTIONS.map((b) => (
@@ -806,8 +834,10 @@ export default function PropertiesPage() {
                     ))}
                   </div>
                 </FilterSection>
+                )}
 
                 {/* ── عدد الحمامات ── */}
+                {(!propFieldRules || propFieldRules.bathrooms) && (
                 <FilterSection title="عدد الحمامات">
                   <div className="flex flex-wrap gap-1.5">
                     {BATHS_OPTIONS.map((b) => (
@@ -818,8 +848,10 @@ export default function PropertiesPage() {
                     ))}
                   </div>
                 </FilterSection>
+                )}
 
                 {/* ── رقم الطابق ── */}
+                {(!propFieldRules || propFieldRules.floor) && (
                 <FilterSection title="رقم الطابق" defaultOpen={false}>
                   <div className="flex flex-wrap gap-1.5">
                     {FLOOR_OPTIONS.map((f) => (
@@ -830,8 +862,10 @@ export default function PropertiesPage() {
                     ))}
                   </div>
                 </FilterSection>
+                )}
 
                 {/* ── التشطيب ── */}
+                {(!propFieldRules || propFieldRules.finishing) && (
                 <FilterSection title="حالة التشطيب">
                   <div className="flex flex-wrap gap-1.5">
                     {FINISHING_OPTIONS.map((v) => (
@@ -840,8 +874,10 @@ export default function PropertiesPage() {
                     ))}
                   </div>
                 </FilterSection>
+                )}
 
                 {/* ── التأثيث ── */}
+                {(!propFieldRules || propFieldRules.furnished) && (
                 <FilterSection title="التأثيث">
                   <div className="flex flex-wrap gap-1.5">
                     {FURNISHED_OPTIONS.map((v) => (
@@ -850,6 +886,7 @@ export default function PropertiesPage() {
                     ))}
                   </div>
                 </FilterSection>
+                )}
 
                 {/* ── نظام الدفع ── */}
                 <FilterSection title="نظام الدفع">
@@ -1509,6 +1546,7 @@ export default function PropertiesPage() {
             </FilterSection>
 
             {/* Bedrooms */}
+            {(!propFieldRules || propFieldRules.rooms) && (
             <FilterSection title="عدد غرف النوم">
               <div className="flex flex-wrap gap-1.5">
                 {BEDS_OPTIONS.map((b) => (
@@ -1516,6 +1554,7 @@ export default function PropertiesPage() {
                 ))}
               </div>
             </FilterSection>
+            )}
 
             {/* Area */}
             <FilterSection title="المساحة" defaultOpen={true}>
@@ -1548,6 +1587,7 @@ export default function PropertiesPage() {
             )}
 
             {/* Finishing */}
+            {(!propFieldRules || propFieldRules.finishing) && (
             <FilterSection title="التشطيب" defaultOpen={true}>
               <div className="flex flex-wrap gap-2">
                 {["سوبر لوكس", "لوكس", "عادي", "نص تشطيب", "بدون تشطيب"].map((v) => (
@@ -1555,8 +1595,10 @@ export default function PropertiesPage() {
                 ))}
               </div>
             </FilterSection>
+            )}
 
             {/* Furnished */}
+            {(!propFieldRules || propFieldRules.furnished) && (
             <FilterSection title="التأثيث" defaultOpen={true}>
               <div className="flex flex-wrap gap-2">
                 {["مفروش بالكامل", "نص تشطيب", "غير مفروش"].map((v) => (
@@ -1564,6 +1606,7 @@ export default function PropertiesPage() {
                 ))}
               </div>
             </FilterSection>
+            )}
 
             {/* Payment */}
             <FilterSection title="نظام الدفع" defaultOpen={true}>

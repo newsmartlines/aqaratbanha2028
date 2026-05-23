@@ -181,3 +181,73 @@ export function getFieldRules(
 
   return { ...ALL_VISIBLE };
 }
+
+// ─── Maps category slugs to their Arabic subtype names ────────────────────────
+const SLUG_TO_SUBTYPES: Record<string, string[]> = {
+  residential: ["شقة", "فيلا", "دوبلكس", "روف", "استراحة", "استوديو", "عمارة", "غرفة"],
+  commercial:  ["محل تجاري", "مكتب", "مجمع تجاري", "مستودع", "عيادة", "فندق"],
+  land:        ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
+  industrial:  ["أرض صناعية", "مستودع"],
+};
+
+/**
+ * Get field visibility rules for a specific Arabic mainCategory name.
+ * Used by properties.tsx / map-search.tsx which work with Arabic type names directly.
+ * When mainCategory is null/undefined → shows ALL fields (no filter selected).
+ */
+export function getFieldRulesForMainCategory(
+  mainCategory: string | null | undefined,
+  dbConfigs?: FieldConfigRow[]
+): Record<FieldKey, boolean> {
+  if (!mainCategory) return { ...ALL_VISIBLE };
+
+  // DB configs take priority over hardcoded defaults
+  if (dbConfigs && dbConfigs.length > 0) {
+    const forType = dbConfigs.filter((c) => c.mainCategory === mainCategory);
+    if (forType.length > 0) {
+      const rules: Record<FieldKey, boolean> = { ...ALL_VISIBLE };
+      for (const cfg of forType) {
+        (rules as Record<string, boolean>)[cfg.fieldKey] = cfg.isVisible;
+      }
+      return rules;
+    }
+  }
+
+  return DEFAULT_FIELD_VISIBILITY[mainCategory]
+    ? { ...DEFAULT_FIELD_VISIBILITY[mainCategory] } as Record<FieldKey, boolean>
+    : { ...ALL_VISIBLE };
+}
+
+/**
+ * Get field rules for a category slug (e.g. "residential", "commercial", "land").
+ * Returns the UNION of all subtype field visibilities — a field is shown if
+ * ANY subtype within the category would show it.  Avoids hiding filters
+ * prematurely when the user hasn't picked a specific subtype yet.
+ */
+export function getFieldRulesForCategorySlug(
+  slug: string | null | undefined,
+  dbConfigs?: FieldConfigRow[]
+): Record<FieldKey, boolean> {
+  if (!slug) return { ...ALL_VISIBLE };
+
+  const subtypes = SLUG_TO_SUBTYPES[slug];
+  if (!subtypes || subtypes.length === 0) return { ...ALL_VISIBLE };
+
+  const rules: Record<FieldKey, boolean> = {
+    rooms: false, bathrooms: false, floor: false, totalFloors: false,
+    buildYear: false, finishing: false, furnished: false, condition: false,
+    direction: false, facade: false, paymentMethod: false,
+    landType: false, landDimensions: false, buildRatio: false,
+  };
+
+  for (const subtype of subtypes) {
+    const subRules = getFieldRulesForMainCategory(subtype, dbConfigs);
+    for (const fk of ALL_FIELD_DEFS.map((f) => f.key)) {
+      if (subRules[fk]) rules[fk] = true;
+    }
+  }
+  return rules;
+}
+
+/** Export slug→subtypes map for use in UI (e.g. map-search subcategory selector) */
+export { SLUG_TO_SUBTYPES };

@@ -117,23 +117,37 @@ const V4_FEATURES = [
 
 // ── Auto-seed / migrate ──────────────────────────────────────────────────────
 
-let seeded = false;
+let seedPromise: Promise<void> | null = null;
 
 async function ensureSeeded() {
-  if (seeded) return;
+  if (seedPromise) return seedPromise;
+  seedPromise = _doSeed();
+  return seedPromise;
+}
+
+async function _doSeed() {
   try {
     const existing = await db.select().from(propertyFeaturesTable);
-    const hasV3   = existing.some((r) => r.icon === "Waves" && r.applicableTypes !== undefined);
+    const existingNames = new Set(existing.map((r) => r.name));
+
+    const hasV3   = existing.some((r) => r.icon === "Waves" && r.applicableTypes !== null && r.applicableTypes !== undefined);
     const isV2    = existing.some((r) => r.icon === "Waves" && r.applicableTypes === null);
     const isEmpty = existing.length === 0;
     const isV1    = existing.length > 0 && !existing.some((r) => r.icon === "Waves");
 
     if (isV1 || isEmpty) {
-      if (isV1) await db.delete(propertyFeaturesTable);
-      await db.insert(propertyFeaturesTable).values(
-        DEFAULT_FEATURES.map((f) => ({ ...f, status: "active" as const }))
-      );
-      console.log(`[property-features] Seeded v3 (${DEFAULT_FEATURES.length} entries)`);
+      if (isV1) {
+        await db.delete(propertyFeaturesTable);
+        existingNames.clear();
+      }
+      const toInsert = DEFAULT_FEATURES.filter((f) => !existingNames.has(f.name));
+      if (toInsert.length > 0) {
+        await db.insert(propertyFeaturesTable).values(
+          toInsert.map((f) => ({ ...f, status: "active" as const }))
+        );
+        toInsert.forEach((f) => existingNames.add(f.name));
+        console.log(`[property-features] Seeded v3 (${toInsert.length} entries)`);
+      }
     } else if (isV2) {
       for (const def of DEFAULT_FEATURES) {
         await db
@@ -145,12 +159,12 @@ async function ensureSeeded() {
     }
 
     // ── v4 migration: add filterGroup/filterType + new dynamic filter features
-    if (hasV3 || isV2) {
+    if (hasV3 || isV2 || isEmpty) {
       const current = await db.select().from(propertyFeaturesTable);
+      const currentNames = new Set(current.map((r) => r.name));
       const hasV4 = current.some((r) => r.filterGroup && r.filterGroup !== "all");
-      const hasV4Features = current.some((r) => r.name === "مصدر المياه");
+      const hasV4Features = currentNames.has("مصدر المياه");
       if (!hasV4) {
-        // Update filterGroup on existing rows
         for (const row of current) {
           const group = inferFilterGroup(row.applicableTypes);
           if (group !== "all") {
@@ -163,16 +177,18 @@ async function ensureSeeded() {
         console.log("[property-features] v4: updated filterGroup on existing rows");
       }
       if (!hasV4Features) {
-        await db.insert(propertyFeaturesTable).values(
-          V4_FEATURES.map((f) => ({ ...f, status: "active" as const }))
-        );
-        console.log(`[property-features] v4: inserted ${V4_FEATURES.length} dynamic filter features`);
+        const newV4 = V4_FEATURES.filter((f) => !currentNames.has(f.name));
+        if (newV4.length > 0) {
+          await db.insert(propertyFeaturesTable).values(
+            newV4.map((f) => ({ ...f, status: "active" as const }))
+          );
+          console.log(`[property-features] v4: inserted ${newV4.length} dynamic filter features`);
+        }
       }
     }
-
-    seeded = true;
   } catch (err) {
     console.error("[property-features] Seed error:", err);
+    seedPromise = null;
   }
 }
 
@@ -485,6 +501,43 @@ router.get("/admin/property-field-configs", async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error("[admin/property-field-configs GET]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ── Admin: bulk update field configs ──────────────────────────────────────────
+
+router.put("/admin/property-field-configs/bulk", async (req, res) => {
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
+  try {
+    const { rows } = req.body as { rows: Array<{ mainCategory: string; fieldKey: string; isVisible: boolean }> };
+    if (!Array.isArray(rows)) return res.status(400).json({ error: "rows must be array" });
+
+    const existing = await db.select().from(propertyFieldConfigsTable);
+
+    for (const row of rows) {
+      const found = existing.find(
+        (e) => e.mainCategory === row.mainCategory && e.fieldKey === row.fieldKey
+      );
+      if (found) {
+        await db
+          .update(propertyFieldConfigsTable)
+          .set({ isVisible: row.isVisible })
+          .where(eq(propertyFieldConfigsTable.id, found.id));
+      } else {
+        await db.insert(propertyFieldConfigsTable).values({
+          mainCategory: row.mainCategory,
+          fieldKey:     row.fieldKey,
+          isVisible:    row.isVisible,
+          sortOrder:    0,
+        });
+      }
+    }
+
+    fieldConfigsSeeded = false;
+    res.json({ ok: true, updated: rows.length });
+  } catch (err) {
+    console.error("[admin/property-field-configs/bulk PUT]", err);
     res.status(500).json({ error: "Server error" });
   }
 });

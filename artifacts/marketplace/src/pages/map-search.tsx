@@ -10,6 +10,12 @@ import { Home, Bed, Bath, Maximize2, MapPin, Search, SlidersHorizontal, X, Chevr
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  getFieldRulesForMainCategory,
+  getFieldRulesForCategorySlug,
+  SLUG_TO_SUBTYPES,
+  type FieldConfigRow,
+} from "@/lib/property-field-rules";
 import "leaflet/dist/leaflet.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -218,7 +224,26 @@ export default function MapSearchPage() {
   const [search, setSearch] = useState("");
   const [filterDeal, setFilterDeal] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [filterSubType, setFilterSubType] = useState("all");
+  const [filterRooms, setFilterRooms] = useState("all");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const { data: fieldConfigs = [] } = useQuery<FieldConfigRow[]>({
+    queryKey: ["property-field-configs"],
+    queryFn:  () => api.propertyFieldConfigs.list(),
+    staleTime: 10 * 60_000,
+  });
+
+  const mapFieldRules = useMemo(() => {
+    if (filterSubType !== "all") return getFieldRulesForMainCategory(filterSubType, fieldConfigs);
+    if (filterType !== "all")    return getFieldRulesForCategorySlug(filterType, fieldConfigs);
+    return null;
+  }, [filterSubType, filterType, fieldConfigs]);
+
+  const subtypeOptions = useMemo(() => {
+    if (filterType === "all") return [];
+    return (SLUG_TO_SUBTYPES[filterType] ?? []).map((name) => ({ value: name, label: name }));
+  }, [filterType]);
 
   const { data: raw } = useQuery({
     queryKey: ["map-properties"],
@@ -243,10 +268,18 @@ export default function MapSearchPage() {
   // Filter
   const filtered = useMemo(() => allProps.filter(p => {
     if (filterDeal !== "all" && p.listingType !== filterDeal) return false;
-    if (filterType !== "all" && p.mainCategory !== filterType) return false;
+    if (filterSubType !== "all" && p.mainCategory !== filterSubType) return false;
+    else if (filterType !== "all" && filterSubType === "all") {
+      const subs = SLUG_TO_SUBTYPES[filterType] ?? [];
+      if (subs.length > 0 && !subs.includes(p.mainCategory)) return false;
+    }
+    if (filterRooms !== "all" && p.rooms) {
+      const minRooms = Number(filterRooms);
+      if (p.rooms < minRooms) return false;
+    }
     if (search && !p.title?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
-  }), [allProps, filterDeal, filterType, search]);
+  }), [allProps, filterDeal, filterType, filterSubType, filterRooms, search]);
 
   // Properties in current map bounds
   const inBounds = useMemo(() => filtered.filter(p => {
@@ -298,7 +331,7 @@ export default function MapSearchPage() {
             <SelectItem value="rent">للإيجار</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filterType} onValueChange={setFilterType}>
+        <Select value={filterType} onValueChange={(v) => { setFilterType(v); setFilterSubType("all"); setFilterRooms("all"); }}>
           <SelectTrigger className="h-8 w-28 rounded-full text-xs">
             <SelectValue placeholder="كل الأنواع" />
           </SelectTrigger>
@@ -309,6 +342,39 @@ export default function MapSearchPage() {
             <SelectItem value="land">أراضي</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Dynamic: subtype selector */}
+        {subtypeOptions.length > 0 && (
+          <Select value={filterSubType} onValueChange={(v) => { setFilterSubType(v); setFilterRooms("all"); }}>
+            <SelectTrigger className="h-8 w-32 rounded-full text-xs">
+              <SelectValue placeholder="كل الفئات" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">كل الفئات</SelectItem>
+              {subtypeOptions.map((o) => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Dynamic: rooms — only shown when property type supports it */}
+        {mapFieldRules?.rooms && (
+          <Select value={filterRooms} onValueChange={setFilterRooms}>
+            <SelectTrigger className="h-8 w-24 rounded-full text-xs">
+              <SelectValue placeholder="الغرف" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">كل الغرف</SelectItem>
+              <SelectItem value="1">1+</SelectItem>
+              <SelectItem value="2">2+</SelectItem>
+              <SelectItem value="3">3+</SelectItem>
+              <SelectItem value="4">4+</SelectItem>
+              <SelectItem value="5">5+</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
         <span className="text-xs text-muted-foreground mr-auto">{inBounds.length} عقار في المنطقة</span>
         <Button
           variant="outline"
