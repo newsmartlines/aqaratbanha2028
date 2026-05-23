@@ -388,7 +388,7 @@ export default function PropertiesPage() {
   }, [dbFeatures, dbServices, selectedSubKind]);
 
   useEffect(() => {
-    api.properties.list({ status: "active" })
+    api.properties.list({})
       .then((rows) => setAllProps((rows as unknown as DbProp[]).map((r) => mapDbProp(r, FALLBACK))))
       .catch(() => {})
       .finally(() => setLoading(false));

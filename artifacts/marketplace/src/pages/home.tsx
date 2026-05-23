@@ -732,7 +732,7 @@ export default function Home() {
 
   const { data: homePropsRaw = [], isLoading: propsLoading } = useQuery<any[]>({
     queryKey: ["home-properties"],
-    queryFn: () => api.properties.list({ status: "active" }),
+    queryFn: () => api.properties.list({}),
     staleTime: 2 * 60 * 1000,
   });
 
