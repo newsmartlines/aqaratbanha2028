@@ -44,7 +44,8 @@ export default function EditPropertyPage() {
     enabled: !!id,
   });
 
-  const prop = propData as any;
+  // API returns { success, data: {...} } — unwrap the data layer
+  const prop = ((propData as any)?.data ?? propData) as any;
 
   const [form, setForm] = useState({
     title: "",
