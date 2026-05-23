@@ -13,7 +13,9 @@ import {
   Search, RefreshCw, Pencil, Trash2, Eye, Star, StarOff,
   CheckCircle2, XCircle, Building2, TrendingUp, Home, Loader2,
   Plus, BedDouble, Bath, Maximize2, AlertCircle, ExternalLink,
+  MessageSquareWarning, Check,
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { api, type Category } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -106,6 +108,11 @@ export default function AdminProperties() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Rejection modal state
+  const [rejectTarget, setRejectTarget] = useState<DbProperty | null>(null);
+  const [rejectChips, setRejectChips] = useState<string[]>([]);
+  const [rejectNote, setRejectNote] = useState("");
+  const [rejecting, setRejecting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [providers, setProviders] = useState<{ id: number; name: string }[]>([]);
 
@@ -166,14 +173,48 @@ export default function AdminProperties() {
     }
   };
 
+  const REJECT_CHIPS = [
+    { id: "photos", label: "📷 الصور غير واضحة أو منخفضة الجودة" },
+    { id: "price",  label: "💰 السعر مبالغ فيه أو غير واقعي" },
+    { id: "info",   label: "⚠️ معلومات مضللة أو غير دقيقة" },
+    { id: "addr",   label: "📍 العنوان غير صحيح أو غير محدد" },
+    { id: "dup",    label: "🔄 الإعلان مكرر أو موجود مسبقاً" },
+    { id: "contact",label: "📞 بيانات التواصل مفقودة أو خاطئة" },
+    { id: "policy", label: "🚫 المحتوى ينتهك سياسة المنصة" },
+  ];
+
+  const openRejectModal = (p: DbProperty) => {
+    setRejectTarget(p);
+    setRejectChips([]);
+    setRejectNote("");
+  };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectTarget) return;
+    setRejecting(true);
+    try {
+      const selectedLabels = rejectChips.map(id => REJECT_CHIPS.find(c => c.id === id)?.label ?? "").filter(Boolean);
+      const parts: string[] = [...selectedLabels];
+      if (rejectNote.trim()) parts.push(rejectNote.trim());
+      const rejectionReason = parts.join("\n") || undefined;
+      await api.properties.patchStatus(rejectTarget.id, "rejected", rejectionReason);
+      setProperties(prev => prev.map(x => x.id === rejectTarget.id ? { ...x, status: "rejected" } : x));
+      toast.success(`❌ تم رفض: ${rejectTarget.title} — تم إشعار المالك`);
+      setRejectTarget(null);
+    } catch {
+      toast.error("فشل تحديث الحالة");
+    } finally {
+      setRejecting(false);
+    }
+  };
+
   const handleStatus = async (p: DbProperty, status: string) => {
+    if (status === "rejected") { openRejectModal(p); return; }
     try {
       await api.properties.patchStatus(p.id, status);
       setProperties(prev => prev.map(x => x.id === p.id ? { ...x, status } : x));
       if (status === "approved") {
         toast.success(`✅ تمت الموافقة على: ${p.title} — تم إشعار المالك`);
-      } else if (status === "rejected") {
-        toast.success(`❌ تم رفض: ${p.title} — تم إشعار المالك`);
       }
     } catch {
       toast.error("فشل تحديث الحالة");
@@ -629,6 +670,127 @@ export default function AdminProperties() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Rejection Reason Modal ───────────────────────────────── */}
+      <Dialog
+        open={!!rejectTarget}
+        onOpenChange={o => { if (!o && !rejecting) { setRejectTarget(null); } }}
+      >
+        <DialogContent className="max-w-lg p-0 overflow-hidden" dir="rtl">
+          {/* Header */}
+          <div className="bg-gradient-to-l from-red-600 to-rose-500 px-6 py-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <MessageSquareWarning className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold">رفض الإعلان مع ذكر السبب</h2>
+                {rejectTarget && (
+                  <p className="text-red-100 text-xs mt-0.5 truncate max-w-[280px]">{rejectTarget.title}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 space-y-4">
+            {/* Reason chips */}
+            <div>
+              <p className="text-sm font-bold text-slate-700 mb-2.5 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-rose-500" />
+                اختر سبب الرفض (يمكن اختيار أكثر من سبب)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {REJECT_CHIPS.map(chip => {
+                  const isSelected = rejectChips.includes(chip.id);
+                  return (
+                    <button
+                      key={chip.id}
+                      type="button"
+                      onClick={() =>
+                        setRejectChips(prev =>
+                          isSelected ? prev.filter(id => id !== chip.id) : [...prev, chip.id]
+                        )
+                      }
+                      className={`relative flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border-2 transition-all duration-150 ${
+                        isSelected
+                          ? "border-rose-500 bg-rose-50 text-rose-700 shadow-sm"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-rose-200 hover:bg-rose-50/50"
+                      }`}
+                    >
+                      {isSelected && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-white" />
+                        </span>
+                      )}
+                      {chip.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom note */}
+            <div>
+              <Label className="text-sm font-bold text-slate-700 mb-1.5 block">
+                ملاحظة إضافية للمعلن <span className="font-normal text-slate-400">(اختياري)</span>
+              </Label>
+              <Textarea
+                value={rejectNote}
+                onChange={e => setRejectNote(e.target.value)}
+                placeholder="أضف توضيحاً أو تفاصيل إضافية يراها المعلن في الإشعار وفي لوحة التحكم..."
+                className="resize-none text-sm rounded-xl border-slate-200 focus-visible:ring-rose-400"
+                rows={3}
+              />
+            </div>
+
+            {/* Preview of what user will see */}
+            {(rejectChips.length > 0 || rejectNote.trim()) && (
+              <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+                <p className="text-xs font-bold text-red-700 mb-1.5 flex items-center gap-1">
+                  <Eye className="w-3.5 h-3.5" />
+                  معاينة الرسالة التي سيراها المعلن:
+                </p>
+                <div className="text-xs text-red-800 space-y-1 leading-relaxed">
+                  {rejectChips.map(id => (
+                    <p key={id} className="flex items-start gap-1">
+                      <span className="mt-0.5 shrink-0">•</span>
+                      {REJECT_CHIPS.find(c => c.id === id)?.label}
+                    </p>
+                  ))}
+                  {rejectNote.trim() && (
+                    <p className="mt-1 pt-1 border-t border-red-100">{rejectNote.trim()}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex gap-2.5 pt-1">
+              <Button
+                onClick={handleRejectConfirm}
+                disabled={rejecting}
+                className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl gap-2"
+              >
+                {rejecting
+                  ? <><Loader2 className="w-4 h-4 animate-spin" />جاري الرفض...</>
+                  : <><XCircle className="w-4 h-4" />تأكيد الرفض وإشعار المعلن</>}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setRejectTarget(null)}
+                disabled={rejecting}
+                className="h-11 px-5 rounded-xl"
+              >
+                إلغاء
+              </Button>
+            </div>
+
+            <p className="text-xs text-center text-slate-400">
+              سيصل إشعار فوري للمعلن مع أسباب الرفض في لوحة التحكم الخاصة به
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Add Dialog ── */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>

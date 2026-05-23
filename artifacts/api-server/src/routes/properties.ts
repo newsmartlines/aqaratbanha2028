@@ -571,27 +571,40 @@ router.get("/user/properties", async (req, res) => {
 router.patch("/properties/:id/status", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { status } = req.body;
+    const { status, rejectionReason } = req.body;
 
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!property) return res.status(404).json({ success: false, error: "Property not found" });
 
     const isApproving = status === "approved" || status === "active";
+    const isRejecting = status === "rejected";
+
     const [updated] = await db.update(propertiesTable)
-      .set({ status, ...(isApproving ? { approvedAt: new Date() } : {}) })
+      .set({
+        status,
+        ...(isApproving ? { approvedAt: new Date() } : {}),
+        ...(isRejecting ? { rejectionReason: rejectionReason ?? null } : {}),
+      })
       .where(eq(propertiesTable.id, id))
       .returning();
 
     const ownerUserId = property.ownerUserId;
-    if (ownerUserId && (status === "approved" || status === "active" || status === "rejected")) {
-      const isApproved = status === "approved" || status === "active";
+    if (ownerUserId && (isApproving || isRejecting)) {
+      let notifMessage: string;
+      if (isApproving) {
+        notifMessage = `تمت الموافقة على إعلانك "${property.title}" وهو الآن ظاهر للجمهور.`;
+      } else {
+        notifMessage = `تم رفض إعلانك "${property.title}".`;
+        if (rejectionReason) {
+          notifMessage += `\n\n📋 سبب الرفض:\n${rejectionReason}`;
+        }
+        notifMessage += "\n\nيمكنك تعديل البيانات وإعادة تقديم الإعلان.";
+      }
       await db.insert(notificationsTable).values({
         userId: ownerUserId,
-        title: isApproved ? "✅ تمت الموافقة على عقارك" : "❌ تم رفض عقارك",
-        message: isApproved
-          ? `تمت الموافقة على إعلانك "${property.title}" وهو الآن ظاهر للجمهور.`
-          : `تم رفض إعلانك "${property.title}". يرجى مراجعة بيانات العقار وإعادة التقديم.`,
-        type: isApproved ? "success" : "warning",
+        title: isApproving ? "✅ تمت الموافقة على عقارك" : "❌ تم رفض عقارك",
+        message: notifMessage,
+        type: isApproving ? "success" : "warning",
         link: "/user/my-properties",
       });
     }

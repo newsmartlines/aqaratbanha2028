@@ -50,6 +50,7 @@ export const propertiesTable = pgTable("properties", {
   nearbyServices: text("nearby_services"),
   contactMethods: text("contact_methods"),
   status: text("status").default("pending"),
+  rejectionReason: text("rejection_reason"),
   featured: boolean("featured").default(false),
   urgent: boolean("urgent").default(false),
   viewCount: integer("view_count").default(0).notNull(),

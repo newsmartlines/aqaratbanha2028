@@ -300,10 +300,30 @@ export default function MyPropertiesPage() {
                     )}
 
                     {/* Status message banner */}
-                    <div className={`mb-3 flex items-start gap-1.5 p-2 rounded-lg border text-xs ${cfg.bannerCls}`}>
+                    <div className={`mb-2 flex items-start gap-1.5 p-2 rounded-lg border text-xs ${cfg.bannerCls}`}>
                       <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                       <span>{cfg.bannerMsg}</span>
                     </div>
+
+                    {/* Rejection reason panel */}
+                    {prop.status === "rejected" && prop.rejectionReason && (
+                      <div className="mb-3 bg-red-50 border border-red-200 rounded-xl p-3 space-y-1.5">
+                        <p className="text-xs font-bold text-red-700 flex items-center gap-1.5">
+                          <XCircle className="w-3.5 h-3.5 shrink-0" />
+                          أسباب الرفض:
+                        </p>
+                        <div className="text-xs text-red-700 leading-relaxed space-y-0.5">
+                          {String(prop.rejectionReason).split("\n").map((line: string, i: number) =>
+                            line.trim() ? (
+                              <p key={i} className="flex items-start gap-1.5">
+                                <span className="shrink-0 mt-0.5">•</span>
+                                <span>{line.trim()}</span>
+                              </p>
+                            ) : null
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Meta row */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
