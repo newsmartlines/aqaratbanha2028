@@ -779,21 +779,6 @@ export default function Home() {
     setHeroCityName(null);
   }, [heroRegionId]);
 
-  // Load Facebook SDK for Page Plugin
-  useEffect(() => {
-    if (document.getElementById("fb-jssdk")) return;
-    (window as any).fbAsyncInit = function () {
-      (window as any).FB?.init({ xfbml: true, version: "v18.0" });
-    };
-    const s = document.createElement("script");
-    s.id = "fb-jssdk";
-    s.async = true;
-    s.defer = true;
-    s.crossOrigin = "anonymous";
-    s.src = "https://connect.facebook.net/ar_AR/sdk.js";
-    document.body.appendChild(s);
-    return () => { document.getElementById("fb-jssdk")?.remove(); };
-  }, []);
 
   const { data: favoritesData = [] } = useQuery<FavoriteItem[]>({
     queryKey: ["favorites", user?.id],
@@ -1209,34 +1194,34 @@ export default function Home() {
                       {/* Price */}
                       <div className="flex items-baseline gap-1.5 mb-1.5">
                         <p className="text-gray-900 font-extrabold text-2xl leading-none">{priceStr}</p>
-                        <span className="text-muted-foreground text-sm font-medium">ج.م</span>
-                        {listType === "rent" && <span className="text-muted-foreground text-xs">/شهر</span>}
+                        <span className="text-gray-700 text-sm font-medium">ج.م</span>
+                        {listType === "rent" && <span className="text-gray-700 text-xs">/شهر</span>}
                       </div>
 
                       <h3 className="font-bold text-gray-900 text-sm leading-snug mb-2 line-clamp-1">
                         {property.title}
                       </h3>
 
-                      <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
+                      <div className="flex items-center gap-1 text-gray-700 text-xs mb-3">
                         <MapPin className="w-3 h-3 text-primary shrink-0" />
                         <span className="truncate">{location}</span>
                       </div>
 
                       {/* Specs pills */}
                       <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                        <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
-                          <BedDouble className="w-3 h-3 text-slate-400" />
+                        <span className="flex items-center gap-1 text-gray-800 text-xs font-medium">
+                          <BedDouble className="w-3 h-3 text-gray-600" />
                           {(property as any).rooms ? `${(property as any).rooms} غرفة` : "—"}
                         </span>
                         {(property.bathrooms ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
-                            <Bath className="w-3 h-3 text-slate-400" />
+                          <span className="flex items-center gap-1 text-gray-800 text-xs font-medium">
+                            <Bath className="w-3 h-3 text-gray-600" />
                             {property.bathrooms} حمام
                           </span>
                         )}
                         {(property.area ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
-                            <Maximize2 className="w-3 h-3 text-slate-400" />
+                          <span className="flex items-center gap-1 text-gray-800 text-xs font-medium">
+                            <Maximize2 className="w-3 h-3 text-gray-600" />
                             {Number(property.area).toLocaleString("ar-EG")} م²
                           </span>
                         )}
@@ -1244,7 +1229,7 @@ export default function Home() {
 
                       <div className="border-t border-border/60 my-3" />
 
-                      {/* Agent + compare row */}
+                      {/* Agent row + time/views/compare on one line */}
                       {(() => {
                         const agentName = (property as any).agentName as string | undefined;
                         const agentAvatar = (property as any).agentAvatar as string | undefined;
@@ -1252,47 +1237,50 @@ export default function Home() {
                         const avatar = agentAvatar || agentLogo;
                         return (
                           <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              {avatar ? (
-                                <img
-                                  src={avatar}
-                                  alt={agentName}
-                                  className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
-                                  onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`; }}
-                                />
-                              ) : agentName ? (
-                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
-                                  {agentName.charAt(0)}
-                                </div>
-                              ) : null}
-                              {agentName && <span className="text-xs text-slate-600 font-medium truncate flex-1">{agentName}</span>}
-                              {!agentName && <span className="flex-1" />}
-                              <button
-                                className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary"}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-                                  const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: (property as any).rooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
-                                  if (r === "added") toast.success("أُضيف للمقارنة ✓");
-                                  else if (r === "already") toast("موجود بالفعل في المقارنة");
-                                  else toast.error("المقارنة ممتلئة (٤ عقارات)");
-                                }}
-                                title="قارن"
-                              >
-                                <GitCompare className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                            {agentName && (
+                              <div className="flex items-center gap-2">
+                                {avatar ? (
+                                  <img
+                                    src={avatar}
+                                    alt={agentName}
+                                    className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0"
+                                    onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentName ?? "م")}&background=0d9488&color=fff&size=28`; }}
+                                  />
+                                ) : (
+                                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
+                                    {agentName.charAt(0)}
+                                  </div>
+                                )}
+                                <span className="text-xs text-gray-900 font-semibold truncate flex-1">{agentName}</span>
+                              </div>
+                            )}
 
-                            {/* Time ago + views count */}
-                            <div className="flex items-center justify-between text-[11px] text-slate-400">
+                            {/* Time + views + compare — all on one line */}
+                            <div className="flex items-center justify-between text-[11px] text-gray-700">
                               <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3 shrink-0" />
+                                <Clock className="w-3 h-3 shrink-0 text-gray-500" />
                                 {timeAgo((property as any).createdAt) || "—"}
                               </span>
-                              <span className="flex items-center gap-1">
-                                <Eye className="w-3 h-3 shrink-0" />
-                                {((property as any).viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="flex items-center gap-1">
+                                  <Eye className="w-3 h-3 shrink-0 text-gray-500" />
+                                  {((property as any).viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                </span>
+                                <button
+                                  className={`flex items-center justify-center w-7 h-7 rounded-lg border transition-all shrink-0 ${isInCompare(property.id) ? "bg-primary text-white border-primary" : "border-gray-200 text-gray-600 hover:border-primary/40 hover:text-primary"}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+                                    const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: (property as any).rooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                                    if (r === "added") toast.success("أُضيف للمقارنة ✓");
+                                    else if (r === "already") toast("موجود بالفعل في المقارنة");
+                                    else toast.error("المقارنة ممتلئة (٤ عقارات)");
+                                  }}
+                                  title="قارن"
+                                >
+                                  <GitCompare className="w-3 h-3" />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -1685,58 +1673,6 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4">
           <AdBanner position="homepage_before_footer" />
         </div>
-
-        {/* ── FACEBOOK PAGE PLUGIN ── */}
-        <div id="fb-root" />
-        <section className="py-16 bg-gradient-to-br from-[#1877F2]/8 via-white to-[#1877F2]/5 border-t border-[#1877F2]/10">
-          <div className="container mx-auto px-4">
-            <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
-
-              {/* Left: Text */}
-              <div className="flex-1 text-center lg:text-right order-2 lg:order-1">
-                <div className="inline-flex items-center gap-2 bg-[#1877F2]/10 text-[#1877F2] rounded-full px-4 py-1.5 text-sm font-bold mb-4">
-                  <svg className="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  تابعنا على فيسبوك
-                </div>
-                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3 leading-snug">
-                  كن أول من يعلم بأحدث العقارات
-                </h2>
-                <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto lg:mx-0">
-                  تابع صفحتنا على فيسبوك وابقَ على اطلاع دائم بأحدث عروض البيع والإيجار في بنها والقليوبية.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center lg:justify-start">
-                  <a
-                    href="https://www.facebook.com/aqaratbanha"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#1665d8] text-white font-bold rounded-xl px-6 py-3 transition-colors shadow-lg shadow-[#1877F2]/20 text-sm"
-                  >
-                    <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    متابعة الصفحة
-                  </a>
-                </div>
-              </div>
-
-              {/* Right: FB Page Plugin */}
-              <div className="order-1 lg:order-2 shrink-0 flex justify-center">
-                <div className="rounded-2xl overflow-hidden shadow-xl shadow-[#1877F2]/10 border border-[#1877F2]/15">
-                  <div
-                    className="fb-page"
-                    data-href="https://www.facebook.com/aqaratbanha"
-                    data-tabs=""
-                    data-width="340"
-                    data-height="220"
-                    data-small-header="true"
-                    data-adapt-container-width="false"
-                    data-hide-cover="false"
-                    data-show-facepile="true"
-                  />
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
 
         {/* ── FOOTER ── */}
         <footer className="bg-slate-900 text-white py-16">

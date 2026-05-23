@@ -190,13 +190,13 @@ function PropCard({ p, active, onClick }: { p: Property; active: boolean; onClic
       <div className="p-2.5" dir="rtl">
         <p className="font-bold text-sm text-foreground truncate">{p.title}</p>
         <p className="text-gray-900 font-extrabold text-sm mt-0.5">{formatPrice(p.price)}</p>
-        <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground flex-wrap">
-          {p.rooms && <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{p.rooms}</span>}
-          {p.bathrooms && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{p.bathrooms}</span>}
-          {p.area && <span className="flex items-center gap-0.5"><Maximize2 className="w-3 h-3" />{p.area}م²</span>}
+        <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-800 flex-wrap">
+          {p.rooms && <span className="flex items-center gap-0.5"><Bed className="w-3 h-3 text-gray-600" />{p.rooms}</span>}
+          {p.bathrooms && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3 text-gray-600" />{p.bathrooms}</span>}
+          {p.area && <span className="flex items-center gap-0.5"><Maximize2 className="w-3 h-3 text-gray-600" />{p.area}م²</span>}
         </div>
         {p.address && (
-          <p className="flex items-center gap-0.5 text-[11px] text-muted-foreground mt-1 truncate">
+          <p className="flex items-center gap-0.5 text-[11px] text-gray-700 mt-1 truncate">
             <MapPin className="w-3 h-3 shrink-0" />{p.address}
           </p>
         )}
