@@ -44,6 +44,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { api, type Category, type Area, type Subcategory } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FeatureIcon } from "@/components/FeatureIcon";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
@@ -212,11 +213,7 @@ const RECENCY_OPTIONS = [
   { label: "هذا الأسبوع", hours: 168 },
   { label: "هذا الشهر", hours: 720 },
 ];
-const FEATURE_OPTIONS = [
-  "مصعد", "موقف سيارات", "أمن وحراسة", "إنترنت فايبر",
-  "تكييف مركزي", "حديقة خاصة", "مسبح", "غرفة سائق",
-  "نظام ري", "جراج", "مولد كهرباء", "غرفة خادمة",
-];
+type DynFeature = { id: number; name: string; icon: string | null; status: string; applicableTypes?: string | null };
 const FINISHING_OPTIONS = ["مشطب", "سوبر لوكس", "لوكس", "نص تشطيب", "خام"];
 const FURNISHED_OPTIONS = ["مفروش", "مفروش جزئياً", "غير مفروش"];
 const PAYMENT_OPTIONS = ["نقدي", "تقسيط", "نقدي أو تقسيط", "بنكي"];
@@ -345,6 +342,23 @@ export default function PropertiesPage() {
   useEffect(() => {
     if (myFavIds.length) setLiked(new Set(myFavIds));
   }, [myFavIds]);
+
+  const { data: dbFeatures = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-features-filter"],
+    queryFn: () => api.propertyFeatures.listByType("feature"),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: dbServices = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-services-filter"],
+    queryFn: () => api.propertyFeatures.listByType("service"),
+    staleTime: 5 * 60_000,
+  });
+
+  const allDynFeatures = useMemo(() => [
+    ...dbFeatures.filter((f) => f.status === "active"),
+    ...dbServices.filter((f) => f.status === "active"),
+  ], [dbFeatures, dbServices]);
 
   useEffect(() => {
     api.properties.list({ status: "active" })
@@ -848,20 +862,31 @@ export default function PropertiesPage() {
                 </FilterSection>
 
                 {/* ── الميزات والمرافق ── */}
+                {allDynFeatures.length > 0 && (
                 <FilterSection title="الميزات والمرافق" defaultOpen={false}>
                   <div className="flex flex-wrap gap-1.5">
-                    {FEATURE_OPTIONS.map((f) => {
-                      const active = selectedFeatures.includes(f);
+                    {allDynFeatures.map((f) => {
+                      const active = selectedFeatures.includes(f.name);
                       return (
-                        <button key={f}
-                          onClick={() => setSelectedFeatures(prev => active ? prev.filter(x => x !== f) : [...prev, f])}
-                          className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}>
-                          {f}
+                        <button
+                          key={f.id}
+                          onClick={() => setSelectedFeatures(prev =>
+                            active ? prev.filter(x => x !== f.name) : [...prev, f.name]
+                          )}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                            active
+                              ? "bg-primary text-white border-primary shadow-sm"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"
+                          }`}
+                        >
+                          <FeatureIcon name={f.icon} className="w-3 h-3 shrink-0" />
+                          {f.name}
                         </button>
                       );
                     })}
                   </div>
                 </FilterSection>
+                )}
 
                 {/* ── تاريخ الإضافة ── */}
                 <FilterSection title="تاريخ الإضافة" defaultOpen={false}>
@@ -1548,6 +1573,33 @@ export default function PropertiesPage() {
                 ))}
               </div>
             </FilterSection>
+
+            {/* Features - dynamic from DB */}
+            {allDynFeatures.length > 0 && (
+              <FilterSection title="الميزات والمرافق" defaultOpen={false}>
+                <div className="flex flex-wrap gap-1.5">
+                  {allDynFeatures.map((f) => {
+                    const active = selectedFeatures.includes(f.name);
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => setSelectedFeatures(prev =>
+                          active ? prev.filter(x => x !== f.name) : [...prev, f.name]
+                        )}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                          active
+                            ? "bg-primary text-white border-primary shadow-sm"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"
+                        }`}
+                      >
+                        <FeatureIcon name={f.icon} className="w-3 h-3 shrink-0" />
+                        {f.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FilterSection>
+            )}
           </div>
 
           {/* Mobile Sheet footer */}
