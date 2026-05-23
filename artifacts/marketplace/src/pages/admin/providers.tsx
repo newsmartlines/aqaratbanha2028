@@ -13,13 +13,17 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Search, MoreVertical, CheckCircle2, XCircle, Eye, Ban, Loader2, RefreshCw, Star, MapPin, Phone, Plus, Pencil } from "lucide-react";
+import {
+  Search, MoreVertical, CheckCircle2, XCircle, Eye, Ban, Loader2, RefreshCw,
+  Star, MapPin, Phone, Plus, Pencil, Crown, TrendingUp, CalendarCheck, Sparkles,
+  Check, Package, Zap,
+} from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { api, type AdminProvider, type ProviderDetail, type Category, type Region } from "@/lib/api";
+import { api, type AdminProvider, type ProviderDetail, type Category, type Region, type BillingPlan } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useT, commonDict, useLanguage } from "@/lib/i18n";
 
@@ -146,6 +150,9 @@ export default function AdminProviders() {
   const [providerForm, setProviderForm] = useState<ProviderForm>(emptyProviderForm());
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
+  const [upgradeTarget, setUpgradeTarget] = useState<AdminProvider | null>(null);
+  const [upgradePlanId, setUpgradePlanId] = useState<number | null>(null);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   void editingProvider;
 
   const { data: regionsAdmin = [] } = useQuery({
@@ -168,6 +175,27 @@ export default function AdminProviders() {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: api.categories.list,
+  });
+
+  const { data: billingPlans = [] } = useQuery<BillingPlan[]>({
+    queryKey: ["billing-plans-admin"],
+    queryFn: api.billingPlans.adminList,
+    staleTime: 5 * 60_000,
+  });
+
+  const subscribeMutation = useMutation({
+    mutationFn: ({ id, planId }: { id: number; planId: number }) =>
+      api.subscriptions.subscribe(id, planId, true, { simulated: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-providers"] });
+      setUpgradeSuccess(true);
+      setTimeout(() => {
+        setUpgradeTarget(null);
+        setUpgradePlanId(null);
+        setUpgradeSuccess(false);
+      }, 2200);
+    },
+    onError: (e: Error) => toast({ title: tc("error"), description: e.message, variant: "destructive" }),
   });
 
   const createProviderMutation = useMutation({
@@ -414,6 +442,12 @@ export default function AdminProviders() {
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => openEdit(p)}>
                                 <Pencil className="me-2 h-4 w-4" /> {t("editProvider")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-amber-600 font-semibold"
+                                onClick={() => { setUpgradeTarget(p); setUpgradePlanId(null); setUpgradeSuccess(false); }}
+                              >
+                                <Crown className="me-2 h-4 w-4" /> إضافة باقة / ترقية
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               {!p.approved && !p.suspended && (
@@ -663,6 +697,154 @@ export default function AdminProviders() {
               {providerModal === "add" ? t("createProvider") : t("saveChanges")}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Upgrade / Add Package Modal ─────────────────────────── */}
+      <Dialog
+        open={!!upgradeTarget}
+        onOpenChange={o => { if (!o && !subscribeMutation.isPending) { setUpgradeTarget(null); setUpgradePlanId(null); setUpgradeSuccess(false); } }}
+      >
+        <DialogContent className="max-w-2xl p-0 overflow-hidden" dir="rtl">
+          {/* Gradient header */}
+          <div className="bg-gradient-to-l from-amber-600 to-amber-500 px-6 py-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">إضافة باقة / ترقية الاشتراك</h2>
+                {upgradeTarget && <p className="text-amber-100 text-sm">{upgradeTarget.userName}</p>}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-5">
+            {upgradeSuccess ? (
+              /* ── Success state ── */
+              <div className="py-10 text-center space-y-4">
+                <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-10 h-10 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-gray-800">تم تفعيل الباقة بنجاح! 🎉</p>
+                  <p className="text-gray-500 text-sm mt-1">سيُطبَّق الاشتراك على حساب الشركة فوراً</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Current subscription info */}
+                {(upgradeTarget as any)?.subscription && (
+                  <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                    <CalendarCheck className="w-4 h-4 text-blue-500 shrink-0" />
+                    <div>
+                      <p className="text-xs text-blue-600 font-medium">الاشتراك الحالي</p>
+                      <p className="text-sm font-bold text-blue-800">{(upgradeTarget as any).subscription?.packageName ?? "باقة غير معروفة"}</p>
+                    </div>
+                    <span className="mr-auto text-xs text-blue-500 bg-blue-100 px-2 py-1 rounded-full">نشط</span>
+                  </div>
+                )}
+
+                {/* Plan label */}
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <p className="font-bold text-gray-800">اختر الباقة المطلوبة</p>
+                </div>
+
+                {/* Plan cards grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto pb-1">
+                  {(billingPlans as BillingPlan[])
+                    .filter(p => p.status === "active")
+                    .sort((a, b) => a.sortOrder - b.sortOrder)
+                    .map(plan => {
+                      const price = parseFloat(plan.price);
+                      const isFree = price === 0;
+                      const isSelected = upgradePlanId === plan.id;
+                      const isPop = plan.isMostPopular;
+                      const isRec = plan.isRecommended;
+
+                      return (
+                        <button
+                          key={plan.id}
+                          type="button"
+                          onClick={() => setUpgradePlanId(plan.id)}
+                          className={`relative text-right p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col gap-2 group hover:shadow-md ${
+                            isSelected
+                              ? "border-amber-500 bg-amber-50 shadow-md"
+                              : "border-gray-200 bg-white hover:border-amber-300"
+                          }`}
+                        >
+                          {/* badges */}
+                          <div className="absolute top-2 left-2 flex gap-1">
+                            {isPop && <span className="text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full">الأكثر طلباً</span>}
+                            {isRec && !isPop && <span className="text-[10px] font-bold bg-teal-500 text-white px-2 py-0.5 rounded-full">موصى به</span>}
+                          </div>
+
+                          {/* Selected checkmark */}
+                          <div className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all ${
+                            isSelected ? "bg-amber-500 scale-100" : "bg-gray-100 scale-75 opacity-0 group-hover:opacity-50 group-hover:scale-100"
+                          }`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+
+                          {/* Plan icon */}
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                            isFree ? "bg-gray-100" : isPop ? "bg-amber-100" : "bg-teal-100"
+                          }`}>
+                            {isFree ? <Package className="w-4 h-4 text-gray-500" /> : isPop ? <Crown className="w-4 h-4 text-amber-600" /> : <Zap className="w-4 h-4 text-teal-600" />}
+                          </div>
+
+                          {/* Name */}
+                          <div>
+                            <p className={`font-bold text-sm leading-tight ${isSelected ? "text-amber-700" : "text-gray-800"}`}>
+                              {plan.nameAr ?? plan.name}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">{plan.durationDays} يوم</p>
+                          </div>
+
+                          {/* Price */}
+                          <div className={`font-black text-xl leading-none mt-1 ${isSelected ? "text-amber-600" : "text-gray-700"}`}>
+                            {isFree ? (
+                              <span className="text-emerald-600">مجاني</span>
+                            ) : (
+                              <>
+                                {Number(plan.price).toLocaleString("ar-EG")}
+                                <span className="text-xs font-normal text-gray-400 mr-1">{plan.currency}</span>
+                              </>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                </div>
+
+                {/* Upgrade CTA */}
+                <div className="flex gap-3 border-t pt-4">
+                  <Button
+                    onClick={() => upgradeTarget && upgradePlanId && subscribeMutation.mutate({ id: upgradeTarget.id, planId: upgradePlanId })}
+                    disabled={!upgradePlanId || subscribeMutation.isPending}
+                    className="flex-1 h-12 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl gap-2"
+                  >
+                    {subscribeMutation.isPending
+                      ? <><Loader2 className="w-4 h-4 animate-spin" />جاري التفعيل...</>
+                      : <><TrendingUp className="w-4 h-4" />تفعيل الباقة الآن</>}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => { setUpgradeTarget(null); setUpgradePlanId(null); }}
+                    disabled={subscribeMutation.isPending}
+                    className="h-12 rounded-xl"
+                  >
+                    إلغاء
+                  </Button>
+                </div>
+
+                <p className="text-xs text-center text-gray-400">
+                  سيُفعَّل الاشتراك فوراً على حساب الشركة بصلاحيات المسؤول
+                </p>
+              </>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

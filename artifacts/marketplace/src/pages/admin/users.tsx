@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   Search, Pencil, Trash2, UserX, UserCheck, Loader2, RefreshCw, Users, Eye,
   Phone, Mail, Calendar, MapPin, Shield, Briefcase, User as UserIcon,
+  Crown, Building2, Check, Sparkles, Package, CheckCircle2,
 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -88,10 +89,34 @@ export default function AdminUsers() {
   const [viewUser, setViewUser] = useState<AdminUser | null>(null);
   const [locRegion, setLocRegion] = useState<string>("all");
   const [locCity, setLocCity] = useState<string>("all");
+  const [upgradeUser, setUpgradeUser] = useState<AdminUser | null>(null);
+  const [upgradePlanId, setUpgradePlanId] = useState<number | null>(null);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const { data: regAdmin = [] } = useQuery({
     queryKey: ["admin-regions-users"],
     queryFn: api.locations.admin.allRegions,
+  });
+
+  const { data: billingPlans = [] } = useQuery({
+    queryKey: ["billing-plans-admin-users"],
+    queryFn: api.billingPlans.adminList,
+    staleTime: 5 * 60_000,
+  });
+
+  const upgradeToProviderMutation = useMutation({
+    mutationFn: (id: number) =>
+      api.admin.users.update(id, { role: "provider" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setUpgradeSuccess(true);
+      setTimeout(() => {
+        setUpgradeUser(null);
+        setUpgradePlanId(null);
+        setUpgradeSuccess(false);
+      }, 2200);
+    },
+    onError: (e: Error) => toast({ title: tc("error"), description: e.message, variant: "destructive" }),
   });
 
   const cityOptions = useMemo(() => {
@@ -295,6 +320,14 @@ export default function AdminUsers() {
                                 <UserCheck className="w-4 h-4" />
                               </Button>
                             )}
+                            <Button
+                              variant="ghost" size="sm"
+                              onClick={() => { setUpgradeUser(u); setUpgradePlanId(null); setUpgradeSuccess(false); }}
+                              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                              title="إضافة باقة / ترقية"
+                            >
+                              <Crown className="w-4 h-4" />
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(u)} className="text-red-500 hover:text-red-600 hover:bg-red-50" title={tc("delete")}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -446,6 +479,162 @@ export default function AdminUsers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* ── Upgrade / Add Package Modal ─────────────────────────── */}
+      <Dialog
+        open={!!upgradeUser}
+        onOpenChange={o => { if (!o && !upgradeToProviderMutation.isPending) { setUpgradeUser(null); setUpgradePlanId(null); setUpgradeSuccess(false); } }}
+      >
+        <DialogContent className="max-w-2xl p-0 overflow-hidden" dir="rtl">
+          {/* Gradient header */}
+          <div className="bg-gradient-to-l from-teal-700 to-teal-600 px-6 py-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">ترقية الحساب إلى مزوّد عقاري</h2>
+                {upgradeUser && (
+                  <p className="text-teal-100 text-sm">{upgradeUser.name} · {upgradeUser.email}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-5">
+            {upgradeSuccess ? (
+              /* ── Success state ── */
+              <div className="py-10 text-center space-y-4">
+                <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-10 h-10 text-teal-600" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-gray-800">تم ترقية الحساب بنجاح! 🎉</p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    أصبح الحساب الآن مزوّداً عقارياً — يمكن تعيين الباقة من صفحة الشركات
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Info card */}
+                <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4">
+                  <Building2 className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-amber-800 text-sm">ماذا يعني هذا؟</p>
+                    <p className="text-amber-700 text-xs mt-1 leading-relaxed">
+                      سيتحوّل هذا المستخدم من حساب عادي إلى مزوّد عقاري (شركة/وسيط)،
+                      وسيتمكن من نشر العقارات وإدارة إعلاناته. يمكنك بعدها تعيين الباقة
+                      المناسبة من صفحة إدارة الشركات.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Plan selection label */}
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-teal-500" />
+                  <p className="font-bold text-gray-800">اختر الباقة المبدئية <span className="font-normal text-gray-400 text-sm">(اختياري)</span></p>
+                </div>
+
+                {/* Plan cards grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pb-1">
+                  {/* "No package" option */}
+                  <button
+                    type="button"
+                    onClick={() => setUpgradePlanId(null)}
+                    className={`text-right p-4 rounded-2xl border-2 transition-all flex flex-col gap-2 hover:shadow-md ${
+                      upgradePlanId === null
+                        ? "border-gray-400 bg-gray-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
+                      <Package className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <p className="font-bold text-sm text-gray-600">بدون باقة الآن</p>
+                    <p className="text-xs text-gray-400">يمكن التعيين لاحقاً</p>
+                  </button>
+
+                  {billingPlans
+                    .filter((p: any) => p.status === "active")
+                    .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+                    .map((plan: any) => {
+                      const price = parseFloat(plan.price);
+                      const isFree = price === 0;
+                      const isSelected = upgradePlanId === plan.id;
+                      const isPop = plan.isMostPopular;
+
+                      return (
+                        <button
+                          key={plan.id}
+                          type="button"
+                          onClick={() => setUpgradePlanId(plan.id)}
+                          className={`relative text-right p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col gap-2 hover:shadow-md ${
+                            isSelected
+                              ? "border-teal-500 bg-teal-50 shadow-md"
+                              : "border-gray-200 bg-white hover:border-teal-300"
+                          }`}
+                        >
+                          {isPop && (
+                            <span className="absolute top-2 left-2 text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full">
+                              الأكثر طلباً
+                            </span>
+                          )}
+                          <div className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all ${
+                            isSelected ? "bg-teal-500" : "opacity-0"
+                          }`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                            isFree ? "bg-gray-100" : isPop ? "bg-amber-100" : "bg-teal-100"
+                          }`}>
+                            {isFree ? <Package className="w-4 h-4 text-gray-500" /> : isPop ? <Crown className="w-4 h-4 text-amber-600" /> : <Sparkles className="w-4 h-4 text-teal-600" />}
+                          </div>
+                          <div>
+                            <p className={`font-bold text-sm ${isSelected ? "text-teal-700" : "text-gray-800"}`}>
+                              {plan.nameAr ?? plan.name}
+                            </p>
+                            <p className="text-xs text-gray-400">{plan.durationDays} يوم</p>
+                          </div>
+                          <p className={`font-black text-xl leading-none ${isSelected ? "text-teal-600" : "text-gray-700"}`}>
+                            {isFree
+                              ? <span className="text-emerald-600">مجاني</span>
+                              : <>{Number(plan.price).toLocaleString("ar-EG")}<span className="text-xs font-normal text-gray-400 mr-1">{plan.currency}</span></>
+                            }
+                          </p>
+                        </button>
+                      );
+                    })}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-3 border-t pt-4">
+                  <Button
+                    onClick={() => upgradeUser && upgradeToProviderMutation.mutate(upgradeUser.id)}
+                    disabled={upgradeToProviderMutation.isPending}
+                    className="flex-1 h-12 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl gap-2"
+                  >
+                    {upgradeToProviderMutation.isPending
+                      ? <><Loader2 className="w-4 h-4 animate-spin" />جاري الترقية...</>
+                      : <><Building2 className="w-4 h-4" />ترقية إلى مزوّد عقاري</>}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => { setUpgradeUser(null); setUpgradePlanId(null); }}
+                    disabled={upgradeToProviderMutation.isPending}
+                    className="h-12 rounded-xl"
+                  >
+                    إلغاء
+                  </Button>
+                </div>
+
+                <p className="text-xs text-center text-gray-400">
+                  بعد الترقية، ابحث عن الحساب في صفحة الشركات لتعيين الباقة
+                </p>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
