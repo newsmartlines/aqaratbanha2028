@@ -5,7 +5,7 @@ import {
   notificationsTable, usersTable, siteSettingsTable, providersTable,
   userViewsTable,
 } from "@workspace/db";
-import { eq, desc, and, or, ilike, sql, getTableColumns, lt } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql, getTableColumns, lt, inArray } from "drizzle-orm";
 import { getSession } from "./auth";
 
 const router = Router();
@@ -181,13 +181,13 @@ router.get("/properties", async (req, res) => {
 
     const conditions: any[] = [];
 
-    // status=all → no filter (admin). status=<value> → exact match. no status → default to approved
+    // status=all → no filter (admin). status=<value> → exact match. no status → show active + approved
     if (status === "all") {
       // show everything — no filter
     } else if (status) {
       conditions.push(eq(propertiesTable.status, status));
     } else {
-      conditions.push(eq(propertiesTable.status, "approved"));
+      conditions.push(inArray(propertiesTable.status, ["active", "approved"]));
     }
     if (category) conditions.push(eq(propertiesTable.mainCategory, category));
     if (subCategory) conditions.push(eq(propertiesTable.subCategory, subCategory));
@@ -511,9 +511,9 @@ router.put("/properties/:id", async (req, res) => {
     delete updateData.createdAt;
     delete updateData.id;
 
-    // Non-admin editing an approved property → reset to pending for re-review
+    // Non-admin editing an active/approved property → reset to pending for re-review
     const sessionRole = (session as any).role;
-    if (sessionRole !== "admin" && existing.status === "approved") {
+    if (sessionRole !== "admin" && (existing.status === "approved" || existing.status === "active")) {
       updateData.status = "pending";
     }
 
@@ -543,10 +543,22 @@ router.get("/user/properties", async (req, res) => {
   try {
     const session = await requireAuth(req);
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
+
+    // Find the provider record for this user (if provider role)
+    let providerIdForUser: number | null = null;
+    if ((session as any).role === "provider") {
+      const [prov] = await db.select({ id: providersTable.id }).from(providersTable).where(eq(providersTable.userId, session.userId));
+      if (prov) providerIdForUser = prov.id;
+    }
+
     const rows = await db
       .select()
       .from(propertiesTable)
-      .where(eq(propertiesTable.ownerUserId, session.userId))
+      .where(
+        providerIdForUser
+          ? or(eq(propertiesTable.ownerUserId, session.userId), eq(propertiesTable.providerId, providerIdForUser))
+          : eq(propertiesTable.ownerUserId, session.userId)
+      )
       .orderBy(desc(propertiesTable.createdAt));
     res.json({ success: true, data: rows });
   } catch (err: any) {
@@ -566,8 +578,8 @@ router.patch("/properties/:id/status", async (req, res) => {
     const [updated] = await db.update(propertiesTable).set({ status }).where(eq(propertiesTable.id, id)).returning();
 
     const ownerUserId = property.ownerUserId;
-    if (ownerUserId && (status === "approved" || status === "rejected")) {
-      const isApproved = status === "approved";
+    if (ownerUserId && (status === "approved" || status === "active" || status === "rejected")) {
+      const isApproved = status === "approved" || status === "active";
       await db.insert(notificationsTable).values({
         userId: ownerUserId,
         title: isApproved ? "✅ تمت الموافقة على عقارك" : "❌ تم رفض عقارك",

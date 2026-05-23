@@ -222,14 +222,22 @@ export default function MapSearchPage() {
 
   const { data: raw } = useQuery({
     queryKey: ["map-properties"],
-    queryFn: () => (api.properties as any).list({ status: "approved", limit: "200" }),
+    queryFn: async () => {
+      const [r1, r2] = await Promise.all([
+        (api.properties as any).list({ status: "active", limit: "200" }),
+        (api.properties as any).list({ status: "approved", limit: "200" }),
+      ]);
+      const a1 = Array.isArray(r1) ? r1 : (r1 as any)?.data ?? [];
+      const a2 = Array.isArray(r2) ? r2 : (r2 as any)?.data ?? [];
+      const seen = new Set<number>();
+      return [...a1, ...a2].filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+    },
     staleTime: 30_000,
   });
 
   const allProps: Property[] = useMemo(() => {
     if (!raw) return [];
-    const arr = Array.isArray(raw) ? raw : (raw as any)?.data ?? [];
-    return arr as Property[];
+    return raw as Property[];
   }, [raw]);
 
   // Filter

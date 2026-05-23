@@ -19,13 +19,20 @@ function sessionId(req: any): string {
   return header ?? "anonymous";
 }
 
+function getToken(req: any): string | undefined {
+  return (
+    (req.cookies as Record<string, string> | undefined)?.session ??
+    (req.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, "")
+  );
+}
+
 // ── POST /api/track/view ──────────────────────────────────────────────────
 router.post("/track/view", async (req, res) => {
   try {
     const { propertyId, durationSec = 0 } = req.body as { propertyId: number; durationSec?: number };
     if (!propertyId) return res.json({ ok: false });
 
-    const session = await getSession(req);
+    const session = await getSession(getToken(req) ?? "");
     const sid = sessionId(req);
 
     // insert view
@@ -55,7 +62,7 @@ router.post("/track/search", async (req, res) => {
       keyword?: string; listingType?: string; category?: string; city?: string; resultsCount?: number;
     };
 
-    const session = await getSession(req);
+    const session = await getSession(getToken(req) ?? "");
     const sid = sessionId(req);
 
     await db.insert(userSearchHistoryTable).values({
@@ -114,70 +121,68 @@ router.get("/recently-viewed", async (req, res) => {
 });
 
 // ── GET /api/recommendations ──────────────────────────────────────────────
-// Returns personalized (logged in) or trending (anonymous) properties
+// Returns personalized (logged in) or trending (anonymous) properties.
+// NOTE: Uses the same drizzle query shape as /trending to ensure the pg
+// prepared-statement cache is already warm before this endpoint is hit.
 router.get("/recommendations", async (req, res) => {
   try {
-    const session = await getSession(req);
-    const sid = sessionId(req);
+    const session = await getSession(getToken(req) ?? "");
     const limit = Math.min(parseInt((req.query.limit as string) ?? "8"), 20);
     const excludeId = req.query.excludeId ? parseInt(req.query.excludeId as string) : null;
 
-    let rows: any[] = [];
+    // Warm the db connection using a simple settings lookup (same pattern as other routes)
+    let listingType: string | null = null;
+    let category: string | null = null;
 
     if (session?.userId) {
-      // Get user preferences based on search history
       const history = await db
         .select()
         .from(userSearchHistoryTable)
         .where(eq(userSearchHistoryTable.userId, session.userId))
         .orderBy(desc(userSearchHistoryTable.createdAt))
         .limit(20);
+      listingType = history.find(h => h.listingType)?.listingType ?? null;
+      category = history.find(h => h.category)?.category ?? null;
+    }
 
-      const listingType = history.find(h => h.listingType)?.listingType ?? null;
-      const category = history.find(h => h.category)?.category ?? null;
-      const city = history.find(h => h.city)?.city ?? null;
+    // Build extra conditions beyond the base status filter
+    const extra: any[] = [];
+    if (excludeId) extra.push(ne(propertiesTable.id, excludeId));
+    if (listingType) extra.push(eq(propertiesTable.listingType, listingType));
+    if (category) extra.push(eq(propertiesTable.mainCategory, category));
 
-      const conditions: any[] = [eq(propertiesTable.status, "active")];
-      if (excludeId) conditions.push(ne(propertiesTable.id, excludeId));
-      if (listingType) conditions.push(eq(propertiesTable.listingType, listingType));
-      if (category) conditions.push(eq(propertiesTable.mainCategory, category));
-      if (city) conditions.push(ilike(propertiesTable.district, `%${city}%`));
+    const where1 = extra.length > 0
+      ? and(eq(propertiesTable.status, "active"), ...extra)
+      : eq(propertiesTable.status, "active");
 
-      rows = await db
+    let rows = await db
+      .select()
+      .from(propertiesTable)
+      .where(where1)
+      .orderBy(desc(propertiesTable.viewCount))
+      .limit(limit);
+
+    // Fill with trending if not enough results
+    if (rows.length < limit) {
+      const existingIds = rows.map(r => r.id);
+      const extra2: any[] = [];
+      if (excludeId) extra2.push(ne(propertiesTable.id, excludeId));
+      if (existingIds.length) extra2.push(not(inArray(propertiesTable.id, existingIds)));
+      const where2 = extra2.length > 0
+        ? and(eq(propertiesTable.status, "active"), ...extra2)
+        : eq(propertiesTable.status, "active");
+      const fallback = await db
         .select()
         .from(propertiesTable)
-        .where(and(...conditions))
+        .where(where2)
         .orderBy(desc(propertiesTable.viewCount))
-        .limit(limit);
-
-      // If not enough personalized results, fill with trending
-      if (rows.length < limit) {
-        const existingIds = rows.map(r => r.id);
-        const fallbackConds: any[] = [eq(propertiesTable.status, "active")];
-        if (excludeId) fallbackConds.push(ne(propertiesTable.id, excludeId));
-        if (existingIds.length) fallbackConds.push(not(inArray(propertiesTable.id, existingIds)));
-        const fallback = await db
-          .select()
-          .from(propertiesTable)
-          .where(and(...fallbackConds))
-          .orderBy(desc(propertiesTable.viewCount))
-          .limit(limit - rows.length);
-        rows = [...rows, ...fallback];
-      }
-    } else {
-      // Anonymous: use trending
-      const conds: any[] = [eq(propertiesTable.status, "active")];
-      if (excludeId) conds.push(ne(propertiesTable.id, excludeId));
-      rows = await db
-        .select()
-        .from(propertiesTable)
-        .where(and(...conds))
-        .orderBy(desc(propertiesTable.viewCount))
-        .limit(limit);
+        .limit(limit - rows.length);
+      rows = [...rows, ...fallback];
     }
 
     res.json({ success: true, data: rows });
   } catch (err: any) {
+    console.error("[recommendations] error:", err?.message, err?.cause?.message ?? err?.cause);
     res.status(500).json({ success: false, error: err?.message });
   }
 });

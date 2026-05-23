@@ -73,8 +73,9 @@ function fmtPrice(price: string | null): string {
 }
 
 function statusBadge(status: string) {
-  if (status === "approved") return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">معتمد</Badge>;
+  if (status === "approved" || status === "active") return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">منشور</Badge>;
   if (status === "pending")  return <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">قيد المراجعة</Badge>;
+  if (status === "inactive") return <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">غير نشط</Badge>;
   return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">مرفوض</Badge>;
 }
 
@@ -146,7 +147,7 @@ export default function AdminProperties() {
 
   const stats = useMemo(() => ({
     total: properties.length,
-    published: properties.filter(p => p.status === "approved").length,
+    published: properties.filter(p => p.status === "approved" || p.status === "active").length,
     pending: properties.filter(p => p.status === "pending").length,
     featured: properties.filter(p => p.featured).length,
     forSale: properties.filter(p => p.listingType === "sale").length,
@@ -446,9 +447,11 @@ export default function AdminProperties() {
                 <SelectTrigger className="w-36"><SelectValue placeholder="الحالة" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الحالات</SelectItem>
-                  <SelectItem value="approved">معتمد</SelectItem>
+                  <SelectItem value="active">منشور (active)</SelectItem>
+                  <SelectItem value="approved">منشور (approved)</SelectItem>
                   <SelectItem value="pending">قيد المراجعة</SelectItem>
                   <SelectItem value="rejected">مرفوض</SelectItem>
+                  <SelectItem value="inactive">غير نشط</SelectItem>
                 </SelectContent>
               </Select>
             </div>
