@@ -47,9 +47,11 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
   const cfg = getPropertyTypeConfig(v.mainCategory);
   const showRoomFields = cfg.showRooms || cfg.showBathrooms || cfg.showFloor;
 
+  const accountType: "company" | "user" = mode === "company" ? "company" : "user";
+
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billingPlansPublic"],
-    queryFn:  () => api.billingPlans.publicList(),
+    queryKey: ["billingPlansPublic", accountType],
+    queryFn:  () => api.billingPlans.publicListByType(accountType),
     enabled:  showPlans,
     staleTime: 5 * 60_000,
   });
@@ -200,6 +202,7 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
 
   return {
     isCompany,
+    accountType,
     STEPS,
     step, setStep,
     submitting,

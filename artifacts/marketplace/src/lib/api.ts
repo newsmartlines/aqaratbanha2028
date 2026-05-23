@@ -899,6 +899,12 @@ export const api = {
       if (Array.isArray(res)) return res as BillingPlan[];
       return [] as BillingPlan[];
     },
+    publicListByType: async (userType: "user" | "company" | "broker" | "provider") => {
+      const res = await fetchJson<any>(`/billing/plans?userType=${encodeURIComponent(userType)}`);
+      if (res && typeof res === "object" && "data" in res) return res.data as BillingPlan[];
+      if (Array.isArray(res)) return res as BillingPlan[];
+      return [] as BillingPlan[];
+    },
     adminList: async () => {
       const res = await fetchJson<any>(`/admin/billing/plans`);
       if (res && typeof res === "object" && "data" in res) return res.data as BillingPlan[];

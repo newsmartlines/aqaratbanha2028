@@ -28,7 +28,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
 
   const form = usePropertyForm(mode, backPath, showPlans);
   const {
-    isCompany,
+    isCompany, accountType,
     submitting, error,
     uploading, selectedPlan, setSelectedPlan,
     showPayment, setShowPayment,
@@ -140,6 +140,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           selectedPlan={selectedPlan}
           setSelectedPlan={setSelectedPlan}
           error={error}
+          accountType={accountType}
         />
 
         <div className="mt-6 flex gap-3">

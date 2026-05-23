@@ -80,8 +80,8 @@ export default function ProviderSubscription() {
   });
 
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billingPlans"],
-    queryFn: api.billingPlans.publicList,
+    queryKey: ["billingPlans", "company"],
+    queryFn: () => api.billingPlans.publicListByType("company"),
   });
 
   const sub = stats?.subscription ?? null;

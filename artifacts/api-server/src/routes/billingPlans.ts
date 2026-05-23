@@ -4,18 +4,29 @@ import {
   billingPlansTable, commissionRulesTable, couponsTable,
   subscriptionsTable, paymentTransactionsTable,
 } from "@workspace/db";
-import { eq, desc, sum, count } from "drizzle-orm";
+import { eq, desc, sum, count, or, and } from "drizzle-orm";
 
 const router = Router();
 
 // ── Public endpoint: active plans for providers ───────────────────────────────
 
-router.get("/billing/plans", async (_req, res) => {
+router.get("/billing/plans", async (req, res) => {
   try {
+    const { userType } = req.query as { userType?: string };
     const plans = await db
       .select()
       .from(billingPlansTable)
-      .where(eq(billingPlansTable.status, "active"))
+      .where(
+        and(
+          eq(billingPlansTable.status, "active"),
+          userType
+            ? or(
+                eq(billingPlansTable.userType, "all"),
+                eq(billingPlansTable.userType, userType)
+              )
+            : undefined
+        )
+      )
       .orderBy(billingPlansTable.sortOrder);
     res.json({ success: true, data: plans });
   } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }

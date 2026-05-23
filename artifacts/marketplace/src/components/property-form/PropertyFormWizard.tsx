@@ -16,7 +16,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
   const form = usePropertyForm(mode, backPath, showPlans);
 
   const {
-    isCompany, STEPS, step,
+    isCompany, accountType, STEPS, step,
     submitting, success, error,
     uploading, selectedPlan, setSelectedPlan,
     showPayment, setShowPayment,
@@ -156,6 +156,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             selectedPlan={selectedPlan}
             setSelectedPlan={setSelectedPlan}
             error={error}
+            accountType={accountType}
           />
         )}
       </div>

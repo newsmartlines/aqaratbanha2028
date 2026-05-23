@@ -1,4 +1,4 @@
-import { Crown, Loader2, CheckCircle2, CreditCard } from "lucide-react";
+import { Crown, Loader2, CheckCircle2, CreditCard, Building2, User } from "lucide-react";
 import type { BillingPlan } from "@/lib/api";
 import { PlanCard } from "../shared/PlanCard";
 
@@ -8,22 +8,65 @@ interface Step5PlansProps {
   selectedPlan:    BillingPlan | null;
   setSelectedPlan: (plan: BillingPlan) => void;
   error:           string | null;
+  accountType?:    "user" | "company";
 }
 
+const ACCOUNT_TYPE_META = {
+  company: {
+    icon: Building2,
+    label: "شركة / وسيط عقاري",
+    badge: "باقات الشركات والوسطاء",
+    badgeClass: "bg-amber-50 border-amber-200 text-amber-800",
+    iconClass: "text-amber-600",
+    iconBg: "bg-amber-100",
+    hint: "تشمل الباقات المتاحة لحسابك الباقات الشاملة للشركات والوسطاء.",
+  },
+  user: {
+    icon: User,
+    label: "مستخدم عادي",
+    badge: "باقات الأفراد",
+    badgeClass: "bg-teal-50 border-teal-200 text-teal-800",
+    iconClass: "text-teal-600",
+    iconBg: "bg-teal-100",
+    hint: "تشمل الباقات المتاحة لحسابك الباقات المناسبة للأفراد والملاك.",
+  },
+};
+
 export function Step5Plans({
-  plans, plansLoading, selectedPlan, setSelectedPlan, error,
+  plans, plansLoading, selectedPlan, setSelectedPlan, error, accountType = "user",
 }: Step5PlansProps) {
   const sorted = [...plans].sort(
     (a, b) => a.sortOrder - b.sortOrder || parseFloat(a.price) - parseFloat(b.price),
   );
 
+  const meta = ACCOUNT_TYPE_META[accountType];
+  const Icon = meta.icon;
+
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div>
         <h2 className="text-xl font-bold mb-1">اختر الباقة المناسبة</h2>
         <p className="text-sm text-muted-foreground">
           حدد باقتك وانشر إعلانك — يمكنك الترقية في أي وقت من لوحة التحكم
         </p>
+      </div>
+
+      {/* Account type badge */}
+      <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${meta.badgeClass}`}>
+        <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${meta.iconBg}`}>
+          <Icon className={`w-4 h-4 ${meta.iconClass}`} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide opacity-60 mb-0.5">نوع حسابك</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-sm">{meta.label}</span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${meta.badgeClass}`}>
+              {meta.badge}
+            </span>
+          </div>
+          <p className="text-xs opacity-70 mt-0.5">{meta.hint}</p>
+        </div>
       </div>
 
       {plansLoading ? (
@@ -36,7 +79,6 @@ export function Step5Plans({
           <p>لا توجد باقات متاحة حالياً</p>
         </div>
       ) : (
-        /* Horizontal scroll on small screens, grid on large */
         <div className="overflow-x-auto pb-2 -mx-1">
           <div
             className="flex gap-3 px-1"
