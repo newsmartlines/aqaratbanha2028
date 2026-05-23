@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Crown, AlertTriangle, X, CheckCircle2, XCircle,
-  CreditCard, Zap, Star, Loader2, Package, Clock,
+  Zap, Star, Loader2, Package, Clock,
   Home, BarChart2, ShieldCheck, TrendingUp, Headphones,
   Search, Sparkles, Repeat2,
 } from "lucide-react";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { PaymentDialog } from "@/components/property-form/shared/PaymentDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -71,7 +72,8 @@ export default function ProviderSubscription() {
 
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);   // for free plans
+  const [paymentOpen, setPaymentOpen] = useState(false);   // for paid plans
 
   const { data: stats, isLoading: statsLoading } = useQuery<ProviderStats>({
     queryKey: ["providerStats", providerId],
@@ -118,7 +120,11 @@ export default function ProviderSubscription() {
       return;
     }
     setSelectedPlan(plan);
-    setConfirmOpen(true);
+    if (parseFloat(String(plan.price)) > 0) {
+      setPaymentOpen(true);   // paid → Egyptian payment dialog
+    } else {
+      setConfirmOpen(true);   // free → simple confirm dialog
+    }
   };
 
   const isLoading = statsLoading || plansLoading;
@@ -257,11 +263,10 @@ export default function ProviderSubscription() {
                   <p>لا توجد باقات متاحة حالياً. تواصل مع الإدارة.</p>
                 </div>
               ) : (
-                <div className={`grid gap-6 items-start ${
+                <div className={`grid gap-5 items-start ${
                   sortedPlans.length === 1 ? "grid-cols-1 max-w-sm mx-auto"
-                  : sortedPlans.length === 2 ? "grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto"
-                  : sortedPlans.length <= 3 ? "grid-cols-1 md:grid-cols-3"
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+                  : sortedPlans.length === 2 ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 }`}>
                   {sortedPlans.map((plan, idx) => {
                     const isFree = parseFloat(plan.price) === 0;
@@ -435,68 +440,67 @@ export default function ProviderSubscription() {
           </>
         )}
 
-        {/* ─── Confirm Subscribe Dialog ─── */}
+        {/* ─── Free Plan Confirm Dialog ─── */}
         <Dialog open={confirmOpen} onOpenChange={(o) => { if (!subscribeMutation.isPending) { setConfirmOpen(o); if (!o) setSelectedPlan(null); } }}>
-          <DialogContent className="sm:max-w-[440px]" dir="rtl">
+          <DialogContent className="sm:max-w-[420px]" dir="rtl">
             <DialogHeader>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                {selectedPlan && parseFloat(selectedPlan.price) > 0
-                  ? <><Crown className="w-6 h-6 text-amber-500" /> الاشتراك في باقة {selectedPlan.nameAr ?? selectedPlan.name}</>
-                  : <><Package className="w-6 h-6 text-primary" /> تفعيل الباقة المجانية</>
-                }
+              <DialogTitle className="text-xl flex items-center gap-2">
+                <Package className="w-6 h-6 text-primary" /> تفعيل الباقة المجانية
               </DialogTitle>
-              <DialogDescription className="text-base mt-2">
-                {selectedPlan && parseFloat(selectedPlan.price) > 0
-                  ? `سيتم تفعيل باقة "${selectedPlan.nameAr ?? selectedPlan.name}" لمدة ${selectedPlan.durationDays} يوم.`
-                  : "ابدأ باستخدام المنصة مجاناً والترقية في أي وقت."}
+              <DialogDescription className="mt-2">
+                ابدأ باستخدام المنصة مجاناً والترقية في أي وقت من لوحة التحكم.
               </DialogDescription>
             </DialogHeader>
-
             {selectedPlan && (
-              <div className="py-4 space-y-4">
-                <div className="bg-secondary/60 rounded-xl p-4 space-y-2 text-sm">
+              <div className="py-3 space-y-3">
+                <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">عمولة المنصة</span>
-                    <span className="font-bold">{selectedPlan.commissionPercent}%</span>
+                    <span className="text-muted-foreground">الباقة</span>
+                    <span className="font-bold text-teal-700">{selectedPlan.nameAr ?? selectedPlan.name}</span>
                   </div>
-                  {(() => {
-                    const lim = parseLimits(selectedPlan.limits ?? "{}");
-                    return (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">عدد العقارات</span>
-                        <span className="font-bold">{formatLimit(lim.properties)}</span>
-                      </div>
-                    );
-                  })()}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">مدة الاشتراك</span>
+                    <span className="text-muted-foreground">عدد العقارات</span>
+                    <span className="font-bold">{formatLimit(parseLimits(selectedPlan.limits ?? "{}").properties)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">المدة</span>
                     <span className="font-bold">{selectedPlan.durationDays} يوم</span>
                   </div>
-                  <div className="flex justify-between border-t pt-2 mt-2">
-                    <span className="text-muted-foreground font-medium">المبلغ الإجمالي</span>
-                    <span className="font-black text-primary text-base">
-                      {parseFloat(selectedPlan.price) === 0 ? "مجاني" : `${selectedPlan.price} ج.م`}
-                    </span>
+                  <div className="flex justify-between border-t pt-2 mt-1">
+                    <span className="font-bold text-muted-foreground">المبلغ</span>
+                    <span className="font-black text-teal-600 text-lg">مجاني</span>
                   </div>
                 </div>
               </div>
             )}
-
             <DialogFooter className="flex gap-3 flex-row-reverse">
               <Button
                 onClick={() => selectedPlan && subscribeMutation.mutate(selectedPlan)}
                 disabled={subscribeMutation.isPending}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-11 font-bold"
               >
-                {subscribeMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin ml-2" /> جاري التفعيل...</> : "تأكيد الاشتراك"}
+                {subscribeMutation.isPending
+                  ? <><Loader2 className="w-4 h-4 animate-spin ml-2" />جاري التفعيل...</>
+                  : "ابدأ مجاناً الآن"}
               </Button>
               <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={subscribeMutation.isPending}
-                className="flex-1 rounded-xl h-11">
-                إلغاء
-              </Button>
+                className="flex-1 rounded-xl h-11">إلغاء</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* ─── Paid Plan Payment Dialog (Egyptian Gateways) ─── */}
+        <PaymentDialog
+          open={paymentOpen}
+          plan={selectedPlan}
+          onClose={() => { setPaymentOpen(false); setSelectedPlan(null); }}
+          onSuccess={() => {
+            setPaymentOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
+            toast({ title: "تم استلام طلب الدفع! 🎉", description: "سيتم مراجعة الدفع وتفعيل الباقة خلال 24 ساعة." });
+            setSelectedPlan(null);
+          }}
+        />
 
       </div>
     </ProviderLayout>
