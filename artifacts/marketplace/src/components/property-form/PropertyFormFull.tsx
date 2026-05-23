@@ -266,15 +266,9 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">الحي / المنطقة</Label>
-                <Input id="f-district" placeholder="حي النزهة..." {...register("district")} className="h-11 rounded-xl" />
-              </div>
-              <div>
-                <Label htmlFor="f-street" className="text-sm font-semibold mb-1.5 block">اسم الشارع</Label>
-                <Input id="f-street" placeholder="شارع الجمهورية..." {...register("street")} className="h-11 rounded-xl" />
-              </div>
+            <div>
+              <Label htmlFor="f-street" className="text-sm font-semibold mb-1.5 block">اسم الشارع</Label>
+              <Input id="f-street" placeholder="شارع الجمهورية..." {...register("street")} className="h-11 rounded-xl" />
             </div>
             <div>
               <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>

@@ -37,30 +37,17 @@ export function Step3Location({ v, set, register, setValue }: Step3LocationProps
         </div>
       </div>
 
-      {/* الحي والشارع */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="f-district" className="text-sm font-semibold mb-2 block">
-            الحي / المنطقة
-          </Label>
-          <Input
-            id="f-district"
-            placeholder="حي النزهة، حي الزهراء..."
-            {...register("district")}
-            className="h-11 rounded-xl"
-          />
-        </div>
-        <div>
-          <Label htmlFor="f-street" className="text-sm font-semibold mb-2 block">
-            اسم الشارع
-          </Label>
-          <Input
-            id="f-street"
-            placeholder="شارع الجمهورية..."
-            {...register("street")}
-            className="h-11 rounded-xl"
-          />
-        </div>
+      {/* الشارع */}
+      <div>
+        <Label htmlFor="f-street" className="text-sm font-semibold mb-2 block">
+          اسم الشارع
+        </Label>
+        <Input
+          id="f-street"
+          placeholder="شارع الجمهورية..."
+          {...register("street")}
+          className="h-11 rounded-xl"
+        />
       </div>
 
       {/* العنوان التفصيلي */}
