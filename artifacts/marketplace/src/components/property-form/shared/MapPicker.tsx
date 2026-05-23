@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2, Navigation } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BANHA_LAT, BANHA_LNG } from "../constants";
@@ -56,21 +56,40 @@ export function MapPicker({ lat, lng, onPick, onClear }: MapPickerProps) {
           <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
         </div>
       ) : (() => {
-        const { MapContainer, TileLayer, Marker, useMapEvents } = RL;
+        const { MapContainer, TileLayer, Marker, useMapEvents, useMap } = RL;
+
         function ClickHandler() {
           useMapEvents({ click: (e: any) => onPick(e.latlng.lat, e.latlng.lng) });
           return null;
         }
+
+        function FlyToMarker({ pos }: { pos: [number, number] | null }) {
+          const map = useMap();
+          const prevPos = useRef<[number, number] | null>(null);
+          useEffect(() => {
+            if (
+              pos &&
+              (!prevPos.current ||
+                prevPos.current[0] !== pos[0] ||
+                prevPos.current[1] !== pos[1])
+            ) {
+              map.flyTo(pos, 15, { duration: 1.2 });
+              prevPos.current = pos;
+            }
+          }, [pos, map]);
+          return null;
+        }
+
         return (
           <div className="h-56 rounded-xl overflow-hidden border border-border">
             <MapContainer
               center={mapPos ?? [BANHA_LAT, BANHA_LNG]}
               zoom={mapPos ? 15 : 12}
               className="h-full w-full"
-              key={mapPos ? `${lat},${lng}` : "default"}
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <ClickHandler />
+              <FlyToMarker pos={mapPos} />
               {mapPos && <Marker position={mapPos} />}
             </MapContainer>
           </div>

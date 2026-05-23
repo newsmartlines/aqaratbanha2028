@@ -2,6 +2,7 @@ import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPicker } from "../shared/MapPicker";
+import { AddressAutocomplete } from "../shared/AddressAutocomplete";
 import { CITIES } from "../constants";
 import type { FormValues } from "../types";
 
@@ -50,16 +51,21 @@ export function Step3Location({ v, set, register, setValue }: Step3LocationProps
         />
       </div>
 
-      {/* العنوان التفصيلي */}
+      {/* العنوان التفصيلي مع اقتراحات تلقائية */}
       <div>
         <Label htmlFor="f-address" className="text-sm font-semibold mb-2 block">
           العنوان التفصيلي
         </Label>
-        <Input
+        <AddressAutocomplete
           id="f-address"
-          placeholder="مثال: بجوار المسجد الكبير، أمام البنك الأهلي..."
-          {...register("address")}
-          className="h-11 rounded-xl"
+          placeholder="ابحث عن العنوان أو اكتب تفاصيل الموقع..."
+          value={v.address ?? ""}
+          onChange={(val) => setValue("address", val)}
+          onSelect={(lat, lng, displayName) => {
+            setValue("address", displayName);
+            setValue("latitude", String(lat));
+            setValue("longitude", String(lng));
+          }}
         />
       </div>
 

@@ -11,6 +11,7 @@ import { FormSection } from "./shared/FormSection";
 import { PropertyTypeSelector } from "./shared/PropertyTypeSelector";
 import { FeatureIcon } from "@/components/FeatureIcon";
 import { MapPicker } from "./shared/MapPicker";
+import { AddressAutocomplete } from "./shared/AddressAutocomplete";
 import { PaymentDialog } from "./shared/PaymentDialog";
 import { Step5Plans } from "./steps/Step5Plans";
 import { usePropertyForm } from "./use-property-form";
@@ -272,7 +273,17 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
             </div>
             <div>
               <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>
-              <Input id="f-address" placeholder="بجوار المسجد الكبير، أمام البنك الأهلي..." {...register("address")} className="h-11 rounded-xl" />
+              <AddressAutocomplete
+                id="f-address"
+                placeholder="ابحث عن العنوان أو اكتب تفاصيل الموقع..."
+                value={v.address ?? ""}
+                onChange={(val) => setValue("address", val)}
+                onSelect={(lat, lng, displayName) => {
+                  setValue("address", displayName);
+                  setValue("latitude", String(lat));
+                  setValue("longitude", String(lng));
+                }}
+              />
             </div>
             <MapPicker
               lat={v.latitude} lng={v.longitude}
