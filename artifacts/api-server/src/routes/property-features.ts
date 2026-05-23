@@ -490,3 +490,4 @@ router.get("/admin/property-field-configs", async (req, res) => {
 });
 
 export { router as propertyFeaturesRouter };
+export default router;
