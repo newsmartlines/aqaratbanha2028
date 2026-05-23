@@ -8,6 +8,7 @@ export interface PropertyFormWizardProps {
 
 export interface FormValues {
   listingType:    string;
+  propertyGroup:  string;
   mainCategory:   string;
   title:          string;
   description:    string;

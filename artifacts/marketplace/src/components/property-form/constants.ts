@@ -1,13 +1,60 @@
 import {
   Building2, Home, Warehouse, Briefcase, ShoppingBag, Trees,
-  MapPin, Phone, Crown,
+  MapPin, Phone, Crown, Layers, Stethoscope, Hotel, Store,
   Eye, TrendingUp, Award, Star, Smartphone, BarChart2, Rocket, Bot,
 } from "lucide-react";
+
+export const PROPERTY_GROUPS = [
+  {
+    value: "residential",
+    label: "سكني",
+    icon: Home,
+    desc: "شقق، فيلات، وحدات سكنية",
+    subtypes: [
+      { value: "شقة",       label: "شقة",      icon: Home },
+      { value: "فيلا",      label: "فيلا",     icon: Building2 },
+      { value: "دوبلكس",   label: "دوبلكس",   icon: Layers },
+      { value: "روف",       label: "روف",       icon: Home },
+      { value: "استوديو",   label: "استوديو",  icon: Building2 },
+      { value: "عمارة",     label: "عمارة",    icon: Building2 },
+      { value: "استراحة",  label: "استراحة",  icon: Home },
+      { value: "غرفة",      label: "غرفة",     icon: Home },
+    ],
+  },
+  {
+    value: "commercial",
+    label: "تجاري",
+    icon: Briefcase,
+    desc: "مكاتب، محلات، مستودعات",
+    subtypes: [
+      { value: "مكتب",        label: "مكتب",       icon: Briefcase },
+      { value: "محل تجاري",   label: "محل تجاري",  icon: ShoppingBag },
+      { value: "مستودع",      label: "مستودع",     icon: Warehouse },
+      { value: "عيادة",       label: "عيادة",      icon: Stethoscope },
+      { value: "فندق",        label: "فندق",       icon: Hotel },
+      { value: "مجمع تجاري",  label: "مجمع تجاري", icon: Store },
+    ],
+  },
+  {
+    value: "land",
+    label: "أراضي",
+    icon: Trees,
+    desc: "أراضي سكنية وتجارية وزراعية",
+    subtypes: [
+      { value: "أرض سكنية",   label: "أرض سكنية",  icon: Trees },
+      { value: "أرض تجارية",  label: "أرض تجارية", icon: Trees },
+      { value: "أرض زراعية",  label: "أرض زراعية", icon: Trees },
+      { value: "أرض صناعية",  label: "أرض صناعية", icon: Trees },
+    ],
+  },
+] as const;
+
+export type PropertyGroupValue = typeof PROPERTY_GROUPS[number]["value"];
 
 export const PROPERTY_TYPES = [
   { value: "شقة",        label: "شقة",        icon: Home,        desc: "في عمارة أو مجمع" },
   { value: "فيلا",       label: "فيلا",       icon: Building2,   desc: "منزل مستقل" },
-  { value: "أرض",        label: "أرض",        icon: Trees,       desc: "قطعة أرض" },
+  { value: "أرض سكنية",  label: "أرض سكنية",  icon: Trees,       desc: "قطعة أرض" },
   { value: "مكتب",       label: "مكتب",       icon: Briefcase,   desc: "إداري أو تجاري" },
   { value: "محل تجاري",  label: "محل تجاري",  icon: ShoppingBag, desc: "على الشارع" },
   { value: "مستودع",     label: "مستودع",     icon: Warehouse,   desc: "للتخزين" },
@@ -79,4 +126,11 @@ export const PLAN_ICONS: Record<string, typeof Eye> = {
   autoBoost:       TrendingUp,
 };
 
-export const NO_ROOM_CATEGORIES = ["أرض", "مستودع", "محل تجاري"];
+export const NO_ROOM_CATEGORIES = [
+  "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية",
+  "أرض", "مستودع", "محل تجاري",
+];
+
+export const LAND_CATEGORIES = [
+  "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض",
+];

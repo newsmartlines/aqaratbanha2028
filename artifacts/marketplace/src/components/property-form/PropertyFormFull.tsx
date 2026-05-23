@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, Building2, CheckCircle2, CreditCard, Loader2, Tag, ImagePlus, X } from "lucide-react";
+import { ChevronLeft, Building2, CheckCircle2, CreditCard, Loader2, ImagePlus, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,14 +8,14 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { FormSection } from "./shared/FormSection";
-import { TileButton } from "./shared/TileButton";
+import { PropertyTypeSelector } from "./shared/PropertyTypeSelector";
 import { FeatureIcon } from "@/components/FeatureIcon";
 import { MapPicker } from "./shared/MapPicker";
 import { PaymentDialog } from "./shared/PaymentDialog";
 import { Step5Plans } from "./steps/Step5Plans";
 import { usePropertyForm } from "./use-property-form";
 import {
-  PROPERTY_TYPES, ADVERTISER_TYPES, FINISHING, CONDITIONS,
+  ADVERTISER_TYPES, FINISHING, CONDITIONS,
   DIRECTIONS, CITIES,
 } from "./constants";
 import type { PropertyFormWizardProps } from "./types";
@@ -44,6 +44,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
   } = form;
 
   const canSubmitForm = !!v.listingType && !!v.mainCategory && !!v.title && !!v.area && !!v.city && !!v.phone;
+
 
   const handleFormNext = () => {
     if (!canSubmitForm) return;
@@ -215,67 +216,28 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
         {/* ── 1. نوع العقار ──────────────────────────────────────── */}
         <FormSection title="نوع العقار" required>
           <div className="space-y-5">
-            {/* نوع الإعلان */}
-            <div>
-              <Label className="text-sm font-semibold mb-3 block">نوع الإعلان <span className="text-red-500">*</span></Label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { value: "sale", label: "للبيع",   icon: Tag,       desc: "بيع عقارك بأفضل سعر" },
-                  { value: "rent", label: "للإيجار", icon: Building2, desc: "أجّر عقارك شهرياً أو سنوياً" },
-                ].map((opt) => (
-                  <TileButton
-                    key={opt.value}
-                    active={v.listingType === opt.value}
-                    onClick={() => set("listingType", opt.value)}
-                    className="p-4"
-                  >
-                    <p className={`text-base font-bold ${v.listingType === opt.value ? "text-teal-700" : ""}`}>{opt.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
-                  </TileButton>
-                ))}
-              </div>
-            </div>
-            {/* نوع العقار */}
-            <div>
-              <Label className="text-sm font-semibold mb-3 block">نوع العقار <span className="text-red-500">*</span></Label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {PROPERTY_TYPES.map((type) => {
-                  const Icon   = type.icon;
-                  const active = v.mainCategory === type.value;
-                  return (
-                    <TileButton
-                      key={type.value}
-                      active={active}
-                      onClick={() => set("mainCategory", type.value)}
-                      className="p-3 flex flex-col items-center gap-1.5 text-center"
-                    >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                        active ? "bg-teal-600 text-white" : "bg-secondary text-muted-foreground"
-                      }`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <p className={`text-xs font-semibold ${active ? "text-teal-700" : ""}`}>{type.label}</p>
-                    </TileButton>
-                  );
-                })}
-              </div>
-            </div>
+            <PropertyTypeSelector v={v} set={set} />
+
             {/* Company only: نوع المعلن */}
             {isCompany && (
               <div>
                 <Label className="text-sm font-semibold mb-3 block">نوع المعلن</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {ADVERTISER_TYPES.map((at) => (
-                    <TileButton
+                    <button
                       key={at.value}
-                      active={v.advertiserType === at.value}
+                      type="button"
                       onClick={() => set("advertiserType", at.value)}
-                      className="px-4 py-2.5"
+                      className={`px-4 py-2.5 rounded-2xl border-2 transition-all text-right ${
+                        v.advertiserType === at.value
+                          ? "border-teal-600 bg-teal-50 shadow-sm"
+                          : "border-border hover:border-teal-300 hover:bg-secondary/40"
+                      }`}
                     >
                       <span className={`text-sm font-medium ${v.advertiserType === at.value ? "text-teal-700" : ""}`}>
                         {at.label}
                       </span>
-                    </TileButton>
+                    </button>
                   ))}
                 </div>
               </div>

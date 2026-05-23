@@ -25,7 +25,7 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const defaultValues: FormValues = {
-    listingType: "", mainCategory: "",
+    listingType: "", propertyGroup: "", mainCategory: "",
     title: "", description: "", price: "", area: "",
     rooms: "", bathrooms: "", floor: "", totalFloors: "", buildYear: "",
     finishing: "", furnished: "", paymentMethod: "", condition: "",
