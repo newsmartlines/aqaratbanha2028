@@ -89,7 +89,7 @@ export async function seedFromFiles(): Promise<Set<string>> {
 
       try {
         // Only restore if table is currently empty
-        const [{ cnt }] = await db.execute(sql.raw(`SELECT COUNT(*) as cnt FROM "${dbName}"`)) as any[];
+        const [{ cnt }] = await db.execute(sql.raw(`SELECT COUNT(*) as cnt FROM "${dbName}"`)) as unknown as any[];
         const existingCount = parseInt(cnt ?? "0", 10);
         if (existingCount > 0) {
           console.log(`[seed-files] ${dbName}: already has ${existingCount} rows, skipping`);
@@ -202,7 +202,7 @@ export async function seed() {
     ]).returning();
 
     const adminHash = await bcrypt.hash("admin123", 10);
-    const [adminUser] = await db.insert(usersTable).values({ name: "Admin", email: "admin@dalilsmartlines.com", passwordHash: adminHash, role: "admin" }).returning();
+    const [adminUser] = await db.insert(usersTable).values({ name: "Admin", email: "admin@aqarat-banha.com", passwordHash: adminHash, role: "admin" }).returning();
 
     const providerData = [
       { name: "أحمد عبدالله", email: "ahmed@dalilsmartlines.com", city: "بنها", bio: "سمسار عقارات محترف بخبرة 10 سنوات في بنها والقليوبية", categorySlug: "design", rating: "4.9", featured: true, verified: true },

@@ -5,7 +5,7 @@ import {
   notificationsTable, usersTable, siteSettingsTable, providersTable,
   userViewsTable,
 } from "@workspace/db";
-import { eq, desc, and, or, ilike, sql, getTableColumns, lt, inArray } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql, getTableColumns, lt, gt, inArray } from "drizzle-orm";
 import { getSession } from "./auth";
 
 const router = Router();
@@ -296,7 +296,7 @@ router.get("/properties/:id", async (req, res) => {
         district: providersTable.district,
         createdAt: providersTable.createdAt,
         userId: providersTable.userId,
-      }).from(providersTable).where(eq(providersTable.id, property.providerId));
+      }).from(providersTable).where(eq(providersTable.id, property.providerId!));
 
       if (prov) {
         agentAvatar = prov.avatar ?? "";
@@ -349,7 +349,7 @@ router.post("/properties/:id/view", async (req, res) => {
         and(
           eq(userViewsTable.propertyId, id),
           eq(userViewsTable.sessionId, sessionId),
-          lt(cutoff, userViewsTable.createdAt),
+          gt(userViewsTable.createdAt, cutoff),
         ),
       )
       .limit(1);

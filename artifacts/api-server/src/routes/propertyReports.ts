@@ -16,14 +16,16 @@ router.post("/property-reports", async (req, res) => {
 });
 
 router.get("/admin/property-reports", async (req, res) => {
-  const session = getSession(req);
+  const token = req.cookies?.session ?? (req.headers.authorization?.replace(/^Bearer\s+/i, "") ?? "");
+  const session = await getSession(token);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
   const rows = await db.select().from(propertyReportsTable).orderBy(desc(propertyReportsTable.createdAt));
   return res.json(rows);
 });
 
 router.patch("/admin/property-reports/:id", async (req, res) => {
-  const session = getSession(req);
+  const token = req.cookies?.session ?? (req.headers.authorization?.replace(/^Bearer\s+/i, "") ?? "");
+  const session = await getSession(token);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
   const { status } = req.body;
   await db.update(propertyReportsTable).set({ status }).where(eq(propertyReportsTable.id, Number(req.params.id)));
@@ -31,7 +33,8 @@ router.patch("/admin/property-reports/:id", async (req, res) => {
 });
 
 router.delete("/admin/property-reports/:id", async (req, res) => {
-  const session = getSession(req);
+  const token = req.cookies?.session ?? (req.headers.authorization?.replace(/^Bearer\s+/i, "") ?? "");
+  const session = await getSession(token);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
   await db.delete(propertyReportsTable).where(eq(propertyReportsTable.id, Number(req.params.id)));
   return res.json({ ok: true });
