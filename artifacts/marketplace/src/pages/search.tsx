@@ -37,6 +37,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
+import { resolveMainCategory, getFieldRules, type FieldConfigRow } from "@/lib/property-field-rules";
 
 /* ─── WhatsApp Icon ─────────────────────────────────────────────── */
 const WaIcon = () => (
@@ -424,15 +425,35 @@ export default function SearchPage() {
 
   type DynFeature = { id: number; name: string; icon: string | null };
 
+  const activeMainCategory = useMemo(
+    () => resolveMainCategory(filters.category, filters.subCategory),
+    [filters.category, filters.subCategory]
+  );
+
+  const { data: fieldConfigs = [] } = useQuery<FieldConfigRow[]>({
+    queryKey: ["property-field-configs"],
+    queryFn:  () => api.propertyFieldConfigs.list(),
+    staleTime: 10 * 60_000,
+  });
+
+  const fieldRules = useMemo(
+    () => getFieldRules(filters.category, filters.subCategory, fieldConfigs),
+    [filters.category, filters.subCategory, fieldConfigs]
+  );
+
   const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
-    queryKey: ["property-features", "feature"],
-    queryFn:  () => api.propertyFeatures.list("feature"),
+    queryKey: ["property-features", "feature", activeMainCategory ?? "all"],
+    queryFn:  () => activeMainCategory
+      ? api.propertyFeatures.listByType("feature", activeMainCategory)
+      : api.propertyFeatures.list("feature"),
     staleTime: 5 * 60_000,
   });
 
   const { data: servicesData = [] } = useQuery<DynFeature[]>({
-    queryKey: ["property-features", "service"],
-    queryFn:  () => api.propertyFeatures.list("service"),
+    queryKey: ["property-features", "service", activeMainCategory ?? "all"],
+    queryFn:  () => activeMainCategory
+      ? api.propertyFeatures.listByType("service", activeMainCategory)
+      : api.propertyFeatures.list("service"),
     staleTime: 5 * 60_000,
   });
 
@@ -684,8 +705,10 @@ export default function SearchPage() {
       </Section>
 
       {/* الغرف والحمامات */}
+      {(fieldRules.rooms || fieldRules.bathrooms) && (
       <Section title="الغرف والحمامات" open={false} badge={(filters.rooms ? 1 : 0) + (filters.bathrooms ? 1 : 0)}>
         <div className="space-y-3">
+          {fieldRules.rooms && (
           <div>
             <p className="text-[11px] font-bold text-zinc-400 mb-2">غرف النوم</p>
             <div className="flex gap-1.5 flex-wrap">
@@ -696,6 +719,8 @@ export default function SearchPage() {
               ))}
             </div>
           </div>
+          )}
+          {fieldRules.bathrooms && (
           <div>
             <p className="text-[11px] font-bold text-zinc-400 mb-2">الحمامات</p>
             <div className="flex gap-1.5 flex-wrap">
@@ -706,10 +731,13 @@ export default function SearchPage() {
               ))}
             </div>
           </div>
+          )}
         </div>
       </Section>
+      )}
 
       {/* الطابق */}
+      {fieldRules.floor && (
       <Section title="الطابق" open={false} badge={filters.floor ? 1 : 0}>
         <div className="flex flex-wrap gap-1.5">
           {FLOOR_OPTS.map(o => (
@@ -719,8 +747,10 @@ export default function SearchPage() {
           ))}
         </div>
       </Section>
+      )}
 
       {/* عمر العقار */}
+      {fieldRules.buildYear && (
       <Section title="عمر العقار" open={false} badge={filters.ageRange ? 1 : 0}>
         <div className="space-y-0.5">
           {AGE_OPTS.map(o => (
@@ -730,8 +760,10 @@ export default function SearchPage() {
           ))}
         </div>
       </Section>
+      )}
 
       {/* التشطيب */}
+      {fieldRules.finishing && (
       <Section title="التشطيب" open={false} badge={filters.finishing ? 1 : 0}>
         <div className="space-y-0.5">
           {FINISHING_OPTS.map(o => (
@@ -741,8 +773,10 @@ export default function SearchPage() {
           ))}
         </div>
       </Section>
+      )}
 
       {/* حالة العقار */}
+      {fieldRules.condition && (
       <Section title="حالة العقار" open={false} badge={filters.condition ? 1 : 0}>
         <div className="flex flex-wrap gap-1.5">
           {CONDITION_OPTS.map(o => (
@@ -752,8 +786,10 @@ export default function SearchPage() {
           ))}
         </div>
       </Section>
+      )}
 
       {/* الفرش */}
+      {fieldRules.furnished && (
       <Section title="الفرش" open={false} badge={filters.furnished ? 1 : 0}>
         <div className="flex flex-wrap gap-1.5">
           {FURNISHED_OPTS.map(o => (
@@ -763,10 +799,13 @@ export default function SearchPage() {
           ))}
         </div>
       </Section>
+      )}
 
       {/* الاتجاه والواجهة */}
+      {(fieldRules.direction || fieldRules.facade) && (
       <Section title="الاتجاه والواجهة" open={false} badge={(filters.direction ? 1 : 0) + (filters.facade ? 1 : 0)}>
         <div className="space-y-3">
+          {fieldRules.direction && (
           <div>
             <p className="text-[11px] font-bold text-zinc-400 mb-2">اتجاه العقار</p>
             <div className="grid grid-cols-2 gap-1">
@@ -784,6 +823,8 @@ export default function SearchPage() {
               ))}
             </div>
           </div>
+          )}
+          {fieldRules.facade && (
           <div>
             <p className="text-[11px] font-bold text-zinc-400 mb-2">واجهة العقار</p>
             <div className="flex flex-wrap gap-1.5">
@@ -794,10 +835,13 @@ export default function SearchPage() {
               ))}
             </div>
           </div>
+          )}
         </div>
       </Section>
+      )}
 
       {/* نوع الدفع */}
+      {fieldRules.paymentMethod && (
       <Section title="نوع الدفع" open={false} badge={filters.paymentMethod ? 1 : 0}>
         <div className="flex flex-wrap gap-1.5">
           {PAYMENT_OPTS.map(o => (
@@ -807,6 +851,7 @@ export default function SearchPage() {
           ))}
         </div>
       </Section>
+      )}
 
       {/* مدة الإيجار */}
       {(filters.listingType === "rent" || filters.listingType === "all") && (

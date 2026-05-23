@@ -946,6 +946,15 @@ export const api = {
       fetchJson(`/admin/property-features/${id}`, { method: "DELETE" }),
   },
 
+  propertyFieldConfigs: {
+    list: () =>
+      fetchJson<Array<{ mainCategory: string; fieldKey: string; isVisible: boolean; id: number; label: string | null; sortOrder: number }>>("/property-field-configs"),
+    adminList: () =>
+      fetchJson<Array<{ id: number; mainCategory: string; fieldKey: string; isVisible: boolean; label: string | null; sortOrder: number }>>("/admin/property-field-configs"),
+    bulkUpdate: (rows: Array<{ mainCategory: string; fieldKey: string; isVisible: boolean }>) =>
+      fetchJson("/admin/property-field-configs/bulk", { method: "PUT", body: JSON.stringify({ rows }) }),
+  },
+
   search: {
     suggestions: (q: string) =>
       fetchJson<{

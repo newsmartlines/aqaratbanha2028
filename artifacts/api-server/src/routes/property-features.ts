@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { propertyFeaturesTable } from "@workspace/db";
+import { propertyFeaturesTable, propertyFieldConfigsTable } from "@workspace/db";
 import { eq, asc } from "drizzle-orm";
 import { getSession } from "./auth";
 
@@ -257,6 +257,126 @@ router.delete("/admin/property-features/:id", async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error("[admin/property-features DELETE]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── Property Field Configs ────────────────────────────────────────────────────
+// Controls which structural fields (rooms, bathrooms, floor, etc.) are shown
+// per property type in search filters, property form, and map search.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ALL_FIELD_KEYS = [
+  "rooms","bathrooms","floor","totalFloors","buildYear",
+  "finishing","furnished","condition","direction","facade",
+  "paymentMethod","landType","landDimensions","buildRatio",
+];
+
+const FIELD_VISIBILITY_DEFAULTS: Record<string, Record<string, boolean>> = {
+  "شقة":         { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "دوبلكس":      { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "استوديو":     { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "روف":         { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "غرفة":        { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "فيلا":        { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "استراحة":     { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "عمارة":       { rooms:true,  bathrooms:false, floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "مكتب":        { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "عيادة":       { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "محل تجاري":  { rooms:false, bathrooms:false, floor:true,  totalFloors:false, buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "مجمع تجاري": { rooms:false, bathrooms:false, floor:true,  totalFloors:false, buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "فندق":        { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "مستودع":      { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "أرض سكنية":  { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+  "أرض تجارية": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+  "أرض زراعية": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:false },
+  "أرض صناعية": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+};
+
+let fieldConfigsSeeded = false;
+
+async function ensureFieldConfigsSeeded() {
+  if (fieldConfigsSeeded) return;
+  try {
+    const existing = await db.select().from(propertyFieldConfigsTable).limit(1);
+    if (existing.length === 0) {
+      const rows: Array<{ mainCategory: string; fieldKey: string; isVisible: boolean; sortOrder: number }> = [];
+      let sortOrder = 0;
+      for (const [mainCategory, fields] of Object.entries(FIELD_VISIBILITY_DEFAULTS)) {
+        for (const fieldKey of ALL_FIELD_KEYS) {
+          rows.push({
+            mainCategory,
+            fieldKey,
+            isVisible: fields[fieldKey] ?? true,
+            sortOrder: sortOrder++,
+          });
+        }
+      }
+      await db.insert(propertyFieldConfigsTable).values(rows);
+      console.log(`[field-configs] Seeded ${rows.length} rows`);
+    }
+    fieldConfigsSeeded = true;
+  } catch (err) {
+    console.error("[field-configs] Seed error:", err);
+  }
+}
+
+// ── Public: get all field configs (cached by client for 10 min) ───────────────
+
+router.get("/property-field-configs", async (_req, res) => {
+  await ensureFieldConfigsSeeded();
+  try {
+    const rows = await db
+      .select()
+      .from(propertyFieldConfigsTable)
+      .orderBy(asc(propertyFieldConfigsTable.mainCategory), asc(propertyFieldConfigsTable.sortOrder));
+    res.json(rows);
+  } catch (err) {
+    console.error("[property-field-configs GET]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ── Admin: get all field configs ──────────────────────────────────────────────
+
+router.get("/admin/property-field-configs", async (req, res) => {
+  await ensureFieldConfigsSeeded();
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
+  try {
+    const rows = await db
+      .select()
+      .from(propertyFieldConfigsTable)
+      .orderBy(asc(propertyFieldConfigsTable.mainCategory), asc(propertyFieldConfigsTable.sortOrder));
+    res.json(rows);
+  } catch (err) {
+    console.error("[admin/property-field-configs GET]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ── Admin: bulk upsert field configs ─────────────────────────────────────────
+
+router.put("/admin/property-field-configs/bulk", async (req, res) => {
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
+  try {
+    const rows: Array<{ mainCategory: string; fieldKey: string; isVisible: boolean }> = req.body.rows ?? [];
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: "rows array required" });
+    }
+    await db.delete(propertyFieldConfigsTable);
+    let sortOrder = 0;
+    const insertRows = rows.map((r) => ({
+      mainCategory: r.mainCategory,
+      fieldKey: r.fieldKey,
+      isVisible: r.isVisible,
+      sortOrder: sortOrder++,
+    }));
+    await db.insert(propertyFieldConfigsTable).values(insertRows);
+    fieldConfigsSeeded = true;
+    res.json({ ok: true, count: insertRows.length });
+  } catch (err) {
+    console.error("[admin/property-field-configs PUT bulk]", err);
     res.status(500).json({ error: "Server error" });
   }
 });

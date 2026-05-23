@@ -38,3 +38,4 @@ export * from "./userPreferences";
 export * from "./adSpots";
 export * from "./popups";
 export * from "./propertyFeatures";
+export * from "./propertyFieldConfigs";

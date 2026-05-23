@@ -25,6 +25,8 @@ import {
   SERVICE_ICONS_LIST,
   FEATURE_ICON_MAP,
 } from "@/components/FeatureIcon";
+import { ALL_PROPERTY_TYPES } from "@/components/property-form/property-type-config";
+import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,11 +37,17 @@ type Feature = {
   icon: string | null;
   status: string;
   sortOrder: number;
+  applicableTypes?: string | null;
 };
 
 type Tab = "feature" | "service";
 
-const EMPTY = { name: "", icon: "Home", status: "active" };
+function parseTypes(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
+const EMPTY = { name: "", icon: "Home", status: "active", applicableTypes: [] as string[] };
 
 // ─── Icon Picker ──────────────────────────────────────────────────────────────
 
@@ -220,15 +228,17 @@ export default function AdminPropertyFeatures() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey });
 
+  type FeaturePayload = { type?: string; name: string; icon?: string; status?: string; sortOrder?: number; applicableTypes?: string | null };
+
   const createMut = useMutation({
-    mutationFn: (d: typeof EMPTY) =>
+    mutationFn: (d: FeaturePayload) =>
       api.propertyFeatures.create({ type: tab, ...d, sortOrder: items.length + 1 }),
     onSuccess: () => { invalidate(); setModalOpen(false); toast.success("تمت الإضافة بنجاح"); },
     onError: () => toast.error("حدث خطأ أثناء الإضافة"),
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<typeof EMPTY> }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<FeaturePayload> }) =>
       api.propertyFeatures.update(id, data),
     onSuccess: () => { invalidate(); setModalOpen(false); toast.success("تم التعديل بنجاح"); },
     onError: () => toast.error("حدث خطأ أثناء التعديل"),
@@ -267,22 +277,31 @@ export default function AdminPropertyFeatures() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: "", icon: tab === "service" ? "Building2" : "Home", status: "active" });
+    setForm({ name: "", icon: tab === "service" ? "Building2" : "Home", status: "active", applicableTypes: [] });
     setModalOpen(true);
   };
 
   const openEdit = (item: Feature) => {
     setEditing(item);
-    setForm({ name: item.name, icon: item.icon ?? "Home", status: item.status });
+    setForm({
+      name: item.name,
+      icon: item.icon ?? "Home",
+      status: item.status,
+      applicableTypes: parseTypes(item.applicableTypes),
+    });
     setModalOpen(true);
   };
 
   const handleSave = () => {
     if (!form.name.trim()) return;
+    const applicableTypes = form.applicableTypes.length === 0
+      ? null
+      : JSON.stringify(form.applicableTypes);
+    const data = { name: form.name, icon: form.icon, status: form.status, applicableTypes };
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: form });
+      updateMut.mutate({ id: editing.id, data });
     } else {
-      createMut.mutate(form);
+      createMut.mutate({ ...data, sortOrder: items.length + 1, type: tab } as any);
     }
   };
 
@@ -509,6 +528,58 @@ export default function AdminPropertyFeatures() {
                     <p className="text-[11px] text-muted-foreground">{s.desc}</p>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Applicable Property Types */}
+            <div>
+              <Label className="text-sm font-semibold mb-1 block">أنواع العقار المطبقة</Label>
+              <p className="text-[11px] text-slate-400 mb-3">
+                اتركه فارغاً لتطبيقه على جميع الأنواع، أو اختر الأنواع المحددة التي تظهر فيها هذه {tab === "feature" ? "الميزة" : "الخدمة"}.
+              </p>
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, applicableTypes: [] }))}
+                  className={cn(
+                    "flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all w-full",
+                    form.applicableTypes.length === 0
+                      ? "bg-teal-600 text-white border-teal-600"
+                      : "border-border text-slate-500 hover:border-teal-300 bg-white"
+                  )}
+                >
+                  {form.applicableTypes.length === 0
+                    ? <CheckCircle2 className="w-3.5 h-3.5" />
+                    : <span className="w-3.5 h-3.5 rounded-full border border-slate-300" />}
+                  جميع الأنواع (بدون تقييد)
+                </button>
+                <div className="flex flex-wrap gap-1.5 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  {ALL_PROPERTY_TYPES.map((pt) => {
+                    const active = form.applicableTypes.includes(pt);
+                    return (
+                      <button
+                        key={pt}
+                        type="button"
+                        onClick={() =>
+                          setForm((prev) => ({
+                            ...prev,
+                            applicableTypes: active
+                              ? prev.applicableTypes.filter((t) => t !== pt)
+                              : [...prev.applicableTypes, pt],
+                          }))
+                        }
+                        className={cn(
+                          "px-2 py-1 rounded-lg border text-xs font-medium transition-all",
+                          active
+                            ? "border-teal-600 bg-teal-50 text-teal-700 shadow-sm"
+                            : "border-slate-200 text-slate-500 hover:border-teal-300 bg-white"
+                        )}
+                      >
+                        {pt}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
