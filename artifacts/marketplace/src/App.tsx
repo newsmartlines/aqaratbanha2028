@@ -97,6 +97,7 @@ import UserMyProperties from "@/pages/user/my-properties";
 import UserEditProperty from "@/pages/user/edit-property";
 import AddPropertyPage from "@/pages/add-property";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
+import MyPlanPage from "@/pages/dashboard/my-plan";
 import CompanyRegisterPage from "@/pages/company-register";
 import MapSearchPage from "@/pages/map-search";
 
@@ -222,6 +223,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/checkout/result">
         {() => <RoleProtectedRoute component={CheckoutResult} roles={["provider"]} />}
+      </Route>
+      <Route path="/dashboard/my-plan">
+        {() => <RoleProtectedRoute component={MyPlanPage} roles={["provider"]} />}
       </Route>
       <Route path="/dashboard/my-properties">
         {() => <RoleProtectedRoute component={MyPropertiesPage} roles={["provider"]} />}

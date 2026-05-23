@@ -22,7 +22,7 @@ import {
 import {
   Plus, RefreshCw, Search, Eye, Pencil, Star, CheckCircle,
   XCircle, Trash2, Home, Building2, TreePine, TrendingUp,
-  AlertCircle, CheckCheck, LayoutGrid, Loader2,
+  AlertCircle, CheckCheck, LayoutGrid, Loader2, Rocket,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -483,6 +483,19 @@ export default function MyPropertiesPage() {
                                   <TooltipContent>{prop.listingType === "rent" ? "مُؤجَّر" : "مُباع"}</TooltipContent>
                                 </Tooltip>
                               )}
+
+                              {/* Boost / Upgrade */}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => setLocation("/dashboard/my-plan")}
+                                    className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-colors border border-amber-200/60"
+                                  >
+                                    <Rocket className="w-3.5 h-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>رفع الإعلان وترقيته</TooltipContent>
+                              </Tooltip>
 
                               {/* Delete */}
                               <Tooltip>
