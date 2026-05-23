@@ -84,7 +84,7 @@ const ACTIVE_COLOR_MAP = [
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80";
 
 const CITIES = [
-  { value: "all", label: "كل المدن" },
+  { value: "all", label: "كل المناطق" },
   { value: "القاهرة", label: "القاهرة" },
   { value: "الإسكندرية", label: "الإسكندرية" },
   { value: "الدمام", label: "الدمام" },
@@ -93,6 +93,13 @@ const CITIES = [
   { value: "الخبر", label: "الخبر" },
   { value: "أبها", label: "أبها" },
 ];
+
+const CATEGORY_PROPERTY_TYPES: Record<string, string[]> = {
+  "residential": ["شقة", "فيلا", "دوبلكس", "استوديو", "روف", "غرفة", "استراحة", "عمارة"],
+  "commercial":  ["محل تجاري", "مجمع تجاري", "مكتب", "عيادة", "فندق", "مستودع"],
+  "land":        ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
+  "industrial":  ["مستودع"],
+};
 
 const CITY_COORDS: Record<string, [number, number]> = {
   "القاهرة": [24.7136, 46.6753],
@@ -665,6 +672,7 @@ export default function Home() {
   /* ─── Real-estate hero search ─── */
   const [listingType, setListingType] = useState<"للبيع" | "للإيجار">("للبيع");
   const [heroSubcategoryId, setHeroSubcategoryId] = useState<string>("all");
+  const [heroPropertyType, setHeroPropertyType] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<string>("all");
   const [nearMeLoading, setNearMeLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -748,7 +756,7 @@ export default function Home() {
   });
 
   const heroCityOptions = useMemo(() => {
-    const opts: { value: string; label: string }[] = [{ value: "__all__", label: "كل المدن" }];
+    const opts: { value: string; label: string }[] = [{ value: "__all__", label: "كل المناطق" }];
     const addCity = (nameAr: string) => {
       if (!opts.some(o => o.value === nameAr)) opts.push({ value: nameAr, label: nameAr });
     };
@@ -764,7 +772,7 @@ export default function Home() {
         if (city.enabled !== false) addCity(city.nameAr);
       });
     });
-    return opts.length > 1 ? opts : [{ value: "__all__", label: "كل المدن" }, ...CITIES.filter(c => c.value !== "all").map(c => ({ value: c.value, label: c.label }))];
+    return opts.length > 1 ? opts : [{ value: "__all__", label: "كل المناطق" }, ...CITIES.filter(c => c.value !== "all").map(c => ({ value: c.value, label: c.label }))];
   }, [regions, heroRegionId]);
 
   useEffect(() => {
@@ -861,6 +869,7 @@ export default function Home() {
     if (heroRegionId != null) params.set("regionId", String(heroRegionId));
     if (heroCityName && heroCityName !== "__all__") params.set("city", heroCityName);
     if (heroAreaName) params.set("district", heroAreaName);
+    if (heroPropertyType && heroPropertyType !== "all") params.set("propertyType", heroPropertyType);
     setLocation(`/properties?${params.toString()}`);
   };
 
@@ -984,7 +993,7 @@ export default function Home() {
 
                 {/* Category */}
                 <div className="w-32 shrink-0">
-                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
+                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); setHeroPropertyType("all"); }}>
                     <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
                       <Building2 className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="النوع" />
@@ -998,10 +1007,35 @@ export default function Home() {
                   </Select>
                 </div>
 
+                {/* Property Type Sub-dropdown — appears when a category with types is selected */}
+                {(() => {
+                  const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
+                  const types = selCat ? (CATEGORY_PROPERTY_TYPES[selCat.slug ?? ""] ?? []) : [];
+                  if (selectedCategory === "all" || types.length === 0) return null;
+                  return (
+                    <>
+                      <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
+                      <div className="w-28 shrink-0">
+                        <Select value={heroPropertyType} onValueChange={setHeroPropertyType}>
+                          <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
+                            <SelectValue placeholder="النوع" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">كل الأنواع</SelectItem>
+                            {types.map(t => (
+                              <SelectItem key={t} value={t}>{t}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  );
+                })()}
+
                 {/* Divider */}
                 <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
 
-                {/* City */}
+                {/* City / Area */}
                 <div className="w-28 shrink-0">
                   <Select
                     value={heroCityName ?? "__all__"}
@@ -1009,7 +1043,7 @@ export default function Home() {
                   >
                     <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
                       <MapPin className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
-                      <SelectValue placeholder="المدينة" />
+                      <SelectValue placeholder="المنطقة" />
                     </SelectTrigger>
                     <SelectContent>
                       {heroCityOptions.map(o => (

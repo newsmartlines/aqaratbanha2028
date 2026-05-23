@@ -316,10 +316,18 @@ export default function AdminPropertyFeatures() {
     reorderMut.mutate(reordered);
   };
 
-  const sorted = useMemo(
-    () => [...items].sort((a, b) => a.sortOrder - b.sortOrder),
-    [items]
-  );
+  const sorted = useMemo(() => {
+    const seenIds = new Set<number>();
+    const seenNames = new Set<string>();
+    return [...items]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .filter(item => {
+        if (seenIds.has(item.id) || seenNames.has(item.name)) return false;
+        seenIds.add(item.id);
+        seenNames.add(item.name);
+        return true;
+      });
+  }, [items]);
 
   const visible = useMemo(() => {
     let list = sorted;

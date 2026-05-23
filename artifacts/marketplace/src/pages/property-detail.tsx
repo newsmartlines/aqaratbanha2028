@@ -593,7 +593,7 @@ export default function PropertyDetail() {
               <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-gray-900 mb-5">المرافق والمزايا</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {property.amenities.map((a, i) => (
+                  {[...new Set(property.amenities)].map((a, i) => (
                     <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 border border-border/50 text-sm text-gray-800">
                       <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
                         <FeatureIconByName featureName={a} className="w-3.5 h-3.5 text-teal-600" />
