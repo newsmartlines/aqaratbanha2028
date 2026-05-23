@@ -17,7 +17,7 @@ import { Step5Plans } from "./steps/Step5Plans";
 import { usePropertyForm } from "./use-property-form";
 import {
   ADVERTISER_TYPES, FINISHING, CONDITIONS,
-  DIRECTIONS, CITIES,
+  DIRECTIONS, CITIES, CITY_AREAS,
 } from "./constants";
 import { LAND_TYPE_OPTIONS, getPropertyTypeConfig } from "./property-type-config";
 import type { PropertyFormWizardProps } from "./types";
@@ -587,12 +587,19 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
               </div>
             </div>
             <div>
-              <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">الحي / المنطقة</Label>
-              <Input id="f-district" placeholder="حي النزهة، حي الجامعة..." {...register("district")} className="h-11 rounded-xl" />
-            </div>
-            <div>
-              <Label htmlFor="f-street" className="text-sm font-semibold mb-1.5 block">اسم الشارع</Label>
-              <Input id="f-street" placeholder="شارع الجمهورية..." {...register("street")} className="h-11 rounded-xl" />
+              <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">المنطقة</Label>
+              <select
+                id="f-district"
+                value={v.district ?? ""}
+                onChange={(e) => setValue("district", e.target.value)}
+                className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                dir="rtl"
+              >
+                <option value="">— اختر المنطقة —</option>
+                {(CITY_AREAS[v.city] ?? []).map((area) => (
+                  <option key={area} value={area}>{area}</option>
+                ))}
+              </select>
             </div>
             <div>
               <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>

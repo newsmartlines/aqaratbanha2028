@@ -1,19 +1,18 @@
-import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import { Input } from "@/components/ui/input";
+import { UseFormSetValue } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { MapPicker } from "../shared/MapPicker";
 import { AddressAutocomplete } from "../shared/AddressAutocomplete";
-import { CITIES } from "../constants";
+import { CITIES, CITY_AREAS } from "../constants";
 import type { FormValues } from "../types";
 
 interface Step3LocationProps {
   v:        FormValues;
   set:      (key: keyof FormValues, val: any) => void;
-  register: UseFormRegister<FormValues>;
+  register?: unknown;
   setValue: UseFormSetValue<FormValues>;
 }
 
-export function Step3Location({ v, set, register, setValue }: Step3LocationProps) {
+export function Step3Location({ v, set, setValue }: Step3LocationProps) {
   return (
     <div className="space-y-5">
       {/* اختيار المدينة */}
@@ -38,17 +37,23 @@ export function Step3Location({ v, set, register, setValue }: Step3LocationProps
         </div>
       </div>
 
-      {/* الشارع */}
+      {/* المنطقة */}
       <div>
-        <Label htmlFor="f-street" className="text-sm font-semibold mb-2 block">
-          اسم الشارع
+        <Label htmlFor="f-district" className="text-sm font-semibold mb-2 block">
+          المنطقة
         </Label>
-        <Input
-          id="f-street"
-          placeholder="شارع الجمهورية..."
-          {...register("street")}
-          className="h-11 rounded-xl"
-        />
+        <select
+          id="f-district"
+          value={v.district ?? ""}
+          onChange={(e) => set("district", e.target.value)}
+          className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          dir="rtl"
+        >
+          <option value="">— اختر المنطقة —</option>
+          {(CITY_AREAS[v.city] ?? []).map((area) => (
+            <option key={area} value={area}>{area}</option>
+          ))}
+        </select>
       </div>
 
       {/* العنوان التفصيلي مع اقتراحات تلقائية */}
