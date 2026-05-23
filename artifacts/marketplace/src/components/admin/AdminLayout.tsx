@@ -194,6 +194,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: MapPin,          label: t("locations"),       href: "/admin/locations",        perm: "locations" },
     { icon: MapPin,          label: "أهم المناطق",        href: "/admin/featured-areas",   perm: null },
     { icon: Building2,       label: "مميزات وخدمات العقار", href: "/admin/property-features", perm: null },
+    { icon: Layers3,         label: "حقول أنواع العقار",    href: "/admin/property-type-configs", perm: null },
     { icon: Star,            label: "عقار مميز",           href: "/admin/settings?tab=spotlight", perm: "settings" },
     { icon: ShoppingCart,    label: t("orders"),          href: "/admin/orders",           perm: "orders" },
     { icon: Ticket,          label: t("supportTickets"),  href: "/admin/support-tickets",  perm: "support" },

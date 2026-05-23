@@ -3,23 +3,34 @@ import { PROPERTY_GROUPS } from "../constants";
 import type { FormValues } from "../types";
 
 interface PropertyTypeSelectorProps {
-  v:   FormValues;
-  set: (key: keyof FormValues, val: any) => void;
+  v:                   FormValues;
+  set:                 (key: keyof FormValues, val: any) => void;
+  onMainCategoryChange?: (cat: string) => void;
 }
 
-export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
+export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyTypeSelectorProps) {
   const activeGroup = PROPERTY_GROUPS.find((g) => g.value === v.propertyGroup);
 
   const handleGroupClick = (groupValue: string) => {
     if (v.propertyGroup === groupValue) return;
     set("propertyGroup", groupValue);
     set("mainCategory", "");
+    set("features", []);
+    set("nearbyServices", []);
+  };
+
+  const handleSubtypeClick = (value: string) => {
+    if (onMainCategoryChange) {
+      onMainCategoryChange(value);
+    } else {
+      set("mainCategory", value);
+    }
   };
 
   return (
     <div className="space-y-5">
 
-      {/* ── الخطوة 1: نوع العقار ── */}
+      {/* ── المجموعة الرئيسية ── */}
       <div>
         <p className="text-sm font-bold text-gray-700 mb-3">
           نوع العقار <span className="text-red-500">*</span>
@@ -63,7 +74,7 @@ export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
         </div>
       </div>
 
-      {/* ── الخطوة 2: نوع الوحدة (يظهر عند اختيار المجموعة) ── */}
+      {/* ── نوع الوحدة ── */}
       {activeGroup && (
         <div className="animate-in fade-in slide-in-from-top-2 duration-200">
           <p className="text-sm font-bold text-gray-700 mb-3">
@@ -77,7 +88,7 @@ export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
                 <button
                   key={sub.value}
                   type="button"
-                  onClick={() => set("mainCategory", sub.value)}
+                  onClick={() => handleSubtypeClick(sub.value)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
                     active
                       ? "border-teal-600 bg-teal-600 text-white shadow-sm"
@@ -93,7 +104,7 @@ export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
         </div>
       )}
 
-      {/* ── الخطوة 3: نوع الإعلان (يظهر عند اختيار نوع الوحدة) ── */}
+      {/* ── نوع الإعلان ── */}
       {v.mainCategory && (
         <div className="animate-in fade-in slide-in-from-top-2 duration-200">
           <p className="text-sm font-bold text-gray-700 mb-3">
@@ -101,20 +112,8 @@ export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
           </p>
           <div className="grid grid-cols-2 gap-3">
             {[
-              {
-                value: "sale",
-                label: "للبيع",
-                icon: Tag,
-                desc: "بيع عقارك بأفضل سعر",
-                color: "amber",
-              },
-              {
-                value: "rent",
-                label: "للإيجار",
-                icon: Tag,
-                desc: "أجّر عقارك شهرياً أو سنوياً",
-                color: "teal",
-              },
+              { value: "sale", label: "للبيع",    desc: "بيع عقارك بأفضل سعر",           color: "amber" },
+              { value: "rent", label: "للإيجار",  desc: "أجّر عقارك شهرياً أو سنوياً",  color: "teal"  },
             ].map((opt) => {
               const active = v.listingType === opt.value;
               return (
@@ -140,9 +139,7 @@ export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
                     </span>
                   )}
                   <span className={`text-lg font-extrabold ${
-                    active
-                      ? opt.value === "sale" ? "text-amber-600" : "text-teal-700"
-                      : "text-gray-800"
+                    active ? opt.value === "sale" ? "text-amber-600" : "text-teal-700" : "text-gray-800"
                   }`}>
                     {opt.label}
                   </span>
@@ -153,7 +150,6 @@ export function PropertyTypeSelector({ v, set }: PropertyTypeSelectorProps) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

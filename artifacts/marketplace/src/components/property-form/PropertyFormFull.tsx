@@ -19,6 +19,7 @@ import {
   ADVERTISER_TYPES, FINISHING, CONDITIONS,
   DIRECTIONS, CITIES,
 } from "./constants";
+import { LAND_TYPE_OPTIONS, getPropertyTypeConfig } from "./property-type-config";
 import type { PropertyFormWizardProps } from "./types";
 
 export function PropertyFormFull({ mode, backPath, showPlans = false }: PropertyFormWizardProps) {
@@ -33,16 +34,18 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
     showPayment, setShowPayment,
     fileInputRef,
     register, setValue,
-    v, showRoomFields,
+    v,
     plans, plansLoading,
     amenitiesData, servicesData,
-    set, toggleArr, removeImage,
+    set, setMainCategory, toggleArr, removeImage,
     handleFileUpload,
     handlePaymentSuccess,
     handleSubmit,
     handleReset,
     goBack,
   } = form;
+
+  const cfg = getPropertyTypeConfig(v.mainCategory);
 
   const canSubmitForm = !!v.listingType && !!v.mainCategory && !!v.title && !!v.area && !!v.city && !!v.phone;
 
@@ -217,7 +220,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
         {/* ── 1. نوع العقار ──────────────────────────────────────── */}
         <FormSection title="نوع العقار" required>
           <div className="space-y-5">
-            <PropertyTypeSelector v={v} set={set} />
+            <PropertyTypeSelector v={v} set={set} onMainCategoryChange={setMainCategory} />
 
             {/* Company only: نوع المعلن */}
             {isCompany && (
@@ -346,24 +349,71 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                 <Input id="f-area" type="number" placeholder="120" {...register("area")} className="h-11 rounded-xl" />
               </div>
             </div>
-            {showRoomFields && (
+            {/* Land type & dimensions */}
+            {cfg.showLandType && (
+              <div>
+                <Label className="text-sm font-semibold mb-2 block">نوع الأرض</Label>
+                <div className="flex flex-wrap gap-2">
+                  {LAND_TYPE_OPTIONS.map((opt) => (
+                    <button key={opt.value} type="button" onClick={() => set("landType", opt.value)}
+                      className={`px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
+                        v.landType === opt.value ? "border-teal-600 bg-teal-50 text-teal-700" : "border-border hover:border-teal-300"
+                      }`}>{opt.label}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {cfg.showLandDimensions && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">الطول (م)</p>
+                  <Input type="number" placeholder="20" {...register("landDepth")} className="h-11 rounded-xl text-center" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">العرض (م)</p>
+                  <Input type="number" placeholder="15" {...register("landWidth")} className="h-11 rounded-xl text-center" />
+                </div>
+              </div>
+            )}
+            {cfg.showBuildRatio && (
+              <div>
+                <Label htmlFor="f-build-ratio" className="text-sm font-semibold mb-1.5 block">نسبة البناء (%)</Label>
+                <Input id="f-build-ratio" type="number" placeholder="60" {...register("buildRatio")} className="h-11 rounded-xl max-w-[160px]" />
+              </div>
+            )}
+            {/* Room details */}
+            {(cfg.showRooms || cfg.showBathrooms || cfg.showFloor) && (
               <div className="grid grid-cols-3 gap-3">
-                {[
-                  { id: "rooms",      label: "الغرف",         placeholder: "3" },
-                  { id: "bathrooms",  label: "الحمامات",      placeholder: "2" },
-                  { id: "floor",      label: "الطابق",        placeholder: "3" },
-                  { id: "totalFloors",label: "إجمالي الأدوار",placeholder: "10" },
-                  ...(isCompany ? [{ id: "buildYear", label: "سنة البناء", placeholder: "2022" }] : []),
-                ].map((f) => (
-                  <div key={f.id}>
-                    <p className="text-xs text-muted-foreground mb-1.5">{f.label}</p>
-                    <Input
-                      type="number" placeholder={f.placeholder}
-                      {...register(f.id as any)}
-                      className="h-11 rounded-xl text-center"
-                    />
+                {cfg.showRooms && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">{cfg.roomsLabel}</p>
+                    <Input type="number" placeholder="3" {...register("rooms")} className="h-11 rounded-xl text-center" />
                   </div>
-                ))}
+                )}
+                {cfg.showBathrooms && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">الحمامات</p>
+                    <Input type="number" placeholder="2" {...register("bathrooms")} className="h-11 rounded-xl text-center" />
+                  </div>
+                )}
+                {cfg.showFloor && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">{cfg.floorLabel}</p>
+                    <Input type="number" placeholder="3" {...register("floor")} className="h-11 rounded-xl text-center" />
+                  </div>
+                )}
+                {cfg.showTotalFloors && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">إجمالي الأدوار</p>
+                    <Input type="number" placeholder="10" {...register("totalFloors")} className="h-11 rounded-xl text-center" />
+                  </div>
+                )}
+                {isCompany && cfg.showBuildYear && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
+                    <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl text-center" />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -387,7 +437,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                   </SelectContent>
                 </Select>
               </div>
-              {showRoomFields && (
+              {cfg.showFurnished && (
                 <div>
                   <Label className="text-sm font-semibold mb-1.5 block">الأثاث</Label>
                   <Select value={v.furnished} onValueChange={(val) => set("furnished", val)}>

@@ -39,10 +39,37 @@ export interface FormValues {
   whatsapp:       string;
   videoUrl:       string;
   images:         string[];
+  // Land-specific fields
+  landType:       string;
+  landWidth:      string;
+  landDepth:      string;
+  buildRatio:     string;
 }
 
 export interface DynFeature {
-  id:   number;
-  name: string;
-  icon: string | null;
+  id:              number;
+  name:            string;
+  icon:            string | null;
+  applicableTypes?: string | null;
+}
+
+export interface PropertyTypeConfig {
+  showRooms:          boolean;
+  roomsLabel:         string;
+  showBathrooms:      boolean;
+  showFloor:          boolean;
+  floorLabel:         string;
+  showTotalFloors:    boolean;
+  showBuildYear:      boolean;
+  showFinishing:      boolean;
+  showFurnished:      boolean;
+  showCondition:      boolean;
+  showDirection:      boolean;
+  showFacade:         boolean;
+  showPaymentMethod:  boolean;
+  showLandType:       boolean;
+  showLandDimensions: boolean;
+  showBuildRatio:     boolean;
+  isLand:             boolean;
+  isCommercial:       boolean;
 }

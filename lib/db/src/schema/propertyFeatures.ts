@@ -5,8 +5,9 @@ export const propertyFeaturesTable = pgTable("property_features", {
   type: text("type").notNull().default("feature"), // "feature" | "service"
   name: text("name").notNull(),
   icon: text("icon").default("🏠"),
-  status: text("status").notNull().default("active"), // "active" | "hidden"
+  status: text("status").notNull().default("active"), // "active" | "inactive"
   sortOrder: integer("sort_order").notNull().default(0),
+  applicableTypes: text("applicable_types"), // JSON array of property type values; null = all types
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

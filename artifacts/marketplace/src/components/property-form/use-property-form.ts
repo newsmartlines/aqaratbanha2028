@@ -5,14 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { api, type BillingPlan } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import type { FormMode, FormValues, DynFeature } from "./types";
-import { STEPS_CONFIG, NO_ROOM_CATEGORIES } from "./constants";
+import { STEPS_CONFIG, LAND_CATEGORIES } from "./constants";
+import { getPropertyTypeConfig } from "./property-type-config";
 
 export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boolean) {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
   const isCompany = mode === "company";
-
   const STEPS = STEPS_CONFIG(showPlans);
 
   const [step, setStep]             = useState(1);
@@ -36,13 +36,16 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     latitude: "", longitude: "",
     phone: user?.phone ?? "", whatsapp: "",
     videoUrl: "", images: [],
+    landType: "", landWidth: "", landDepth: "", buildRatio: "",
   };
 
   const { register, watch, setValue, getValues, reset } =
     useForm<FormValues>({ defaultValues });
 
   const v = watch();
-  const showRoomFields = !NO_ROOM_CATEGORIES.includes(v.mainCategory);
+
+  const cfg = getPropertyTypeConfig(v.mainCategory);
+  const showRoomFields = cfg.showRooms || cfg.showBathrooms || cfg.showFloor;
 
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
     queryKey: ["billingPlansPublic"],
@@ -51,19 +54,33 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     staleTime: 5 * 60_000,
   });
 
+  // Features & services filtered by selected property type from the API
   const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
-    queryKey: ["property-features", "feature"],
-    queryFn:  () => api.propertyFeatures.list("feature"),
+    queryKey: ["property-features", "feature", v.mainCategory],
+    queryFn:  () => api.propertyFeatures.listByType("feature", v.mainCategory),
     staleTime: 5 * 60_000,
   });
 
   const { data: servicesData = [] } = useQuery<DynFeature[]>({
-    queryKey: ["property-features", "service"],
-    queryFn:  () => api.propertyFeatures.list("service"),
+    queryKey: ["property-features", "service", v.mainCategory],
+    queryFn:  () => api.propertyFeatures.listByType("service", v.mainCategory),
     staleTime: 5 * 60_000,
   });
 
   const set = (key: keyof FormValues, val: any) => setValue(key, val);
+
+  // Special setter that clears features/services and land fields when type changes
+  const setMainCategory = (cat: string) => {
+    setValue("mainCategory", cat);
+    setValue("features", []);
+    setValue("nearbyServices", []);
+    if (!LAND_CATEGORIES.includes(cat)) {
+      setValue("landType", "");
+      setValue("landWidth", "");
+      setValue("landDepth", "");
+      setValue("buildRatio", "");
+    }
+  };
 
   const toggleArr = (key: "features" | "nearbyServices", val: string) => {
     const arr = getValues(key) as string[];
@@ -129,6 +146,10 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
       phone:          f.phone          || undefined,
       whatsapp:       f.whatsapp       || undefined,
       videoUrl:       f.videoUrl       || undefined,
+      landType:       f.landType       || undefined,
+      landWidth:      f.landWidth      || undefined,
+      landDepth:      f.landDepth      || undefined,
+      buildRatio:     f.buildRatio     || undefined,
       features:       (f.features as string[]).length
                         ? JSON.stringify(f.features)       : undefined,
       nearbyServices: (f.nearbyServices as string[]).length
@@ -190,11 +211,12 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     fileInputRef,
     register, watch, setValue,
     v,
+    cfg,
     showRoomFields,
     plans, plansLoading,
     amenitiesData,
     servicesData,
-    set, toggleArr, removeImage,
+    set, setMainCategory, toggleArr, removeImage,
     handleFileUpload,
     canProceed,
     handleSubmit,

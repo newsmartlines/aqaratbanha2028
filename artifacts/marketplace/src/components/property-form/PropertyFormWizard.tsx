@@ -22,10 +22,10 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
     showPayment, setShowPayment,
     fileInputRef,
     register, watch, setValue,
-    v, showRoomFields,
+    v,
     plans, plansLoading,
     amenitiesData, servicesData,
-    set, toggleArr, removeImage,
+    set, setMainCategory, toggleArr, removeImage,
     handleFileUpload,
     canProceed,
     handleSubmit,
@@ -117,7 +117,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
       {/* Step content */}
       <div className="pb-28">
         {step === 1 && (
-          <Step1Type v={v} set={set} />
+          <Step1Type v={v} set={set} onMainCategoryChange={setMainCategory} />
         )}
         {step === 2 && (
           <Step2Details
@@ -126,7 +126,6 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             register={register}
             toggleArr={toggleArr}
             isCompany={isCompany}
-            showRoomFields={showRoomFields}
             amenitiesData={amenitiesData}
             servicesData={servicesData}
           />
