@@ -26,18 +26,24 @@ export default function UserDashboard() {
     queryKey: ["user-properties"],
     queryFn: () => api.userProperties.list(),
     enabled: !!user,
+    refetchInterval: 3000,
+    staleTime: 0,
   });
 
   const { data: favorites = [] } = useQuery({
     queryKey: ["property-favorites"],
     queryFn: () => api.propertyFavorites.list(),
     enabled: !!user,
+    refetchInterval: 2000,
+    staleTime: 0,
   });
 
   const { data: savedSearches = [] } = useQuery({
     queryKey: ["saved-searches"],
     queryFn: () => api.savedSearches.list(),
     enabled: !!user,
+    refetchInterval: 5000,
+    staleTime: 0,
   });
 
   const stats = [
