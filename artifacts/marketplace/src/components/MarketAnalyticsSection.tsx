@@ -214,6 +214,9 @@ function PricePositionBar({
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
+// Fallback scope labels
+const FALLBACK_LABELS = ["المدينة · النوع", "المدينة", "المحافظة", "الفئة"];
+
 export function MarketAnalyticsSection({
   cityId, regionId, district, mainCategory, subCategory, listingType,
   priceNum, area, cityNameAr, regionNameAr,
@@ -223,6 +226,7 @@ export function MarketAnalyticsSection({
   const [error, setError] = useState<string | null>(null);
   const [chartPeriod, setChartPeriod] = useState<Period>("12m");
   const [collapsed, setCollapsed] = useState(false);
+  const [fallbackLevel, setFallbackLevel] = useState<number>(0);
 
   const scopeLabel = [district, cityNameAr ?? regionNameAr].filter(Boolean).join(" — ");
   const typeLabel = [subCategory ?? mainCategory, listingType].filter(Boolean).join(" · ");
@@ -231,18 +235,38 @@ export function MarketAnalyticsSection({
     setLoading(true);
     setError(null);
     try {
-      const params: Record<string, string> = { mainCategory };
-      if (cityId) params.cityId = String(cityId);
-      else if (regionId) params.regionId = String(regionId);
-      if (district) params.district = district;
-      if (subCategory) params.subCategory = subCategory;
-      if (listingType) params.listingType = listingType;
-      if (priceNum && priceNum > 0) params.priceNum = String(priceNum);
-      if (area && area > 0) params.area = String(area);
+      const base: Record<string, string> = { mainCategory };
+      if (priceNum && priceNum > 0) base.priceNum = String(priceNum);
+      if (area && area > 0) base.area = String(area);
 
-      const qs = new URLSearchParams(params).toString();
-      const res = await (api as any).fetchJson(`/market/analytics?${qs}`);
-      setData(res as MarketData);
+      // Progressive fallback scopes: most specific → broadest
+      const levels: Record<string, string>[] = [
+        // 0: city + subCat + listingType
+        { ...base, ...(cityId ? { cityId: String(cityId) } : regionId ? { regionId: String(regionId) } : {}), ...(subCategory ? { subCategory } : {}), ...(listingType ? { listingType } : {}) },
+        // 1: city only (drop type + subCat)
+        { ...base, ...(cityId ? { cityId: String(cityId) } : regionId ? { regionId: String(regionId) } : {}) },
+      ];
+      // 2: region fallback (only if we had a cityId)
+      if (cityId && regionId) levels.push({ ...base, regionId: String(regionId) });
+      // 3: mainCategory only (broadest)
+      levels.push({ ...base });
+
+      let result: MarketData | null = null;
+      let usedLevel = 0;
+      for (let i = 0; i < levels.length; i++) {
+        const qs = new URLSearchParams(levels[i]).toString();
+        const res = await (api as any).fetchJson(`/market/analytics?${qs}`) as MarketData;
+        if (res.hasEnoughData) {
+          result = res;
+          usedLevel = i;
+          break;
+        }
+        // Keep the last result even if not enough data
+        result = res;
+        usedLevel = i;
+      }
+      setFallbackLevel(usedLevel);
+      setData(result);
     } catch (e: any) {
       setError(e?.message || "خطأ في تحميل البيانات");
     } finally {
@@ -300,6 +324,11 @@ export function MarketAnalyticsSection({
               {typeLabel && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <span className="text-gray-300">·</span> {typeLabel}
+                </span>
+              )}
+              {!loading && data?.hasEnoughData && fallbackLevel > 0 && (
+                <span className="flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2 py-0.5">
+                  بيانات على مستوى {fallbackLevel === 1 ? "المدينة" : fallbackLevel === 2 ? "المحافظة" : "الفئة"}
                 </span>
               )}
             </div>
