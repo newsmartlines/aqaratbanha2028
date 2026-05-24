@@ -2,12 +2,13 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import {
   paymentTransactionsTable,
+  paymentsTable,
   providersTable,
   usersTable,
   packagesTable,
   subscriptionsTable,
 } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { getSession } from "./auth";
 
 const router = Router();
@@ -209,12 +210,52 @@ router.get("/providers/me/payments", async (req, res) => {
       };
     });
 
-    const baseTotals = calcTotals(rows);
-    const netEarnings = rows
+    // ── Subscription payments from paymentsTable (billing plan + package subscriptions)
+    // These are recorded by POST /providers/:id/subscribe and must appear in مدفوعاتي
+    const subPayRows = await db
+      .select({
+        id: paymentsTable.id,
+        type: paymentsTable.type,
+        amount: paymentsTable.amount,
+        status: paymentsTable.status,
+        invoiceId: paymentsTable.invoiceId,
+        createdAt: paymentsTable.createdAt,
+      })
+      .from(paymentsTable)
+      .where(and(
+        eq(paymentsTable.providerId, providerId),
+        eq(paymentsTable.type, "subscription"),
+      ))
+      .orderBy(desc(paymentsTable.createdAt));
+
+    const subRows = subPayRows.map((r) => ({
+      id: -(r.id + 1_000_000),
+      refId: r.invoiceId ?? `SUB-${r.id}`,
+      kind: "subscription",
+      userId: null as number | null,
+      customerName: null as string | null,
+      customerPhone: null as string | null,
+      serviceId: null as number | null,
+      serviceTitle: "اشتراك في باقة",
+      amount: r.amount,
+      commissionAmount: "0" as string | null,
+      currency: "EGP",
+      status: (r.status ?? "paid") as "pending" | "paid" | "failed" | "cancelled",
+      gateway: "manual",
+      paidAt: r.createdAt ? r.createdAt.toISOString() : null,
+      createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
+    }));
+
+    const allRows = [...rows, ...subRows].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+    const baseTotals = calcTotals(allRows);
+    const netEarnings = allRows
       .filter((r) => r.status === "paid")
       .reduce((s, r) => s + (parseFloat(String(r.amount)) || 0) - (parseFloat(String(r.commissionAmount)) || 0), 0);
 
-    res.json({ success: true, rows, totals: { ...baseTotals, netEarnings } });
+    res.json({ success: true, rows: allRows, totals: { ...baseTotals, netEarnings } });
   } catch (e) {
     console.error("provider payments error", e);
     res.status(500).json({ success: false, error: "Failed to fetch provider payments" });
