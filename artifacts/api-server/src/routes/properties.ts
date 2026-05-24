@@ -472,6 +472,11 @@ router.post("/properties", async (req, res) => {
     sendWhatsAppNotification(property).catch(() => {});
     triggerSavedSearchAlerts(property).catch(() => {});
 
+    // Invalidate market cache for this area/category
+    import("../lib/market-engine").then(({ invalidateMarketCache }) =>
+      invalidateMarketCache(property.mainCategory, property.cityId, property.regionId).catch(() => {})
+    ).catch(() => {});
+
     res.json({ success: true, data: property });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to create property" });
@@ -532,6 +537,12 @@ router.put("/properties/:id", async (req, res) => {
     }
 
     const [updated] = await db.update(propertiesTable).set(updateData).where(eq(propertiesTable.id, id)).returning();
+
+    // Invalidate market cache
+    import("../lib/market-engine").then(({ invalidateMarketCache }) =>
+      invalidateMarketCache(existing.mainCategory, existing.cityId, existing.regionId).catch(() => {})
+    ).catch(() => {});
+
     res.json({ success: true, data: updated });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to update property" });
@@ -545,7 +556,16 @@ router.delete("/properties/:id", async (req, res) => {
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
 
     const id = parseInt(req.params.id);
+    const [toDelete] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     await db.delete(propertiesTable).where(eq(propertiesTable.id, id));
+
+    // Invalidate market cache
+    if (toDelete) {
+      import("../lib/market-engine").then(({ invalidateMarketCache }) =>
+        invalidateMarketCache(toDelete.mainCategory, toDelete.cityId, toDelete.regionId).catch(() => {})
+      ).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to delete property" });
@@ -600,6 +620,13 @@ router.patch("/properties/:id/status", async (req, res) => {
       })
       .where(eq(propertiesTable.id, id))
       .returning();
+
+    // Invalidate market cache on approval/rejection
+    if (isApproving || isRejecting) {
+      import("../lib/market-engine").then(({ invalidateMarketCache }) =>
+        invalidateMarketCache(property.mainCategory, property.cityId, property.regionId).catch(() => {})
+      ).catch(() => {});
+    }
 
     const ownerUserId = property.ownerUserId;
     if (ownerUserId && (isApproving || isRejecting)) {

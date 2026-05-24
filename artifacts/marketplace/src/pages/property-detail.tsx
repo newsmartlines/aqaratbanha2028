@@ -23,6 +23,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
 import { AdBanner } from "@/components/AdBanner";
 import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
+import { MarketAnalyticsSection } from "@/components/MarketAnalyticsSection";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -82,6 +83,10 @@ type PropertyView = {
   ownerUserId: number | null;
   viewCount: number;
   createdAt: string | null;
+  cityId: number | null;
+  regionId: number | null;
+  district: string | null;
+  subCategory: string | null;
 };
 
 function mapDbToView(p: Record<string, unknown>): PropertyView {
@@ -130,6 +135,10 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     ownerUserId: (p.ownerUserId as number) ?? null,
     viewCount: (p.viewCount as number) ?? 0,
     createdAt: (p.createdAt as string) ?? null,
+    cityId: (p.cityId as number) ?? null,
+    regionId: (p.regionId as number) ?? null,
+    district: (p.district as string) ?? null,
+    subCategory: (p.subCategory as string) ?? null,
   };
 }
 
@@ -985,6 +994,20 @@ export default function PropertyDetail() {
         <div className="mt-10">
           <AdBanner position="property_bottom" />
         </div>
+
+        {/* ── Market Analytics ── */}
+        {property && (
+          <MarketAnalyticsSection
+            cityId={property.cityId}
+            regionId={property.regionId}
+            district={property.district}
+            mainCategory={property.mainCategory}
+            subCategory={property.subCategory}
+            listingType={property.type}
+            priceNum={property.priceNum}
+            area={property.area}
+          />
+        )}
 
         {/* Similar Properties */}
         {similar.length > 0 && (

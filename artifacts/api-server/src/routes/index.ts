@@ -36,6 +36,7 @@ import adsRouter from "./ads";
 import propertyReportsRouter from "./propertyReports";
 import wpImportRouter from "./wpImport";
 import popupsRouter from "./popups";
+import marketRouter from "./market";
 
 const router: IRouter = Router();
 
@@ -76,5 +77,6 @@ router.use(adsRouter);
 router.use(propertyReportsRouter);
 router.use(wpImportRouter);
 router.use(popupsRouter);
+router.use(marketRouter);
 
 export default router;

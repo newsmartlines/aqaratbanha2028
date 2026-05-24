@@ -4,6 +4,7 @@ import {
   servicesTable, subscriptionsTable, reviewsTable,
   regionsTable, citiesTable, areasTable, billingPlansTable, commissionRulesTable,
   propertiesTable, featuredAreasTable, emailTemplatesTable, siteSettingsTable,
+  subcategoriesTable,
 } from "@workspace/db";
 import bcrypt from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
@@ -243,6 +244,7 @@ export async function seed() {
 
   await seedEgyptLocations();
   await seedRealEstateCategories();
+  await seedRealEstateSubcategories();
   await seedFeaturedAreas();
   await seedProperties();
   await seedEmailTemplates();
@@ -431,6 +433,91 @@ async function seedRealEstateCategories() {
     { nameAr: "صناعي", nameEn: "Industrial", icon: "Factory", slug: "industrial", description: "المخازن والمستودعات والمصانع", type: "real_estate" as const },
   ]);
   console.log("Real estate categories seeded.");
+}
+
+// ── Real Estate Subcategories ─────────────────────────────────────────────────
+
+async function seedRealEstateSubcategories() {
+  // Get all real estate categories
+  const reCategories = await db
+    .select()
+    .from(categoriesTable)
+    .where(eq(categoriesTable.type, "real_estate"));
+
+  if (reCategories.length === 0) {
+    console.log("No real estate categories found, skipping subcategory seed.");
+    return;
+  }
+
+  const SUBCATEGORY_MAP: Record<string, { nameAr: string; nameEn: string; icon: string; slug: string }[]> = {
+    residential: [
+      { nameAr: "شقة",           nameEn: "Apartment",     icon: "Building2",  slug: "apartment" },
+      { nameAr: "فيلا",          nameEn: "Villa",         icon: "Home",       slug: "villa" },
+      { nameAr: "دوبلكس",        nameEn: "Duplex",        icon: "Layers",     slug: "duplex" },
+      { nameAr: "استوديو",       nameEn: "Studio",        icon: "Home",       slug: "studio" },
+      { nameAr: "شاليه",         nameEn: "Chalet",        icon: "Sunset",     slug: "chalet" },
+      { nameAr: "غرفة مفردة",    nameEn: "Single Room",   icon: "Tag",        slug: "single-room" },
+      { nameAr: "منزل مستقل",    nameEn: "Standalone",    icon: "Home",       slug: "standalone" },
+      { nameAr: "طابق كامل",     nameEn: "Full Floor",    icon: "Layers",     slug: "full-floor" },
+    ],
+    commercial: [
+      { nameAr: "محل تجاري",     nameEn: "Shop",          icon: "Store",      slug: "shop" },
+      { nameAr: "مكتب",          nameEn: "Office",        icon: "Building",   slug: "office" },
+      { nameAr: "مستودع",        nameEn: "Warehouse",     icon: "Warehouse",  slug: "warehouse" },
+      { nameAr: "عمارة تجارية",  nameEn: "Commercial Building", icon: "Building2", slug: "commercial-building" },
+      { nameAr: "معرض",          nameEn: "Showroom",      icon: "Layers",     slug: "showroom" },
+      { nameAr: "صيدلية",        nameEn: "Pharmacy",      icon: "Tag",        slug: "pharmacy" },
+      { nameAr: "مطعم أو كافيه", nameEn: "Restaurant/Cafe", icon: "Store",   slug: "restaurant" },
+    ],
+    land: [
+      { nameAr: "أرض سكنية",     nameEn: "Residential Land",   icon: "Home",     slug: "land-residential" },
+      { nameAr: "أرض تجارية",    nameEn: "Commercial Land",    icon: "Store",    slug: "land-commercial" },
+      { nameAr: "أرض زراعية",    nameEn: "Agricultural Land",  icon: "Trees",    slug: "land-agricultural" },
+      { nameAr: "أرض صناعية",    nameEn: "Industrial Land",    icon: "Factory",  slug: "land-industrial" },
+      { nameAr: "أرض خدمية",     nameEn: "Service Land",       icon: "MapPin",   slug: "land-service" },
+    ],
+    industrial: [
+      { nameAr: "مصنع",          nameEn: "Factory",       icon: "Factory",    slug: "factory" },
+      { nameAr: "مستودع صناعي",  nameEn: "Industrial Warehouse", icon: "Warehouse", slug: "industrial-warehouse" },
+      { nameAr: "ورشة",          nameEn: "Workshop",      icon: "Hammer",     slug: "workshop" },
+      { nameAr: "منشأة صناعية",  nameEn: "Industrial Facility", icon: "Factory", slug: "industrial-facility" },
+    ],
+  };
+
+  let totalInserted = 0;
+  for (const cat of reCategories) {
+    const slug = cat.slug ?? "";
+    const subcats = SUBCATEGORY_MAP[slug];
+    if (!subcats) continue;
+
+    // Only insert subcategories that don't already exist for this category
+    const existing = await db
+      .select({ slug: subcategoriesTable.slug })
+      .from(subcategoriesTable)
+      .where(eq(subcategoriesTable.categoryId, cat.id));
+    const existingSlugs = new Set(existing.map(e => e.slug));
+
+    const toInsert = subcats.filter(s => !existingSlugs.has(s.slug));
+    if (toInsert.length === 0) continue;
+
+    await db.insert(subcategoriesTable).values(
+      toInsert.map(s => ({
+        categoryId: cat.id,
+        nameAr: s.nameAr,
+        nameEn: s.nameEn,
+        icon: s.icon,
+        slug: s.slug,
+        status: "active" as const,
+      }))
+    ).onConflictDoNothing();
+    totalInserted += toInsert.length;
+  }
+
+  if (totalInserted > 0) {
+    console.log(`Real estate subcategories seeded: ${totalInserted} subcategories.`);
+  } else {
+    console.log("Real estate subcategories already seeded, skipping.");
+  }
 }
 
 // ── Featured Areas ────────────────────────────────────────────────────────────

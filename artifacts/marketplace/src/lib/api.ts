@@ -967,6 +967,23 @@ export const api = {
       fetchJson("/admin/property-field-configs/bulk", { method: "PUT", body: JSON.stringify({ rows }) }),
   },
 
+  market: {
+    analytics: (params: {
+      mainCategory: string;
+      cityId?: number | null;
+      regionId?: number | null;
+      district?: string | null;
+      subCategory?: string | null;
+      listingType?: string | null;
+      priceNum?: number;
+      area?: number;
+    }) => fetchJson<any>(`/market/analytics${qs(params as any)}`),
+    adminSettings: () => fetchJson<any>("/admin/market/settings"),
+    saveSettings: (data: any) => fetchJson("/admin/market/settings", { method: "POST", body: JSON.stringify(data) }),
+    rebuild: () => fetchJson("/admin/market/rebuild", { method: "POST" }),
+    snapshots: () => fetchJson<any[]>("/admin/market/snapshots"),
+  },
+
   search: {
     suggestions: (q: string) =>
       fetchJson<{

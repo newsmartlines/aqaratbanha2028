@@ -17,6 +17,7 @@ import {
   Send, Wifi, WifiOff, Instagram, Youtube, Facebook, Twitter, Linkedin, Shield,
   Star, MapPin, BedDouble, Bath, Maximize2, ArrowLeft, Link2, ToggleRight, ExternalLink,
   CreditCard, Smartphone, Zap, Building2 as BankIcon, Banknote,
+  TrendingUp, BarChart2, RefreshCw, Database, Info,
 } from "lucide-react";
 import { AppearanceTab } from "./settings-appearance";
 import { useToast } from "@/hooks/use-toast";
@@ -300,6 +301,9 @@ export default function AdminSettings() {
           </TabsTrigger>
           <TabsTrigger value="appearance" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold">
             <Palette className="w-4 h-4 me-1.5" />{t("appearance")}
+          </TabsTrigger>
+          <TabsTrigger value="market" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold text-violet-700 data-[state=active]:text-violet-800">
+            <TrendingUp className="w-4 h-4 me-1.5" />مؤشرات السوق
           </TabsTrigger>
         </TabsList>
 
@@ -1529,7 +1533,256 @@ export default function AdminSettings() {
         <TabsContent value="appearance">
           <AppearanceTab settings={form} />
         </TabsContent>
+
+        {/* ── Market Analytics ──────────────────────────────────── */}
+        <TabsContent value="market">
+          <MarketAnalyticsSettingsTab />
+        </TabsContent>
       </Tabs>
     </AdminLayout>
+  );
+}
+
+// ── Market Analytics Settings Tab ──────────────────────────────────────────
+function MarketAnalyticsSettingsTab() {
+  const { toast: showToast } = useToast();
+  const [settings, setSettings] = useState({
+    marketAnalyticsEnabled: true,
+    marketMinSamples: 3,
+    marketWindowDays: 365,
+    marketAutoRebuild: true,
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [rebuilding, setRebuilding] = useState(false);
+  const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [snapshotsLoading, setSnapshotsLoading] = useState(false);
+
+  useEffect(() => {
+    api.market.adminSettings().then((d: any) => {
+      setSettings(d ?? settings);
+    }).catch(() => {}).finally(() => setLoading(false));
+    loadSnapshots();
+  }, []);
+
+  const loadSnapshots = () => {
+    setSnapshotsLoading(true);
+    api.market.snapshots().then((d: any) => setSnapshots(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setSnapshotsLoading(false));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.market.saveSettings(settings);
+      showToast({ title: "✅ تم الحفظ", description: "تم حفظ إعدادات مؤشرات السوق" });
+    } catch {
+      showToast({ title: "خطأ", description: "فشل حفظ الإعدادات", variant: "destructive" });
+    } finally { setSaving(false); }
+  };
+
+  const handleRebuild = async () => {
+    setRebuilding(true);
+    try {
+      await api.market.rebuild();
+      showToast({ title: "✅ تم المسح", description: "تم مسح الكاش وسيتم إعادة الحساب تلقائيًا" });
+      setSnapshots([]);
+    } catch {
+      showToast({ title: "خطأ", description: "فشل إعادة البناء", variant: "destructive" });
+    } finally { setRebuilding(false); }
+  };
+
+  return (
+    <div className="space-y-6" dir="rtl">
+      {/* Header */}
+      <Card className="border-violet-100 bg-violet-50/30 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-violet-100 flex items-center justify-center">
+              <BarChart2 className="w-5 h-5 text-violet-600" />
+            </div>
+            <div>
+              <CardTitle className="text-violet-900">إعدادات مؤشرات السوق العقاري</CardTitle>
+              <CardDescription>تحكم في طريقة حساب وعرض تحليلات السوق في صفحات العقارات</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
+        </div>
+      ) : (
+        <>
+          {/* Main Settings */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-violet-600" />
+                الإعدادات الأساسية
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Enable/Disable */}
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <div>
+                  <p className="font-semibold text-sm">تفعيل مؤشرات السوق</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">إظهار قسم "مؤشرات السوق العقاري" في صفحة تفاصيل العقار</p>
+                </div>
+                <Switch
+                  checked={settings.marketAnalyticsEnabled}
+                  onCheckedChange={v => setSettings(s => ({ ...s, marketAnalyticsEnabled: v }))}
+                />
+              </div>
+
+              {/* Auto Rebuild */}
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <div>
+                  <p className="font-semibold text-sm">تحديث تلقائي</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">مسح الكاش تلقائيًا عند إضافة/تعديل/حذف/اعتماد أي عقار</p>
+                </div>
+                <Switch
+                  checked={settings.marketAutoRebuild}
+                  onCheckedChange={v => setSettings(s => ({ ...s, marketAutoRebuild: v }))}
+                />
+              </div>
+
+              {/* Min samples */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">الحد الأدنى للعينة (عقارات)</Label>
+                <p className="text-xs text-muted-foreground">
+                  الحد الأدنى لعدد العقارات المطلوبة لعرض مؤشر دقيق. إذا كانت البيانات أقل، تظهر رسالة "بيانات غير كافية".
+                </p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range" min={1} max={20} value={settings.marketMinSamples}
+                    onChange={e => setSettings(s => ({ ...s, marketMinSamples: parseInt(e.target.value) }))}
+                    className="flex-1 accent-violet-600"
+                  />
+                  <Badge variant="outline" className="min-w-[48px] text-center font-bold text-violet-700 border-violet-200">
+                    {settings.marketMinSamples}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Window days */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">مدة التحليل (أيام)</Label>
+                <p className="text-xs text-muted-foreground">
+                  النافذة الزمنية للعقارات المُدرجة في حساب المتوسطات والتحليلات.
+                </p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range" min={30} max={730} step={30} value={settings.marketWindowDays}
+                    onChange={e => setSettings(s => ({ ...s, marketWindowDays: parseInt(e.target.value) }))}
+                    className="flex-1 accent-violet-600"
+                  />
+                  <Badge variant="outline" className="min-w-[64px] text-center font-bold text-violet-700 border-violet-200">
+                    {settings.marketWindowDays} يوم
+                  </Badge>
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-400">
+                  <span>شهر</span><span>3 شهور</span><span>6 شهور</span><span>سنة</span><span>سنتان</span>
+                </div>
+              </div>
+
+              <Button onClick={handleSave} disabled={saving} className="bg-violet-600 hover:bg-violet-700 text-white gap-2">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                حفظ الإعدادات
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Cache Management */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Database className="w-4 h-4 text-violet-600" />
+                إدارة الكاش والإحصائيات
+              </CardTitle>
+              <CardDescription>
+                البيانات تُحسب عند الطلب الأول وتُخزَّن مؤقتًا. عند تغيير العقارات، يُمسح الكاش تلقائيًا.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-100">
+                <Info className="w-5 h-5 text-amber-500 shrink-0" />
+                <p className="text-sm text-amber-800">
+                  مسح الكاش يدويًا يُجبر النظام على إعادة حساب جميع الإحصائيات من الصفر عند الطلب التالي.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">لقطات محسوبة حاليًا</p>
+                  <p className="text-xs text-muted-foreground">عدد مجموعات التحليل المخزنة في قاعدة البيانات</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-base font-bold px-3 py-1">
+                    {snapshotsLoading ? "..." : snapshots.length}
+                  </Badge>
+                  <Button variant="ghost" size="sm" onClick={loadSnapshots} className="h-8 w-8 p-0">
+                    <RefreshCw className={`w-4 h-4 ${snapshotsLoading ? "animate-spin" : ""}`} />
+                  </Button>
+                </div>
+              </div>
+
+              {snapshots.length > 0 && (
+                <div className="rounded-2xl border border-slate-100 overflow-hidden">
+                  <div className="grid grid-cols-4 gap-2 px-4 py-2 bg-slate-50 text-[11px] font-semibold text-gray-500 border-b border-slate-100">
+                    <span>التصنيف</span><span>المنطقة</span><span>العينة</span><span>متوسط المتر</span>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto divide-y divide-slate-50">
+                    {snapshots.map((s: any, i: number) => (
+                      <div key={i} className="grid grid-cols-4 gap-2 px-4 py-2 text-xs">
+                        <span className="font-semibold text-gray-800 truncate">{s.mainCategory}{s.subCategory ? ` / ${s.subCategory}` : ""}</span>
+                        <span className="text-gray-500 truncate">{s.district ?? `مدينة ${s.cityId ?? s.regionId ?? "—"}`}</span>
+                        <span className="text-gray-500">{s.sampleCount} عقار</span>
+                        <span className="font-bold text-violet-700">{s.avgPricePerM2 ? `${parseFloat(s.avgPricePerM2).toLocaleString("ar-EG")} ج.م` : "—"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50 gap-2"
+                onClick={handleRebuild}
+                disabled={rebuilding}
+              >
+                {rebuilding ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                مسح الكاش وإعادة البناء
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Info */}
+          <Card className="border-slate-200 shadow-sm bg-slate-50/50">
+            <CardContent className="pt-5 space-y-3">
+              <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Info className="w-4 h-4 text-violet-500" />
+                كيف يعمل النظام؟
+              </p>
+              <ul className="space-y-2 text-xs text-gray-500 list-none">
+                {[
+                  "يحسب النظام تلقائيًا متوسط سعر المتر المربع من العقارات المعتمدة في نفس المنطقة والتصنيف",
+                  "يحسب اتجاه الأسعار بمقارنة فترات زمنية مختلفة (شهر، 3 شهور، 6 شهور، سنة)",
+                  "يحسب مستوى الطلب بناءً على عدد المشاهدات والمفضلات والعقارات المشابهة",
+                  "يُخزَّن الكاش في جدول market_snapshots لتحسين الأداء",
+                  "يُمسح الكاش تلقائيًا عند كل تغيير في العقارات (إضافة، تعديل، حذف، اعتماد)",
+                  "إذا كانت البيانات أقل من الحد الأدنى، تظهر رسالة 'بيانات غير كافية' بدلًا من مؤشر غير دقيق",
+                ].map((tip, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </div>
   );
 }

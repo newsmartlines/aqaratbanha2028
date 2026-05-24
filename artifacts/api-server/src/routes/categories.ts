@@ -12,7 +12,15 @@ router.get("/categories", async (req, res) => {
     const categories = type
       ? await query.where(eq(categoriesTable.type, type)).orderBy(categoriesTable.id)
       : await query.orderBy(categoriesTable.id);
-    res.json({ success: true, data: categories });
+
+    // Embed subcategories into each category
+    const allSubs = await db.select().from(subcategoriesTable).orderBy(subcategoriesTable.categoryId, subcategoriesTable.id);
+    const data = categories.map(cat => ({
+      ...cat,
+      subcategories: allSubs.filter(s => s.categoryId === cat.id),
+    }));
+
+    res.json({ success: true, data });
   } catch {
     res.status(500).json({ success: false, error: "Failed to fetch categories" });
   }
