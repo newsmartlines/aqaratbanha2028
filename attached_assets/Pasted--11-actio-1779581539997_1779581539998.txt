@@ -1,0 +1,106 @@
+هذا مشروع كبير ومتكامل. دعني أستكشف البنية الحالية بشكل موازٍ لأبدأ التنفيذ الاحترافي:
+
+
+11 actions
+دعني أستكمل استكشاف الملفات الأساسية قبل البناء:
+
+
+10 actions
+الآن لديّ الصورة الكاملة. سأبدأ البناء بالتوازي — هذا نظام كبير يحتاج خطوات متزامنة:
+
+
+4 actions
+الآن أبدأ التنفيذ الكامل. سأبني كل القطع بالتوازي:
+
+الخطة:
+
+DB Schema جديد للـ market snapshots
+Market Engine — المحرك الحسابي
+API Route كاملة
+Frontend Component احترافي بـ Recharts
+دمجه في property-detail + تمديد admin settings
+Batch 1 — البنية التحتية:
+
+
+2 actions
+Batch 2 — المحرك وAPI والـ Frontend بالتوازي:
+
+
+4 actions
+Batch 3 — تسجيل الـ Route + الـ Frontend Component + تعديل Property Detail بالتوازي:
+
+
+3 actions
+أكمل بناء باقي القطع بالتوازي. أولاً أحتاج قراءة جزء من properties.ts:
+
+
+2 actions
+أكمل بناء النظام. سأضيف cache invalidation في properties.ts وأكتب الـ Frontend Component الرئيسي بالتوازي:
+
+
+4 actions
+Batch 4 — الـ Frontend Component الرئيسي + تحديث api.ts + property-detail بالتوازي:
+
+
+3 actions
+Batch 5 — تحديث property-detail + admin settings + إضافة cache invalidation لـ status change بالتوازي:
+
+
+4 actions
+أكمل البناء — كل الخطوات المتبقية بالتوازي:
+
+
+5 actions
+أكمل — أضيف Market Analytics للـ admin settings وأعمل push للـ DB schema بالتوازي:
+
+
+3 actions
+DB تم push بنجاح. أكمل بإضافة الـ admin Market Analytics tab + restart السيرفر:
+
+
+2 actions
+أضيف تبويب Market Analytics للـ admin settings:
+
+
+3 actions
+أكمل — أحتاج كتابة الـ MarketAnalyticsSettingsTab component وإضافته للـ admin settings:
+
+
+3 actions
+أكتب الـ MarketAnalyticsSettingsTab component وأضيف الـ imports الناقصة:
+
+
+2 actions
+أكمل بكتابة الـ MarketAnalyticsSettingsTab component وأضيفه في نهاية الملف:
+
+
+2 actions
+الآن أعيد تشغيل السيرفر لتطبيق كل التغييرات ثم أتحقق من صحة كل شيء:
+
+
+8 actions
+السيرفر يعمل والـ API يرد. دعني أتحقق من الـ Frontend بسرعة:
+
+
+3 actions
+API يعمل والـ proxy يرد 200. الآن أتحقق من البيانات في الـ DB ثم أصور النتيجة:
+
+
+3 actions
+البيانات تستخدم residential بالإنجليزية. أتحقق من طلب API بالكاتيجوري الصحيح ثم آخذ screenshot:
+
+
+3 actions
+النظام يعمل بشكل ممتاز! 11 عقار تم تحليلهم، المتوسط 5,120 ج.م/م². الآن أتحقق من الواجهة:
+
+
+2 actions
+الصفحة تعمل. أتحقق من الجزء الأسفل حيث يظهر قسم مؤشرات السوق:
+
+
+2 actions
+الصفحة تحمّل بشكل طبيعي. أتحقق من الـ console errors وأصوّر الـ admin settings:
+
+
+3 actions
+كل شيء يعمل. أتحقق من صحة الـ TypeScript وأتأكد من عدم وجود أخطاء:
