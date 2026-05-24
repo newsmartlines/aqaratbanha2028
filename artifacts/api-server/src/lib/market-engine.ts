@@ -1,5 +1,5 @@
 import { db } from "@workspace/db";
-import { propertiesTable, marketSnapshotsTable, propertyFavoritesTable } from "@workspace/db";
+import { propertiesTable, marketSnapshotsTable, propertyFavoritesTable, siteSettingsTable } from "@workspace/db";
 import { and, eq, inArray, isNotNull, gt, sql, gte } from "drizzle-orm";
 
 export interface MarketScope {
@@ -19,6 +19,7 @@ export interface PricePoint {
 
 export interface MarketAnalyticsResult {
   avgPricePerM2: number | null;
+  medianPricePerM2: number | null;
   minPricePerM2: number | null;
   maxPricePerM2: number | null;
   sampleCount: number;
@@ -45,9 +46,25 @@ function monthsAgo(n: number): Date {
   return d;
 }
 
+function daysAgo(n: number): Date {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 function avgOf(arr: number[]): number | null {
   if (!arr.length) return null;
   return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function medianOf(arr: number[]): number | null {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]!
+    : (sorted[mid - 1]! + sorted[mid]!) / 2;
 }
 
 function percentChange(current: number | null, previous: number | null): number | null {
@@ -62,19 +79,34 @@ function getDemandLevel(score: number): string {
   return "ضعيف";
 }
 
-async function getMinSamples(): Promise<number> {
+interface MarketSettings {
+  minSamples: number;
+  windowDays: number;
+  enabled: boolean;
+  autoRebuild: boolean;
+}
+
+async function getMarketSettings(): Promise<MarketSettings> {
   try {
-    const { db: rawDb } = await import("@workspace/db");
-    const { siteSettingsTable } = await import("@workspace/db");
-    const [row] = await rawDb.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, "marketMinSamples"));
-    return row ? parseInt(row.value ?? "3") || 3 : 3;
+    const rows = await db.select().from(siteSettingsTable);
+    const map: Record<string, string> = {};
+    for (const r of rows) map[r.key] = r.value ?? "";
+    return {
+      minSamples: parseInt(map["marketMinSamples"] ?? "3") || 3,
+      windowDays: parseInt(map["marketWindowDays"] ?? "365") || 365,
+      enabled: map["marketAnalyticsEnabled"] !== "false",
+      autoRebuild: map["marketAutoRebuild"] !== "false",
+    };
   } catch {
-    return 3;
+    return { minSamples: 3, windowDays: 365, enabled: true, autoRebuild: true };
   }
 }
 
 export async function computeMarketAnalytics(scope: MarketScope): Promise<MarketAnalyticsResult> {
-  const minSamples = await getMinSamples();
+  const settings = await getMarketSettings();
+  const { minSamples, windowDays } = settings;
+
+  const windowCutoff = daysAgo(windowDays);
 
   const conditions: ReturnType<typeof eq>[] = [
     inArray(propertiesTable.status, ["approved", "active"]),
@@ -83,6 +115,7 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
     gt(propertiesTable.price as any, "0"),
     gt(propertiesTable.area as any, "0"),
     eq(propertiesTable.mainCategory, scope.mainCategory),
+    gte(propertiesTable.createdAt, windowCutoff) as any,
   ];
 
   if (scope.cityId) conditions.push(eq(propertiesTable.cityId, scope.cityId) as any);
@@ -117,7 +150,8 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
 
   if (!hasEnoughData) {
     return {
-      avgPricePerM2: null, minPricePerM2: null, maxPricePerM2: null,
+      avgPricePerM2: null, medianPricePerM2: null,
+      minPricePerM2: null, maxPricePerM2: null,
       sampleCount, trend1m: null, trend3m: null, trend6m: null, trend12m: null,
       demandScore: 0, demandLevel: "ضعيف", priceHistory: [], hasEnoughData: false,
       minSamplesRequired: minSamples, scope,
@@ -126,6 +160,7 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
 
   const allPpm2 = items.map(x => x.ppm2);
   const avgPricePerM2 = avgOf(allPpm2)!;
+  const medianPricePerM2 = medianOf(allPpm2)!;
   const minPricePerM2 = Math.min(...allPpm2);
   const maxPricePerM2 = Math.max(...allPpm2);
 
@@ -169,7 +204,8 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
   let favCount = 0;
   try {
     if (propertyIds.length > 0) {
-      const [favRow] = await db.select({ count: sql<number>`count(*)::int` })
+      const [favRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
         .from(propertyFavoritesTable)
         .where(inArray(propertyFavoritesTable.propertyId, propertyIds.slice(0, 100)));
       favCount = favRow?.count ?? 0;
@@ -178,8 +214,8 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
 
   const totalViews = items.reduce((s, x) => s + x.viewCount, 0);
   const avgViews = items.length > 0 ? totalViews / items.length : 0;
-  const viewScore = Math.min(40, (avgViews / 200) * 40);
-  const favScore = Math.min(30, (favCount / (sampleCount * 2)) * 30);
+  const viewScore  = Math.min(40, (avgViews / 200) * 40);
+  const favScore   = Math.min(30, (favCount / Math.max(sampleCount * 2, 1)) * 30);
   const countScore = Math.min(20, (sampleCount / 30) * 20);
   const trendBonus = trend3m != null && trend3m > 5 ? 10 : trend3m != null && trend3m > 0 ? 5 : 0;
 
@@ -191,28 +227,28 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
     await db.delete(marketSnapshotsTable).where(
       and(
         eq(marketSnapshotsTable.mainCategory, scope.mainCategory),
-        scope.cityId ? eq(marketSnapshotsTable.cityId, scope.cityId) : sql`${marketSnapshotsTable.cityId} IS NULL`,
-        scope.regionId ? eq(marketSnapshotsTable.regionId, scope.regionId) : sql`${marketSnapshotsTable.regionId} IS NULL`,
-        scope.district ? eq(marketSnapshotsTable.district, scope.district) : sql`${marketSnapshotsTable.district} IS NULL`,
-        scope.subCategory ? eq(marketSnapshotsTable.subCategory, scope.subCategory) : sql`${marketSnapshotsTable.subCategory} IS NULL`,
-        scope.listingType ? eq(marketSnapshotsTable.listingType, scope.listingType) : sql`${marketSnapshotsTable.listingType} IS NULL`,
+        scope.cityId    ? eq(marketSnapshotsTable.cityId, scope.cityId)       : sql`${marketSnapshotsTable.cityId} IS NULL`,
+        scope.regionId  ? eq(marketSnapshotsTable.regionId, scope.regionId)   : sql`${marketSnapshotsTable.regionId} IS NULL`,
+        scope.district  ? eq(marketSnapshotsTable.district, scope.district)   : sql`${marketSnapshotsTable.district} IS NULL`,
+        scope.subCategory  ? eq(marketSnapshotsTable.subCategory, scope.subCategory) : sql`${marketSnapshotsTable.subCategory} IS NULL`,
+        scope.listingType  ? eq(marketSnapshotsTable.listingType, scope.listingType) : sql`${marketSnapshotsTable.listingType} IS NULL`,
       ) as any
     );
 
     await db.insert(marketSnapshotsTable).values({
-      cityId: scope.cityId ?? null,
-      regionId: scope.regionId ?? null,
-      district: scope.district ?? null,
+      cityId:    scope.cityId    ?? null,
+      regionId:  scope.regionId  ?? null,
+      district:  scope.district  ?? null,
       mainCategory: scope.mainCategory,
-      subCategory: scope.subCategory ?? null,
-      listingType: scope.listingType ?? null,
+      subCategory:  scope.subCategory  ?? null,
+      listingType:  scope.listingType  ?? null,
       avgPricePerM2: String(Math.round(avgPricePerM2)),
       minPricePerM2: String(Math.round(minPricePerM2)),
       maxPricePerM2: String(Math.round(maxPricePerM2)),
       sampleCount,
-      trend1m: trend1m != null ? String(Math.round(trend1m * 10) / 10) : null,
-      trend3m: trend3m != null ? String(Math.round(trend3m * 10) / 10) : null,
-      trend6m: trend6m != null ? String(Math.round(trend6m * 10) / 10) : null,
+      trend1m:  trend1m  != null ? String(Math.round(trend1m  * 10) / 10) : null,
+      trend3m:  trend3m  != null ? String(Math.round(trend3m  * 10) / 10) : null,
+      trend6m:  trend6m  != null ? String(Math.round(trend6m  * 10) / 10) : null,
       trend12m: trend12m != null ? String(Math.round(trend12m * 10) / 10) : null,
       demandScore,
       demandLevel,
@@ -221,13 +257,14 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
   } catch { /* non-fatal */ }
 
   return {
-    avgPricePerM2: Math.round(avgPricePerM2),
-    minPricePerM2: Math.round(minPricePerM2),
-    maxPricePerM2: Math.round(maxPricePerM2),
+    avgPricePerM2:    Math.round(avgPricePerM2),
+    medianPricePerM2: Math.round(medianPricePerM2),
+    minPricePerM2:    Math.round(minPricePerM2),
+    maxPricePerM2:    Math.round(maxPricePerM2),
     sampleCount,
-    trend1m: trend1m != null ? Math.round(trend1m * 10) / 10 : null,
-    trend3m: trend3m != null ? Math.round(trend3m * 10) / 10 : null,
-    trend6m: trend6m != null ? Math.round(trend6m * 10) / 10 : null,
+    trend1m:  trend1m  != null ? Math.round(trend1m  * 10) / 10 : null,
+    trend3m:  trend3m  != null ? Math.round(trend3m  * 10) / 10 : null,
+    trend6m:  trend6m  != null ? Math.round(trend6m  * 10) / 10 : null,
     trend12m: trend12m != null ? Math.round(trend12m * 10) / 10 : null,
     demandScore,
     demandLevel,
@@ -238,10 +275,14 @@ export async function computeMarketAnalytics(scope: MarketScope): Promise<Market
   };
 }
 
-export async function invalidateMarketCache(mainCategory: string, cityId?: number | null, regionId?: number | null): Promise<void> {
+export async function invalidateMarketCache(
+  mainCategory: string,
+  cityId?: number | null,
+  regionId?: number | null,
+): Promise<void> {
   try {
     const conditions: any[] = [eq(marketSnapshotsTable.mainCategory, mainCategory)];
-    if (cityId) conditions.push(eq(marketSnapshotsTable.cityId, cityId));
+    if (cityId)    conditions.push(eq(marketSnapshotsTable.cityId,    cityId));
     else if (regionId) conditions.push(eq(marketSnapshotsTable.regionId, regionId));
     await db.delete(marketSnapshotsTable).where(and(...conditions) as any);
   } catch { /* non-fatal */ }

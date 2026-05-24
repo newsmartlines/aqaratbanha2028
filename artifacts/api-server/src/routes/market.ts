@@ -52,7 +52,14 @@ router.get("/market/analytics", async (req, res) => {
 
     res.json({
       success: true,
-      data: { ...result, enabled: true, currentPropertyPpm2, priceComparison, priceDiffPercent },
+      data: {
+        ...result,
+        enabled: true,
+        currentPropertyPpm2,
+        priceComparison,
+        priceDiffPercent,
+        medianPricePerM2: result.medianPricePerM2 ?? null,
+      },
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to compute market analytics";

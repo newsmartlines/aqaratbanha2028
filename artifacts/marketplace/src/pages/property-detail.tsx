@@ -87,6 +87,8 @@ type PropertyView = {
   regionId: number | null;
   district: string | null;
   subCategory: string | null;
+  cityNameAr: string | null;
+  regionNameAr: string | null;
 };
 
 function mapDbToView(p: Record<string, unknown>): PropertyView {
@@ -139,6 +141,8 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     regionId: (p.regionId as number) ?? null,
     district: (p.district as string) ?? null,
     subCategory: (p.subCategory as string) ?? null,
+    cityNameAr: (p.cityNameAr as string) ?? (p.agentCity as string) ?? null,
+    regionNameAr: (p.regionNameAr as string) ?? null,
   };
 }
 
@@ -1006,6 +1010,8 @@ export default function PropertyDetail() {
             listingType={property.type}
             priceNum={property.priceNum}
             area={property.area}
+            cityNameAr={property.cityNameAr ?? undefined}
+            regionNameAr={property.regionNameAr ?? undefined}
           />
         )}
 
