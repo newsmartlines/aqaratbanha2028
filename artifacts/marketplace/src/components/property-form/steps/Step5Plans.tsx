@@ -44,9 +44,8 @@ export function Step5Plans({
       ) : (
         <div className={`grid gap-3 ${
           sorted.length === 1 ? "grid-cols-1 max-w-xs mx-auto" :
-          sorted.length === 2 ? "grid-cols-2" :
-          sorted.length === 3 ? "grid-cols-1 sm:grid-cols-3" :
-          "grid-cols-2 sm:grid-cols-4"
+          sorted.length === 2 ? "grid-cols-2 max-w-xl mx-auto" :
+          "grid-cols-1 sm:grid-cols-3"
         }`}>
           {sorted.map(plan => (
             <PlanCard

@@ -282,8 +282,6 @@ export default function PricingPage() {
           <div className={`grid gap-6 ${
             sorted.length === 1 ? "max-w-sm mx-auto" :
             sorted.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" :
-            sorted.length === 3 ? "sm:grid-cols-3" :
-            sorted.length === 4 ? "sm:grid-cols-2 lg:grid-cols-4" :
             "sm:grid-cols-2 lg:grid-cols-3"
           }`}>
             {sorted.map(plan => (
