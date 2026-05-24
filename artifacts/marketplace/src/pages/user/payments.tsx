@@ -9,9 +9,12 @@ import {
   Wallet,
   Loader2,
   Receipt,
-  Filter,
-  ArrowUpRight,
   ShoppingBag,
+  Smartphone,
+  Building2,
+  Banknote,
+  Wifi,
+  AlertCircle,
 } from "lucide-react";
 import UserLayout from "@/components/UserLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,33 +25,53 @@ import { api } from "@/lib/api";
 
 type StatusKey = "paid" | "pending" | "failed" | "cancelled";
 
-const STATUS_CONFIG: Record<
-  StatusKey,
-  { label: string; cls: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  paid:      { label: "مكتمل",  cls: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
-  pending:   { label: "قيد المعالجة", cls: "bg-amber-100 text-amber-700 border-amber-200",  icon: Clock },
-  failed:    { label: "فشل",    cls: "bg-rose-100 text-rose-700 border-rose-200",          icon: XCircle },
-  cancelled: { label: "ملغي",   cls: "bg-slate-100 text-slate-700 border-slate-200",       icon: XCircle },
+const STATUS_CONFIG: Record<StatusKey, {
+  label: string;
+  cls: string;
+  icon: React.ComponentType<{ className?: string }>;
+}> = {
+  paid:      { label: "مقبول ✓",        cls: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
+  pending:   { label: "قيد المراجعة",   cls: "bg-amber-100 text-amber-700 border-amber-200",       icon: Clock },
+  failed:    { label: "مرفوض",          cls: "bg-rose-100 text-rose-700 border-rose-200",          icon: XCircle },
+  cancelled: { label: "ملغي",           cls: "bg-slate-100 text-slate-700 border-slate-200",       icon: AlertCircle },
 };
 
 const KIND_LABEL: Record<string, string> = {
   service_request: "طلب خدمة",
-  subscription: "اشتراك باقة",
+  subscription:    "اشتراك باقة",
 };
+
+// Arabic labels + icons for payment gateways
+const GATEWAY_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; cls: string }> = {
+  vodafone_cash:  { label: "فودافون كاش",    icon: Smartphone,  cls: "text-red-600 bg-red-50 border-red-200" },
+  instapay:       { label: "انستاباي",        icon: Wifi,        cls: "text-blue-600 bg-blue-50 border-blue-200" },
+  orange_money:   { label: "أورنج موني",     icon: Smartphone,  cls: "text-orange-600 bg-orange-50 border-orange-200" },
+  etisalat_cash:  { label: "اتصالات كاش",    icon: Smartphone,  cls: "text-green-600 bg-green-50 border-green-200" },
+  fawry:          { label: "فوري",            icon: Banknote,    cls: "text-amber-600 bg-amber-50 border-amber-200" },
+  bank_transfer:  { label: "تحويل بنكي",     icon: Building2,   cls: "text-slate-600 bg-slate-50 border-slate-200" },
+  manual:         { label: "دفع يدوي",        icon: Banknote,    cls: "text-slate-600 bg-slate-50 border-slate-200" },
+  stcpay:         { label: "STC Pay",         icon: Smartphone,  cls: "text-purple-600 bg-purple-50 border-purple-200" },
+  cash:           { label: "نقداً",           icon: Banknote,    cls: "text-emerald-600 bg-emerald-50 border-emerald-200" },
+};
+
+function GatewayBadge({ gateway }: { gateway: string }) {
+  const cfg = GATEWAY_CONFIG[gateway] ?? { label: gateway, icon: CreditCard, cls: "text-slate-600 bg-slate-50 border-slate-200" };
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${cfg.cls}`}>
+      <Icon className="h-3 w-3" />
+      {cfg.label}
+    </span>
+  );
+}
 
 function formatDate(iso: string) {
   try {
     return new Date(iso).toLocaleString("ar-EG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      year: "numeric", month: "long", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
     });
-  } catch {
-    return iso;
-  }
+  } catch { return iso; }
 }
 
 function formatMoney(v: string | number | null | undefined): string {
@@ -64,20 +87,18 @@ export default function UserPayments() {
     queryKey: ["user-payments", user?.id],
     queryFn: () => api.payments.myPayments(),
     enabled: !!user,
-    refetchInterval: 5000, // real-time refresh while a payment is being processed
+    refetchInterval: 8000,
   });
 
   const rows = data?.rows ?? [];
   const totals = data?.totals ?? { paid: 0, pending: 0, failed: 0, paidAmount: 0, pendingAmount: 0, failedAmount: 0 };
 
-  const grouped = useMemo(() => {
-    const all = rows;
-    const paid = rows.filter((r) => r.status === "paid");
-    const pending = rows.filter((r) => r.status === "pending");
-    const failed = rows.filter((r) => r.status === "failed" || r.status === "cancelled");
-    return { all, paid, pending, failed };
-  }, [rows]);
-
+  const grouped = useMemo(() => ({
+    all: rows,
+    paid: rows.filter((r) => r.status === "paid"),
+    pending: rows.filter((r) => r.status === "pending"),
+    failed: rows.filter((r) => r.status === "failed" || r.status === "cancelled"),
+  }), [rows]);
   void grouped;
 
   if (!user) {
@@ -93,12 +114,11 @@ export default function UserPayments() {
   return (
     <UserLayout>
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
+        {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">مدفوعاتي</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              سجل كامل لجميع عمليات الدفع التي قمت بها
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">سجل كامل لجميع عمليات الدفع التي قمت بها</p>
           </div>
           <Button variant="outline" asChild>
             <Link href="/user/requests">
@@ -109,11 +129,11 @@ export default function UserPayments() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card className="border-emerald-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">المدفوع</p>
+                <p className="text-xs font-medium text-muted-foreground">مقبول</p>
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               </div>
               <p className="text-2xl font-bold text-emerald-700 mt-2">
@@ -125,7 +145,7 @@ export default function UserPayments() {
           <Card className="border-amber-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">قيد المعالجة</p>
+                <p className="text-xs font-medium text-muted-foreground">قيد المراجعة</p>
                 <Clock className="h-4 w-4 text-amber-600" />
               </div>
               <p className="text-2xl font-bold text-amber-700 mt-2">
@@ -137,7 +157,7 @@ export default function UserPayments() {
           <Card className="border-rose-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">فاشل</p>
+                <p className="text-xs font-medium text-muted-foreground">مرفوض</p>
                 <XCircle className="h-4 w-4 text-rose-600" />
               </div>
               <p className="text-2xl font-bold text-rose-700 mt-2">
@@ -158,7 +178,7 @@ export default function UserPayments() {
           </Card>
         </div>
 
-        {/* Transactions */}
+        {/* Transactions table */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -182,9 +202,7 @@ export default function UserPayments() {
               <div className="text-center py-16">
                 <CreditCard className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
                 <p className="text-base font-medium">لا توجد مدفوعات بعد</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  ستظهر هنا جميع معاملاتك المالية
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">ستظهر هنا جميع معاملاتك المالية</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -195,10 +213,9 @@ export default function UserPayments() {
                       <tr>
                         <th className="px-4 py-3 font-medium">رقم العملية</th>
                         <th className="px-4 py-3 font-medium">النوع</th>
-                        <th className="px-4 py-3 font-medium">مقدم الخدمة</th>
-                        <th className="px-4 py-3 font-medium">الخدمة</th>
+                        <th className="px-4 py-3 font-medium">طريقة الدفع</th>
                         <th className="px-4 py-3 font-medium">المبلغ</th>
-                        <th className="px-4 py-3 font-medium">التاريخ</th>
+                        <th className="px-4 py-3 font-medium">تاريخ الدفع</th>
                         <th className="px-4 py-3 font-medium">الحالة</th>
                       </tr>
                     </thead>
@@ -206,40 +223,34 @@ export default function UserPayments() {
                       {rows.map((row) => {
                         const cfg = STATUS_CONFIG[row.status] ?? STATUS_CONFIG.pending;
                         const Icon = cfg.icon;
+                        const dateToShow = row.paidAt ?? row.createdAt;
                         return (
                           <tr key={row.id} className="border-t border-border/50 hover:bg-muted/20">
                             <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                               {row.refId}
                             </td>
                             <td className="px-4 py-3">
-                              <Badge variant="outline" className="font-normal">
-                                {KIND_LABEL[row.kind] ?? row.kind}
-                              </Badge>
+                              <div>
+                                <Badge variant="outline" className="font-normal text-xs">
+                                  {KIND_LABEL[row.kind] ?? row.kind}
+                                </Badge>
+                                {row.serviceTitle && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">{row.serviceTitle}</p>
+                                )}
+                              </div>
                             </td>
                             <td className="px-4 py-3">
-                              {row.providerId ? (
-                                <Link
-                                  href={`/provider/${row.providerId}`}
-                                  className="text-primary hover:underline inline-flex items-center gap-1"
-                                >
-                                  {row.providerName ?? `#${row.providerId}`}
-                                  <ArrowUpRight className="h-3 w-3" />
-                                </Link>
-                              ) : (
-                                "—"
-                              )}
+                              <GatewayBadge gateway={row.gateway} />
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground">
-                              {row.serviceTitle ?? "—"}
+                            <td className="px-4 py-3 font-bold text-base">
+                              {formatMoney(row.amount)}{" "}
+                              <span className="text-xs font-normal text-muted-foreground">ج.م</span>
                             </td>
-                            <td className="px-4 py-3 font-bold">
-                              {formatMoney(row.amount)} <span className="text-xs font-normal">ج.م</span>
-                            </td>
-                            <td className="px-4 py-3 text-xs text-muted-foreground">
-                              {formatDate(row.createdAt)}
+                            <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                              {formatDate(dateToShow)}
                             </td>
                             <td className="px-4 py-3">
-                              <Badge variant="outline" className={`${cfg.cls} gap-1`}>
+                              <Badge variant="outline" className={`${cfg.cls} gap-1 text-xs`}>
                                 <Icon className="h-3 w-3" />
                                 {cfg.label}
                               </Badge>
@@ -252,42 +263,41 @@ export default function UserPayments() {
                 </div>
 
                 {/* Mobile cards */}
-                <div className="md:hidden space-y-2">
+                <div className="md:hidden space-y-3">
                   {rows.map((row) => {
                     const cfg = STATUS_CONFIG[row.status] ?? STATUS_CONFIG.pending;
                     const Icon = cfg.icon;
+                    const dateToShow = row.paidAt ?? row.createdAt;
                     return (
                       <Card key={row.id} className="overflow-hidden">
-                        <CardContent className="p-4 space-y-2">
+                        <CardContent className="p-4 space-y-3">
+                          {/* Top row: type + status */}
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <p className="text-sm font-bold">
-                                {KIND_LABEL[row.kind] ?? row.kind}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {row.providerName ?? "—"}
-                              </p>
+                              <p className="text-sm font-bold">{KIND_LABEL[row.kind] ?? row.kind}</p>
                               {row.serviceTitle && (
-                                <p className="text-xs text-muted-foreground">{row.serviceTitle}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{row.serviceTitle}</p>
                               )}
                             </div>
-                            <Badge variant="outline" className={`${cfg.cls} gap-1 shrink-0`}>
+                            <Badge variant="outline" className={`${cfg.cls} gap-1 shrink-0 text-xs`}>
                               <Icon className="h-3 w-3" />
                               {cfg.label}
                             </Badge>
                           </div>
+                          {/* Payment method */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">طريقة الدفع:</span>
+                            <GatewayBadge gateway={row.gateway} />
+                          </div>
+                          {/* Amount + date */}
                           <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                            <p className="text-lg font-bold text-primary">
+                            <p className="text-xl font-bold text-primary">
                               {formatMoney(row.amount)}{" "}
                               <span className="text-xs font-normal text-muted-foreground">ج.م</span>
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(row.createdAt)}
-                            </p>
+                            <p className="text-xs text-muted-foreground text-left">{formatDate(dateToShow)}</p>
                           </div>
-                          <p className="text-[10px] font-mono text-muted-foreground/60 truncate">
-                            {row.refId}
-                          </p>
+                          <p className="text-[10px] font-mono text-muted-foreground/60 truncate">{row.refId}</p>
                         </CardContent>
                       </Card>
                     );
@@ -299,8 +309,7 @@ export default function UserPayments() {
         </Card>
 
         <p className="text-xs text-center text-muted-foreground">
-          <Filter className="inline h-3 w-3 ml-1" />
-          يتم تحديث المدفوعات تلقائياً عند نجاح أو فشل العملية.
+          يتم تحديث المدفوعات تلقائياً. للاستفسار تواصل مع الدعم.
         </p>
       </div>
     </UserLayout>
