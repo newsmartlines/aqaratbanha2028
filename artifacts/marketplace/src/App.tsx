@@ -92,6 +92,7 @@ import UserAddProperty from "@/pages/user/add-property";
 import UserMyProperties from "@/pages/user/my-properties";
 import UserEditProperty from "@/pages/user/edit-property";
 import AddPropertyPage from "@/pages/add-property";
+import PricingPage from "@/pages/pricing";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
 import MyPlanPage from "@/pages/dashboard/my-plan";
 import MapSearchPage from "@/pages/map-search";
@@ -186,6 +187,7 @@ function Router() {
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/sitemap" component={SitemapPage} />
+      <Route path="/pricing" component={PricingPage} />
       <Route path="/market" component={MarketInsightsPage} />
 
       <Route path="/admin" component={() => <Redirect to="/admin/dashboard" />} />

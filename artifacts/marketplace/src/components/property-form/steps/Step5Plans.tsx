@@ -1,4 +1,4 @@
-import { Crown, Loader2, CheckCircle2, CreditCard, Building2, User } from "lucide-react";
+import { Loader2, Crown, Check, CreditCard, CheckCircle2 } from "lucide-react";
 import type { BillingPlan } from "@/lib/api";
 import { PlanCard } from "../shared/PlanCard";
 
@@ -11,62 +11,25 @@ interface Step5PlansProps {
   accountType?:    "user" | "company";
 }
 
-const ACCOUNT_TYPE_META = {
-  company: {
-    icon: Building2,
-    label: "شركة / وسيط عقاري",
-    badge: "باقات الشركات والوسطاء",
-    badgeClass: "bg-amber-50 border-amber-200 text-amber-800",
-    iconClass: "text-amber-600",
-    iconBg: "bg-amber-100",
-    hint: "تشمل الباقات المتاحة لحسابك الباقات الشاملة للشركات والوسطاء.",
-  },
-  user: {
-    icon: User,
-    label: "مستخدم عادي",
-    badge: "باقات الأفراد",
-    badgeClass: "bg-teal-50 border-teal-200 text-teal-800",
-    iconClass: "text-teal-600",
-    iconBg: "bg-teal-100",
-    hint: "تشمل الباقات المتاحة لحسابك الباقات المناسبة للأفراد والملاك.",
-  },
-};
-
 export function Step5Plans({
-  plans, plansLoading, selectedPlan, setSelectedPlan, error, accountType = "user",
+  plans, plansLoading, selectedPlan, setSelectedPlan, error,
 }: Step5PlansProps) {
   const sorted = [...plans].sort(
-    (a, b) => a.sortOrder - b.sortOrder || parseFloat(a.price) - parseFloat(b.price),
+    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price),
   );
 
-  const meta = ACCOUNT_TYPE_META[accountType];
-  const Icon = meta.icon;
-
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold mb-1">اختر الباقة المناسبة</h2>
-        <p className="text-sm text-muted-foreground">
-          حدد باقتك وانشر إعلانك — يمكنك الترقية في أي وقت من لوحة التحكم
+      <div className="text-center">
+        <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-full px-4 py-1.5 mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+          <span className="text-xs font-semibold text-teal-700 uppercase tracking-widest">آخر خطوة</span>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">اختر الباقة المناسبة</h2>
+        <p className="text-sm text-gray-400">
+          الباقات من لوحة الإدارة — يمكنك الترقية في أي وقت
         </p>
-      </div>
-
-      {/* Account type badge */}
-      <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${meta.badgeClass}`}>
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${meta.iconBg}`}>
-          <Icon className={`w-4 h-4 ${meta.iconClass}`} />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide opacity-60 mb-0.5">نوع حسابك</p>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-sm">{meta.label}</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${meta.badgeClass}`}>
-              {meta.badge}
-            </span>
-          </div>
-          <p className="text-xs opacity-70 mt-0.5">{meta.hint}</p>
-        </div>
       </div>
 
       {plansLoading ? (
@@ -74,20 +37,18 @@ export function Step5Plans({
           <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
         </div>
       ) : sorted.length === 0 ? (
-        <div className="text-center py-14 text-muted-foreground">
+        <div className="text-center py-14 text-gray-400">
           <Crown className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p>لا توجد باقات متاحة حالياً</p>
         </div>
       ) : (
-        <div
-          className={`grid gap-3 ${
-            sorted.length === 1 ? "grid-cols-1 max-w-sm mx-auto" :
-            sorted.length === 2 ? "grid-cols-2" :
-            sorted.length === 3 ? "grid-cols-1 sm:grid-cols-3" :
-            "grid-cols-2 sm:grid-cols-4"
-          }`}
-        >
-          {sorted.map((plan) => (
+        <div className={`grid gap-3 ${
+          sorted.length === 1 ? "grid-cols-1 max-w-xs mx-auto" :
+          sorted.length === 2 ? "grid-cols-2" :
+          sorted.length === 3 ? "grid-cols-1 sm:grid-cols-3" :
+          "grid-cols-2 sm:grid-cols-4"
+        }`}>
+          {sorted.map(plan => (
             <PlanCard
               key={plan.id}
               plan={plan}
@@ -101,25 +62,39 @@ export function Step5Plans({
       {/* Selected plan summary */}
       {selectedPlan && (
         <div
-          className={`rounded-xl p-4 border flex items-center justify-between gap-3 ${
-            parseFloat(selectedPlan.price) > 0
-              ? "bg-amber-50 border-amber-200"
-              : "bg-teal-50 border-teal-200"
-          }`}
+          className="rounded-xl p-4 border flex items-center justify-between gap-3 transition-all"
+          style={{
+            background: `${selectedPlan.color || "#0d9488"}08`,
+            borderColor: `${selectedPlan.color || "#0d9488"}30`,
+          }}
         >
-          <div>
-            <p className="font-bold text-sm">
-              الباقة المختارة: {selectedPlan.nameAr ?? selectedPlan.name}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: selectedPlan.color || "#0d9488" }}>
               {parseFloat(selectedPlan.price) === 0
-                ? "الإعلان مجاني — سيُراجع فريقنا إعلانك قبل النشر"
-                : `ستدفع ${selectedPlan.price} ${selectedPlan.currency} عبر بوابة الدفع لتفعيل الباقة`}
-            </p>
+                ? <CheckCircle2 className="w-4 h-4 text-white" />
+                : <CreditCard className="w-4 h-4 text-white" />
+              }
+            </div>
+            <div>
+              <p className="font-bold text-sm text-gray-900">
+                الباقة المختارة: {selectedPlan.nameAr ?? selectedPlan.name}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {parseFloat(selectedPlan.price) === 0
+                  ? "⚡ نشر مجاني — سيُراجع إعلانك قبل النشر"
+                  : `💳 ستدفع ${selectedPlan.price} ${selectedPlan.currency} لتفعيل الباقة`
+                }
+              </p>
+            </div>
           </div>
-          {parseFloat(selectedPlan.price) > 0
-            ? <CreditCard className="w-6 h-6 text-amber-600 shrink-0" />
-            : <CheckCircle2 className="w-6 h-6 text-teal-600 shrink-0" />}
+          <p className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 underline shrink-0"
+            onClick={() => {
+              const cheaper = sorted.find(p => parseFloat(p.price) < parseFloat(selectedPlan!.price));
+              if (cheaper) setSelectedPlan(cheaper);
+            }}>
+            تغيير
+          </p>
         </div>
       )}
 

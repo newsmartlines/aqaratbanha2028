@@ -304,14 +304,14 @@ export default function RealEstateOnboarding() {
   const isRes     = draft.mainType === "residential";
   const isCom     = draft.mainType === "commercial";
 
-  // Sorted billing plans, filtered to company/all user types
+  // Sorted billing plans — all active plans from admin (single source of truth)
   const sortedPlans = billingPlans
-    .filter(p => p.status === "active" && (p.userType === "company" || p.userType === "all" || p.userType === "provider"))
+    .filter(p => p.status === "active")
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price));
 
-  // The currently selected billing plan object (null = free)
+  // The currently selected billing plan object
   const selectedBillingPlan = draft.plan !== null ? sortedPlans.find(p => p.id === draft.plan) ?? null : null;
-  const isFreeSelected = draft.plan === null;
+  const isFreeSelected = selectedBillingPlan !== null && parseFloat(selectedBillingPlan.price) === 0;
 
   /* ── Map pick ── */
   const onMapPick = (lat: number, lng: number) => {
@@ -347,7 +347,15 @@ export default function RealEstateOnboarding() {
     return Object.keys(e).length === 0;
   };
 
-  const goNext = () => { if (step === 1 ? validate() : true) setStep(s => Math.min(s + 1, TOTAL_STEPS)); };
+  const goNext = () => {
+    if (step === 1) { if (validate()) setStep(s => s + 1); }
+    else if (step === 2) {
+      if (draft.plan === null) { toast.error("يرجى اختيار باقة للمتابعة"); return; }
+      setStep(s => Math.min(s + 1, TOTAL_STEPS));
+    } else {
+      setStep(s => Math.min(s + 1, TOTAL_STEPS));
+    }
+  };
   const goBack = () => setStep(s => Math.max(s - 1, 1));
 
   /* ── Images ── */
@@ -815,162 +823,240 @@ export default function RealEstateOnboarding() {
   );
 
   /* ══════════════════════════════════════════════════
-      STEP 2 — اختيار الباقة
+      STEP 2 — اختيار الباقة (all plans from admin — single source of truth)
   ══════════════════════════════════════════════════ */
-  const freePlanBullets = ["نشر مجاني بدون رسوم", "ظهور عادي في نتائج البحث", "مدة 30 يوم", "صور غير محدودة", "بدون عمولة"];
-
   const step2 = (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-extrabold text-gray-900 mb-1">اختر باقة الإعلان</h2>
-        <p className="text-sm text-gray-500">اختر الباقة المناسبة لك — يمكنك الترقية لاحقاً من لوحة التحكم</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center pb-2">
+        <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-full px-4 py-1.5 mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+          <span className="text-xs font-semibold text-teal-700 uppercase tracking-widest">خطوة 2 من 3</span>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">اختر باقة الإعلان</h2>
+        <p className="text-sm text-gray-400 max-w-md mx-auto">
+          الباقات تُدار من لوحة الإدارة — أي تغيير يظهر هنا فوراً. يمكنك الترقية في أي وقت.
+        </p>
       </div>
 
-      {/* Plan cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Loading */}
+      {billingPlans.length === 0 ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-gray-400">جاري تحميل الباقات…</p>
+          </div>
+        </div>
+      ) : sortedPlans.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-lg font-semibold mb-1">لا توجد باقات متاحة حالياً</p>
+          <p className="text-sm">تواصل مع الإدارة لتفعيل الباقات</p>
+        </div>
+      ) : (
+        <>
+          {/* Plans grid */}
+          <div className={`grid gap-4 ${
+            sortedPlans.length <= 2 ? "grid-cols-1 sm:grid-cols-2 max-w-xl mx-auto" :
+            sortedPlans.length === 3 ? "grid-cols-1 sm:grid-cols-3" :
+            "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
+          }`}>
+            {sortedPlans.map(plan => {
+              const sel     = draft.plan === plan.id;
+              const price   = parseFloat(plan.price);
+              const isFree  = price === 0;
+              const accent  = plan.color || "#0d9488";
+              const limits: Record<string, number> = (() => { try { return JSON.parse(plan.limits ?? "{}"); } catch { return {}; } })();
+              const features: Record<string, boolean> = (() => { try { return JSON.parse(plan.features ?? "{}"); } catch { return {}; } })();
+              const topFeatures = Object.entries(features).filter(([, v]) => v).slice(0, 3);
 
-        {/* Free plan card */}
-        <div onClick={() => upd({ plan: null })}
-          className={`relative rounded-2xl border-2 cursor-pointer transition-all duration-200 overflow-hidden flex flex-col
-            ${isFreeSelected ? "border-teal-500 shadow-lg shadow-teal-100 -translate-y-0.5" : "border-gray-200 hover:border-gray-300 hover:shadow-md"}`}>
-          {/* Top accent */}
-          <div className="h-1.5 w-full bg-gray-300" />
-          {isFreeSelected && (
-            <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center shadow">
-              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+              return (
+                <div
+                  key={plan.id}
+                  onClick={() => upd({ plan: plan.id })}
+                  className={`relative flex flex-col rounded-2xl border cursor-pointer transition-all duration-200 overflow-hidden group
+                    ${sel
+                      ? "shadow-2xl -translate-y-1"
+                      : "border-gray-100 bg-white hover:shadow-lg hover:-translate-y-0.5"
+                    }`}
+                  style={sel ? {
+                    borderColor: accent,
+                    boxShadow: `0 20px 60px ${accent}25`,
+                    borderWidth: "2px",
+                  } : {}}
+                >
+                  {/* Color strip */}
+                  <div className="h-1 w-full shrink-0 transition-all"
+                    style={{ background: sel ? accent : "#e5e7eb" }} />
+
+                  {/* Popular / Recommended badge */}
+                  {plan.isMostPopular && (
+                    <div className="absolute top-3 right-3">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+                        style={{ background: accent }}>
+                        ⭐ الأكثر طلباً
+                      </span>
+                    </div>
+                  )}
+                  {plan.isRecommended && !plan.isMostPopular && (
+                    <div className="absolute top-3 right-3">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+                        style={{ background: accent }}>
+                        موصى به
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Selected checkmark */}
+                  {sel && (
+                    <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center shadow-md"
+                      style={{ background: accent }}>
+                      <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                    </div>
+                  )}
+
+                  <div className="p-5 flex flex-col flex-1 gap-3">
+                    {/* Name + price */}
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{plan.name}</p>
+                      <h3 className="text-lg font-bold text-gray-900 leading-tight">{plan.nameAr ?? plan.name}</h3>
+                      {plan.descriptionAr && (
+                        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed line-clamp-2">{plan.descriptionAr}</p>
+                      )}
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-baseline gap-1">
+                      {isFree ? (
+                        <span className="text-3xl font-black" style={{ color: accent }}>مجاني</span>
+                      ) : (
+                        <>
+                          <span className="text-3xl font-black text-gray-900">{Number(price).toLocaleString("ar-EG")}</span>
+                          <div className="text-xs text-gray-400 leading-tight">
+                            <div>{plan.currency}</div>
+                            <div>/{plan.durationDays} يوم</div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-100" />
+
+                    {/* Key limits */}
+                    <div className="space-y-1.5 text-xs flex-1">
+                      {limits.properties !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">العقارات</span>
+                          <span className="font-semibold text-gray-800">
+                            {limits.properties < 0 ? "غير محدود" : limits.properties}
+                          </span>
+                        </div>
+                      )}
+                      {limits.featuredAds !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">إعلانات مميزة</span>
+                          <span className="font-semibold text-gray-800">
+                            {limits.featuredAds < 0 ? "غير محدود" : limits.featuredAds}
+                          </span>
+                        </div>
+                      )}
+                      {plan.commissionPercent && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">العمولة</span>
+                          <span className="font-semibold text-gray-800">{plan.commissionPercent}%</span>
+                        </div>
+                      )}
+                      {topFeatures.map(([key]) => {
+                        const labels: Record<string, string> = {
+                          homepageDisplay: "ظهور في الرئيسية",
+                          topSearch: "أعلى البحث",
+                          verifiedBadge: "شارة موثّق",
+                          premiumBadge: "شارة Premium",
+                          aiTools: "أدوات AI",
+                          prioritySupport: "دعم الأولوية",
+                        };
+                        return (
+                          <div key={key} className="flex items-center gap-1.5">
+                            <Check className="w-3 h-3 shrink-0" style={{ color: accent }} />
+                            <span className="text-gray-600">{labels[key] ?? key}</span>
+                          </div>
+                        );
+                      })}
+                      {plan.trialDays > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="w-3 h-3 shrink-0 text-amber-500" />
+                          <span className="text-amber-700 font-medium">{plan.trialDays} أيام تجريبية</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CTA */}
+                    <button
+                      type="button"
+                      className="w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200 mt-1"
+                      style={sel
+                        ? { background: accent, color: "#fff" }
+                        : { background: "#f4f4f5", color: "#374151" }
+                      }
+                      onClick={e => { e.stopPropagation(); upd({ plan: plan.id }); }}
+                    >
+                      {sel ? "✓ تم الاختيار" : isFree ? "ابدأ مجاناً" : "اختر هذه الباقة"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Selected plan banner */}
+          {selectedBillingPlan && (
+            <div className="rounded-xl border p-4 flex items-center justify-between gap-3 transition-all"
+              style={{ background: `${selectedBillingPlan.color || "#0d9488"}08`, borderColor: `${selectedBillingPlan.color || "#0d9488"}30` }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: selectedBillingPlan.color || "#0d9488" }}>
+                  <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-gray-900">
+                    الباقة المختارة: {selectedBillingPlan.nameAr ?? selectedBillingPlan.name}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {isFreeSelected
+                      ? "⚡ نشر مجاني — سيُراجع إعلانك بدون دفع"
+                      : `💳 ستدفع ${selectedBillingPlan.price} ${selectedBillingPlan.currency} لتفعيل الباقة`
+                    }
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={() => upd({ plan: null })}
+                className="text-xs text-gray-400 hover:text-gray-600 underline shrink-0">
+                تغيير
+              </button>
             </div>
           )}
-          <div className="p-5 flex flex-col flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">مجانية</p>
-            <h3 className="text-lg font-extrabold text-gray-800 mb-3">نشر مجاني</h3>
-            <div className="mb-4">
-              <span className="text-3xl font-black text-emerald-600">مجاني</span>
-            </div>
-            <div className="space-y-2 flex-1">
-              {freePlanBullets.map((b, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${isFreeSelected ? "bg-teal-100" : "bg-gray-100"}`}>
-                    <Check className={`w-2.5 h-2.5 ${isFreeSelected ? "text-teal-600" : "text-gray-400"}`} strokeWidth={3} />
-                  </div>
-                  <span className="text-sm text-gray-600">{b}</span>
+
+          {/* Property mini summary */}
+          <div className="bg-gray-50 rounded-xl border border-gray-100 p-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">ملخص العقار</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs">
+              {[
+                ["النوع",    `${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"}`],
+                ["الصفقة",  LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"],
+                ["الموقع",  draft.cityName ?? "—"],
+                ["السعر",   draft.price ? `${Number(draft.price).toLocaleString("ar-EG")} ج.م` : "—"],
+                ["المساحة", draft.area ? `${draft.area} م²` : "—"],
+                ["الصور",   `${draft.images.length} صورة`],
+              ].map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between gap-1">
+                  <span className="text-gray-400">{k}</span>
+                  <span className="font-semibold text-gray-700 truncate">{v}</span>
                 </div>
               ))}
             </div>
-            <button type="button" className={`w-full mt-5 py-2.5 rounded-xl font-bold text-sm transition-colors
-              ${isFreeSelected ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>
-              {isFreeSelected ? "تم الاختيار ✓" : "اختر هذه الباقة"}
-            </button>
           </div>
-        </div>
-
-        {/* Paid plan cards */}
-        {sortedPlans.map(plan => {
-          const sel = draft.plan === plan.id;
-          const price = parseFloat(plan.price);
-          const accent = plan.color || "#0d9488";
-          const isFree = price === 0;
-          const isPopular = plan.isMostPopular;
-          const isRec = plan.isRecommended;
-          const badge = isPopular ? "الأكثر طلباً" : isRec ? "موصى به" : null;
-          const bullets = getPlanBullets(plan);
-
-          return (
-            <div key={plan.id} onClick={() => upd({ plan: plan.id })}
-              className={`relative rounded-2xl border-2 cursor-pointer transition-all duration-200 overflow-hidden flex flex-col
-                ${sel ? "shadow-xl -translate-y-1 ring-2 ring-offset-1" : "border-gray-200 hover:border-gray-300 hover:shadow-md"}`}
-              style={sel ? { borderColor: accent, ringColor: accent } as React.CSSProperties : {}}>
-
-              <div className="h-1.5 w-full shrink-0" style={{ background: accent }} />
-
-              {badge && (
-                <div className="absolute top-3 right-3">
-                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full text-white shadow-sm"
-                    style={{ background: accent }}>
-                    {isPopular ? "⭐ " : ""}{badge}
-                  </span>
-                </div>
-              )}
-              {sel && (
-                <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center shadow"
-                  style={{ background: accent }}>
-                  <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                </div>
-              )}
-
-              <div className="p-5 flex flex-col flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{plan.name}</p>
-                <h3 className="text-lg font-extrabold text-gray-800 mb-1">{plan.nameAr ?? plan.name}</h3>
-                {plan.descriptionAr && <p className="text-xs text-gray-400 mb-3 leading-relaxed">{plan.descriptionAr}</p>}
-
-                <div className="flex items-end gap-1 mb-4">
-                  {isFree ? (
-                    <span className="text-3xl font-black text-emerald-600">مجاني</span>
-                  ) : (
-                    <>
-                      <span className="text-3xl font-black text-gray-900">{Number(price).toLocaleString("ar")}</span>
-                      <span className="text-sm text-gray-400 mb-1">{plan.currency} / {plan.durationDays}ي</span>
-                    </>
-                  )}
-                </div>
-
-                <div className="space-y-2 flex-1">
-                  {bullets.map((b, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-colors"
-                        style={{ background: sel ? `${accent}22` : "#f4f4f5" }}>
-                        <Check className="w-2.5 h-2.5" strokeWidth={3} style={{ color: sel ? accent : "#a1a1aa" }} />
-                      </div>
-                      <span className="text-sm text-gray-600">{b}</span>
-                    </div>
-                  ))}
-                  {plan.trialDays > 0 && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                        <Zap className="w-2.5 h-2.5 text-emerald-600" />
-                      </div>
-                      <span className="text-sm text-emerald-600 font-medium">تجربة مجانية {plan.trialDays} يوم</span>
-                    </div>
-                  )}
-                </div>
-
-                <button type="button"
-                  className="w-full mt-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200"
-                  style={sel ? { background: accent, color: "#fff" } : { background: "#f4f4f5", color: "#3f3f46" }}
-                  onClick={e => { e.stopPropagation(); upd({ plan: plan.id }); }}>
-                  {sel ? "تم الاختيار ✓" : "اختر هذه الباقة"}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Property summary */}
-      <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-        <p className="text-sm font-bold text-gray-700 mb-3">ملخص العقار المراد نشره</p>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          {[
-            ["النوع",     `${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"} · ${draft.subType || "—"}`],
-            ["الصفقة",   LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"],
-            ["الموقع",   draft.cityName ?? "—"],
-            ["السعر",    draft.price ? `${Number(draft.price).toLocaleString("ar")} ج.م` : "—"],
-            ["المساحة",  draft.area ? `${draft.area} م²` : "—"],
-            ["الصور",    `${draft.images.length} صورة`],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between py-1.5 border-b border-gray-100 last:border-0 col-span-2 sm:col-span-1">
-              <span className="text-gray-500">{k}</span>
-              <span className="font-semibold text-gray-800">{v}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Hint */}
-      <p className="text-center text-xs text-gray-400">
-        {isFreeSelected
-          ? "⚡ سيتم إرسال إعلانك مباشرة للمراجعة بدون دفع"
-          : `💳 ستنتقل لصفحة الدفع بعد الضغط على "التالي"`}
-      </p>
+        </>
+      )}
     </div>
   );
 
