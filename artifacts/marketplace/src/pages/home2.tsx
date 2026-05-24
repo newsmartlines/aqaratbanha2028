@@ -12,7 +12,6 @@ import {
   Star, ChevronDown, ArrowLeft, Phone, Briefcase, Home, TrendingUp,
   CheckCircle2, Users, Award, LayoutGrid,
 } from "lucide-react";
-import { PROPERTIES } from "./home";
 
 const FALLBACK = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80";
 
@@ -62,21 +61,31 @@ const CATEGORIES = [
   { icon: TrendingUp, label: "استثمارية",     count:  55, color: "bg-teal-50 text-teal-700 border-teal-200" },
 ];
 
-function pad6(src: typeof PROPERTIES): typeof PROPERTIES {
-  if (src.length >= 6) return src.slice(0, 6);
-  const out = [...src];
-  let i = 0;
-  while (out.length < 6) { out.push(PROPERTIES[i % PROPERTIES.length]); i++; }
-  return out;
+interface DisplayProp {
+  id: number; img: string; type: string; featured: boolean; kind: string;
+  price: string; title: string; location: string; beds: number; baths: number; area: number;
 }
 
-const featuredSec   = pad6(PROPERTIES.filter(p => p.featured));
-const commercialSec = pad6(PROPERTIES.filter(p => p.kind === "مكتب" || p.kind === "دوبلكس"));
-const landsSec      = pad6(PROPERTIES.filter(p => p.kind === "أرض"));
+function toDisplayProp(p: any): DisplayProp {
+  const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
+  return {
+    id: p.id,
+    img: imgs[0] ?? FALLBACK,
+    type: p.listingType === "sale" ? "للبيع" : "للإيجار",
+    featured: !!p.featured,
+    kind: p.mainCategory ?? "",
+    price: p.price ? Number(p.price).toLocaleString("ar-EG") + " ج.م" : "عند التواصل",
+    title: p.title ?? "",
+    location: [p.district, p.city].filter(Boolean).join("، "),
+    beds: p.rooms ?? 0,
+    baths: p.bathrooms ?? 0,
+    area: Number(p.area) || 0,
+  };
+}
 
 /* ─── Reusable property card ─── */
 function PropCard({ p, liked, onLike, onClick }: {
-  p: typeof PROPERTIES[0];
+  p: DisplayProp;
   liked: boolean;
   onLike: (e: React.MouseEvent) => void;
   onClick: () => void;
@@ -174,6 +183,20 @@ export default function Home2() {
     queryFn: () => api.locations.getAreasByCity(BANHA_CITY_ID),
     staleTime: 5 * 60_000,
   });
+
+  const { data: allProps = [] } = useQuery<DisplayProp[]>({
+    queryKey: ["home2-properties"],
+    queryFn: async () => {
+      const list = await api.properties.list({});
+      return (list as any[]).map(toDisplayProp);
+    },
+    staleTime: 2 * 60_000,
+  });
+
+  const featuredSec   = allProps.filter(p => p.featured).slice(0, 6);
+  const commercialSec = allProps.filter(p => p.kind === "مكتب" || p.kind === "دوبلكس").slice(0, 6);
+  const landsSec      = allProps.filter(p => p.kind.includes("أرض")).slice(0, 6);
+
   const [liked,      setLiked]      = useState<Set<number>>(new Set());
 
   const toggleLike = (uid: number, e: React.MouseEvent) => {

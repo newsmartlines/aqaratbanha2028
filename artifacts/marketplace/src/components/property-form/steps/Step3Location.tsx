@@ -1,8 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import { UseFormSetValue } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { MapPicker } from "../shared/MapPicker";
 import { AddressAutocomplete } from "../shared/AddressAutocomplete";
-import { CITIES, CITY_AREAS } from "../constants";
 import type { FormValues } from "../types";
 
 interface Step3LocationProps {
@@ -12,7 +12,24 @@ interface Step3LocationProps {
   setValue: UseFormSetValue<FormValues>;
 }
 
+interface AreaRow  { id: number; nameAr: string; enabled: boolean; cityId: number }
+interface CityRow  { id: number; nameAr: string; enabled: boolean; regionId: number; areas: AreaRow[] }
+interface RegionRow { id: number; nameAr: string; enabled: boolean; cities: CityRow[] }
+
 export function Step3Location({ v, set, setValue }: Step3LocationProps) {
+  const { data: regions = [] } = useQuery<RegionRow[]>({
+    queryKey: ["regions-public"],
+    queryFn: async () => {
+      const r = await fetch("/api/regions", { credentials: "include" });
+      return (await r.json()).data ?? [];
+    },
+    staleTime: 10 * 60_000,
+  });
+
+  const allCities: CityRow[] = regions.flatMap(reg => reg.cities ?? []);
+  const selectedCityObj = allCities.find(c => c.nameAr === v.city);
+  const areas = selectedCityObj?.areas ?? [];
+
   return (
     <div className="space-y-5">
       {/* اختيار المدينة */}
@@ -20,21 +37,25 @@ export function Step3Location({ v, set, setValue }: Step3LocationProps) {
         <Label className="text-base font-bold mb-4 block">
           المدينة <span className="text-red-500">*</span>
         </Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {CITIES.map((city) => (
-            <button
-              key={city} type="button"
-              onClick={() => set("city", city)}
-              className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                v.city === city
-                  ? "border-teal-600 bg-teal-50 text-teal-700"
-                  : "border-border hover:border-teal-300 hover:bg-secondary/40"
-              }`}
-            >
-              {city}
-            </button>
-          ))}
-        </div>
+        {allCities.length === 0 ? (
+          <p className="text-sm text-muted-foreground">جارٍ تحميل المدن...</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {allCities.map((city) => (
+              <button
+                key={city.id} type="button"
+                onClick={() => { set("city", city.nameAr); set("district", ""); }}
+                className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  v.city === city.nameAr
+                    ? "border-teal-600 bg-teal-50 text-teal-700"
+                    : "border-border hover:border-teal-300 hover:bg-secondary/40"
+                }`}
+              >
+                {city.nameAr}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* المنطقة */}
@@ -48,12 +69,16 @@ export function Step3Location({ v, set, setValue }: Step3LocationProps) {
           onChange={(e) => set("district", e.target.value)}
           className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
           dir="rtl"
+          disabled={!v.city || areas.length === 0}
         >
           <option value="">— اختر المنطقة —</option>
-          {(CITY_AREAS[v.city] ?? []).map((area) => (
-            <option key={area} value={area}>{area}</option>
+          {areas.map((area) => (
+            <option key={area.id} value={area.nameAr}>{area.nameAr}</option>
           ))}
         </select>
+        {v.city && areas.length === 0 && (
+          <p className="text-xs text-muted-foreground mt-1">لا توجد مناطق مسجّلة لهذه المدينة</p>
+        )}
       </div>
 
       {/* العنوان التفصيلي مع اقتراحات تلقائية */}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Building2, CheckCircle2, CreditCard, Loader2, ImagePlus, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -18,10 +19,15 @@ import { Step5Plans } from "./steps/Step5Plans";
 import { usePropertyForm } from "./use-property-form";
 import {
   ADVERTISER_TYPES, FINISHING, CONDITIONS,
-  DIRECTIONS, CITY_AREAS,
+  DIRECTIONS,
 } from "./constants";
+
 import { LAND_TYPE_OPTIONS, getPropertyTypeConfig } from "./property-type-config";
 import type { PropertyFormWizardProps } from "./types";
+
+interface AreaRow   { id: number; nameAr: string; enabled: boolean; cityId: number }
+interface CityRow   { id: number; nameAr: string; enabled: boolean; regionId: number; areas: AreaRow[] }
+interface RegionRow { id: number; nameAr: string; enabled: boolean; cities: CityRow[] }
 
 export function PropertyFormFull({ mode, backPath, showPlans = false }: PropertyFormWizardProps) {
   const [, setLocation] = useLocation();
@@ -47,6 +53,18 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
   } = form;
 
   const cfg = getPropertyTypeConfig(v.mainCategory);
+
+  const { data: regions = [] } = useQuery<RegionRow[]>({
+    queryKey: ["regions-public"],
+    queryFn: async () => {
+      const r = await fetch("/api/regions", { credentials: "include" });
+      return (await r.json()).data ?? [];
+    },
+    staleTime: 10 * 60_000,
+  });
+  const allCities: CityRow[] = regions.flatMap(reg => reg.cities ?? []);
+  const selectedCityObj = allCities.find(c => c.nameAr === v.city);
+  const locationAreas: AreaRow[] = selectedCityObj?.areas ?? [];
 
   const isFormUnlocked = !!v.propertyGroup && !!v.mainCategory && !!v.listingType;
 
@@ -562,6 +580,25 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
         {/* ── 8. الموقع والخريطة — في الآخر ──────────────────────── */}
         <FormSection title="الموقع" required>
           <div className="space-y-4">
+            {/* اختيار المدينة من قاعدة البيانات */}
+            <div>
+              <Label htmlFor="f-city" className="text-sm font-semibold mb-1.5 block">
+                المدينة <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="f-city"
+                value={v.city ?? ""}
+                onChange={(e) => { setValue("city", e.target.value); setValue("district", ""); }}
+                className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                dir="rtl"
+              >
+                <option value="">— اختر المدينة —</option>
+                {allCities.map((city) => (
+                  <option key={city.id} value={city.nameAr}>{city.nameAr}</option>
+                ))}
+              </select>
+            </div>
+            {/* اختيار المنطقة (تتحمّل من قاعدة البيانات بناءً على المدينة) */}
             <div>
               <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">المنطقة</Label>
               <select
@@ -570,12 +607,16 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
                 onChange={(e) => setValue("district", e.target.value)}
                 className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 dir="rtl"
+                disabled={!v.city || locationAreas.length === 0}
               >
                 <option value="">— اختر المنطقة —</option>
-                {(CITY_AREAS[v.city] ?? []).map((area) => (
-                  <option key={area} value={area}>{area}</option>
+                {locationAreas.map((area) => (
+                  <option key={area.id} value={area.nameAr}>{area.nameAr}</option>
                 ))}
               </select>
+              {v.city && locationAreas.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">لا توجد مناطق مسجّلة لهذه المدينة بعد</p>
+              )}
             </div>
             <div>
               <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>

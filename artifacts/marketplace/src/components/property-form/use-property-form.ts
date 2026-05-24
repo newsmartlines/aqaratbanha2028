@@ -32,7 +32,7 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     advertiserType: isCompany ? "company" : "",
     compound: "", facade: "", direction: "",
     features: [], nearbyServices: [],
-    city: "بنها", district: "", address: "", street: "",
+    city: "", district: "", address: "", street: "",
     latitude: "", longitude: "",
     contactName: user?.name ?? "", phone: user?.phone ?? "", contactMethod: ["phone"],
     videoUrl: "", images: [],

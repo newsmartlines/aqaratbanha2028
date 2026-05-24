@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api, type SiteSettings } from "@/lib/api";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -131,6 +133,14 @@ function SerpPreview({ title, description, url }: { title: string; description: 
 export default function AdminSeo() {
   const { toast } = useToast();
   const [tab, setTab] = useState("dashboard");
+  const [saving, setSaving] = useState(false);
+
+  /* Load settings from DB */
+  const { data: dbSettings } = useQuery<SiteSettings>({
+    queryKey: ["site-settings"],
+    queryFn: () => api.settings.list(),
+    staleTime: 2 * 60_000,
+  });
 
   /* General SEO state */
   const [siteTitle,    setSiteTitle]    = useState("عقارات بنها العقارات | أفضل عقارات مصر");
@@ -144,6 +154,21 @@ export default function AdminSeo() {
 
   /* Robots.txt */
   const [robotsTxt,    setRobotsTxt]    = useState(ROBOTS_DEFAULT);
+
+  /* Initialize state from DB when settings load */
+  useEffect(() => {
+    if (!dbSettings) return;
+    const s = dbSettings as any;
+    if (s.seoTitle)       setSiteTitle(s.seoTitle);
+    if (s.seoDescription) setSiteDesc(s.seoDescription);
+    if (s.seoCanonical)   setCanonical(s.seoCanonical);
+    if (s.seoIndexAll !== undefined) setIndexAll(s.seoIndexAll !== "false");
+    if (s.ogTitle)        setOgTitle(s.ogTitle);
+    if (s.ogDescription)  setOgDesc(s.ogDescription);
+    if (s.twitterCard)    setTwitterCard(s.twitterCard);
+    if (s.gaId)           setGaId(s.gaId);
+    if (s.robotsTxt)      setRobotsTxt(s.robotsTxt);
+  }, [dbSettings]);
 
   /* Redirects */
   const [redirects,    setRedirects]    = useState(REDIRECTS_INIT);
@@ -165,8 +190,28 @@ export default function AdminSeo() {
   const [editDesc,     setEditDesc]     = useState("");
   const [editKeywords, setEditKeywords] = useState("");
 
-  const save = (msg = "تم الحفظ بنجاح ✓") =>
-    toast({ title: "تم الحفظ", description: msg });
+  const save = async (msg = "تم الحفظ بنجاح ✓") => {
+    setSaving(true);
+    try {
+      await api.settings.save({
+        seoTitle: siteTitle,
+        seoDescription: siteDesc,
+        seoCanonical: canonical,
+        seoIndexAll: String(indexAll),
+        ogTitle,
+        ogDescription: ogDesc,
+        twitterCard,
+        gaId,
+        robotsTxt,
+        seoRedirects: JSON.stringify(redirects),
+      });
+      toast({ title: "✅ تم الحفظ", description: msg });
+    } catch {
+      toast({ title: "فشل الحفظ", description: "تعذّر حفظ إعدادات السيو", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   /* Simulate AI generation */
   const runAI = () => {
@@ -249,8 +294,9 @@ export default function AdminSeo() {
             <Button variant="outline" size="sm" className="gap-1.5">
               <RefreshCw className="w-4 h-4" /> تحديث الفحص
             </Button>
-            <Button size="sm" className="gap-1.5" onClick={() => save()}>
-              <Save className="w-4 h-4" /> حفظ الكل
+            <Button size="sm" className="gap-1.5" onClick={() => save()} disabled={saving}>
+              {saving ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" /> : <Save className="w-4 h-4" />}
+              {saving ? "جارٍ الحفظ..." : "حفظ الكل"}
             </Button>
           </div>
         </div>
