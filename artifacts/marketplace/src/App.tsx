@@ -99,6 +99,7 @@ import MyPropertiesPage from "@/pages/dashboard/my-properties";
 import MyPlanPage from "@/pages/dashboard/my-plan";
 import MapSearchPage from "@/pages/map-search";
 import MarketInsightsPage from "@/pages/market-insights";
+import CompanyRegisterPage from "@/pages/company-register";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -197,7 +198,7 @@ function Router() {
       {/* Auth routes */}
       <Route path="/login">{() => <AuthPage />}</Route>
       <Route path="/register" component={RegisterPage} />
-      <Route path="/company-register">{() => <Redirect to="/register" />}</Route>
+      <Route path="/company-register" component={CompanyRegisterPage} />
       <Route path="/admin/login" component={AdminLogin} />
 
       {/* Real-estate onboarding — redirected to unified add-property form */}
