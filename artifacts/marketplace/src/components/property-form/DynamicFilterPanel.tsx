@@ -115,7 +115,7 @@ export function DynamicFilterPanel({
                   </button>
                 )}
               </div>
-              <Select value={currentVal} onValueChange={(v) => handleSelect(f.name, v)}>
+              <Select value={currentVal || "_all_"} onValueChange={(v) => handleSelect(f.name, v === "_all_" ? "" : v)}>
                 <SelectTrigger className={cn(
                   "h-8 text-xs rounded-xl border-zinc-200",
                   currentVal && "border-primary text-primary bg-primary/5"
@@ -123,7 +123,7 @@ export function DynamicFilterPanel({
                   <SelectValue placeholder="الكل" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">الكل</SelectItem>
+                  <SelectItem value="_all_">الكل</SelectItem>
                   {options.map((o) => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
@@ -191,7 +191,7 @@ export function DynamicFilterPanel({
                   )}>{f.name}</span>
                 </div>
                 <div className="flex items-center gap-1 flex-1">
-                  <Select value={currentVal} onValueChange={(v) => handleSelect(f.name, v)}>
+                  <Select value={currentVal || "_none_"} onValueChange={(v) => handleSelect(f.name, v === "_none_" ? "" : v)}>
                     <SelectTrigger className={cn(
                       "h-10 rounded-xl flex-1",
                       currentVal && "border-teal-400 text-teal-700"
@@ -199,7 +199,7 @@ export function DynamicFilterPanel({
                       <SelectValue placeholder="اختر..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">غير محدد</SelectItem>
+                      <SelectItem value="_none_">غير محدد</SelectItem>
                       {options.map((o) => (
                         <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                       ))}

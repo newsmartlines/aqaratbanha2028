@@ -298,10 +298,10 @@ export default function EditPropertyPage() {
 
             <div className="space-y-1.5">
               <Label>التشطيب</Label>
-              <Select value={form.finishing} onValueChange={v => setForm(f => ({ ...f, finishing: v }))}>
+              <Select value={form.finishing || "_none_"} onValueChange={v => setForm(f => ({ ...f, finishing: v === "_none_" ? "" : v }))}>
                 <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر نوع التشطيب" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">غير محدد</SelectItem>
+                  <SelectItem value="_none_">غير محدد</SelectItem>
                   {FINISHING_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                 </SelectContent>
               </Select>
