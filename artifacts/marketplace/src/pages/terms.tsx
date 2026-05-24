@@ -52,7 +52,7 @@ export default function TermsPage() {
             },
             {
               num: "٧", title: "التواصل",
-              body: "لأي استفسارات قانونية، تواصل معنا: realestate@aqarat-banha.com",
+              body: "لأي استفسارات قانونية، تواصل معنا: realestate@aqaratbanha.com",
             },
           ].map(s => (
             <div key={s.num} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">

@@ -107,7 +107,7 @@ export function RealEstateFooter() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <a href="mailto:realestate@aqarat-banha.com" className="text-sm text-gray-400 hover:text-primary transition-colors">realestate@aqarat-banha.com</a>
+                <a href="mailto:realestate@aqaratbanha.com" className="text-sm text-gray-400 hover:text-primary transition-colors">realestate@aqaratbanha.com</a>
               </li>
             </ul>
 

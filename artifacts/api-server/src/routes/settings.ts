@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   fontFamily: "Tajawal",
   borderRadius: "0.75rem",
   aboutContent: "نحن منصة عقارات بنها، الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية، مع خدمات التشطيبات والديكور ومواد البناء.",
-  contactEmail: "info@aqarat-banha.com",
+  contactEmail: "info@aqaratbanha.com",
   contactPhone: "+201000000000",
   contactWhatsapp: "+201000000000",
   contactAddress: "بنها، القليوبية، جمهورية مصر العربية",

@@ -421,8 +421,8 @@ export default function AdminDemoContent() {
                   </div>
                   <div className="text-center p-3 bg-teal-50 rounded-lg col-span-2 md:col-span-1">
                     <p className="text-sm font-medium text-teal-700 mb-1">بيانات الدخول</p>
-                    <p className="text-xs text-teal-600">admin@dalilsmartlines.com / admin123</p>
-                    <p className="text-xs text-teal-500 mt-0.5">provider: provider123</p>
+                    <p className="text-xs text-teal-600">admin@aqaratbanha.com / admin123</p>
+                    <p className="text-xs text-teal-500 mt-0.5">provider: provider@123</p>
                   </div>
                 </div>
               </CardContent>

@@ -26,7 +26,7 @@ export default function ProviderSupport() {
   const s = settings as any;
   const contactPhone = s?.contactPhone ?? "+201000000000";
   const whatsappNumber = (s?.contactPhone ?? "+201000000000").replace(/\D/g, "");
-  const contactEmail = s?.contactEmail ?? "support@aqarat-banha.com";
+  const contactEmail = s?.contactEmail ?? "support@aqaratbanha.com";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

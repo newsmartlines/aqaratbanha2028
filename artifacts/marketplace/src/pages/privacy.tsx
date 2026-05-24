@@ -48,7 +48,7 @@ export default function PrivacyPage() {
             },
             {
               num: "٦", title: "التواصل معنا",
-              body: "إن كان لديك أي استفسار حول سياسة الخصوصية، تواصل معنا عبر: realestate@aqarat-banha.com",
+              body: "إن كان لديك أي استفسار حول سياسة الخصوصية، تواصل معنا عبر: realestate@aqaratbanha.com",
             },
           ].map(s => (
             <div key={s.num} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">

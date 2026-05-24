@@ -203,15 +203,15 @@ export async function seed() {
     ]).returning();
 
     const adminHash = await bcrypt.hash("admin123", 10);
-    const [adminUser] = await db.insert(usersTable).values({ name: "Admin", email: "admin@aqarat-banha.com", passwordHash: adminHash, role: "admin" }).returning();
+    const [adminUser] = await db.insert(usersTable).values({ name: "Admin", email: "admin@aqaratbanha.com", passwordHash: adminHash, role: "admin" }).returning();
 
     const providerData = [
-      { name: "أحمد عبدالله", email: "ahmed@dalilsmartlines.com", city: "بنها", bio: "سمسار عقارات محترف بخبرة 10 سنوات في بنها والقليوبية", categorySlug: "design", rating: "4.9", featured: true, verified: true },
-      { name: "سارة الغامدي", email: "sara@dalilsmartlines.com", city: "بنها", bio: "خبيرة تسويق عقاري ومستشارة مبيعات", categorySlug: "design", rating: "4.8", featured: true, verified: true },
-      { name: "نواف العتيبي", email: "nawaf@dalilsmartlines.com", city: "القناطر الخيرية", bio: "مقاول ومتخصص في أعمال التشطيبات والديكور", categorySlug: "maintenance", rating: "4.7", featured: false, verified: true },
-      { name: "أم خالد", email: "oumkhalid@dalilsmartlines.com", city: "طوخ", bio: "وسيطة عقارية ومتخصصة في عقارات محافظة القليوبية", categorySlug: "food", rating: "4.9", featured: true, verified: true },
-      { name: "منى الشهري", email: "mona@dalilsmartlines.com", city: "شبرا الخيمة", bio: "مستشارة عقارية ومتخصصة في الاستثمار العقاري", categorySlug: "events", rating: "4.6", featured: false, verified: true },
-      { name: "هنود القرني", email: "hanood@dalilsmartlines.com", city: "قليوب", bio: "وسيط عقاري خبرة 7 سنوات في بيع وإيجار الشقق", categorySlug: "beauty", rating: "4.8", featured: true, verified: true },
+      { name: "أحمد عبدالله", email: "ahmed@aqaratbanha.com", city: "بنها", bio: "سمسار عقارات محترف بخبرة 10 سنوات في بنها والقليوبية", categorySlug: "design", rating: "4.9", featured: true, verified: true },
+      { name: "سارة الغامدي", email: "sara@aqaratbanha.com", city: "بنها", bio: "خبيرة تسويق عقاري ومستشارة مبيعات", categorySlug: "design", rating: "4.8", featured: true, verified: true },
+      { name: "نواف العتيبي", email: "nawaf@aqaratbanha.com", city: "القناطر الخيرية", bio: "مقاول ومتخصص في أعمال التشطيبات والديكور", categorySlug: "maintenance", rating: "4.7", featured: false, verified: true },
+      { name: "أم خالد", email: "oumkhalid@aqaratbanha.com", city: "طوخ", bio: "وسيطة عقارية ومتخصصة في عقارات محافظة القليوبية", categorySlug: "food", rating: "4.9", featured: true, verified: true },
+      { name: "منى الشهري", email: "mona@aqaratbanha.com", city: "شبرا الخيمة", bio: "مستشارة عقارية ومتخصصة في الاستثمار العقاري", categorySlug: "events", rating: "4.6", featured: false, verified: true },
+      { name: "هنود القرني", email: "hanood@aqaratbanha.com", city: "قليوب", bio: "وسيط عقاري خبرة 7 سنوات في بيع وإيجار الشقق", categorySlug: "beauty", rating: "4.8", featured: true, verified: true },
     ];
 
     const passHash = await bcrypt.hash("provider123", 10);
@@ -1525,7 +1525,7 @@ const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   primaryColor: "#0d9488",
   themePreset: "teal-sand",
   aboutContent: "نحن منصة عقارات بنها، الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية. نربطك بأفضل العروض العقارية بسرعة وأمان وشفافية تامة.",
-  contactEmail: "info@aqarat-banha.com",
+  contactEmail: "info@aqaratbanha.com",
   contactPhone: "+201000000000",
   contactWhatsapp: "+201000000000",
   contactAddress: "بنها، محافظة القليوبية، جمهورية مصر العربية",

@@ -59,7 +59,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-muted-foreground mb-0.5">البريد الإلكتروني</p>
-                  <p className="font-medium">{settings?.contactEmail ?? "info@aqarat-banha.com"}</p>
+                  <p className="font-medium">{settings?.contactEmail ?? "info@aqaratbanha.com"}</p>
                 </div>
               </div>
 
