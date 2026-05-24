@@ -40,6 +40,7 @@ export function Header() {
     { href: "/properties?listingType=sale", label: "للبيع" },
     { href: "/properties?listingType=rent", label: "للإيجار" },
     { href: "/map-search", label: "🗺 بحث بالخريطة" },
+    { href: "/market", label: "📊 مؤشرات السوق" },
   ];
 
   useEffect(() => {

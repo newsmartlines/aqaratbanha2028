@@ -100,6 +100,7 @@ import MyPropertiesPage from "@/pages/dashboard/my-properties";
 import MyPlanPage from "@/pages/dashboard/my-plan";
 import CompanyRegisterPage from "@/pages/company-register";
 import MapSearchPage from "@/pages/map-search";
+import MarketInsightsPage from "@/pages/market-insights";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -189,6 +190,7 @@ function Router() {
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/sitemap" component={SitemapPage} />
+      <Route path="/market" component={MarketInsightsPage} />
 
       <Route path="/admin" component={() => <Redirect to="/admin/dashboard" />} />
       <Route path="/provider" component={() => <Redirect to="/provider/dashboard" />} />
