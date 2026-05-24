@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import {
-  Users, ShoppingBag, Star, List,
-  ArrowUpRight, Clock, Loader2, AlertCircle,
+  Users, Star, List,
+  ArrowUpRight, Loader2, AlertCircle,
   Phone, MessageCircle, Send,
 } from "lucide-react";
 import ProviderLayout from "@/components/ProviderLayout";
@@ -13,15 +13,6 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { api, type ProviderStats, type ProviderInteractions, mediaUrl } from "@/lib/api";
-
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  new:       { label: "جديد",          color: "bg-blue-500/10 text-blue-600" },
-  pending:   { label: "قيد التنفيذ",   color: "bg-amber-500/10 text-amber-600" },
-  completed: { label: "مكتمل",         color: "bg-green-500/10 text-green-600" },
-  cancelled: { label: "ملغي",          color: "bg-red-500/10 text-red-600" },
-  rejected:  { label: "مرفوض",         color: "bg-red-500/10 text-red-600" },
-  accepted:  { label: "مقبول",         color: "bg-teal-500/10 text-teal-600" },
-};
 
 export default function ProviderDashboard() {
   const { user, loading: authLoading, refetch } = useAuth();
@@ -48,13 +39,6 @@ export default function ProviderDashboard() {
     queryFn: () => api.providers.stats(providerId!),
     enabled: !!providerId,
     retry: 2,
-  });
-
-  const { data: recentOrders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ["providerRequests", providerId],
-    queryFn: () => api.requests.listByProvider(providerId!) as Promise<any[]>,
-    enabled: !!providerId,
-    select: (data) => data.slice(0, 5),
   });
 
   const { data: interactions, isLoading: interactionsLoading } = useQuery<ProviderInteractions>({
@@ -89,7 +73,7 @@ export default function ProviderDashboard() {
       <ProviderLayout>
         <div className="p-8 max-w-md mx-auto text-center space-y-4" dir="rtl">
           <Loader2 className="w-10 h-10 mx-auto animate-spin text-primary" />
-          <p className="text-lg font-medium">جاري تحميل ملف مقدم الخدمة…</p>
+          <p className="text-lg font-medium">جاري تحميل الملف التجاري…</p>
           <p className="text-sm text-muted-foreground">يتم مزامنة الجلسة مع الخادم. انتظر لحظات أو اضغط تحديثاً يدوياً.</p>
           <Button type="button" variant="outline" onClick={() => void refetch()}>
             تحديث
@@ -104,7 +88,7 @@ export default function ProviderDashboard() {
       <ProviderLayout>
         <div className="p-8 text-center" dir="rtl">
           <AlertCircle className="w-10 h-10 mx-auto text-amber-500 mb-3" />
-          <p className="text-lg font-medium">هذه اللوحة مخصصة لمقدمي الخدمة فقط.</p>
+          <p className="text-lg font-medium">هذه اللوحة مخصصة للشركات العقارية فقط.</p>
         </div>
       </ProviderLayout>
     );
@@ -112,28 +96,16 @@ export default function ProviderDashboard() {
 
   const statsData = [
     {
-      name: "الطلبات",
-      value: statsLoading ? "—" : String(stats?.totalOrders ?? 0),
-      icon: ShoppingBag,
-      sub: statsLoading ? "" : `${stats?.completedOrders ?? 0} مكتملة`,
-    },
-    {
       name: "التقييم",
       value: statsLoading ? "—" : (stats?.avgRating ?? "0.0"),
       icon: Star,
       sub: statsLoading ? "" : `${stats?.reviewsCount ?? 0} تقييم`,
     },
     {
-      name: "الخدمات",
+      name: "الإعلانات",
       value: statsLoading ? "—" : String(stats?.servicesCount ?? 0),
       icon: List,
-      sub: statsLoading ? "" : "خدمة نشطة",
-    },
-    {
-      name: "طلبات معلقة",
-      value: statsLoading ? "—" : String(stats?.pendingOrders ?? 0),
-      icon: Clock,
-      sub: statsLoading ? "" : "تنتظر ردك",
+      sub: statsLoading ? "" : "إعلان نشط",
     },
   ];
 
@@ -352,64 +324,6 @@ export default function ProviderDashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Orders */}
-          <Card className="lg:col-span-2 border-border/50 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">أحدث الطلبات</CardTitle>
-              <Link href="/dashboard/orders">
-                <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">عرض الكل</Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              {ordersLoading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-10 bg-secondary/40 rounded animate-pulse" />
-                  ))}
-                </div>
-              ) : recentOrders.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
-                  <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-base">لا توجد طلبات بعد</p>
-                  <p className="text-sm mt-1">ستظهر طلبات العملاء هنا</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-right">
-                    <thead className="text-xs text-muted-foreground bg-secondary/50 border-b border-border">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">رقم الطلب</th>
-                        <th className="px-4 py-3 font-medium">العميل</th>
-                        <th className="px-4 py-3 font-medium">الخدمة</th>
-                        <th className="px-4 py-3 font-medium">التاريخ</th>
-                        <th className="px-4 py-3 font-medium">الحالة</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentOrders.map((order: any) => {
-                        const statusInfo = STATUS_LABELS[order.status] ?? { label: order.status, color: "bg-gray-100 text-gray-600" };
-                        return (
-                          <tr key={order.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
-                            <td className="px-4 py-3 font-medium">#{order.id}</td>
-                            <td className="px-4 py-3">{order.userName ?? "—"}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{order.serviceTitle ?? "—"}</td>
-                            <td className="px-4 py-3 text-muted-foreground">
-                              {new Date(order.createdAt).toLocaleDateString("ar-SA")}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                                {statusInfo.label}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </ProviderLayout>

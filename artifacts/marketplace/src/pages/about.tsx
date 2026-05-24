@@ -43,7 +43,7 @@ export default function AboutPage() {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
               {[
-                { label: "مقدم خدمة", value: "500+", icon: Users },
+                { label: "شركة عقارية", value: "500+", icon: Users },
                 { label: "تصنيف متاح", value: "50+", icon: Star },
                 { label: "عملية ناجحة", value: "10K+", icon: CheckCircle2 },
                 { label: "مدينة مغطاة", value: "20+", icon: Shield },

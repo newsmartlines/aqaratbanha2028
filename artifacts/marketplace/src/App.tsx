@@ -33,7 +33,6 @@ import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminSettings from "@/pages/admin/settings";
 import AdminUsers from "@/pages/admin/users";
 import AdminRealEstateCategories from "@/pages/admin/real-estate-categories";
-import AdminOrders from "@/pages/admin/orders";
 import AdminLocations from "@/pages/admin/locations";
 import ProviderDashboard from "@/pages/dashboard/index";
 import ProviderSubscription from "@/pages/dashboard/subscription";
@@ -41,14 +40,12 @@ import SubscriptionPayPage from "@/pages/pay/subscription";
 import ListingPayPage from "@/pages/pay/listing";
 import ProviderCheckout from "@/pages/dashboard/checkout";
 import CheckoutResult from "@/pages/dashboard/checkout-result";
-import ProviderOrders from "@/pages/dashboard/orders";
 import ProviderReviews from "@/pages/dashboard/reviews";
 import ProviderPayments from "@/pages/dashboard/payments";
 import ProviderSettings from "@/pages/dashboard/settings";
 import ProviderNotifications from "@/pages/dashboard/notifications";
 import UserDashboard from "@/pages/user/index";
 import UserFavorites from "@/pages/user/favorites";
-import UserRequests from "@/pages/user/requests";
 import UserPayments from "@/pages/user/payments";
 import UserReviews from "@/pages/user/reviews";
 import UserSettings from "@/pages/user/settings";
@@ -231,9 +228,6 @@ function Router() {
       <Route path="/dashboard/my-properties">
         {() => <RoleProtectedRoute component={MyPropertiesPage} roles={["provider"]} />}
       </Route>
-      <Route path="/dashboard/orders">
-        {() => <RoleProtectedRoute component={ProviderOrders} roles={["provider"]} />}
-      </Route>
       <Route path="/dashboard/reviews">
         {() => <RoleProtectedRoute component={ProviderReviews} roles={["provider"]} />}
       </Route>
@@ -262,9 +256,6 @@ function Router() {
       </Route>
       <Route path="/user/favorites">
         {() => <RoleProtectedRoute component={UserFavorites} roles={["user"]} />}
-      </Route>
-      <Route path="/user/requests">
-        {() => <RoleProtectedRoute component={UserRequests} roles={["user"]} />}
       </Route>
       <Route path="/user/reviews">
         {() => <RoleProtectedRoute component={UserReviews} roles={["user"]} />}
@@ -348,9 +339,6 @@ function Router() {
       </Route>
       <Route path="/admin/real-estate-categories">
         {() => <AdminProtectedRoute component={AdminRealEstateCategories} />}
-      </Route>
-      <Route path="/admin/orders">
-        {() => <AdminProtectedRoute component={AdminOrders} />}
       </Route>
       <Route path="/admin/locations">
         {() => <AdminProtectedRoute component={AdminLocations} />}

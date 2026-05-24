@@ -92,7 +92,7 @@ const dict = {
   inactive: { ar: "غير نشطة", en: "inactive" },
   loadFailedProvider: { ar: "فشل تحميل مقدم الخدمة", en: "Failed to load provider" },
   // Add modal
-  addNewTitle: { ar: "إضافة مقدم خدمة جديد", en: "Add New Provider" },
+  addNewTitle: { ar: "إضافة شركة عقارية جديدة", en: "Add New Provider" },
   editTitle: { ar: "تعديل مقدم الخدمة", en: "Edit Provider" },
   fullName: { ar: "الاسم الكامل", en: "Full Name" },
   fullNamePh: { ar: "اسم مقدم الخدمة", en: "Provider name" },

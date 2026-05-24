@@ -112,8 +112,7 @@ function InvoiceModal({ row, open, onClose }: { row: InvoiceRow | null; open: bo
                 <tbody>
                   <tr className="border-t">
                     <td className="px-4 py-3">
-                      {row.kind === "subscription" ? "اشتراك في المنصة" : "طلب خدمة"}
-                      {row.serviceTitle && <span className="text-muted-foreground text-xs block">{row.serviceTitle}</span>}
+                      {row.kind === "subscription" ? "اشتراك في المنصة" : "معاملة"}
                     </td>
                     <td className="px-4 py-3 text-left font-bold">{fmtMoney(row.amount)} ج.م</td>
                   </tr>
@@ -307,8 +306,7 @@ export default function ProviderPayments() {
                             <tr key={row.id} className="border-b border-border/50 hover:bg-secondary/20">
                               <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{row.refId}</td>
                               <td className="px-4 py-3">
-                                {row.kind === "subscription" ? "اشتراك في المنصة" : "طلب خدمة"}
-                                {row.serviceTitle && <span className="text-xs text-muted-foreground block">{row.serviceTitle}</span>}
+                                {row.kind === "subscription" ? "اشتراك في المنصة" : "معاملة"}
                               </td>
                               <td className="px-4 py-3"><GatewayBadge gateway={row.gateway} /></td>
                               <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(row.paidAt ?? row.createdAt)}</td>

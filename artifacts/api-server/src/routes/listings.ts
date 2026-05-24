@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { servicesTable, providersTable, usersTable, categoriesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { propertiesTable, providersTable, usersTable, categoriesTable } from "@workspace/db";
+import { eq, desc } from "drizzle-orm";
 
 const router = Router();
 
@@ -9,26 +9,26 @@ router.get("/listings", async (_req, res) => {
   try {
     const rows = await db
       .select({
-        id: servicesTable.id,
-        title: servicesTable.title,
-        description: servicesTable.description,
-        price: servicesTable.price,
-        status: servicesTable.status,
-        subcategory: servicesTable.subcategory,
-        img: servicesTable.img,
-        createdAt: servicesTable.createdAt,
-        providerId: servicesTable.providerId,
-        categoryId: servicesTable.categoryId,
+        id: propertiesTable.id,
+        title: propertiesTable.title,
+        description: propertiesTable.description,
+        price: propertiesTable.price,
+        status: propertiesTable.status,
+        listingType: propertiesTable.listingType,
+        img: propertiesTable.mainImage,
+        createdAt: propertiesTable.createdAt,
+        providerId: propertiesTable.providerId,
+        categoryId: propertiesTable.categoryId,
         providerName: usersTable.name,
         categoryNameAr: categoriesTable.nameAr,
       })
-      .from(servicesTable)
-      .innerJoin(providersTable, eq(servicesTable.providerId, providersTable.id))
-      .innerJoin(usersTable, eq(providersTable.userId, usersTable.id))
-      .leftJoin(categoriesTable, eq(servicesTable.categoryId, categoriesTable.id))
-      .orderBy(servicesTable.createdAt);
+      .from(propertiesTable)
+      .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
+      .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
+      .leftJoin(categoriesTable, eq(propertiesTable.categoryId, categoriesTable.id))
+      .orderBy(desc(propertiesTable.createdAt));
     res.json({ success: true, data: rows });
-  } catch (err) {
+  } catch {
     res.status(500).json({ success: false, error: "Failed to fetch listings" });
   }
 });
@@ -41,37 +41,16 @@ router.patch("/listings/:id", async (req, res) => {
     if (status !== undefined) updates.status = status;
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
-    if (price !== undefined) updates.price = price;
+    if (price !== undefined) updates.price = String(price);
 
     const [updated] = await db
-      .update(servicesTable)
+      .update(propertiesTable)
       .set(updates)
-      .where(eq(servicesTable.id, id))
+      .where(eq(propertiesTable.id, id))
       .returning();
 
-    const [withProvider] = await db
-      .select({
-        id: servicesTable.id,
-        title: servicesTable.title,
-        description: servicesTable.description,
-        price: servicesTable.price,
-        status: servicesTable.status,
-        subcategory: servicesTable.subcategory,
-        img: servicesTable.img,
-        createdAt: servicesTable.createdAt,
-        providerId: servicesTable.providerId,
-        categoryId: servicesTable.categoryId,
-        providerName: usersTable.name,
-        categoryNameAr: categoriesTable.nameAr,
-      })
-      .from(servicesTable)
-      .innerJoin(providersTable, eq(servicesTable.providerId, providersTable.id))
-      .innerJoin(usersTable, eq(providersTable.userId, usersTable.id))
-      .leftJoin(categoriesTable, eq(servicesTable.categoryId, categoriesTable.id))
-      .where(eq(servicesTable.id, updated.id));
-
-    res.json({ success: true, data: withProvider });
-  } catch (err) {
+    res.json({ success: true, data: updated });
+  } catch {
     res.status(500).json({ success: false, error: "Failed to update listing" });
   }
 });
@@ -79,9 +58,9 @@ router.patch("/listings/:id", async (req, res) => {
 router.delete("/listings/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    await db.delete(servicesTable).where(eq(servicesTable.id, id));
+    await db.delete(propertiesTable).where(eq(propertiesTable.id, id));
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ success: false, error: "Failed to delete listing" });
   }
 });

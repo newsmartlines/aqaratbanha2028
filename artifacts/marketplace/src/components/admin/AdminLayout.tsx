@@ -6,7 +6,6 @@ import {
   Users,
   List,
   Tags,
-  ShoppingCart,
   CreditCard,
   Percent,
   Package,
@@ -49,7 +48,6 @@ import { useLanguage, useT, commonDict } from "@/lib/i18n";
 type SidebarCounts = {
   pendingProviders: number;
   suspendedUsers: number;
-  pendingOrders: number;
   openTickets: number;
   pendingProperties: number;
 };
@@ -58,7 +56,6 @@ function pendingForHref(href: string, c: SidebarCounts | undefined): number {
   if (!c) return 0;
   if (href === "/admin/providers") return c.pendingProviders;
   if (href === "/admin/users") return c.suspendedUsers;
-  if (href === "/admin/orders") return c.pendingOrders;
   if (href === "/admin/support-tickets") return c.openTickets;
   if (href === "/admin/properties") return c.pendingProperties;
   return 0;
@@ -73,10 +70,9 @@ const layoutDict = {
   providers: { ar: "شركات عقارية", en: "Real Estate Companies" },
   users: { ar: "المستخدمون", en: "Users" },
   staff: { ar: "الموظفون والصلاحيات", en: "Staff & Roles" },
-  listings: { ar: "الخدمات", en: "Listings" },
+  listings: { ar: "الإعلانات العقارية", en: "Property Listings" },
   categories: { ar: "التصنيفات", en: "Categories" },
   locations: { ar: "المحافظات والمدن والمناطق", en: "Locations" },
-  orders: { ar: "الطلبات", en: "Orders" },
   supportTickets: { ar: "تذاكر الدعم", en: "Support Tickets" },
   payments: { ar: "المدفوعات", en: "Payments" },
   commission: { ar: "العمولات", en: "Commission" },
@@ -196,7 +192,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Building2,       label: "مميزات وخدمات العقار", href: "/admin/property-features", perm: null },
     { icon: Layers3,         label: "حقول أنواع العقار",    href: "/admin/property-type-configs", perm: null },
     { icon: Star,            label: "عقار مميز",           href: "/admin/settings?tab=spotlight", perm: "settings" },
-    { icon: ShoppingCart,    label: t("orders"),          href: "/admin/orders",           perm: "orders" },
     { icon: Ticket,          label: t("supportTickets"),  href: "/admin/support-tickets",  perm: "support" },
     { icon: CreditCard,      label: t("payments"),        href: "/admin/payments",         perm: "payments" },
     { icon: Package,         label: t("subscriptions"),   href: "/admin/subscriptions",    perm: "subscriptions" },

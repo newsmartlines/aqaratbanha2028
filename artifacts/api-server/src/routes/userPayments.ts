@@ -4,7 +4,6 @@ import {
   paymentTransactionsTable,
   providersTable,
   usersTable,
-  servicesTable,
   packagesTable,
   subscriptionsTable,
 } from "@workspace/db";
@@ -67,20 +66,14 @@ router.get("/users/me/payments", async (req, res) => {
       .orderBy(desc(paymentTransactionsTable.createdAt));
 
     const providerIds = [...new Set(txRows.map((r) => r.providerUserId).filter(Boolean))] as number[];
-    const serviceIds = [...new Set(txRows.map((r) => r.serviceId).filter(Boolean))] as number[];
-
-    const [providerUsers, serviceRows] = await Promise.all([
+    const [providerUsers] = await Promise.all([
       providerIds.length
         ? db.select({ id: usersTable.id, name: usersTable.name }).from(usersTable)
             .where(eq(usersTable.id, providerIds[0]))
         : Promise.resolve([]),
-      serviceIds.length
-        ? db.select({ id: servicesTable.id, title: servicesTable.title }).from(servicesTable)
-        : Promise.resolve([]),
     ]);
 
     const provUserMap = new Map(providerUsers.map((u) => [u.id, u.name]));
-    const svcMap = new Map(serviceRows.map((s) => [s.id, s.title]));
 
     const rows = txRows.map((r) => ({
       id: r.id,
@@ -88,8 +81,8 @@ router.get("/users/me/payments", async (req, res) => {
       kind: r.kind,
       providerId: r.providerId,
       providerName: r.providerUserId ? (provUserMap.get(r.providerUserId) ?? null) : null,
-      serviceId: r.serviceId,
-      serviceTitle: r.serviceId ? (svcMap.get(r.serviceId) ?? null) : null,
+      serviceId: null,
+      serviceTitle: null,
       amount: r.amount,
       commissionAmount: r.commissionAmount,
       currency: r.currency,
@@ -186,20 +179,14 @@ router.get("/providers/me/payments", async (req, res) => {
       .orderBy(desc(paymentTransactionsTable.createdAt));
 
     const userIds = [...new Set(txRows.map((r) => r.userId).filter(Boolean))] as number[];
-    const serviceIds = [...new Set(txRows.map((r) => r.serviceId).filter(Boolean))] as number[];
-
-    const [customerRows, serviceRows] = await Promise.all([
+    const [customerRows] = await Promise.all([
       userIds.length
         ? db.select({ id: usersTable.id, name: usersTable.name, phone: usersTable.phone })
             .from(usersTable)
         : Promise.resolve([]),
-      serviceIds.length
-        ? db.select({ id: servicesTable.id, title: servicesTable.title }).from(servicesTable)
-        : Promise.resolve([]),
     ]);
 
     const custMap = new Map(customerRows.map((c) => [c.id, c]));
-    const svcMap = new Map(serviceRows.map((s) => [s.id, s.title]));
 
     const rows = txRows.map((r) => {
       const cust = r.userId ? custMap.get(r.userId) : null;
@@ -210,8 +197,8 @@ router.get("/providers/me/payments", async (req, res) => {
         userId: r.userId,
         customerName: cust?.name ?? null,
         customerPhone: cust?.phone ?? null,
-        serviceId: r.serviceId,
-        serviceTitle: r.serviceId ? (svcMap.get(r.serviceId) ?? null) : null,
+        serviceId: null,
+        serviceTitle: null,
         amount: r.amount,
         commissionAmount: r.commissionAmount,
         currency: r.currency,

@@ -67,7 +67,7 @@ const dict = {
   durationLbl: { ar: "المدة (يوم)", en: "Duration (days)" },
   priorityLbl: { ar: "ترتيب الأولوية", en: "Priority Rank" },
   unlimited: { ar: "غير محدود", en: "Unlimited" },
-  topBadgeLbl: { ar: "إظهار شارة 'مقدم خدمة مميز'", en: "Show 'Top Provider' badge" },
+  topBadgeLbl: { ar: "إظهار شارة 'شركة عقارية مميزة'", en: "Show 'Top Provider' badge" },
 };
 
 export default function AdminCommission() {

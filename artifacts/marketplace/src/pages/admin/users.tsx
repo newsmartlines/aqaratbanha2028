@@ -57,7 +57,7 @@ const dict = {
   statusUpdated: { ar: "تم تحديث الحالة", en: "Status updated" },
   userDeleted: { ar: "تم حذف المستخدم", en: "User deleted" },
   roleAdmin: { ar: "مسؤول", en: "Admin" },
-  roleProvider: { ar: "مقدم خدمة", en: "Provider" },
+  roleProvider: { ar: "شركة عقارية", en: "Provider" },
   roleUser: { ar: "مستخدم", en: "User" },
 };
 

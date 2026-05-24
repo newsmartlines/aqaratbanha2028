@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api, mediaUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import {
-  Menu, X, ChevronDown, User, Heart, ShoppingBag,
+  Menu, X, ChevronDown, User, Heart,
   LogOut, Settings, LayoutDashboard, Star, Building2,
   MessageCircle, PlusCircle,
 } from "lucide-react";
@@ -72,7 +72,6 @@ export function Header() {
   const providerMenuItems = [
     { icon: LayoutDashboard, label: "لوحة التحكم", href: "/provider/dashboard" },
     { icon: MessageCircle, label: "الرسائل", href: "/dashboard/inbox", badge: msgUnread > 0 ? msgUnread : 0 },
-    { icon: ShoppingBag, label: "طلباتي", href: "/dashboard/orders" },
     { icon: Star, label: "التقييمات", href: "/dashboard/reviews" },
     { icon: Settings, label: "الإعدادات", href: "/dashboard/settings" },
   ];

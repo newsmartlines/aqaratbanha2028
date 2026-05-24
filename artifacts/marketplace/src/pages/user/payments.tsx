@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<StatusKey, {
 };
 
 const KIND_LABEL: Record<string, string> = {
-  service_request: "طلب خدمة",
+  service_request: "معاملة",
   subscription:    "اشتراك باقة",
 };
 
@@ -120,12 +120,6 @@ export default function UserPayments() {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">مدفوعاتي</h1>
             <p className="text-sm text-muted-foreground mt-1">سجل كامل لجميع عمليات الدفع التي قمت بها</p>
           </div>
-          <Button variant="outline" asChild>
-            <Link href="/user/requests">
-              <ShoppingBag className="ml-2 h-4 w-4" />
-              طلباتي
-            </Link>
-          </Button>
         </div>
 
         {/* Stats */}

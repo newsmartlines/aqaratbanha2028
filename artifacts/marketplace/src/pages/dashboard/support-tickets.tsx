@@ -127,7 +127,7 @@ export default function ProviderSupportTicketsPage() {
       <ProviderLayout>
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 p-6 text-center" dir="rtl">
           <AlertCircle className="h-10 w-10 text-amber-500" />
-          <p className="text-lg font-medium text-slate-700">يرجى تسجيل الدخول كمقدم خدمة لعرض تذاكر الدعم.</p>
+          <p className="text-lg font-medium text-slate-700">يرجى تسجيل الدخول كشركة عقارية لعرض تذاكر الدعم.</p>
         </div>
       </ProviderLayout>
     );

@@ -7,7 +7,6 @@ import {
   providersTable,
   usersTable,
   packagesTable,
-  servicesTable,
 } from "@workspace/db";
 import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
@@ -73,21 +72,14 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
 
   // Hydrate customer names + service titles in batch
   const customerIds = [...new Set(txRows.map((r) => r.customerId).filter((x): x is number => !!x))];
-  const serviceIds = [...new Set(txRows.map((r) => r.serviceId).filter((x): x is number => !!x))];
-  const [customerRows, serviceRows] = await Promise.all([
+  const [customerRows] = await Promise.all([
     customerIds.length
       ? db.select({ id: usersTable.id, name: usersTable.name, phone: usersTable.phone })
           .from(usersTable)
           .where(sql`${usersTable.id} = ANY(${customerIds})`)
       : Promise.resolve([] as { id: number; name: string | null; phone: string | null }[]),
-    serviceIds.length
-      ? db.select({ id: servicesTable.id, title: servicesTable.title })
-          .from(servicesTable)
-          .where(sql`${servicesTable.id} = ANY(${serviceIds})`)
-      : Promise.resolve([] as { id: number; title: string | null }[]),
   ]);
   const customerMap = new Map(customerRows.map((c) => [c.id, c]));
-  const serviceMap = new Map(serviceRows.map((s) => [s.id, s.title ?? null]));
 
   const unifiedTx = txRows.map((r) => ({
     id: `TX-${r.id}`,
@@ -100,8 +92,8 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
     customerId: r.customerId,
     customerName: r.customerId ? customerMap.get(r.customerId)?.name ?? null : null,
     customerPhone: r.customerId ? customerMap.get(r.customerId)?.phone ?? null : null,
-    serviceId: r.serviceId,
-    serviceTitle: r.serviceId ? serviceMap.get(r.serviceId) ?? null : null,
+    serviceId: null,
+    serviceTitle: null,
     amount: r.amount,
     commissionAmount: r.commissionAmount ?? "0",
     status: r.status,

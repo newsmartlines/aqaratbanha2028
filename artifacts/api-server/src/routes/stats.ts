@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { providersTable, usersTable, servicesTable, requestsTable, paymentTransactionsTable, propertiesTable } from "@workspace/db";
+import { providersTable, usersTable, paymentTransactionsTable, propertiesTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
 
@@ -8,7 +8,7 @@ const router = Router();
 
 router.get("/stats", async (_req, res) => {
   try {
-    const [[providers], [users], [services], [requests], [properties]] = await Promise.all([
+    const [[providers], [users], [properties]] = await Promise.all([
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(providersTable)
@@ -16,12 +16,6 @@ router.get("/stats", async (_req, res) => {
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(usersTable),
-      db
-        .select({ count: sql<number>`cast(count(*) as int)` })
-        .from(servicesTable),
-      db
-        .select({ count: sql<number>`cast(count(*) as int)` })
-        .from(requestsTable),
       db
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(propertiesTable)
@@ -33,8 +27,6 @@ router.get("/stats", async (_req, res) => {
       data: {
         providers: providers?.count ?? 0,
         users: users?.count ?? 0,
-        services: services?.count ?? 0,
-        requests: requests?.count ?? 0,
         properties: properties?.count ?? 0,
       },
     });
@@ -52,8 +44,7 @@ router.get("/admin/stats", adminOnly, async (_req, res) => {
       [activeProviders],
       [pendingProviders],
       [users],
-      [services],
-      [requests],
+      [activeProperties],
       [revenueRow],
     ] = await Promise.all([
       db.select({ count: sql<number>`cast(count(*) as int)` }).from(providersTable),
@@ -69,8 +60,10 @@ router.get("/admin/stats", adminOnly, async (_req, res) => {
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(usersTable)
         .where(eq(usersTable.role, "user")),
-      db.select({ count: sql<number>`cast(count(*) as int)` }).from(servicesTable),
-      db.select({ count: sql<number>`cast(count(*) as int)` }).from(requestsTable),
+      db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(propertiesTable)
+        .where(eq(propertiesTable.status, "active")),
       db
         .select({ total: sql<string>`COALESCE(SUM(CAST(amount AS NUMERIC)), 0)::text` })
         .from(paymentTransactionsTable)
@@ -84,8 +77,7 @@ router.get("/admin/stats", adminOnly, async (_req, res) => {
         activeProviders: activeProviders?.count ?? 0,
         pendingProviders: pendingProviders?.count ?? 0,
         totalUsers: users?.count ?? 0,
-        totalServices: services?.count ?? 0,
-        totalRequests: requests?.count ?? 0,
+        activeProperties: activeProperties?.count ?? 0,
         totalRevenue: parseFloat(revenueRow?.total ?? "0"),
       },
     });

@@ -417,7 +417,7 @@ export default function AdminDemoContent() {
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-lg">
                     <p className="text-2xl font-bold text-slate-800">{status.providers}</p>
-                    <p className="text-xs text-slate-500">مزود خدمة / سمسار</p>
+                    <p className="text-xs text-slate-500">شركة عقارية / سمسار</p>
                   </div>
                   <div className="text-center p-3 bg-teal-50 rounded-lg col-span-2 md:col-span-1">
                     <p className="text-sm font-medium text-teal-700 mb-1">بيانات الدخول</p>

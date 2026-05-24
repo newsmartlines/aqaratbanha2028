@@ -140,7 +140,7 @@ export default function UserReviews() {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <Link href={`/provider/${review.providerId}`} className="font-bold text-base text-primary hover:underline">
-                              {review.providerName ?? "مقدم خدمة"}
+                              {review.providerName ?? "شركة عقارية"}
                             </Link>
                           </div>
                           <div className="flex items-center gap-1 mb-3">

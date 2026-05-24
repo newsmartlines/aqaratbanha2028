@@ -39,7 +39,6 @@ const LINKS = [
       { label: "تسجيل الدخول", path: "/login" },
       { label: "إنشاء حساب", path: "/register" },
       { label: "لوحة تحكم المعلن", path: "/dashboard" },
-      { label: "طلباتي", path: "/user/requests" },
       { label: "المفضلة", path: "/user/favorites" },
     ],
   },

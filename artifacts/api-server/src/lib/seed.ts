@@ -1,7 +1,7 @@
 import { db } from "@workspace/db";
 import {
   categoriesTable, usersTable, packagesTable, providersTable,
-  servicesTable, subscriptionsTable, reviewsTable,
+  subscriptionsTable, reviewsTable,
   regionsTable, citiesTable, areasTable, billingPlansTable, commissionRulesTable,
   propertiesTable, featuredAreasTable, emailTemplatesTable, siteSettingsTable,
   subcategoriesTable,
@@ -224,11 +224,6 @@ export async function seed() {
         reviewsCount: Math.floor(Math.random() * 80) + 10,
         verified: p.verified, featured: p.featured, approved: true
       }).returning();
-
-      await db.insert(servicesTable).values([
-        { providerId: provider.id, categoryId: cat?.id, title: `خدمة ${p.name} الأساسية`, description: p.bio, price: String(Math.floor(Math.random() * 200) + 50), status: "active" },
-        { providerId: provider.id, categoryId: cat?.id, title: `خدمة ${p.name} المتميزة`, description: `خدمة متميزة من ${p.name}`, price: String(Math.floor(Math.random() * 400) + 150), status: "active" },
-      ]);
 
       const now = new Date();
       const end = new Date(now); end.setDate(end.getDate() + 18);

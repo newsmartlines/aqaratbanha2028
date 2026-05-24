@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { providersTable, usersTable, servicesTable, reviewsTable, categoriesTable, packagesTable, subscriptionsTable, requestsTable, interactionsTable, paymentsTable, notificationsTable, billingPlansTable } from "@workspace/db";
+import { providersTable, usersTable, reviewsTable, categoriesTable, packagesTable, subscriptionsTable, interactionsTable, paymentsTable, notificationsTable, billingPlansTable } from "@workspace/db";
 import { citiesTable, regionsTable } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
@@ -259,7 +259,6 @@ router.get("/providers/:id", async (req, res) => {
 
     if (!provider) return res.status(404).json({ success: false, error: "Provider not found" });
 
-    const services = await db.select().from(servicesTable).where(eq(servicesTable.providerId, id));
     const reviews = await db
       .select({ id: reviewsTable.id, rating: reviewsTable.rating, text: reviewsTable.text, reply: reviewsTable.reply, createdAt: reviewsTable.createdAt, userName: usersTable.name })
       .from(reviewsTable)
@@ -276,7 +275,7 @@ router.get("/providers/:id", async (req, res) => {
       .orderBy(desc(subscriptionsTable.startDate))
       .limit(1);
 
-    res.json({ success: true, data: { ...provider, services, reviews, subscription: subscription ?? null } });
+    res.json({ success: true, data: { ...provider, reviews, subscription: subscription ?? null } });
   } catch {
     res.status(500).json({ success: false, error: "Failed to fetch provider" });
   }
@@ -351,13 +350,11 @@ router.post("/admin/providers", async (req, res) => {
   }
 });
 
-// Provider stats — orders, services, reviews, subscription (provider-scoped)
+// Provider stats — reviews, subscription (provider-scoped)
 router.get("/providers/:id/stats", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const [requestsResult, servicesResult, reviewsResult, subscriptionResult] = await Promise.all([
-      db.select().from(requestsTable).where(eq(requestsTable.providerId, id)),
-      db.select().from(servicesTable).where(eq(servicesTable.providerId, id)),
+    const [reviewsResult, subscriptionResult] = await Promise.all([
       db.select().from(reviewsTable).where(eq(reviewsTable.providerId, id)),
       db
         .select({
@@ -385,10 +382,6 @@ router.get("/providers/:id/stats", async (req, res) => {
         .limit(1),
     ]);
 
-    const totalOrders = requestsResult.length;
-    const pendingOrders = requestsResult.filter(r => r.status === "new" || r.status === "pending").length;
-    const completedOrders = requestsResult.filter(r => r.status === "completed").length;
-    const cancelledOrders = requestsResult.filter(r => r.status === "cancelled").length;
     const avgRating = reviewsResult.length
       ? (reviewsResult.reduce((sum, r) => sum + r.rating, 0) / reviewsResult.length).toFixed(1)
       : "0.0";
@@ -416,11 +409,6 @@ router.get("/providers/:id/stats", async (req, res) => {
     res.json({
       success: true,
       data: {
-        totalOrders,
-        pendingOrders,
-        completedOrders,
-        cancelledOrders,
-        servicesCount: servicesResult.length,
         reviewsCount: reviewsResult.length,
         avgRating,
         subscription: subscription
@@ -533,7 +521,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
         .from(providersTable).leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
         .where(eq(providersTable.id, id));
       const ownerUserId = providerRow?.userId ?? null;
-      const providerName = providerRow?.name ?? "مزود خدمة";
+      const providerName = providerRow?.name ?? "شركة عقارية";
 
       if (requestedPrice > 0 && ownerUserId) {
         await db.insert(notificationsTable).values({
@@ -594,7 +582,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
       .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
       .where(eq(providersTable.id, id));
     const ownerUserId = providerRow?.userId ?? null;
-    const providerName = providerRow?.name ?? "مزود خدمة";
+    const providerName = providerRow?.name ?? "شركة عقارية";
 
     // Record a payment row for every paid subscription so it appears instantly
     // in the admin Payments and Subscriptions pages.
@@ -674,20 +662,13 @@ router.patch("/providers/:id/approve", async (req, res) => {
       .returning();
 
     if (updated) {
-      // Auto-activate every service belonging to this provider so they show
-      // up on the public profile/search immediately after approval.
-      await db
-        .update(servicesTable)
-        .set({ status: "active" })
-        .where(eq(servicesTable.providerId, id));
-
       // Notify the provider that their account is now approved/visible.
       try {
         await db.insert(notificationsTable).values({
           userId: updated.userId,
           type: "success",
           title: "تم اعتماد حسابك",
-          message: "تم اعتماد ملفك وأصبحت خدماتك ظاهرة للعملاء الآن",
+          message: "تم اعتماد ملفك وأصبحت إعلاناتك العقارية ظاهرة للعملاء الآن",
           link: "/dashboard",
         });
       } catch (notifyErr) {
