@@ -22,7 +22,6 @@ import SearchPage from "@/pages/search";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
-import RealEstateOnboardingPage from "@/pages/real-estate-onboarding";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProviders from "@/pages/admin/providers";
@@ -98,7 +97,6 @@ import UserEditProperty from "@/pages/user/edit-property";
 import AddPropertyPage from "@/pages/add-property";
 import MyPropertiesPage from "@/pages/dashboard/my-properties";
 import MyPlanPage from "@/pages/dashboard/my-plan";
-import CompanyRegisterPage from "@/pages/company-register";
 import MapSearchPage from "@/pages/map-search";
 import MarketInsightsPage from "@/pages/market-insights";
 
@@ -199,11 +197,11 @@ function Router() {
       {/* Auth routes */}
       <Route path="/login">{() => <AuthPage />}</Route>
       <Route path="/register" component={RegisterPage} />
-      <Route path="/company-register" component={CompanyRegisterPage} />
+      <Route path="/company-register">{() => <Redirect to="/register" />}</Route>
       <Route path="/admin/login" component={AdminLogin} />
 
-      {/* Real-estate onboarding */}
-      <Route path="/real-estate-onboarding" component={RealEstateOnboardingPage} />
+      {/* Real-estate onboarding — redirected to unified add-property form */}
+      <Route path="/real-estate-onboarding">{() => <Redirect to="/add-property" />}</Route>
 
       {/* Provider dashboard */}
       <Route path="/provider/dashboard">

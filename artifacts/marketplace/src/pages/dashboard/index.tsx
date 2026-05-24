@@ -172,7 +172,7 @@ export default function ProviderDashboard() {
                 <p className="text-white/60 text-xs mt-0.5">لوحة تحكم المعلن العقاري</p>
               </div>
             </div>
-            <Link href="/real-estate-onboarding">
+            <Link href="/add-property">
               <Button
                 size="lg"
                 className="shrink-0 bg-white hover:bg-white/95 text-primary font-extrabold text-base rounded-2xl px-8 h-13 shadow-2xl shadow-black/20 transition-all hover:scale-105 active:scale-100 group"

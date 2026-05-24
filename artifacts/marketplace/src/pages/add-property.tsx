@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
-import { PropertyFormFull, type FormMode } from "@/components/property-form";
+import { PropertyFormFull } from "@/components/property-form";
 
 function GuestScreen() {
   return (
@@ -90,14 +90,12 @@ export default function AddPropertyPage() {
 
   if (!user) return <GuestScreen />;
 
-  const mode: FormMode = user.role === "provider" ? "company" : "user";
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       <Header />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <PropertyFormFull
-          mode={mode}
+          mode="user"
           backPath="/"
           showPlans={true}
         />

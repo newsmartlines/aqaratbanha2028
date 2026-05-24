@@ -39,7 +39,6 @@ function safeReturnTo(path: string | null, role: string): string | null {
   if (role === "user" && (path.startsWith("/admin") || path.startsWith("/dashboard") || path.startsWith("/provider/dashboard"))) return null;
   if (role === "provider" && (path.startsWith("/admin") || path.startsWith("/user/") || path.startsWith("/provider/register"))) return null;
   if (role === "admin" && !path.startsWith("/admin")) return null;
-  if (role === "provider" && path.startsWith("/real-estate-onboarding")) return path;
   return path;
 }
 
@@ -227,7 +226,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
       await new Promise((r) => setTimeout(r, 1200));
 
       if (role === "provider") {
-        const dest = safeReturnTo(returnTo, "provider") ?? "/real-estate-onboarding";
+        const dest = safeReturnTo(returnTo, "provider") ?? "/add-property";
         setLocation(dest);
       } else {
         const dest = safeReturnTo(returnTo, "user") ?? getRedirectPath("user");

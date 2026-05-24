@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
-import { PropertyFormFull, type FormMode } from "@/components/property-form";
+import { PropertyFormFull } from "@/components/property-form";
 
 export default function UserAddPropertyPage() {
   const [, setLocation] = useLocation();
@@ -22,14 +22,12 @@ export default function UserAddPropertyPage() {
     return null;
   }
 
-  const mode: FormMode = user.role === "provider" ? "company" : "user";
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       <Header />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <PropertyFormFull
-          mode={mode}
+          mode="user"
           backPath="/user/dashboard"
           showPlans={true}
         />
