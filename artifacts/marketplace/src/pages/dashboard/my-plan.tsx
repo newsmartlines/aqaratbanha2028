@@ -10,34 +10,10 @@ import {
 import { api, type ProviderStats, type BillingPlan } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import ProviderLayout from "@/components/ProviderLayout";
-
-/* ── helpers ───────────────────────────────────────────────────── */
-function parseLimits(raw?: string | null): Record<string, number> {
-  try { return JSON.parse(raw ?? "{}"); } catch { return {}; }
-}
-function parseFeatures(raw?: string | null): Record<string, boolean> {
-  try { return JSON.parse(raw ?? "{}"); } catch { return {}; }
-}
-function fmt(n: number) { return n < 0 ? "غير محدود" : n.toLocaleString("ar-EG"); }
-function fmtMoney(v: string | number | null | undefined) {
-  const n = parseFloat(String(v ?? "0"));
-  return isFinite(n) ? n.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00";
-}
-function fmtDate(iso: string | null | undefined) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
-}
-
-const FEATURE_LABELS: Record<string, string> = {
-  homepageDisplay: "ظهور في الصفحة الرئيسية",
-  topSearch:       "أعلى نتائج البحث",
-  verifiedBadge:   "شارة موثّق",
-  premiumBadge:    "شارة مميز",
-  prioritySupport: "دعم الأولوية",
-  analytics:       "إحصائيات متقدمة",
-  autoBoost:       "رفع تلقائي للإعلانات",
-  aiTools:         "أدوات الذكاء الاصطناعي",
-};
+import {
+  parseLimits, parseFeatures, fmtLimit as fmt,
+  fmtMoney, fmtDate, FEATURE_LABELS,
+} from "@/lib/plan-helpers";
 
 const STATUS_STYLE: Record<string, string> = {
   paid:      "bg-emerald-50 text-emerald-700 border-emerald-200",

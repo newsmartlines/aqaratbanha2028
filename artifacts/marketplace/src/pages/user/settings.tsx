@@ -182,7 +182,7 @@ export default function UserSettings() {
                   </div>
 
                   <div className="pt-4 flex justify-end">
-                    <Button type="submit" className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white" disabled={updateProfile.isPending}>
+                    <Button type="submit" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" disabled={updateProfile.isPending}>
                       {updateProfile.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       حفظ التغييرات
                     </Button>
@@ -266,7 +266,7 @@ export default function UserSettings() {
                   </div>
 
                   <div className="pt-4 flex justify-start">
-                    <Button type="submit" className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white" disabled={changePassword.isPending}>
+                    <Button type="submit" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" disabled={changePassword.isPending}>
                       {changePassword.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       تحديث كلمة المرور
                     </Button>

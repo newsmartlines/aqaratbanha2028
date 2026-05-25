@@ -9,7 +9,6 @@ import {
   Eye,
   Clock,
   Phone,
-  CheckCircle2,
   BellRing,
   Home,
 } from "lucide-react";
@@ -18,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, type Notification } from "@/lib/api";
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -27,25 +26,32 @@ export default function UserDashboard() {
     queryKey: ["user-properties"],
     queryFn: () => api.userProperties.list(),
     enabled: !!user,
-    refetchInterval: 3000,
-    staleTime: 0,
+    staleTime: 30_000,
   });
 
   const { data: favorites = [] } = useQuery({
     queryKey: ["property-favorites"],
     queryFn: () => api.propertyFavorites.list(),
     enabled: !!user,
-    refetchInterval: 2000,
-    staleTime: 0,
+    staleTime: 30_000,
   });
 
   const { data: savedSearches = [] } = useQuery({
     queryKey: ["saved-searches"],
     queryFn: () => api.savedSearches.list(),
     enabled: !!user,
-    refetchInterval: 5000,
-    staleTime: 0,
+    staleTime: 60_000,
   });
+
+  const { data: notificationsRaw } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: api.notifications.list,
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  const recentNotifications: Notification[] = Array.isArray(notificationsRaw)
+    ? (notificationsRaw as Notification[]).slice(0, 5)
+    : ((notificationsRaw as any)?.rows ?? []).slice(0, 5);
 
   const stats = [
     {
@@ -90,44 +96,6 @@ export default function UserDashboard() {
     },
   ];
 
-  const recentActivity = [
-    {
-      id: 1,
-      title: "بحث محفوظ جديد",
-      desc: 'تم حفظ بحثك "شقق للإيجار في بنها" مع تنبيه بريدي',
-      date: "منذ ساعتين",
-      icon: BellRing,
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
-    },
-    {
-      id: 2,
-      title: "إضافة إلى المفضلة",
-      desc: "قمت بإضافة فيلا في حي الزيتون إلى المفضلة",
-      date: "منذ 5 ساعات",
-      icon: Heart,
-      color: "text-rose-500",
-      bg: "bg-rose-500/10",
-    },
-    {
-      id: 3,
-      title: "تطابق مع بحث محفوظ",
-      desc: 'تم العثور على 3 عقارات جديدة تطابق بحثك "شقق للبيع"',
-      date: "أمس",
-      icon: Bell,
-      color: "text-amber-500",
-      bg: "bg-amber-500/10",
-    },
-    {
-      id: 4,
-      title: "تصفح عقارات",
-      desc: "زرت صفحة شقة 3 غرف بحي النزهة",
-      date: "منذ 3 أيام",
-      icon: Eye,
-      color: "text-slate-500",
-      bg: "bg-slate-500/10",
-    },
-  ];
 
   const avatarSrc = user?.avatar
     ? user.avatar
@@ -264,35 +232,50 @@ export default function UserDashboard() {
             </Card>
           </div>
 
-          {/* Recent activity */}
+          {/* Recent activity — driven by real notifications */}
           <Card className="lg:col-span-2 border-border/50 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">النشاط الأخير</CardTitle>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base">الإشعارات الأخيرة</CardTitle>
+              <Link href="/dashboard/notifications">
+                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                  عرض الكل
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent className="pt-0">
-              {recentActivity.length === 0 ? (
+              {recentNotifications.length === 0 ? (
                 <div className="py-10 text-center text-muted-foreground">
-                  <Home className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">لا يوجد نشاط حتى الآن</p>
+                  <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">لا توجد إشعارات حتى الآن</p>
                 </div>
               ) : (
-                <div className="space-y-5">
-                  {recentActivity.map((activity, index) => (
-                    <div key={activity.id} className="relative flex gap-4">
-                      {index !== recentActivity.length - 1 && (
+                <div className="space-y-4">
+                  {recentNotifications.map((n, index) => (
+                    <div key={n.id} className="relative flex gap-4">
+                      {index !== recentNotifications.length - 1 && (
                         <div className="absolute top-10 right-5 w-[2px] h-full bg-border -z-10" />
                       )}
-                      <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center z-10 border-4 border-background ${activity.bg} ${activity.color}`}>
-                        <activity.icon className="w-4 h-4" />
+                      <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center z-10 border-4 border-background ${!n.read ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                        <Bell className="w-4 h-4" />
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full pb-2">
                         <div>
-                          <h4 className="font-medium text-sm">{activity.title}</h4>
-                          <p className="text-sm text-muted-foreground mt-0.5">{activity.desc}</p>
+                          <h4 className={`text-sm ${!n.read ? "font-bold" : "font-medium"}`}>{n.title}</h4>
+                          {n.message && (
+                            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{n.message}</p>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 sm:mt-0 shrink-0 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {activity.date}
+                          {(() => {
+                            const diff = Date.now() - new Date(n.createdAt).getTime();
+                            const m = Math.floor(diff / 60_000);
+                            if (m < 1) return "الآن";
+                            if (m < 60) return `${m} د`;
+                            const h = Math.floor(m / 60);
+                            if (h < 24) return `${h} س`;
+                            return `${Math.floor(h / 24)} ي`;
+                          })()}
                         </span>
                       </div>
                     </div>

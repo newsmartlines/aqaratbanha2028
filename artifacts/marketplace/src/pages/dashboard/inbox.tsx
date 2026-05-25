@@ -59,16 +59,16 @@ export default function ProviderInbox() {
   const { data: inbox = [], isLoading: inboxLoading } = useQuery({
     queryKey: ["inbox"],
     queryFn: api.messages.inbox,
-    refetchInterval: 2000,
-    staleTime: 0,
+    refetchInterval: 8_000,
+    staleTime: 5_000,
   });
 
   const { data: convData, isLoading: convLoading } = useQuery({
     queryKey: ["conversation", selectedOtherId, selectedPropertyId],
     queryFn: () => api.messages.conversation(selectedOtherId!, selectedPropertyId),
     enabled: !!selectedOtherId,
-    refetchInterval: 1500,
-    staleTime: 0,
+    refetchInterval: 5_000,
+    staleTime: 3_000,
   });
 
   const conversation: any[] = (convData as any)?.messages ?? [];

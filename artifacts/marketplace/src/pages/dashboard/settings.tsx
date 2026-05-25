@@ -443,7 +443,7 @@ export default function ProviderSettings() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="city">المدينة</Label>
+                        <Label htmlFor="region">المنطقة</Label>
                         <Select
                           value={regionId || "__none__"}
                           onValueChange={(v) => {
@@ -458,7 +458,7 @@ export default function ProviderSettings() {
                             setCity("");
                           }}
                         >
-                          <SelectTrigger id="city" className="rounded-xl">
+                          <SelectTrigger id="region" className="rounded-xl">
                             <SelectValue placeholder="اختر المنطقة" />
                           </SelectTrigger>
                           <SelectContent>

@@ -16,21 +16,12 @@ import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { api, type ProviderStats, type BillingPlan } from "@/lib/api";
+import {
+  parseLimits, parseFeatures, fmtLimit as formatLimit,
+  FEATURE_LABELS, LIMIT_LABELS,
+} from "@/lib/plan-helpers";
 
-type Limits = { properties: number; photos: number; videos: number; featuredAds: number; pinnedAds: number; messages: number; leads: number };
-type Features = { homepageDisplay: boolean; topSearch: boolean; verifiedBadge: boolean; premiumBadge: boolean; prioritySupport: boolean; analytics: boolean; seo: boolean; aiTools: boolean; autoBoost: boolean };
-
-const LIMIT_LABELS: Record<keyof Limits, string> = {
-  properties: "العقارات",
-  photos: "الصور",
-  videos: "الفيديوهات",
-  featuredAds: "إعلانات مميزة",
-  pinnedAds: "إعلانات مثبتة",
-  messages: "الرسائل",
-  leads: "الطلبات",
-};
-
-const FEATURE_ICONS: Record<keyof Features, any> = {
+const FEATURE_ICONS: Record<string, any> = {
   homepageDisplay: Home,
   topSearch: Search,
   verifiedBadge: ShieldCheck,
@@ -41,26 +32,6 @@ const FEATURE_ICONS: Record<keyof Features, any> = {
   aiTools: Sparkles,
   autoBoost: Repeat2,
 };
-
-const FEATURE_LABELS: Record<keyof Features, string> = {
-  homepageDisplay: "ظهور في الصفحة الرئيسية",
-  topSearch: "أعلى نتائج البحث",
-  verifiedBadge: "شارة موثّق ✓",
-  premiumBadge: "شارة Premium",
-  prioritySupport: "دعم الأولوية",
-  analytics: "إحصائيات متقدمة",
-  seo: "تحسين SEO",
-  aiTools: "أدوات الذكاء الاصطناعي",
-  autoBoost: "رفع تلقائي للإعلانات",
-};
-
-function parseLimits(raw: string): Limits {
-  try { return JSON.parse(raw); } catch { return { properties: 0, photos: 0, videos: 0, featuredAds: 0, pinnedAds: 0, messages: 0, leads: 0 }; }
-}
-function parseFeatures(raw: string): Features {
-  try { return JSON.parse(raw); } catch { return { homepageDisplay: false, topSearch: false, verifiedBadge: false, premiumBadge: false, prioritySupport: false, analytics: false, seo: false, aiTools: false, autoBoost: false }; }
-}
-function formatLimit(v: number) { return v < 0 ? "غير محدود" : v === 0 ? "—" : v.toLocaleString("ar"); }
 
 export default function ProviderSubscription() {
   const { user } = useAuth();
@@ -335,11 +306,11 @@ export default function ProviderSubscription() {
                           {/* Limits */}
                           <div className="space-y-2 mb-4">
                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">الحدود</p>
-                            {(Object.keys(LIMIT_LABELS) as Array<keyof Limits>).map(key => (
+                            {(Object.keys(LIMIT_LABELS) as string[]).map(key => (
                               <div key={key} className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground">{LIMIT_LABELS[key]}</span>
-                                <span className={`font-bold ${limits[key] < 0 ? "text-green-600" : limits[key] === 0 ? "text-muted-foreground" : "text-foreground"}`}>
-                                  {formatLimit(limits[key])}
+                                <span className={`font-bold ${(limits as any)[key] < 0 ? "text-green-600" : (limits as any)[key] === 0 ? "text-muted-foreground" : "text-foreground"}`}>
+                                  {formatLimit((limits as any)[key] ?? 0)}
                                 </span>
                               </div>
                             ))}
@@ -348,8 +319,8 @@ export default function ProviderSubscription() {
                           {/* Features */}
                           <div className="space-y-1.5 flex-1 mb-4">
                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">المزايا</p>
-                            {(Object.keys(FEATURE_LABELS) as Array<keyof Features>).map(key => {
-                              const enabled = features[key];
+                            {(Object.keys(FEATURE_LABELS) as string[]).map(key => {
+                              const enabled = (features as any)[key];
                               const Icon = FEATURE_ICONS[key];
                               return (
                                 <div key={key} className={`flex items-center gap-2 text-xs ${enabled ? "" : "opacity-40"}`}>

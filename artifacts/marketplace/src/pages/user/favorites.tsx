@@ -35,8 +35,7 @@ export default function UserFavorites() {
     queryKey: ["property-favorites"],
     queryFn: () => api.propertyFavorites.list(),
     enabled: !!user,
-    refetchInterval: 2000,
-    staleTime: 0,
+    staleTime: 30_000,
   });
 
   const removeMutation = useMutation({
