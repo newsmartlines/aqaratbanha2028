@@ -9,6 +9,7 @@ import {
 import { supportTicketsTable, regionsTable, citiesTable, propertiesTable } from "@workspace/db/schema";
 import { eq, desc, and, sql, gte } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
+import { autoExportGroup } from "../lib/auto-export";
 
 const router = Router();
 
@@ -251,6 +252,16 @@ router.patch("/admin/companies/:id/covered-areas", async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CATEGORIES
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// Write-through: auto-export after any admin category mutation
+router.use(["/admin/categories", "/admin/subcategories"], (req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    res.on("finish", () => {
+      if (res.statusCode < 400) autoExportGroup("categories");
+    });
+  }
+  next();
+});
 
 router.get("/admin/categories", async (_req, res) => {
   try {

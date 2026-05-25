@@ -3,10 +3,21 @@ import { db } from "@workspace/db";
 import { regionsTable, citiesTable, areasTable, providerServiceAreasTable } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
+import { autoExportGroup } from "../lib/auto-export";
 
 const router = Router();
 
 router.use("/admin", adminOnly);
+
+// ── Write-through: auto-export seed files after any successful location mutation
+router.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    res.on("finish", () => {
+      if (res.statusCode < 400) autoExportGroup("locations");
+    });
+  }
+  next();
+});
 
 // ── Public: full hierarchy (enabled only) ──────────────────────────────────
 router.get("/regions", async (_req, res) => {

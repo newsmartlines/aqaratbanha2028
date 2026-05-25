@@ -32,7 +32,8 @@ const DEFAULT_COMMISSION_RULES = [
 
 // ── Auto-seed from lib/db/seeds/ (for fresh deployments) ─────────────────────
 
-const SEEDS_DIR = path.resolve(process.cwd(), "lib/db/seeds");
+// process.cwd() == artifacts/api-server  →  go up two levels to workspace root
+const SEEDS_DIR = path.resolve(process.cwd(), "../../lib/db/seeds");
 
 function toSnakeKey(str: string): string {
   return str.replace(/([A-Z])/g, "_$1").toLowerCase();
@@ -246,6 +247,25 @@ export async function seed() {
   await seedSiteSettings();
 
   console.log("Database seeded successfully!");
+
+  // ── Initial write-through export ──────────────────────────────────────────
+  // On first run (no seed files yet), export the current DB state so that
+  // git-committed files survive any environment change / new Replit project.
+  try {
+    const { existsSync } = await import("fs");
+    const manifestPath = path.resolve(process.cwd(), "../../lib/db/seeds/manifest.json");
+    let needsExport = !existsSync(manifestPath);
+    if (!needsExport) {
+      const m = JSON.parse(await (await import("fs/promises")).readFile(manifestPath, "utf8"));
+      needsExport = !Array.isArray(m.files) || m.files.length === 0;
+    }
+    if (needsExport) {
+      const { autoExportAll } = await import("./auto-export");
+      await autoExportAll();
+    }
+  } catch (err: any) {
+    console.warn("[seed] Initial export skipped:", err?.message);
+  }
 }
 
 // ── Egypt / Banha Locations ───────────────────────────────────────────────────

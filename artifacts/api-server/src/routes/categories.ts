@@ -2,8 +2,19 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { categoriesTable, subcategoriesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { autoExportGroup } from "../lib/auto-export";
 
 const router = Router();
+
+// ── Write-through: auto-export seed files after any successful category mutation
+router.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    res.on("finish", () => {
+      if (res.statusCode < 400) autoExportGroup("categories");
+    });
+  }
+  next();
+});
 
 router.get("/categories", async (req, res) => {
   try {

@@ -5,8 +5,19 @@ import {
   subscriptionsTable, paymentTransactionsTable,
 } from "@workspace/db";
 import { eq, desc, sum, count, or, and } from "drizzle-orm";
+import { autoExportGroup } from "../lib/auto-export";
 
 const router = Router();
+
+// ── Write-through: auto-export seed files after any successful billing mutation
+router.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    res.on("finish", () => {
+      if (res.statusCode < 400) autoExportGroup("billing");
+    });
+  }
+  next();
+});
 
 // ── Public endpoint: active plans for providers ───────────────────────────────
 

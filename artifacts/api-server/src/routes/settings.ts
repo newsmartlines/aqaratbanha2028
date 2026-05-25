@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { siteSettingsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { autoExportGroup } from "../lib/auto-export";
 
 const router = Router();
 
@@ -91,6 +92,8 @@ router.post("/settings", async (req, res) => {
         await db.insert(siteSettingsTable).values({ key, value: String(value) });
       }
     }
+    // Write-through: persist settings changes to seed file immediately
+    autoExportGroup("settings");
     res.json({ success: true, data: {} });
   } catch (e) {
     res.status(500).json({ success: false, error: "Failed to save settings" });

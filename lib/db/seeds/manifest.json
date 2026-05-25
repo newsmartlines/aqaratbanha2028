@@ -1,7 +1,12 @@
 {
   "version": "1.0",
   "platform": "عقارات بنها",
-  "exportedAt": null,
-  "files": [],
-  "description": "Seed manifest — auto-updated on export. Do not edit manually."
+  "exportedAt": "2026-05-25T00:01:16.662Z",
+  "files": [
+    "locations.json",
+    "categories.json",
+    "billing.json",
+    "settings.json"
+  ],
+  "description": "Auto-updated by write-through export. Do not edit manually."
 }

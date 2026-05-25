@@ -390,7 +390,7 @@ export default function Home() {
         if (city.enabled !== false) addCity(city.nameAr);
       });
     });
-    return opts.length > 1 ? opts : [{ value: "__all__", label: "كل المناطق" }, ...CITIES.filter(c => c.value !== "all").map(c => ({ value: c.value, label: c.label }))];
+    return opts.length > 1 ? opts : [{ value: "__all__", label: "كل المناطق" }];
   }, [regions, heroRegionId]);
 
   useEffect(() => {
