@@ -1,0 +1,161 @@
+ما زلت أشعر أن الـ Dashboard ليست موحدة بالكامل 100% حتى بعد التعديلات الأخيرة.
+
+أريد منك الآن عمل:
+
+# Final Deep Unified Dashboard Refactor
+
+وليس مجرد إصلاحات سطحية داخل الصفحات.
+
+---
+
+# المطلوب:
+
+راجع الـ Dashboard بالكامل مرة أخيرة وكأنك تبني:
+
+# Single Source Dashboard Architecture
+
+---
+
+# أريد التأكد أن:
+
+* لا يوجد أي ProviderLayout منفصل
+* لا يوجد أي UserLayout منفصل
+* لا يوجد أي صفحات Dashboard مكررة
+* لا يوجد أي Render Trees منفصلة بالكامل
+* لا يوجد أي:
+
+  * if(user.role==="user") return (...)
+  * if(user.role==="provider") return (...)
+
+تعيد بناء الصفحة بالكامل بشكل منفصل.
+
+---
+
+# المطلوب الصحيح:
+
+استخدم:
+
+* Shared Layout
+* Shared Page
+* Shared Component Tree
+
+ثم داخل الصفحة نفسها:
+
+* اعرض Sections مختلفة حسب الصلاحيات فقط.
+
+---
+
+# مثال:
+
+لا أريد:
+
+```tsx
+if (user.role === "user") return <UserDashboard />
+if (user.role === "provider") return <ProviderDashboard />
+```
+
+---
+
+# أريد:
+
+```tsx
+return (
+  <DashboardLayout>
+    <SharedHeader />
+
+    {isProvider && <ProviderStats />}
+    {!isProvider && <UserStats />}
+
+    <SharedContent />
+  </DashboardLayout>
+)
+```
+
+---
+
+# مهم جدًا:
+
+راجع:
+
+* packages
+* dashboard index
+* reviews
+* settings
+* favorites
+* notifications
+* messages
+* payments
+* support tickets
+* properties
+
+وتأكد أنهم:
+
+# Shared Pages فعلًا
+
+وليس فقط:
+
+* Shared Routes
+
+---
+
+# المطلوب أيضًا:
+
+اعمل Audit على:
+
+* duplicate JSX
+* duplicate APIs
+* duplicate state
+* duplicate hooks
+* duplicate queries
+
+وقم بتوحيدهم.
+
+---
+
+# Architecture المطلوب:
+
+* Unified Dashboard Pages
+* Shared State Management
+* Shared APIs
+* Shared Hooks
+* Shared Components
+* Role-Based Sections Only
+
+---
+
+# أريد في النهاية:
+
+أي تعديل أعمله على:
+
+* UI
+* Component
+* Packages
+* Cards
+* Tables
+* Statistics
+* Layout
+
+ينعكس تلقائيًا على:
+
+* المستخدم العادي
+* الشركة العقارية
+
+بدون الحاجة لتعديل مكانين مختلفين.
+
+---
+
+# مهم:
+
+بعد الانتهاء:
+قم بعمل:
+
+* Full Project Scan
+* Search for duplicate dashboard logic
+* Search for provider-only pages
+* Search for user-only pages
+
+وتأكد أن الـ Dashboard أصبحت:
+
+# Unified فعلًا
+
+وليس مجرد Shared Layout.

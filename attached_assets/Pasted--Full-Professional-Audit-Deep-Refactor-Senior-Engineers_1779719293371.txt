@@ -1,0 +1,221 @@
+أريد عمل:
+
+# Full Professional Audit + Deep Refactor
+
+للموقع بالكامل وكأنك فريق Senior Engineers يقوم بمراجعة منصة Production عالمية.
+
+# المطلوب:
+
+راجع المشروع بالكامل بدقة شديدة جدًا:
+
+* Frontend
+* Backend
+* Database
+* APIs
+* Dashboard
+* Admin Panel
+* Authentication
+* Forms
+* Filters
+* Search
+* Packages
+* Messages
+* Notifications
+* Upload System
+* Routes
+* Performance
+* Security
+
+---
+
+# أريد اكتشاف:
+
+## أي:
+
+* Bugs
+* Runtime Errors
+* Console Errors
+* API Errors
+* Memory Leaks
+* Broken Components
+* Duplicate Code
+* Dead Code
+* Unused Components
+* Unused Imports
+* Unused APIs
+* Unused Hooks
+* Unused States
+* Unused Variables
+* Unused Files
+* Circular Dependencies
+* Slow Queries
+* N+1 Queries
+* Render Problems
+* Hydration Problems
+* Validation Problems
+* Permission Issues
+* Responsive Issues
+* UX Problems
+* SEO Problems
+* Accessibility Problems
+* Security Issues
+
+---
+
+# مهم جدًا:
+
+إذا وجدت:
+
+* صفحات مكررة
+* Logic مكرر
+* Forms مكررة
+* Dashboards مكررة
+* APIs مكررة
+* Components مكررة
+
+قم بتوحيدها وعمل:
+
+# Shared Architecture
+
+---
+
+# راجع بشكل خاص:
+
+## Dashboard
+
+هل:
+
+* موحدة فعلًا للمستخدم والشركة؟
+* يوجد Logic مكرر؟
+* يوجد Routes غير ضرورية؟
+* يوجد Pages يمكن دمجها؟
+
+---
+
+# راجع:
+
+## نظام الباقات
+
+تأكد:
+
+* أنه Dynamic بالكامل
+* مربوط بالأدمن فقط
+* لا يوجد Mock Data
+* لا يوجد بيانات ثابتة داخل الكود
+
+---
+
+# راجع:
+
+## نظام العقارات
+
+تأكد:
+
+* الفلاتر تعمل صح
+* الفورم Dynamic
+* البيانات مترابطة
+* الأنواع الفرعية صحيحة
+* Validation قوية
+* لا تظهر خيارات غير منطقية
+
+---
+
+# راجع:
+
+## الـ Database
+
+تأكد:
+
+* العلاقات صحيحة
+* لا يوجد Tables غير مستخدمة
+* لا يوجد Columns غير مستخدمة
+* وجود Indexes مهمة
+* تحسين الأداء
+* تنظيم الـ Schema
+
+---
+
+# راجع:
+
+## الـ APIs
+
+تأكد:
+
+* REST Structure نظيف
+* Error Handling احترافي
+* Validation قوية
+* JWT Security
+* Rate Limiting
+* Proper Status Codes
+* Clean Responses
+
+---
+
+# راجع:
+
+## الأداء
+
+قم بتحسين:
+
+* Loading Speed
+* Bundle Size
+* Lazy Loading
+* Code Splitting
+* Caching
+* Image Optimization
+* Database Queries
+
+---
+
+# راجع:
+
+## الـ Frontend
+
+تأكد:
+
+* Clean Components
+* Reusable UI
+* Proper State Management
+* Proper Hooks Usage
+* No Over Rendering
+* Consistent Design System
+
+---
+
+# المطلوب:
+
+قم بعمل:
+
+* Cleanup شامل
+* Refactor احترافي
+* حذف أي شيء غير مستخدم
+* تحسين Architecture بالكامل
+* تحسين الأداء والاستقرار
+
+---
+
+# مهم جدًا:
+
+لا تقم بكسر أي Feature موجودة.
+
+قبل حذف أي شيء:
+
+* تأكد 100% أنه غير مستخدم.
+
+---
+
+# أريد في النهاية:
+
+* مشروع نظيف جدًا
+* Production Ready
+* Scalable
+* Maintainable
+* بدون أكواد زائدة
+* بدون Bugs
+* بدون أي تضارب أو تكرار
+
+---
+
+# النتيجة:
+
+أريد منصة عقارية احترافية جدًا بمستوى SaaS عالمي، مستقرة وسريعة ونظيفة برمجيًا وجاهزة للتوسع والتطبيقات المستقبلية.
