@@ -91,8 +91,9 @@ export async function seedFromFiles(): Promise<Set<string>> {
 
       try {
         // Only restore if table is currently empty
-        const [{ cnt }] = await db.execute(sql.raw(`SELECT COUNT(*) as cnt FROM "${dbName}"`)) as unknown as any[];
-        const existingCount = parseInt(cnt ?? "0", 10);
+        const result = await db.execute(sql.raw(`SELECT COUNT(*) as cnt FROM "${dbName}"`)) as unknown as any;
+        const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
+        const existingCount = parseInt(rows[0]?.cnt ?? "0", 10);
         if (existingCount > 0) {
           console.log(`[seed-files] ${dbName}: already has ${existingCount} rows, skipping`);
           continue;
