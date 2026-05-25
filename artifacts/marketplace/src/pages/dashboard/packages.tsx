@@ -172,34 +172,7 @@ export default function PackagesPage() {
   const totalPages = Math.ceil(filteredHistory.length / PAGE_SIZE);
   const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
 
-  // ── User view (non-provider) ──────────────────────────────────────────────────
-  if (user?.role === "user") {
-    return (
-      <DashboardLayout>
-        <div className="p-6 max-w-2xl mx-auto space-y-6" dir="rtl">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">الباقات</h1>
-            <p className="text-muted-foreground mt-1 text-sm">إدارة اشتراكاتك وباقاتك</p>
-          </div>
-          <div className="rounded-2xl border border-teal-200 bg-teal-50 p-8 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center mx-auto">
-              <Building2 className="w-8 h-8 text-teal-600" />
-            </div>
-            <h2 className="text-xl font-bold">أضف عقاراتك مجاناً</h2>
-            <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
-              كمستخدم عادي، يمكنك إضافة إعلانات عقارية مجاناً دون الحاجة إلى اشتراك مدفوع.
-            </p>
-            <Link href="/add-property">
-              <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2 mt-2">
-                <Building2 className="w-4 h-4" />
-                أضف عقارك الآن
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const isProvider = user?.role === "provider";
 
   // ── Current plan status label ─────────────────────────────────────────────────
   const currentStatus = (() => {
@@ -217,22 +190,26 @@ export default function PackagesPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">باقاتي</h1>
-            <p className="text-muted-foreground mt-1 text-sm">إدارة اشتراكك الحالي وسجل باقاتك السابقة</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {isProvider ? "إدارة اشتراكك الحالي وسجل باقاتك السابقة" : "الباقات المتاحة للنشر والإعلان العقاري"}
+            </p>
           </div>
-          <button
-            onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
-              queryClient.invalidateQueries({ queryKey: ["subscriptionHistory", providerId] });
-            }}
-            className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-            title="تحديث"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+          {isProvider && (
+            <button
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
+                queryClient.invalidateQueries({ queryKey: ["subscriptionHistory", providerId] });
+              }}
+              className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              title="تحديث"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        {/* ── Expiry Alert ──────────────────────────────────────────────────────── */}
-        {!statsLoading && sub?.isActive && sub.daysLeft != null && sub.daysLeft <= 7 && !alertDismissed && (
+        {/* ── Expiry Alert (providers only) ─────────────────────────────────────── */}
+        {isProvider && !statsLoading && sub?.isActive && sub.daysLeft != null && sub.daysLeft <= 7 && !alertDismissed && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
@@ -265,10 +242,29 @@ export default function PackagesPage() {
           </div>
         ) : (
           <>
+            {/* ── User free listing info ─────────────────────────────────────────── */}
+            {!isProvider && (
+              <div className="rounded-2xl border border-teal-200 bg-teal-50 p-8 text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center mx-auto">
+                  <Building2 className="w-8 h-8 text-teal-600" />
+                </div>
+                <h2 className="text-xl font-bold">أضف عقاراتك مجاناً</h2>
+                <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
+                  كمستخدم، يمكنك إضافة إعلانات عقارية مجاناً دون الحاجة إلى اشتراك مدفوع. تتوفر الباقات المدفوعة للمعلنين المحترفين الراغبين في ميزات إضافية.
+                </p>
+                <Link href="/add-property">
+                  <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2 mt-2">
+                    <Building2 className="w-4 h-4" />
+                    أضف عقارك الآن
+                  </Button>
+                </Link>
+              </div>
+            )}
+
             {/* ══════════════════════════════════════════════════════════════════
-                SECTION 1 — Current Plan
+                SECTION 1 — Current Plan (providers only)
             ══════════════════════════════════════════════════════════════════ */}
-            {sub ? (
+            {isProvider && sub ? (
               <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
                 {/* Card top strip */}
                 <div className="h-1.5 w-full bg-gradient-to-l from-teal-500 via-blue-500 to-indigo-500" />
@@ -413,7 +409,7 @@ export default function PackagesPage() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : isProvider ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
                   <Package className="w-8 h-8 text-gray-400" />
@@ -429,12 +425,12 @@ export default function PackagesPage() {
                   </Button>
                 </a>
               </div>
-            )}
+            ) : null}
 
             {/* ══════════════════════════════════════════════════════════════════
-                SECTION 2 — Subscription History
+                SECTION 2 — Subscription History (providers only)
             ══════════════════════════════════════════════════════════════════ */}
-            <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+            {isProvider && <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
               <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-foreground">سجل الاشتراكات</h2>
@@ -590,10 +586,10 @@ export default function PackagesPage() {
                   )}
                 </>
               )}
-            </div>
+            </div>}
 
             {/* ══════════════════════════════════════════════════════════════════
-                SECTION 3 — Upgrade / Plans
+                SECTION 3 — Upgrade / Plans (visible to all roles)
             ══════════════════════════════════════════════════════════════════ */}
             <div id="upgrade" className="space-y-5">
               <div>

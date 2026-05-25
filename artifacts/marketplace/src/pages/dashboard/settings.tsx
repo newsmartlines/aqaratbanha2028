@@ -44,6 +44,7 @@ export default function ProviderSettings() {
   const { user, refetch: refetchAuth } = useAuth();
   const queryClient = useQueryClient();
   const providerId = user?.providerId;
+  const isProvider = !!providerId;
 
   /* ─── Fetch provider detail ─── */
   const { data: provider, isLoading: providerLoading } = useQuery<ProviderDetail>({
@@ -184,17 +185,19 @@ export default function ProviderSettings() {
         </div>
 
         <Tabs defaultValue="personal" className="w-full" dir="rtl">
-          <TabsList className="w-full sm:w-auto grid w-full grid-cols-3 mb-6 bg-card border shadow-sm rounded-xl h-auto p-1">
+          <TabsList className={`w-full sm:w-auto grid w-full ${isProvider ? "grid-cols-3" : "grid-cols-2"} mb-6 bg-card border shadow-sm rounded-xl h-auto p-1`}>
             <TabsTrigger value="personal" className="py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <User className="w-4 h-4 ml-2" />
               <span className="hidden sm:inline">المعلومات الشخصية</span>
               <span className="sm:hidden">الشخصية</span>
             </TabsTrigger>
-            <TabsTrigger value="location" className="py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <MapPin className="w-4 h-4 ml-2" />
-              <span className="hidden sm:inline">الموقع والملف</span>
-              <span className="sm:hidden">الموقع</span>
-            </TabsTrigger>
+            {isProvider && (
+              <TabsTrigger value="location" className="py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <MapPin className="w-4 h-4 ml-2" />
+                <span className="hidden sm:inline">الموقع والملف</span>
+                <span className="sm:hidden">الموقع</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="security" className="py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Shield className="w-4 h-4 ml-2" />
               الأمان

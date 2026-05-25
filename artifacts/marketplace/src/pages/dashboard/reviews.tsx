@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Star, MessageSquare, Send, Loader2 } from "lucide-react";
-import ProviderLayout from "@/components/ProviderLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
@@ -10,10 +10,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type Review } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
-export default function ProviderReviews() {
+export default function ReviewsPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const providerId = user?.providerId;
+  const isProvider = user?.role === "provider";
 
   const [filter, setFilter] = useState("الكل");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
@@ -63,14 +64,26 @@ export default function ProviderReviews() {
   );
 
   return (
-    <ProviderLayout>
+    <DashboardLayout>
       <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
         <div>
           <h1 className="text-3xl font-bold text-foreground">التقييمات</h1>
-          <p className="text-muted-foreground mt-1">آراء العملاء في خدماتك المقدمة</p>
+          <p className="text-muted-foreground mt-1">
+            {isProvider ? "آراء العملاء في خدماتك المقدمة" : "تقييماتك للمعلنين والعقارات"}
+          </p>
         </div>
 
-        <Card className="border-border/50 shadow-sm overflow-hidden">
+        {!isProvider && (
+          <div className="col-span-full text-center py-20 bg-card rounded-xl border border-dashed">
+            <Star className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+            <h3 className="text-lg font-medium text-foreground">لا توجد تقييمات بعد</h3>
+            <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto leading-relaxed">
+              يمكنك تقييم المعلنين والعقارات مباشرةً من صفحات تفاصيل العقارات.
+            </p>
+          </div>
+        )}
+
+        {isProvider && <Card className="border-border/50 shadow-sm overflow-hidden">
           <CardContent className="p-6 md:p-8">
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
               <div className="flex flex-col items-center justify-center shrink-0 w-full md:w-auto md:min-w-48 p-4 bg-primary/5 rounded-2xl border border-primary/10">
@@ -96,9 +109,9 @@ export default function ProviderReviews() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        {isProvider && <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <Tabs value={filter} onValueChange={setFilter} className="w-full sm:w-auto overflow-x-auto hide-scrollbar">
             <TabsList className="w-max">
               <TabsTrigger value="الكل">الكل ({reviews.length})</TabsTrigger>
@@ -107,9 +120,9 @@ export default function ProviderReviews() {
               <TabsTrigger value="أقل من 4">أقل من 4</TabsTrigger>
             </TabsList>
           </Tabs>
-        </div>
+        </div>}
 
-        {isLoading ? (
+        {isProvider && (isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
@@ -200,8 +213,8 @@ export default function ProviderReviews() {
               </div>
             )}
           </div>
-        )}
+        ))}
       </div>
-    </ProviderLayout>
+    </DashboardLayout>
   );
 }
