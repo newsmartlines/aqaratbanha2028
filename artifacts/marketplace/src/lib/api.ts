@@ -280,6 +280,8 @@ export interface ProviderStats {
     durationDays: number | null;
     daysLeft: number | null;
     isActive: boolean;
+    maxListings?: number | null;
+    billingPlanId?: number | null;
   } | null;
 }
 export interface AdminUser {
@@ -803,6 +805,24 @@ export const api = {
     create: (data: unknown) => fetchJson<Package>(`/packages`, { method: "POST", body: JSON.stringify(data) }),
     update: (id: number, data: unknown) => fetchJson<Package>(`/packages/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     delete: (id: number) => fetchJson(`/packages/${id}`, { method: "DELETE" }),
+  },
+
+  subscriptionHistory: {
+    list: async (providerId: number) => {
+      const res = await fetchJson<any>(`/providers/${providerId}/subscriptions-history`);
+      return (Array.isArray(res) ? res : (res?.data ?? [])) as Array<{
+        id: number;
+        planNameAr: string | null;
+        planPrice: string | null;
+        durationDays: number;
+        maxListings: number | null;
+        startDate: string;
+        endDate: string;
+        status: string;
+        createdAt: string;
+        isActive: boolean;
+      }>;
+    },
   },
 
   stats: {

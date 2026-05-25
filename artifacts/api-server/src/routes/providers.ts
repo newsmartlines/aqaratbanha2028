@@ -449,6 +449,66 @@ router.get("/providers/:id/stats", async (req, res) => {
   }
 });
 
+// Subscription history for a provider
+router.get("/providers/:id/subscriptions-history", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const rows = await db
+      .select({
+        id: subscriptionsTable.id,
+        planNameAr: subscriptionsTable.planNameAr,
+        planName: subscriptionsTable.planName,
+        planPrice: subscriptionsTable.planPrice,
+        startDate: subscriptionsTable.startDate,
+        endDate: subscriptionsTable.endDate,
+        status: subscriptionsTable.status,
+        createdAt: subscriptionsTable.createdAt,
+        packageId: subscriptionsTable.packageId,
+        billingPlanId: subscriptionsTable.billingPlanId,
+        packageNameAr: packagesTable.nameAr,
+        packagePrice: packagesTable.price,
+        packageDurationDays: packagesTable.durationDays,
+        packageMaxListings: packagesTable.maxListings,
+        bpNameAr: billingPlansTable.nameAr,
+        bpPrice: billingPlansTable.price,
+        bpLimits: billingPlansTable.limits,
+        bpDurationDays: billingPlansTable.durationDays,
+      })
+      .from(subscriptionsTable)
+      .leftJoin(packagesTable, eq(subscriptionsTable.packageId, packagesTable.id))
+      .leftJoin(billingPlansTable, eq(subscriptionsTable.billingPlanId, billingPlansTable.id))
+      .where(eq(subscriptionsTable.providerId, id))
+      .orderBy(desc(subscriptionsTable.createdAt));
+
+    const now = Date.now();
+    const data = rows.map(s => {
+      const resolvedNameAr = s.billingPlanId ? (s.bpNameAr ?? s.planNameAr) : (s.packageNameAr ?? s.planNameAr);
+      const resolvedPrice = s.billingPlanId ? s.bpPrice : (s.packagePrice ?? s.planPrice);
+      const resolvedDurationDays = s.billingPlanId ? (s.bpDurationDays ?? 30) : (s.packageDurationDays ?? 30);
+      let resolvedMaxListings: number | null = null;
+      if (s.bpLimits) {
+        try { resolvedMaxListings = JSON.parse(s.bpLimits).properties ?? null; } catch { /* */ }
+      }
+      if (resolvedMaxListings == null) resolvedMaxListings = s.packageMaxListings ?? null;
+      return {
+        id: s.id,
+        planNameAr: resolvedNameAr,
+        planPrice: resolvedPrice,
+        durationDays: resolvedDurationDays,
+        maxListings: resolvedMaxListings,
+        startDate: s.startDate,
+        endDate: s.endDate,
+        status: s.status,
+        createdAt: s.createdAt,
+        isActive: s.status === "active" && new Date(s.endDate).getTime() > now,
+      };
+    });
+    res.json({ success: true, data });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to fetch subscription history" });
+  }
+});
+
 // Track interaction (phone / whatsapp / message)
 router.post("/providers/:id/interactions", async (req, res) => {
   try {
