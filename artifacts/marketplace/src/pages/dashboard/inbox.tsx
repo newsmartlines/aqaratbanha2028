@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Loader2, Send, MessageSquare, ArrowRight, Home, Building2, Check, CheckCheck } from "lucide-react";
-import ProviderLayout from "@/components/ProviderLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,7 +112,7 @@ export default function ProviderInbox() {
   const propertyPrice = convProperty?.price ?? selectedConv?.propertyPrice;
 
   return (
-    <ProviderLayout>
+    <DashboardLayout>
       <div className="p-4 sm:p-6 max-w-6xl mx-auto" dir="rtl">
         <div className="mb-5">
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -387,6 +387,6 @@ export default function ProviderInbox() {
           </Card>
         </div>
       </div>
-    </ProviderLayout>
+    </DashboardLayout>
   );
 }

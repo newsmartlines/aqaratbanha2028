@@ -38,28 +38,28 @@ function getInitials(name: string) {
 
 function providerNav(unreadCount: number, msgUnread: number) {
   return [
-    { name: "لوحة التحكم",  href: "/provider/dashboard",        icon: LayoutDashboard,   badge: 0 },
-    { name: "باقتي",        href: "/dashboard/my-plan",         icon: Package,           badge: 0 },
-    { name: "عقاراتي",      href: "/dashboard/my-properties",   icon: Building2,         badge: 0 },
-    { name: "الإشعارات",    href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
-    { name: "الرسائل",      href: "/dashboard/inbox",           icon: MessageCircleIcon, badge: msgUnread },
-    { name: "تذاكر الدعم",  href: "/dashboard/support-tickets", icon: Ticket,            badge: 0 },
-    { name: "المدفوعات",    href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
-    { name: "الإعدادات",    href: "/dashboard/settings",        icon: Settings,          badge: 0 },
-    { name: "المساعدة",     href: "/dashboard/support",         icon: HelpCircle,        badge: 0 },
+    { name: "لوحة التحكم",  href: "/dashboard",              icon: LayoutDashboard,   badge: 0 },
+    { name: "باقتي",        href: "/dashboard/packages",     icon: Package,           badge: 0 },
+    { name: "عقاراتي",      href: "/dashboard/properties",   icon: Building2,         badge: 0 },
+    { name: "الإشعارات",    href: "/dashboard/notifications",icon: Bell,              badge: unreadCount },
+    { name: "الرسائل",      href: "/dashboard/messages",     icon: MessageCircleIcon, badge: msgUnread },
+    { name: "تذاكر الدعم",  href: "/dashboard/support",      icon: Ticket,            badge: 0 },
+    { name: "المدفوعات",    href: "/dashboard/payments",     icon: CreditCard,        badge: 0 },
+    { name: "الإعدادات",    href: "/dashboard/settings",     icon: Settings,          badge: 0 },
   ];
 }
 
-function userNav(msgUnread: number) {
+function userNav(unreadCount: number, msgUnread: number) {
   return [
-    { name: "الرئيسية",      href: "/user/dashboard",      icon: LayoutDashboard,   badge: 0 },
-    { name: "عقاراتي",       href: "/user/my-properties",  icon: Building2,         badge: 0 },
-    { name: "المفضلة",       href: "/user/favorites",      icon: Heart,             badge: 0 },
-    { name: "تنبيهات البحث", href: "/user/saved-searches", icon: BellRing,          badge: 0 },
-    { name: "مدفوعاتي",      href: "/user/payments",       icon: CreditCard,        badge: 0 },
-    { name: "رسائلي",        href: "/user/inbox",          icon: MessageCircleIcon, badge: msgUnread },
-    { name: "الإعدادات",     href: "/user/settings",       icon: Settings,          badge: 0 },
-    { name: "المساعدة",      href: "/user/support",        icon: HelpCircle,        badge: 0 },
+    { name: "الرئيسية",      href: "/dashboard",                  icon: LayoutDashboard,   badge: 0 },
+    { name: "عقاراتي",       href: "/dashboard/properties",       icon: Building2,         badge: 0 },
+    { name: "المفضلة",       href: "/dashboard/favorites",        icon: Heart,             badge: 0 },
+    { name: "تنبيهات البحث", href: "/dashboard/saved-searches",   icon: BellRing,          badge: 0 },
+    { name: "المدفوعات",     href: "/dashboard/payments",         icon: CreditCard,        badge: 0 },
+    { name: "رسائلي",        href: "/dashboard/messages",         icon: MessageCircleIcon, badge: msgUnread },
+    { name: "الإشعارات",     href: "/dashboard/notifications",    icon: Bell,              badge: unreadCount },
+    { name: "الإعدادات",     href: "/dashboard/settings",         icon: Settings,          badge: 0 },
+    { name: "المساعدة",      href: "/dashboard/support",          icon: HelpCircle,        badge: 0 },
   ];
 }
 
@@ -108,11 +108,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }, 500);
   }, [user]);
 
-  // Unread notifications (provider only — user doesn't have a notifications page yet)
   const { data: unreadData } = useQuery({
     queryKey: ["notifications-unread"],
     queryFn: api.notifications.unreadCount,
-    enabled: !!user && user.role === "provider",
+    enabled: !!user,
     refetchInterval: 30_000,
   });
   const unreadCount = typeof unreadData === "number" ? unreadData : 0;
@@ -136,7 +135,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const isProvider = user?.role === "provider";
-  const navItems = isProvider ? providerNav(unreadCount, msgUnread) : userNav(msgUnread);
+  const navItems = isProvider ? providerNav(unreadCount, msgUnread) : userNav(unreadCount, msgUnread);
   const displayName = user?.name ?? (isProvider ? "الشركة العقارية" : "المستخدم");
 
   // ── Sidebar ──────────────────────────────────────────────────────────────────
@@ -197,7 +196,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {navItems.map((item) => {
             const isActive =
               location === item.href ||
-              (item.href !== "/" && location.startsWith(item.href + "/"));
+              (item.href !== "/" && item.href !== "/dashboard" && location.startsWith(item.href + "/"));
             return (
               <Link
                 key={item.href}

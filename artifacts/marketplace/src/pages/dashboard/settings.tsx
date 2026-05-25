@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Save, User, MapPin, Shield, Loader2, Camera, Upload } from "lucide-react";
-import ProviderLayout from "@/components/ProviderLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -176,7 +176,7 @@ export default function ProviderSettings() {
   if (!user) return null;
 
   return (
-    <ProviderLayout>
+    <DashboardLayout>
       <div className="p-6 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
         <div>
           <h1 className="text-3xl font-bold text-foreground">الإعدادات</h1>
@@ -656,6 +656,6 @@ export default function ProviderSettings() {
           </TabsContent>
         </Tabs>
       </div>
-    </ProviderLayout>
+    </DashboardLayout>
   );
 }

@@ -34,21 +34,25 @@ import AdminSettings from "@/pages/admin/settings";
 import AdminUsers from "@/pages/admin/users";
 import AdminRealEstateCategories from "@/pages/admin/real-estate-categories";
 import AdminLocations from "@/pages/admin/locations";
-import ProviderDashboard from "@/pages/dashboard/index";
-import ProviderSubscription from "@/pages/dashboard/subscription";
+import DashboardOverview from "@/pages/dashboard/index";
+import DashboardProperties from "@/pages/dashboard/properties";
+import DashboardPackages from "@/pages/dashboard/packages";
+import DashboardMessages from "@/pages/dashboard/messages";
+import DashboardFavorites from "@/pages/dashboard/favorites";
+import DashboardSavedSearches from "@/pages/dashboard/saved-searches";
+import DashboardPayments from "@/pages/dashboard/payments";
+import DashboardSettings from "@/pages/dashboard/settings";
+import DashboardNotifications from "@/pages/dashboard/notifications";
+import DashboardReviews from "@/pages/dashboard/reviews";
+import DashboardInbox from "@/pages/dashboard/inbox";
+import DashboardSupport from "@/pages/dashboard/support";
+import DashboardSupportTickets from "@/pages/dashboard/support-tickets";
 import SubscriptionPayPage from "@/pages/pay/subscription";
 import ListingPayPage from "@/pages/pay/listing";
 import ProviderCheckout from "@/pages/dashboard/checkout";
 import CheckoutResult from "@/pages/dashboard/checkout-result";
-import ProviderReviews from "@/pages/dashboard/reviews";
-import ProviderPayments from "@/pages/dashboard/payments";
-import ProviderSettings from "@/pages/dashboard/settings";
-import ProviderNotifications from "@/pages/dashboard/notifications";
-import UserDashboard from "@/pages/user/index";
-import UserFavorites from "@/pages/user/favorites";
-import UserPayments from "@/pages/user/payments";
+import UserEditProperty from "@/pages/user/edit-property";
 import UserReviews from "@/pages/user/reviews";
-import UserSettings from "@/pages/user/settings";
 import AdminStaff from "@/pages/admin/staff";
 import AdminSupportTickets from "@/pages/admin/support-tickets";
 import AdminProviderEdit from "@/pages/admin/provider-edit";
@@ -82,19 +86,8 @@ import FaqPage from "@/pages/faq";
 import PrivacyPage from "@/pages/privacy";
 import TermsPage from "@/pages/terms";
 import SitemapPage from "@/pages/sitemap";
-import ProviderInbox from "@/pages/dashboard/inbox";
-import ProviderSupport from "@/pages/dashboard/support";
-import ProviderSupportTicketsPage from "@/pages/dashboard/support-tickets";
-import UserInbox from "@/pages/user/inbox";
-import UserSupport from "@/pages/user/support";
-import UserSavedSearches from "@/pages/user/saved-searches";
-import UserAddProperty from "@/pages/user/add-property";
-import UserMyProperties from "@/pages/user/my-properties";
-import UserEditProperty from "@/pages/user/edit-property";
 import AddPropertyPage from "@/pages/add-property";
 import PricingPage from "@/pages/pricing";
-import MyPropertiesPage from "@/pages/dashboard/my-properties";
-import MyPlanPage from "@/pages/dashboard/my-plan";
 import MapSearchPage from "@/pages/map-search";
 import MarketInsightsPage from "@/pages/market-insights";
 import CompanyRegisterPage from "@/pages/company-register";
@@ -107,7 +100,8 @@ type AppRole = "admin" | "provider" | "user";
 
 function roleHome(role: string): string {
   if (role === "admin") return "/admin/dashboard";
-  if (role === "provider") return "/provider/dashboard";
+  if (role === "provider") return "/dashboard";
+  if (role === "user") return "/dashboard";
   return "/";
 }
 
@@ -191,8 +185,8 @@ function Router() {
       <Route path="/market" component={MarketInsightsPage} />
 
       <Route path="/admin" component={() => <Redirect to="/admin/dashboard" />} />
-      <Route path="/provider" component={() => <Redirect to="/provider/dashboard" />} />
-      <Route path="/user" component={() => <Redirect to="/user/dashboard" />} />
+      <Route path="/provider" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/user" component={() => <Redirect to="/dashboard" />} />
 
       {/* Auth routes */}
       <Route path="/login">{() => <AuthPage />}</Route>
@@ -203,91 +197,83 @@ function Router() {
       {/* Real-estate onboarding — redirected to unified add-property form */}
       <Route path="/real-estate-onboarding">{() => <Redirect to="/add-property" />}</Route>
 
-      {/* Provider dashboard */}
-      <Route path="/provider/dashboard">
-        {() => <RoleProtectedRoute component={ProviderDashboard} roles={["provider"]} />}
-      </Route>
-      <Route path="/provider/subscription">
-        {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
-      </Route>
+      {/* ── Unified Dashboard (user + provider) ────────────────────────── */}
       <Route path="/dashboard">
-        {() => <RoleProtectedRoute component={ProviderDashboard} roles={["provider"]} />}
+        {() => <RoleProtectedRoute component={DashboardOverview} roles={["user", "provider"]} />}
       </Route>
-      <Route path="/dashboard/subscription">
-        {() => <RoleProtectedRoute component={ProviderSubscription} roles={["provider"]} />}
+      <Route path="/dashboard/properties">
+        {() => <RoleProtectedRoute component={DashboardProperties} roles={["user", "provider"]} />}
       </Route>
-      <Route path="/pay/subscription" component={SubscriptionPayPage} />
-      <Route path="/pay/listing" component={ListingPayPage} />
+      <Route path="/dashboard/packages">
+        {() => <RoleProtectedRoute component={DashboardPackages} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/messages">
+        {() => <RoleProtectedRoute component={DashboardMessages} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/favorites">
+        {() => <RoleProtectedRoute component={DashboardFavorites} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/saved-searches">
+        {() => <RoleProtectedRoute component={DashboardSavedSearches} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/payments">
+        {() => <RoleProtectedRoute component={DashboardPayments} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/settings">
+        {() => <RoleProtectedRoute component={DashboardSettings} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/notifications">
+        {() => <RoleProtectedRoute component={DashboardNotifications} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/reviews">
+        {() => <RoleProtectedRoute component={DashboardReviews} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/inbox">
+        {() => <RoleProtectedRoute component={DashboardInbox} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/support">
+        {() => <RoleProtectedRoute component={DashboardSupport} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/support-tickets">
+        {() => <RoleProtectedRoute component={DashboardSupportTickets} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/edit-property/:id">
+        {() => <RoleProtectedRoute component={UserEditProperty} roles={["user", "provider"]} />}
+      </Route>
+
+      {/* Provider-only: checkout + payment pages */}
       <Route path="/dashboard/checkout">
         {() => <RoleProtectedRoute component={ProviderCheckout} roles={["provider"]} />}
       </Route>
       <Route path="/dashboard/checkout/result">
         {() => <RoleProtectedRoute component={CheckoutResult} roles={["provider"]} />}
       </Route>
-      <Route path="/dashboard/my-plan">
-        {() => <RoleProtectedRoute component={MyPlanPage} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/my-properties">
-        {() => <RoleProtectedRoute component={MyPropertiesPage} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/reviews">
-        {() => <RoleProtectedRoute component={ProviderReviews} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/payments">
-        {() => <RoleProtectedRoute component={ProviderPayments} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/settings">
-        {() => <RoleProtectedRoute component={ProviderSettings} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/notifications">
-        {() => <RoleProtectedRoute component={ProviderNotifications} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/inbox">
-        {() => <RoleProtectedRoute component={ProviderInbox} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/support">
-        {() => <RoleProtectedRoute component={ProviderSupport} roles={["provider"]} />}
-      </Route>
-      <Route path="/dashboard/support-tickets">
-        {() => <RoleProtectedRoute component={ProviderSupportTicketsPage} roles={["provider"]} />}
+      <Route path="/pay/subscription" component={SubscriptionPayPage} />
+      <Route path="/pay/listing" component={ListingPayPage} />
+
+      {/* Legacy redirects — old /provider/* and /user/* URLs */}
+      <Route path="/provider/dashboard" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/provider/subscription" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/subscription" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/my-plan" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/my-properties" component={() => <Redirect to="/dashboard/properties" />} />
+      <Route path="/user/dashboard" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/user/favorites" component={() => <Redirect to="/dashboard/favorites" />} />
+      <Route path="/user/saved-searches" component={() => <Redirect to="/dashboard/saved-searches" />} />
+      <Route path="/user/payments" component={() => <Redirect to="/dashboard/payments" />} />
+      <Route path="/user/inbox" component={() => <Redirect to="/dashboard/messages" />} />
+      <Route path="/user/support" component={() => <Redirect to="/dashboard/support" />} />
+      <Route path="/user/settings" component={() => <Redirect to="/dashboard/settings" />} />
+      <Route path="/user/profile" component={() => <Redirect to="/dashboard/settings" />} />
+      <Route path="/user/my-properties" component={() => <Redirect to="/dashboard/properties" />} />
+      <Route path="/user/add-property" component={() => <Redirect to="/add-property" />} />
+      <Route path="/user/edit-property/:id">
+        {(params) => <Redirect to={`/dashboard/edit-property/${params.id}`} />}
       </Route>
 
-      {/* User area */}
-      <Route path="/user/dashboard">
-        {() => <RoleProtectedRoute component={UserDashboard} roles={["user"]} />}
-      </Route>
-      <Route path="/user/favorites">
-        {() => <RoleProtectedRoute component={UserFavorites} roles={["user"]} />}
-      </Route>
+      {/* Legacy: user reviews (keep working) */}
       <Route path="/user/reviews">
         {() => <RoleProtectedRoute component={UserReviews} roles={["user"]} />}
-      </Route>
-      <Route path="/user/settings">
-        {() => <RoleProtectedRoute component={UserSettings} roles={["user"]} />}
-      </Route>
-      <Route path="/user/profile">
-        {() => <RoleProtectedRoute component={UserSettings} roles={["user"]} />}
-      </Route>
-      <Route path="/user/payments">
-        {() => <RoleProtectedRoute component={UserPayments} roles={["user"]} />}
-      </Route>
-      <Route path="/user/inbox">
-        {() => <RoleProtectedRoute component={UserInbox} roles={["user"]} />}
-      </Route>
-      <Route path="/user/support">
-        {() => <RoleProtectedRoute component={UserSupport} roles={["user"]} />}
-      </Route>
-      <Route path="/user/saved-searches">
-        {() => <RoleProtectedRoute component={UserSavedSearches} roles={["user"]} />}
-      </Route>
-      <Route path="/user/add-property">
-        {() => <RoleProtectedRoute component={UserAddProperty} roles={["user"]} />}
-      </Route>
-      <Route path="/user/my-properties">
-        {() => <RoleProtectedRoute component={UserMyProperties} roles={["user"]} />}
-      </Route>
-      <Route path="/user/edit-property/:id">
-        {() => <RoleProtectedRoute component={UserEditProperty} roles={["user"]} />}
       </Route>
 
       {/* Admin routes */}

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Bell, CheckCheck, Trash2, CreditCard, ShieldCheck, Info, AlertCircle, Sparkles, Loader2 } from "lucide-react";
-import ProviderLayout from "@/components/ProviderLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { api, type Notification } from "@/lib/api";
@@ -67,7 +67,7 @@ export default function ProviderNotifications() {
   });
 
   return (
-    <ProviderLayout>
+    <DashboardLayout>
       <div className="p-6 max-w-3xl mx-auto space-y-6" dir="rtl">
         <div className="flex items-center justify-between">
           <div>
@@ -165,6 +165,6 @@ export default function ProviderNotifications() {
           </div>
         )}
       </div>
-    </ProviderLayout>
+    </DashboardLayout>
   );
 }

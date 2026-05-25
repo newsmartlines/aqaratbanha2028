@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LifeBuoy, Phone, MessageCircle, Send, CheckCircle2, Loader2, Mail } from "lucide-react";
-import ProviderLayout from "@/components/ProviderLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ export default function ProviderSupport() {
   };
 
   return (
-    <ProviderLayout>
+    <DashboardLayout>
       <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300" dir="rtl">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -163,6 +163,6 @@ export default function ProviderSupport() {
           </CardContent>
         </Card>
       </div>
-    </ProviderLayout>
+    </DashboardLayout>
   );
 }

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Inbox, MessageCircleReply, Plus, Search, Ticket, Timer, Loader2, AlertCircle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import ProviderLayout from "@/components/ProviderLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { mapSupportTicketDto } from "@/components/support-tickets/map-dto";
 import { StatCard } from "@/components/support-tickets/StatCard";
 import { CreateTicketDialog } from "@/components/support-tickets/CreateTicketDialog";
@@ -114,27 +114,27 @@ export default function ProviderSupportTicketsPage() {
 
   if (authLoading) {
     return (
-      <ProviderLayout>
+      <DashboardLayout>
         <div className="flex min-h-[40vh] items-center justify-center" dir="rtl">
           <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
         </div>
-      </ProviderLayout>
+      </DashboardLayout>
     );
   }
 
   if (!user || !providerId) {
     return (
-      <ProviderLayout>
+      <DashboardLayout>
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 p-6 text-center" dir="rtl">
           <AlertCircle className="h-10 w-10 text-amber-500" />
           <p className="text-lg font-medium text-slate-700">يرجى تسجيل الدخول كشركة عقارية لعرض تذاكر الدعم.</p>
         </div>
-      </ProviderLayout>
+      </DashboardLayout>
     );
   }
 
   return (
-    <ProviderLayout>
+    <DashboardLayout>
       <div
         dir="rtl"
         className="relative min-h-[calc(100vh-8rem)] bg-gradient-to-b from-slate-50 via-white to-cyan-50/20 px-4 py-6 text-start sm:px-6 lg:px-10 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900"
@@ -259,6 +259,6 @@ export default function ProviderSupportTicketsPage() {
           defaultTab={detailTab}
         />
       </div>
-    </ProviderLayout>
+    </DashboardLayout>
   );
 }
