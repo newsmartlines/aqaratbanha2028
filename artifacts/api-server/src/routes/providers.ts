@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { providersTable, usersTable, reviewsTable, categoriesTable, packagesTable, subscriptionsTable, interactionsTable, paymentsTable, notificationsTable, billingPlansTable } from "@workspace/db";
+import { providersTable, usersTable, reviewsTable, categoriesTable, packagesTable, subscriptionsTable, interactionsTable, paymentsTable, notificationsTable, billingPlansTable, propertiesTable } from "@workspace/db";
 import { citiesTable, regionsTable } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";

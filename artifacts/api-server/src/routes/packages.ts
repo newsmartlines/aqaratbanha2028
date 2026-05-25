@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { packagesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.get("/packages", async (_req, res) => {
   }
 });
 
-router.post("/packages", async (req, res) => {
+router.post("/packages", adminOnly, async (req, res) => {
   try {
     const { nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank } = req.body;
     const [pkg] = await db.insert(packagesTable).values({ nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank }).returning();
@@ -24,9 +25,9 @@ router.post("/packages", async (req, res) => {
   }
 });
 
-router.put("/packages/:id", async (req, res) => {
+router.put("/packages/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank } = req.body;
     const [pkg] = await db.update(packagesTable).set({ nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank }).where(eq(packagesTable.id, id)).returning();
     res.json({ success: true, data: pkg });
@@ -35,9 +36,9 @@ router.put("/packages/:id", async (req, res) => {
   }
 });
 
-router.delete("/packages/:id", async (req, res) => {
+router.delete("/packages/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(packagesTable).where(eq(packagesTable.id, id));
     res.json({ success: true });
   } catch (err) {

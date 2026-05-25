@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { categoriesTable, subcategoriesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { autoExportGroup } from "../lib/auto-export";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
 
@@ -48,7 +49,7 @@ router.get("/categories/:id", async (req, res) => {
   }
 });
 
-router.post("/categories", async (req, res) => {
+router.post("/categories", adminOnly, async (req, res) => {
   try {
     const { nameAr, nameEn, icon, slug, description, image, type } = req.body;
     if (!nameAr || !nameEn || !slug) return res.status(400).json({ success: false, error: "nameAr, nameEn, slug required" });
@@ -60,9 +61,9 @@ router.post("/categories", async (req, res) => {
   }
 });
 
-router.put("/categories/:id", async (req, res) => {
+router.put("/categories/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { nameAr, nameEn, icon, slug, description, image, type } = req.body;
     const updateData: Record<string, unknown> = { nameAr, nameEn, icon, slug, description, image };
     if (type !== undefined) updateData.type = type;
@@ -75,9 +76,9 @@ router.put("/categories/:id", async (req, res) => {
   }
 });
 
-router.delete("/categories/:id", async (req, res) => {
+router.delete("/categories/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(categoriesTable).where(eq(categoriesTable.id, id));
     res.json({ success: true });
   } catch {
@@ -106,9 +107,9 @@ router.get("/subcategories", async (_req, res) => {
   }
 });
 
-router.post("/categories/:id/subcategories", async (req, res) => {
+router.post("/categories/:id/subcategories", adminOnly, async (req, res) => {
   try {
-    const categoryId = parseInt(req.params.id);
+    const categoryId = parseInt(String(req.params.id));
     const { nameAr, nameEn, icon, slug } = req.body;
     if (!nameAr || !nameEn || !slug) return res.status(400).json({ success: false, error: "nameAr, nameEn, slug required" });
     const [sub] = await db.insert(subcategoriesTable).values({ categoryId, nameAr, nameEn, icon: icon ?? "Tag", slug }).returning();
@@ -119,9 +120,9 @@ router.post("/categories/:id/subcategories", async (req, res) => {
   }
 });
 
-router.put("/subcategories/:id", async (req, res) => {
+router.put("/subcategories/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { nameAr, nameEn, icon, slug } = req.body;
     const [updated] = await db.update(subcategoriesTable).set({ nameAr, nameEn, icon, slug }).where(eq(subcategoriesTable.id, id)).returning();
     if (!updated) return res.status(404).json({ success: false, error: "Not found" });
@@ -131,9 +132,9 @@ router.put("/subcategories/:id", async (req, res) => {
   }
 });
 
-router.delete("/subcategories/:id", async (req, res) => {
+router.delete("/subcategories/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(subcategoriesTable).where(eq(subcategoriesTable.id, id));
     res.json({ success: true });
   } catch {

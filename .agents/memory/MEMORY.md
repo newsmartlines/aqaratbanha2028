@@ -1,0 +1,3 @@
+- [Express 5 middleware params type fix](express5-params.md) — `req.params[key]` is `string | string[]` on adminOnly-guarded routes; wrap with `String()` before parseInt.
+- [adminOnly middleware pattern](adminonly-pattern.md) — Use `router.use("/prefix", adminOnly)` for whole routers; use inline `router.verb("/path", adminOnly, handler)` for individual routes (needs `String(req.params.id)` cast).
+- [listings.ts schema mismatch](listings-schema.md) — propertiesTable has `images` (not `mainImage`) and `mainCategory` text (not `categoryId` FK); no category join is possible via a FK column.

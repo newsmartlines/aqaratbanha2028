@@ -13,7 +13,7 @@ import { ReactNode, useEffect } from "react";
 import { Link, useLocation, Redirect } from "wouter";
 import {
   LayoutDashboard, Bell, CreditCard, Settings, LogOut, Menu,
-  Home, HelpCircle, MessageCircle as MessageCircleIcon,
+  Home, MessageCircle as MessageCircleIcon,
   Ticket, Building2, Package, Heart, BellRing, Plus, User2,
   Briefcase, AlertTriangle,
 } from "lucide-react";
@@ -48,7 +48,6 @@ function unifiedNav(unreadCount: number, msgUnread: number) {
     { name: "الإشعارات",            href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
     { name: "تذاكر الدعم",          href: "/dashboard/support",         icon: Ticket,            badge: 0 },
     { name: "الإعدادات",            href: "/dashboard/settings",        icon: Settings,          badge: 0 },
-    { name: "المساعدة",             href: "/dashboard/help",            icon: HelpCircle,        badge: 0 },
   ];
 }
 
@@ -167,7 +166,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* "Add property" CTA — shown for both roles */}
         <Link
-          href={isProvider ? "/dashboard/my-properties" : "/add-property"}
+          href={isProvider ? "/dashboard/properties" : "/add-property"}
           className="mt-3 flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-semibold rounded-lg transition-colors bg-teal-600 hover:bg-teal-500 text-white"
         >
           <Plus className="w-3.5 h-3.5" />

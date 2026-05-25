@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, integer, timestamp, boolean, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { providersTable } from "./providers";
@@ -58,7 +58,17 @@ export const propertiesTable = pgTable("properties", {
   whatsappClickCount: integer("whatsapp_click_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   approvedAt: timestamp("approved_at"),
-});
+}, (t) => [
+  index("properties_provider_id_idx").on(t.providerId),
+  index("properties_owner_user_id_idx").on(t.ownerUserId),
+  index("properties_status_idx").on(t.status),
+  index("properties_listing_type_idx").on(t.listingType),
+  index("properties_main_category_idx").on(t.mainCategory),
+  index("properties_city_id_idx").on(t.cityId),
+  index("properties_region_id_idx").on(t.regionId),
+  index("properties_featured_idx").on(t.featured),
+  index("properties_created_at_idx").on(t.createdAt),
+]);
 
 export const insertPropertySchema = createInsertSchema(propertiesTable).omit({ id: true, createdAt: true });
 export type InsertProperty = z.infer<typeof insertPropertySchema>;

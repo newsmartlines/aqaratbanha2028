@@ -17,7 +17,6 @@ import AiChat from "@/components/AiChat";
 export const SiteSettingsContext = createContext<SiteSettings | null>(null);
 export function useSiteSettings() { return useContext(SiteSettingsContext); }
 import Home from "@/pages/home";
-import Home2 from "@/pages/home2";
 import SearchPage from "@/pages/search";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/login";
@@ -166,7 +165,6 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/" component={Home} />
-      <Route path="/home2" component={Home2} />
       <Route path="/search" component={SearchPage} />
       <Route path="/add-property" component={AddPropertyPage} />
       <Route path="/map-search" component={MapSearchPage} />

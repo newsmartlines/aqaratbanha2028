@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { propertiesTable, providersTable, usersTable, categoriesTable } from "@workspace/db";
+import { propertiesTable, providersTable, usersTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 
 const router = Router();
@@ -15,17 +15,15 @@ router.get("/listings", async (_req, res) => {
         price: propertiesTable.price,
         status: propertiesTable.status,
         listingType: propertiesTable.listingType,
-        img: propertiesTable.mainImage,
+        mainCategory: propertiesTable.mainCategory,
+        images: propertiesTable.images,
         createdAt: propertiesTable.createdAt,
         providerId: propertiesTable.providerId,
-        categoryId: propertiesTable.categoryId,
         providerName: usersTable.name,
-        categoryNameAr: categoriesTable.nameAr,
       })
       .from(propertiesTable)
       .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
       .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
-      .leftJoin(categoriesTable, eq(propertiesTable.categoryId, categoriesTable.id))
       .orderBy(desc(propertiesTable.createdAt));
     res.json({ success: true, data: rows });
   } catch {
