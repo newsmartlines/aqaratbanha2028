@@ -36,30 +36,19 @@ function getInitials(name: string) {
 
 // ── Nav definitions ────────────────────────────────────────────────────────────
 
-function providerNav(unreadCount: number, msgUnread: number) {
+function unifiedNav(unreadCount: number, msgUnread: number) {
   return [
-    { name: "لوحة التحكم",  href: "/dashboard",              icon: LayoutDashboard,   badge: 0 },
-    { name: "باقتي",        href: "/dashboard/packages",     icon: Package,           badge: 0 },
-    { name: "عقاراتي",      href: "/dashboard/properties",   icon: Building2,         badge: 0 },
-    { name: "الإشعارات",    href: "/dashboard/notifications",icon: Bell,              badge: unreadCount },
-    { name: "الرسائل",      href: "/dashboard/messages",     icon: MessageCircleIcon, badge: msgUnread },
-    { name: "تذاكر الدعم",  href: "/dashboard/support",      icon: Ticket,            badge: 0 },
-    { name: "المدفوعات",    href: "/dashboard/payments",     icon: CreditCard,        badge: 0 },
-    { name: "الإعدادات",    href: "/dashboard/settings",     icon: Settings,          badge: 0 },
-  ];
-}
-
-function userNav(unreadCount: number, msgUnread: number) {
-  return [
-    { name: "الرئيسية",      href: "/dashboard",                  icon: LayoutDashboard,   badge: 0 },
-    { name: "عقاراتي",       href: "/dashboard/properties",       icon: Building2,         badge: 0 },
-    { name: "المفضلة",       href: "/dashboard/favorites",        icon: Heart,             badge: 0 },
-    { name: "تنبيهات البحث", href: "/dashboard/saved-searches",   icon: BellRing,          badge: 0 },
-    { name: "المدفوعات",     href: "/dashboard/payments",         icon: CreditCard,        badge: 0 },
-    { name: "رسائلي",        href: "/dashboard/messages",         icon: MessageCircleIcon, badge: msgUnread },
-    { name: "الإشعارات",     href: "/dashboard/notifications",    icon: Bell,              badge: unreadCount },
-    { name: "الإعدادات",     href: "/dashboard/settings",         icon: Settings,          badge: 0 },
-    { name: "المساعدة",      href: "/dashboard/support",          icon: HelpCircle,        badge: 0 },
+    { name: "لوحة التحكم الرئيسية", href: "/dashboard",                 icon: LayoutDashboard,   badge: 0 },
+    { name: "باقاتي",               href: "/dashboard/packages",        icon: Package,           badge: 0 },
+    { name: "عقاراتي",              href: "/dashboard/properties",      icon: Building2,         badge: 0 },
+    { name: "المفضلة",              href: "/dashboard/favorites",       icon: Heart,             badge: 0 },
+    { name: "تنبيهات البحث",        href: "/dashboard/saved-searches",  icon: BellRing,          badge: 0 },
+    { name: "المدفوعات",            href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
+    { name: "رسائلي",               href: "/dashboard/messages",        icon: MessageCircleIcon, badge: msgUnread },
+    { name: "الإشعارات",            href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
+    { name: "تذاكر الدعم",          href: "/dashboard/support",         icon: Ticket,            badge: 0 },
+    { name: "الإعدادات",            href: "/dashboard/settings",        icon: Settings,          badge: 0 },
+    { name: "المساعدة",             href: "/dashboard/help",            icon: HelpCircle,        badge: 0 },
   ];
 }
 
@@ -135,7 +124,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const isProvider = user?.role === "provider";
-  const navItems = isProvider ? providerNav(unreadCount, msgUnread) : userNav(unreadCount, msgUnread);
+  const navItems = unifiedNav(unreadCount, msgUnread);
   const displayName = user?.name ?? (isProvider ? "الشركة العقارية" : "المستخدم");
 
   // ── Sidebar ──────────────────────────────────────────────────────────────────
