@@ -1,6 +1,6 @@
 import http from 'http';
 
-const VITE_PORT = 5000;
+const VITE_PORT = Number(process.env.VITE_PORT ?? 5001);
 const PROXY_PORT = 20787;
 
 const proxy = http.createServer((req, res) => {
