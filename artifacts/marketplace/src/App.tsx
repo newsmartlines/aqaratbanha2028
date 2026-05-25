@@ -52,7 +52,6 @@ import ListingPayPage from "@/pages/pay/listing";
 import ProviderCheckout from "@/pages/dashboard/checkout";
 import CheckoutResult from "@/pages/dashboard/checkout-result";
 import UserEditProperty from "@/pages/user/edit-property";
-import UserReviews from "@/pages/user/reviews";
 import AdminStaff from "@/pages/admin/staff";
 import AdminSupportTickets from "@/pages/admin/support-tickets";
 import AdminProviderEdit from "@/pages/admin/provider-edit";
@@ -271,10 +270,7 @@ function Router() {
         {(params) => <Redirect to={`/dashboard/edit-property/${params.id}`} />}
       </Route>
 
-      {/* Legacy: user reviews (keep working) */}
-      <Route path="/user/reviews">
-        {() => <RoleProtectedRoute component={UserReviews} roles={["user"]} />}
-      </Route>
+      <Route path="/user/reviews" component={() => <Redirect to="/dashboard/reviews" />} />
 
       {/* Admin routes */}
       <Route path="/admin/dashboard">
