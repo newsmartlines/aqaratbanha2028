@@ -3,7 +3,8 @@ import { Link } from "wouter";
 import {
   Users, Star, List, Heart, BellRing, Bell, Search, Building2,
   Loader2, AlertCircle, Plus, Eye, Phone,
-  MessageCircle, Send, Clock,
+  MessageCircle, Send, Clock, CheckCircle2, Sparkles, TrendingUp,
+  ArrowUpRight,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +42,8 @@ export default function DashboardOverview() {
     queryFn: () => api.providers.stats(providerId!),
     enabled: isProvider && !!providerId,
     retry: 2,
+    refetchInterval: 30_000,
+    staleTime: 20_000,
   });
   const { data: interactions, isLoading: interactionsLoading } = useQuery<ProviderInteractions>({
     queryKey: ["providerInteractions", providerId],
@@ -262,9 +265,62 @@ export default function DashboardOverview() {
     );
   }
 
-  const statsData = [
-    { name: "التقييم", value: statsLoading ? "—" : (stats?.avgRating ?? "0.0"), icon: Star, sub: statsLoading ? "" : `${stats?.reviewsCount ?? 0} تقييم` },
-    { name: "الإعلانات", value: statsLoading ? "—" : String(stats?.servicesCount ?? 0), icon: List, sub: statsLoading ? "" : "إعلان نشط" },
+  const kpiCards = [
+    {
+      label: "عدد عقاراتي",
+      value: stats?.totalProperties ?? 0,
+      icon: Building2,
+      color: "text-blue-600",
+      bg: "bg-blue-500/10",
+      border: "border-blue-200/60 dark:border-blue-800/40",
+      accent: "from-blue-500/5",
+      href: "/dashboard/properties",
+      suffix: "عقار",
+    },
+    {
+      label: "إجمالي المشاهدات",
+      value: stats?.totalViews ?? 0,
+      icon: Eye,
+      color: "text-violet-600",
+      bg: "bg-violet-500/10",
+      border: "border-violet-200/60 dark:border-violet-800/40",
+      accent: "from-violet-500/5",
+      href: "/dashboard/properties",
+      suffix: "مشاهدة",
+    },
+    {
+      label: "ضغطات الهاتف",
+      value: stats?.totalPhoneClicks ?? 0,
+      icon: Phone,
+      color: "text-emerald-600",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-200/60 dark:border-emerald-800/40",
+      accent: "from-emerald-500/5",
+      href: "/dashboard/properties",
+      suffix: "ضغطة",
+    },
+    {
+      label: "العقارات النشطة",
+      value: stats?.activeProperties ?? 0,
+      icon: CheckCircle2,
+      color: "text-teal-600",
+      bg: "bg-teal-500/10",
+      border: "border-teal-200/60 dark:border-teal-800/40",
+      accent: "from-teal-500/5",
+      href: "/dashboard/properties",
+      suffix: "نشط",
+    },
+    {
+      label: "العقارات المميزة",
+      value: stats?.featuredProperties ?? 0,
+      icon: Sparkles,
+      color: "text-amber-600",
+      bg: "bg-amber-500/10",
+      border: "border-amber-200/60 dark:border-amber-800/40",
+      accent: "from-amber-500/5",
+      href: "/dashboard/properties",
+      suffix: "مميز",
+    },
   ];
   const sub = stats?.subscription ?? null;
 
@@ -307,66 +363,81 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Overview header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/5 p-5 rounded-2xl border border-primary/10">
+        {/* ── KPI Stats Header ─────────────────────────────────────────── */}
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-foreground">نظرة عامة على نشاطك</h3>
-            <p className="text-muted-foreground text-sm mt-0.5">إحصائيات حسابك اليوم</p>
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              إحصائياتك الآن
+            </h3>
+            <p className="text-muted-foreground text-sm mt-0.5">تُحدَّث تلقائياً كل 30 ثانية</p>
           </div>
           <Link href="/dashboard/properties">
-            <Button variant="outline" className="shrink-0 rounded-xl text-sm">عقاراتي</Button>
+            <Button variant="outline" size="sm" className="rounded-xl text-xs gap-1.5">
+              <Building2 className="w-3.5 h-3.5" />
+              إدارة العقارات
+            </Button>
           </Link>
         </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {statsData.map((stat) => (
-            <Card key={stat.name} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.name}</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">
-                      {statsLoading ? <span className="inline-block w-12 h-8 bg-secondary/50 rounded animate-pulse" /> : stat.value}
-                    </p>
+        {/* ── KPI Cards Grid ───────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          {kpiCards.map((card) => (
+            <Link key={card.label} href={card.href}>
+              <div className={`group relative overflow-hidden rounded-2xl border bg-gradient-to-br ${card.accent} to-transparent p-5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-opacity-80 ${card.border} bg-card`}>
+                {/* Top row */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-11 h-11 rounded-xl ${card.bg} flex items-center justify-center ${card.color} transition-transform group-hover:scale-110`}>
+                    <card.icon className="w-5 h-5" />
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <stat.icon className="w-5 h-5" />
-                  </div>
+                  <ArrowUpRight className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity ${card.color}`} />
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">{stat.sub}</p>
-              </CardContent>
-            </Card>
+
+                {/* Value */}
+                {statsLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-8 w-20 bg-secondary/60 rounded-lg animate-pulse" />
+                    <div className="h-3 w-16 bg-secondary/40 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-3xl font-extrabold text-foreground tracking-tight">
+                      {card.value.toLocaleString("ar-EG")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 font-medium">{card.suffix}</p>
+                  </>
+                )}
+
+                {/* Label */}
+                <p className={`text-sm font-semibold mt-3 ${card.color}`}>{card.label}</p>
+              </div>
+            </Link>
           ))}
         </div>
 
-        {/* Interactions */}
-        <Card className="border-border/50 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              إحصائيات التواصل
-              <Badge variant="outline" className="text-[10px] mr-auto">إجمالي الضغطات</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { icon: Phone, label: "ضغطة على الهاتف", value: interactions?.phone ?? 0, cls: "bg-primary/5 border-primary/10", iCls: "bg-primary/10 text-primary" },
-                { icon: MessageCircle, label: "ضغطة على واتساب", value: interactions?.whatsapp ?? 0, cls: "bg-green-500/5 border-green-500/10", iCls: "bg-green-500/10 text-green-600" },
-                { icon: Send, label: "رسالة أُرسلت", value: interactions?.message ?? 0, cls: "bg-blue-500/5 border-blue-500/10", iCls: "bg-blue-500/10 text-blue-600" },
-              ].map(({ icon: Icon, label, value, cls, iCls }) => (
-                <div key={label} className={`flex flex-col items-center gap-2 p-4 rounded-xl border ${cls}`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${iCls}`}><Icon className="w-5 h-5" /></div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {interactionsLoading ? <span className="inline-block w-8 h-6 bg-secondary/50 rounded animate-pulse" /> : value}
-                  </p>
-                  <p className="text-xs text-muted-foreground text-center">{label}</p>
+        {/* ── Interactions breakdown ───────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: Phone, label: "ضغطات الهاتف", value: stats?.totalPhoneClicks ?? 0, sub: "عدد مرات النقر على رقمك", cls: "border-blue-200/60 dark:border-blue-800/40 from-blue-500/5", iCls: "bg-blue-500/10 text-blue-600" },
+            { icon: MessageCircle, label: "ضغطات واتساب", value: stats?.totalWhatsappClicks ?? 0, sub: "عدد مرات النقر على واتساب", cls: "border-green-200/60 dark:border-green-800/40 from-green-500/5", iCls: "bg-green-500/10 text-green-600" },
+            { icon: Users, label: "إجمالي التفاعل", value: (stats?.totalPhoneClicks ?? 0) + (stats?.totalWhatsappClicks ?? 0), sub: "مجموع كل الضغطات", cls: "border-violet-200/60 dark:border-violet-800/40 from-violet-500/5", iCls: "bg-violet-500/10 text-violet-600" },
+          ].map(({ icon: Icon, label, value, sub, cls, iCls }) => (
+            <div key={label} className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br ${cls} to-transparent bg-card p-5`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iCls}`}>
+                  <Icon className="w-4 h-4" />
                 </div>
-              ))}
+                <p className="text-sm font-semibold text-foreground">{label}</p>
+              </div>
+              {statsLoading ? (
+                <div className="h-8 w-16 bg-secondary/60 rounded-lg animate-pulse" />
+              ) : (
+                <p className="text-3xl font-extrabold text-foreground">{value.toLocaleString("ar-EG")}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{sub}</p>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
 
         {/* Subscription mini-card */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

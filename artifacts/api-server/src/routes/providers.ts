@@ -354,7 +354,7 @@ router.post("/admin/providers", async (req, res) => {
 router.get("/providers/:id/stats", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const [reviewsResult, subscriptionResult] = await Promise.all([
+    const [reviewsResult, subscriptionResult, propertiesResult] = await Promise.all([
       db.select().from(reviewsTable).where(eq(reviewsTable.providerId, id)),
       db
         .select({
@@ -380,7 +380,23 @@ router.get("/providers/:id/stats", async (req, res) => {
         .where(eq(subscriptionsTable.providerId, id))
         .orderBy(desc(subscriptionsTable.startDate))
         .limit(1),
+      db.select({
+        id: propertiesTable.id,
+        status: propertiesTable.status,
+        featured: propertiesTable.featured,
+        viewCount: propertiesTable.viewCount,
+        phoneClickCount: propertiesTable.phoneClickCount,
+        whatsappClickCount: propertiesTable.whatsappClickCount,
+      }).from(propertiesTable).where(eq(propertiesTable.providerId, id)),
     ]);
+
+    // Property aggregates
+    const totalProperties = propertiesResult.length;
+    const activeProperties = propertiesResult.filter(p => p.status === "active").length;
+    const featuredProperties = propertiesResult.filter(p => p.featured).length;
+    const totalViews = propertiesResult.reduce((s, p) => s + (p.viewCount ?? 0), 0);
+    const totalPhoneClicks = propertiesResult.reduce((s, p) => s + (p.phoneClickCount ?? 0), 0);
+    const totalWhatsappClicks = propertiesResult.reduce((s, p) => s + (p.whatsappClickCount ?? 0), 0);
 
     const avgRating = reviewsResult.length
       ? (reviewsResult.reduce((sum, r) => sum + r.rating, 0) / reviewsResult.length).toFixed(1)
@@ -395,7 +411,6 @@ router.get("/providers/:id/stats", async (req, res) => {
       isActive = daysLeft > 0;
     }
 
-    // Resolve display name/price from billing plan or old package
     const resolvedNameAr = subscription?.billingPlanId
       ? (subscription.planNameAr ?? subscription.planNameAr)
       : (subscription?.packageNameAr ?? subscription?.planNameAr ?? null);
@@ -411,6 +426,12 @@ router.get("/providers/:id/stats", async (req, res) => {
       data: {
         reviewsCount: reviewsResult.length,
         avgRating,
+        totalProperties,
+        activeProperties,
+        featuredProperties,
+        totalViews,
+        totalPhoneClicks,
+        totalWhatsappClicks,
         subscription: subscription
           ? {
               ...subscription,

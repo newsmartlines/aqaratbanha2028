@@ -264,6 +264,12 @@ export interface ProviderStats {
   servicesCount: number;
   reviewsCount: number;
   avgRating: string;
+  totalProperties: number;
+  activeProperties: number;
+  featuredProperties: number;
+  totalViews: number;
+  totalPhoneClicks: number;
+  totalWhatsappClicks: number;
   subscription: {
     id: number;
     packageId: number;
