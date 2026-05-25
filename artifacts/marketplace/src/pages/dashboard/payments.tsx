@@ -215,11 +215,35 @@ export default function PaymentsPage() {
   return (
     <DashboardLayout>
       <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500" dir="rtl">
-        <div>
-          <h1 className="text-3xl font-bold">المدفوعات</h1>
-          <p className="text-muted-foreground mt-1">
-            {isProvider ? "سجل مدفوعاتك والإيرادات الواردة" : "سجل معاملاتك المالية"}
-          </p>
+        {/* ── Page hero heading ───────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary/90 to-primary px-7 py-6 text-primary-foreground shadow-lg">
+          <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
+            <div className="absolute -top-6 -left-6 w-40 h-40 rounded-full border-[3px] border-white/40" />
+            <div className="absolute bottom-0 right-10 w-24 h-24 rounded-full border-2 border-white/20" />
+            <div className="absolute top-1/2 left-1/3 w-16 h-16 rounded-full border border-white/20" />
+          </div>
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-medium uppercase tracking-widest text-primary-foreground/60">المدفوعات</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                يلا بينا
+                <span className="text-white/80"> نشوف اللي دفعته </span>
+                <span className="inline-block animate-bounce">👀</span>
+              </h1>
+              <p className="text-primary-foreground/65 text-sm mt-1.5">
+                {isProvider ? "كل مدفوعاتك والإيرادات في مكان واحد" : "سجل كامل بكل معاملاتك المالية"}
+              </p>
+            </div>
+            <div className="shrink-0 text-left">
+              <p className="text-xs text-primary-foreground/50 mb-0.5">إجمالي المقبول</p>
+              <p className="text-2xl font-black">{fmtMoney(totals.paidAmount)} <span className="text-base font-medium opacity-70">ج.م</span></p>
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
