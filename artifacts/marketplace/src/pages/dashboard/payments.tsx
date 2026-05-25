@@ -214,35 +214,18 @@ export default function PaymentsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500" dir="rtl">
-        {/* ── Page hero heading ───────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary/90 to-primary px-7 py-6 text-primary-foreground shadow-lg">
-          <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
-            <div className="absolute -top-6 -left-6 w-40 h-40 rounded-full border-[3px] border-white/40" />
-            <div className="absolute bottom-0 right-10 w-24 h-24 rounded-full border-2 border-white/20" />
-            <div className="absolute top-1/2 left-1/3 w-16 h-16 rounded-full border border-white/20" />
+      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6" dir="rtl">
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">المدفوعات</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {isProvider ? "سجل مدفوعاتك والإيرادات الواردة" : "سجل معاملاتك المالية"}
+            </p>
           </div>
-          <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                  <Wallet className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-medium uppercase tracking-widest text-primary-foreground/60">المدفوعات</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                يلا بينا
-                <span className="text-white/80"> نشوف اللي دفعته </span>
-                <span className="inline-block animate-bounce">👀</span>
-              </h1>
-              <p className="text-primary-foreground/65 text-sm mt-1.5">
-                {isProvider ? "كل مدفوعاتك والإيرادات في مكان واحد" : "سجل كامل بكل معاملاتك المالية"}
-              </p>
-            </div>
-            <div className="shrink-0 text-left">
-              <p className="text-xs text-primary-foreground/50 mb-0.5">إجمالي المقبول</p>
-              <p className="text-2xl font-black">{fmtMoney(totals.paidAmount)} <span className="text-base font-medium opacity-70">ج.م</span></p>
-            </div>
+          <div className="text-left shrink-0">
+            <p className="text-xs text-gray-400 mb-0.5">إجمالي المقبول</p>
+            <p className="text-xl font-bold text-gray-900">{fmtMoney(totals.paidAmount)} <span className="text-sm font-normal text-gray-500">ج.م</span></p>
           </div>
         </div>
 
@@ -252,132 +235,108 @@ export default function PaymentsPage() {
           </div>
         ) : (
           <>
-            {/* Stats cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Stats row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {isProvider && (
-                <Card className="bg-primary/5 border-primary/10">
-                  <CardContent className="p-6 flex justify-between items-start">
-                    <div>
-                      <p className="text-sm text-muted-foreground">صافي الإيرادات</p>
-                      <p className="text-3xl font-bold text-primary mt-2">
-                        {fmtMoney((totals as any).netEarnings)} <span className="text-lg font-normal">ج.م</span>
-                      </p>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                      <ArrowDownCircle className="w-5 h-5" />
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="bg-white rounded-xl border border-gray-100 p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ArrowDownCircle className="w-4 h-4 text-gray-400" />
+                    <p className="text-xs text-gray-500 font-medium">صافي الإيرادات</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{fmtMoney((totals as any).netEarnings)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">جنيه مصري</p>
+                </div>
               )}
-              <Card className="bg-emerald-500/5 border-emerald-500/10">
-                <CardContent className="p-6 flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-muted-foreground">مقبول</p>
-                    <p className="text-3xl font-bold text-emerald-600 mt-2">
-                      {fmtMoney(totals.paidAmount)} <span className="text-lg font-normal">ج.م</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{totals.paid} معاملة</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-amber-500/5 border-amber-500/10">
-                <CardContent className="p-6 flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-muted-foreground">قيد المراجعة</p>
-                    <p className="text-3xl font-bold text-amber-600 mt-2">
-                      {fmtMoney(totals.pendingAmount)} <span className="text-lg font-normal">ج.م</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{totals.pending} معاملة</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-white rounded-xl border border-gray-100 p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                  <p className="text-xs text-gray-500 font-medium">مقبول</p>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{fmtMoney(totals.paidAmount)}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{totals.paid} معاملة</p>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-100 p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <p className="text-xs text-gray-500 font-medium">قيد المراجعة</p>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{fmtMoney(totals.pendingAmount)}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{totals.pending} معاملة</p>
+              </div>
             </div>
 
-            {/* Provider: Subscription card */}
+            {/* Subscription strip */}
             {isProvider && sub && (
-              <Card className="border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Package className="w-4 h-4 text-primary" />
-                    اشتراكي الحالي
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center justify-between gap-4">
+              <div className="bg-white rounded-xl border border-gray-100 px-5 py-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Package className="w-4 h-4 text-gray-400" />
                   <div>
-                    <p className="font-bold">{sub.packageNameAr ?? "—"}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
+                    <p className="text-sm font-semibold text-gray-900">{sub.packageNameAr ?? "باقة"}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
                       {sub.isActive ? `${sub.daysLeft} يوم متبقٍ` : "منتهي الصلاحية"}
                     </p>
                   </div>
-                  <Badge variant="outline" className={sub.isActive ? "bg-green-500/10 text-green-700 border-green-200" : "bg-red-500/10 text-red-700 border-red-200"}>
-                    {sub.isActive ? "نشط" : "منتهي"}
-                  </Badge>
-                </CardContent>
-              </Card>
+                </div>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${sub.isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                  {sub.isActive ? "نشط" : "منتهي"}
+                </span>
+              </div>
             )}
 
             {/* Transactions table */}
-            <Card className="border-border/50">
-              <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-primary" />
-                  سجل المعاملات
-                </CardTitle>
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 flex flex-row items-center justify-between border-b border-gray-50">
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-gray-400" />
+                  <h3 className="text-sm font-semibold text-gray-900">سجل المعاملات</h3>
+                </div>
                 {rows.length > 0 && (
                   <Button variant="outline" size="sm" className="gap-2 rounded-xl" onClick={() => window.print()}>
                     <DownloadCloud className="w-4 h-4" />
                     تصدير
                   </Button>
                 )}
-              </CardHeader>
-              <CardContent className="p-0">
-                {rows.length === 0 ? (
-                  <div className="py-16 text-center text-muted-foreground">
-                    <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">لا توجد معاملات بعد</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-right">
-                      <thead className="bg-secondary/50 text-xs text-muted-foreground">
-                        <tr>
-                          <th className="px-4 py-3 font-medium">المعاملة</th>
-                          <th className="px-4 py-3 font-medium">التاريخ</th>
-                          <th className="px-4 py-3 font-medium">الحالة</th>
-                          <th className="px-4 py-3 font-medium">طريقة الدفع</th>
-                          <th className="px-4 py-3 font-medium text-left">المبلغ</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.map((row: any) => (
-                          <PaymentRow
-                            key={row.id}
-                            row={row}
-                            onClick={() => setSelectedRow({
-                              id: String(row.id),
-                              refId: row.refId ?? `#${row.id}`,
-                              kind: row.kind ?? "service_request",
-                              serviceTitle: row.serviceTitle ?? null,
-                              amount: row.amount,
-                              status: row.status,
-                              gateway: row.gateway ?? "manual",
-                              paidAt: row.paidAt ?? null,
-                              createdAt: row.createdAt,
-                            })}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              </div>
+              {rows.length === 0 ? (
+                <div className="py-16 text-center">
+                  <ShoppingBag className="w-10 h-10 mx-auto text-gray-200 mb-3" />
+                  <p className="text-sm text-gray-400">لا توجد معاملات بعد</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right">
+                    <thead>
+                      <tr className="border-b border-gray-50">
+                        <th className="px-5 py-3 text-xs font-medium text-gray-400">المعاملة</th>
+                        <th className="px-5 py-3 text-xs font-medium text-gray-400">التاريخ</th>
+                        <th className="px-5 py-3 text-xs font-medium text-gray-400">الحالة</th>
+                        <th className="px-5 py-3 text-xs font-medium text-gray-400">طريقة الدفع</th>
+                        <th className="px-5 py-3 text-xs font-medium text-gray-400 text-left">المبلغ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((row: any) => (
+                        <PaymentRow
+                          key={row.id}
+                          row={row}
+                          onClick={() => setSelectedRow({
+                            id: String(row.id),
+                            refId: row.refId ?? `#${row.id}`,
+                            kind: row.kind ?? "service_request",
+                            serviceTitle: row.serviceTitle ?? null,
+                            amount: row.amount,
+                            status: row.status,
+                            gateway: row.gateway ?? "manual",
+                            paidAt: row.paidAt ?? null,
+                            createdAt: row.createdAt,
+                          })}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </>
         )}
 
