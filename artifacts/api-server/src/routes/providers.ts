@@ -523,7 +523,44 @@ router.post("/providers/:id/subscribe", async (req, res) => {
       const ownerUserId = providerRow?.userId ?? null;
       const providerName = providerRow?.name ?? "شركة عقارية";
 
-      if (requestedPrice > 0 && ownerUserId) {
+      // ── Record payment so it appears in مدفوعاتي ──────────────────────────
+      let bpPayment = null;
+      if (requestedPrice > 0) {
+        const invoiceId = `BP-${Date.now()}-${sub.id}`;
+        const [p] = await db
+          .insert(paymentsTable)
+          .values({
+            providerId: id,
+            type: "subscription",
+            amount: String(requestedPrice.toFixed(2)),
+            status: "paid",
+            invoiceId,
+          })
+          .returning();
+        bpPayment = p;
+
+        // Admin notification
+        await db.insert(notificationsTable).values({
+          userId: null,
+          type: "payment",
+          title: "دفعة جديدة",
+          message: `تم استلام دفعة بقيمة ${requestedPrice.toFixed(2)} ج.م من ${providerName} لباقة ${bp.nameAr ?? bp.name}`,
+          link: "/admin/payments",
+        }).catch(() => {});
+
+        // Provider notification: payment confirmation
+        if (ownerUserId) {
+          await db.insert(notificationsTable).values({
+            userId: ownerUserId,
+            type: "success",
+            title: "تم استلام دفعتك",
+            message: `تم استلام دفعتك بقيمة ${requestedPrice.toFixed(2)} ج.م لباقة ${bp.nameAr ?? bp.name}`,
+            link: "/dashboard/payments",
+          }).catch(() => {});
+        }
+      }
+
+      if (ownerUserId) {
         await db.insert(notificationsTable).values({
           userId: ownerUserId,
           title: "تم تفعيل الاشتراك",
@@ -538,7 +575,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
         }).catch(() => {});
       }
 
-      return res.json({ success: true, data: sub });
+      return res.json({ success: true, data: { subscription: sub, payment: bpPayment } });
     }
 
     // ── Old Packages path (legacy) ───────────────────────────────────────────
