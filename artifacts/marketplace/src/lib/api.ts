@@ -761,11 +761,14 @@ export const api = {
           amount: string; refId: string | null; note: string | null; createdAt: string;
         }>;
       }>(`/admin/wallet`),
-    requestSubscription: (data: { billingPlanId: number; gateway: string; receiptUrl?: string }) =>
-      fetchJson(`/payments/subscription-request`, {
+    requestSubscription: (data: { billingPlanId: number; gateway: string; receiptUrl?: string; signal?: AbortSignal }) => {
+      const { signal, ...body } = data;
+      return fetchJson(`/payments/subscription-request`, {
         method: "POST",
-        body: JSON.stringify(data),
-      }),
+        body: JSON.stringify(body),
+        signal,
+      });
+    },
   },
 
   requests: {

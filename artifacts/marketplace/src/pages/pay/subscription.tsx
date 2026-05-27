@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import {
   ArrowRight, Shield, CheckCircle2, Loader2, Upload, X,
   Copy, CheckCheck, Smartphone, Zap, CreditCard, Building2,
-  Lock, Clock, Star, Crown, Package,
+  Lock, Clock, Star, Crown, Package, AlertTriangle,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -144,11 +144,40 @@ export default function SubscriptionPayPage() {
   const [phase, setPhase] = useState<"payment" | "uploading" | "done">("payment");
   const [receipt, setReceipt] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   const gw = GATEWAYS.find(g => g.id === activeGateway);
   const amount = parseFloat(price).toLocaleString("ar-EG");
   const isPaid = parseFloat(price) > 0;
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+  }, []);
+
+  const startTimer = useCallback(() => {
+    setElapsed(0);
+    timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    stopTimer();
+    setPhase("payment");
+    setSubmitError(null);
+    toast.error("تم إلغاء الطلب");
+  }, [stopTimer]);
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files?.[0]) return;
@@ -164,36 +193,90 @@ export default function SubscriptionPayPage() {
     }
   };
 
+  const TIMEOUT_MS = 45_000;
+
   const handleConfirm = async () => {
     if (!receipt && isPaid) {
       toast.error("يرجى رفع إيصال الدفع أولاً");
       return;
     }
+    setSubmitError(null);
     setPhase("uploading");
+    startTimer();
+
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    const timeoutId = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+
     try {
       if (planId && isPaid) {
         await api.payments.requestSubscription({
           billingPlanId: planId,
           gateway: activeGateway ?? "manual",
           receiptUrl: receipt ?? undefined,
+          signal: ctrl.signal,
         });
       }
+      clearTimeout(timeoutId);
+      stopTimer();
       setPhase("done");
     } catch (err: any) {
-      setPhase("payment");
-      toast.error(err?.message ?? "فشل إرسال الطلب، حاول مرة أخرى");
+      clearTimeout(timeoutId);
+      stopTimer();
+      abortRef.current = null;
+      if (err?.name === "AbortError" || ctrl.signal.aborted) {
+        const msg = "انتهت مهلة الاتصال. تأكد من اتصالك بالإنترنت وحاول مجدداً.";
+        setSubmitError(msg);
+        setPhase("payment");
+        toast.error(msg);
+      } else {
+        const msg = err?.message ?? "فشل إرسال الطلب، حاول مرة أخرى";
+        setSubmitError(msg);
+        setPhase("payment");
+        toast.error(msg);
+      }
     }
   };
 
   if (phase === "uploading") {
+    const pct = Math.min(100, Math.round((elapsed / (TIMEOUT_MS / 1000)) * 100));
+    const isSlowWarning = elapsed >= 15;
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-teal-100" dir="rtl">
-        <div className="text-center space-y-5 p-8">
-          <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center mx-auto">
+        <div className="text-center space-y-6 p-8 max-w-sm w-full">
+          <div className={`w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center mx-auto transition-all ${isSlowWarning ? "ring-4 ring-amber-200" : ""}`}>
             <Loader2 className="w-12 h-12 animate-spin text-teal-600" />
           </div>
-          <p className="text-xl font-bold text-gray-800">جارٍ إرسال طلبك...</p>
-          <p className="text-sm text-gray-500">يرجى الانتظار</p>
+          <div>
+            <p className="text-xl font-bold text-gray-800">جارٍ إرسال طلبك...</p>
+            <p className="text-sm text-gray-500 mt-1">يرجى الانتظار — لا تغلق الصفحة</p>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div
+              className={`h-2 rounded-full transition-all duration-1000 ${isSlowWarning ? "bg-amber-400" : "bg-teal-500"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-400 tabular-nums">{elapsed} ثانية مضت</p>
+
+          {isSlowWarning && (
+            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-right">
+              <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700">الاتصال يستغرق وقتاً أطول من المعتاد. يمكنك الانتظار أو إلغاء الطلب والمحاولة مجدداً.</p>
+            </div>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCancel}
+            className="w-full h-10 rounded-xl border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors"
+          >
+            <X className="w-4 h-4 ml-1" />
+            إلغاء الطلب
+          </Button>
         </div>
       </div>
     );
@@ -519,6 +602,17 @@ export default function SubscriptionPayPage() {
                             بياناتك محمية بالكامل. سيتم التحقق من الدفع وتفعيل الباقة خلال <strong className="text-gray-700">24 ساعة</strong> من إرسال الطلب.
                           </p>
                         </div>
+
+                        {/* Error Banner */}
+                        {submitError && (
+                          <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-2xl p-4">
+                            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-sm font-bold text-red-700">فشل إرسال الطلب</p>
+                              <p className="text-xs text-red-500 mt-0.5">{submitError}</p>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Confirm Button */}
                         <Button

@@ -65,6 +65,8 @@ export default defineConfig({
       "/api": {
         target: API_SERVER,
         changeOrigin: true,
+        proxyTimeout: 60000,
+        timeout: 60000,
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
             proxyReq.setHeader("Cache-Control", "no-cache");
@@ -77,11 +79,19 @@ export default defineConfig({
               ((req.socket as { encrypted?: boolean }).encrypted ? "https" : "http");
             proxyReq.setHeader("X-Forwarded-Proto", String(incomingProto));
           });
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res) {
+              (res as import("http").ServerResponse).writeHead(504, { "Content-Type": "application/json" });
+              (res as import("http").ServerResponse).end(JSON.stringify({ success: false, error: "انتهت مهلة الاتصال بالخادم، يرجى المحاولة مجدداً" }));
+            }
+          });
         },
       },
       "/uploads": {
         target: API_SERVER,
         changeOrigin: true,
+        proxyTimeout: 30000,
+        timeout: 30000,
       },
     },
   },
