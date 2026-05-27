@@ -95,13 +95,6 @@ SESSION_DRIVER=file
 
 SANCTUM_STATEFUL_DOMAINS=yourdomain.com,www.yourdomain.com
 
-# STC Pay
-STCPAY_MERCHANT_ID=your_merchant_id
-STCPAY_API_KEY=your_api_key
-STCPAY_BASE_URL=https://api.stcpay.com.sa
-STCPAY_TEST_MODE=false
-STCPAY_RETURN_URL=https://api.yourdomain.com/api/stcpay/return
-
 # Commission rate (%)
 DEFAULT_COMMISSION_RATE=10
 ```

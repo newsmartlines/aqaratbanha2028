@@ -12,7 +12,7 @@ class PaymentTransaction extends Model
 
     protected $fillable = [
         'payment_id', 'transaction_ref', 'amount', 'status',
-        'stcpay_session_id', 'stcpay_checkout_url', 'raw_response', 'expires_at',
+        'raw_response', 'expires_at',
     ];
 
     protected $casts = [

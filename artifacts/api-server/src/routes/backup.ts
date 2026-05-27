@@ -23,7 +23,7 @@ const SEEDS_DIR = path.resolve(process.cwd(), "lib/db/seeds");
 // Keys to strip from site_settings exports (sensitive)
 const SENSITIVE_SETTING_KEYS = new Set([
   "smtpPass", "smtpUser", "smtpHost", "smtpPort", "smtpSecure",
-  "googleClientSecret", "jwtSecret", "stcpaySecret", "stcpayMerchantId",
+  "googleClientSecret", "jwtSecret",
   "paymentGatewayKey", "stripeSecret",
 ]);
 

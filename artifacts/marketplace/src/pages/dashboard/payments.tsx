@@ -29,7 +29,6 @@ const GATEWAY_CFG: Record<string, { label: string; icon: React.ComponentType<{ c
   fawry:         { label: "فوري",          icon: Banknote,   cls: "text-amber-600 bg-amber-50 border-amber-200" },
   bank_transfer: { label: "تحويل بنكي",   icon: Building2,  cls: "text-slate-600 bg-slate-50 border-slate-200" },
   manual:        { label: "دفع يدوي",      icon: Banknote,   cls: "text-slate-600 bg-slate-50 border-slate-200" },
-  stcpay:        { label: "STC Pay",       icon: Smartphone, cls: "text-purple-600 bg-purple-50 border-purple-200" },
   cash:          { label: "نقداً",          icon: Banknote,   cls: "text-emerald-600 bg-emerald-50 border-emerald-200" },
 };
 

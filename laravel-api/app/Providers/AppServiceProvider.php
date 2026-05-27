@@ -9,9 +9,6 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(\App\Services\StcPayService::class, function () {
-            return new \App\Services\StcPayService();
-        });
     }
 
     public function boot(): void

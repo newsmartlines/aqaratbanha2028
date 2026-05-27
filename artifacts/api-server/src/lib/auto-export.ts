@@ -40,7 +40,7 @@ const SEEDS_DIR = path.resolve(process.cwd(), "../../lib/db/seeds");
 
 const SENSITIVE_SETTINGS = new Set([
   "smtpPass", "smtpUser", "smtpHost", "smtpPort", "smtpSecure",
-  "googleClientSecret", "jwtSecret", "stcpaySecret", "stcpayMerchantId",
+  "googleClientSecret", "jwtSecret",
   "paymentGatewayKey", "stripeSecret",
 ]);
 

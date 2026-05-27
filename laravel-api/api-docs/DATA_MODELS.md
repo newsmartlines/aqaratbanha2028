@@ -106,7 +106,7 @@
 | amount | decimal | |
 | currency | string | Default `SAR` |
 | status | enum | `pending`, `completed`, `failed`, `refunded`, `cancelled` |
-| gateway | string | Default `stcpay` |
+| gateway | string | Default `manual` |
 | gateway_ref | string nullable | Gateway transaction ID |
 | gateway_response | json nullable | Raw gateway response |
 | package_id / service_request_id | FK nullable | What was paid for |
@@ -122,8 +122,6 @@
 | transaction_ref | string unique | e.g. `TXN-XXXXXXXXXXXX` |
 | amount | decimal | |
 | status | enum | `initiated`, `pending`, `success`, `failed`, `expired` |
-| stcpay_session_id | string nullable | STC Pay session |
-| stcpay_checkout_url | string nullable | Redirect URL |
 | raw_response | json nullable | |
 | expires_at | timestamp nullable | |
 

@@ -320,53 +320,6 @@ Initiate subscription to a package.
 
 ---
 
-## STC Pay
-
-### POST /api/stcpay/subscription *(auth: provider)*
-Initiate subscription payment.
-
-**Body:** `{ "package_id": 2, "billing_cycle": "monthly" }`
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "payment_ref": "PAY-XXXXXXXXXX",
-    "checkout_url": "https://...",
-    "amount": 99,
-    "test_mode": true
-  }
-}
-```
-
----
-
-### POST /api/stcpay/service-request *(auth required)*
-Initiate payment for a service request.
-
-**Body:** `{ "service_request_id": 15 }`
-
----
-
-### GET /api/stcpay/status/{paymentRef} *(auth required)*
-Check payment status.
-
-**Response:** `{ payment_ref, status, amount, paid_at }`
-
----
-
-### GET /api/stcpay/return
-STC Pay redirect return URL (public). Activates subscription/payment on success.
-
-### POST /api/stcpay/webhook
-STC Pay webhook (public). Processes payment confirmations.
-
-### GET /api/stcpay/simulator
-**Test mode only.** In-browser STC Pay payment simulator.
-
----
-
 ## Notifications
 
 ### GET /api/notifications *(auth required)*

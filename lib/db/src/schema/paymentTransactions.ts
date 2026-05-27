@@ -18,7 +18,7 @@ export const paymentTransactionsTable = pgTable("payment_transactions", {
   // Platform commission deducted from amount on success (service-request kind only).
   commissionAmount: numeric("commission_amount", { precision: 10, scale: 2 }).default("0"),
   currency: text("currency").notNull().default("EGP"),
-  gateway: text("gateway").notNull().default("stcpay"),
+  gateway: text("gateway").notNull().default("manual"),
   gatewayRef: text("gateway_ref"),
   gatewayPayload: text("gateway_payload"),
   status: text("status").notNull().default("pending"),

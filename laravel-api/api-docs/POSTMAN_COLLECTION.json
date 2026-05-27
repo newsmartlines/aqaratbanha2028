@@ -91,13 +91,6 @@
       ]
     },
     {
-      "name": "STC Pay",
-      "item": [
-        { "name": "Initiate Subscription", "request": { "method": "POST", "url": "{{base_url}}/stcpay/subscription", "header": [{"key":"Authorization","value":"Bearer {{token}}"},{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\"package_id\":2,\"billing_cycle\":\"monthly\"}" } } },
-        { "name": "Check Status", "request": { "method": "GET", "url": "{{base_url}}/stcpay/status/PAY-XXXXXXXXXX", "header": [{"key":"Authorization","value":"Bearer {{token}}"}] } }
-      ]
-    },
-    {
       "name": "Admin",
       "item": [
         { "name": "Dashboard Stats", "request": { "method": "GET", "url": "{{base_url}}/admin/stats", "header": [{"key":"Authorization","value":"Bearer {{token}}"}] } },

@@ -71,7 +71,6 @@ const STATUS_META: Record<string, { label: string; icon: React.ElementType; cls:
 };
 
 const GATEWAY_LABELS: Record<string, string> = {
-  stcpay: "STC Pay",
   manual: "يدوي",
   free: "مجاني",
 };

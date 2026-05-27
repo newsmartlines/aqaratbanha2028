@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->string('currency', 3)->default('SAR');
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded', 'cancelled'])->default('pending');
-            $table->string('gateway')->default('stcpay');
+            $table->string('gateway')->default('manual');
             $table->string('gateway_ref')->nullable();
             $table->json('gateway_response')->nullable();
             $table->foreignId('package_id')->nullable()->constrained()->nullOnDelete();
@@ -33,8 +33,6 @@ return new class extends Migration
             $table->string('transaction_ref')->unique();
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['initiated', 'pending', 'success', 'failed', 'expired'])->default('initiated');
-            $table->string('stcpay_session_id')->nullable();
-            $table->string('stcpay_checkout_url')->nullable();
             $table->json('raw_response')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();

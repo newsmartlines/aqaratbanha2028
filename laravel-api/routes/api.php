@@ -12,7 +12,6 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\StcPayController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\Admin\AdminProviderController;
@@ -52,13 +51,6 @@ Route::get('providers/{id}/reviews', [ProviderController::class, 'reviews']);
 Route::post('providers/nearby', [ProviderController::class, 'nearby']);
 Route::get('services', [ServiceController::class, 'index']);
 Route::get('services/{id}', [ServiceController::class, 'show']);
-
-// STC Pay callbacks (must be public)
-Route::prefix('stcpay')->group(function () {
-    Route::get('return', [StcPayController::class, 'returnCallback']);
-    Route::post('webhook', [StcPayController::class, 'webhook']);
-    Route::get('simulator', [StcPayController::class, 'simulator']);
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -126,13 +118,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Packages subscribe
     Route::post('packages/{id}/subscribe', [PackageController::class, 'subscribe']);
-
-    // STC Pay
-    Route::prefix('stcpay')->group(function () {
-        Route::post('subscription', [StcPayController::class, 'initiateSubscription']);
-        Route::post('service-request', [StcPayController::class, 'initiateServiceRequest']);
-        Route::get('status/{paymentRef}', [StcPayController::class, 'checkStatus']);
-    });
 
     /*
     |--------------------------------------------------------------------------
