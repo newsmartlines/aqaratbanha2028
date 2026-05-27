@@ -74,6 +74,7 @@ import AdminWpImport from "@/pages/admin/wp-import";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminAds from "@/pages/admin/ads";
 import AdminPopups from "@/pages/admin/popups";
+import AdminPromotions from "@/pages/admin/promotions";
 import { PopupRenderer } from "@/components/PopupRenderer";
 import PropertyDetail from "@/pages/property-detail";
 import ComparePage from "@/pages/compare";
@@ -373,6 +374,9 @@ function Router() {
       </Route>
       <Route path="/admin/popups">
         {() => <AdminProtectedRoute component={AdminPopups} />}
+      </Route>
+      <Route path="/admin/promotions">
+        {() => <AdminProtectedRoute component={AdminPromotions} />}
       </Route>
 
       <Route component={NotFound} />

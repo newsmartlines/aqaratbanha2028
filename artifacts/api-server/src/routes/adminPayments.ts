@@ -459,11 +459,17 @@ router.post("/admin/payments/:paymentId/reject-subscription", async (req, res) =
       .set({ status: "failed" })
       .where(eq(paymentsTable.id, paymentId));
 
+    const reason = typeof req.body?.reason === "string" && req.body.reason.trim()
+      ? req.body.reason.trim()
+      : null;
+
     if (payment.userId) {
       await db.insert(notificationsTable).values({
         userId: payment.userId,
         title: "تم رفض طلب الاشتراك",
-        message: `عذراً، لم يتم قبول دفعة الاشتراك. يرجى التواصل مع الدعم أو إعادة المحاولة.`,
+        message: reason
+          ? `عذراً، لم يتم قبول دفعة الاشتراك. السبب: ${reason}`
+          : `عذراً، لم يتم قبول دفعة الاشتراك. يرجى التواصل مع الدعم أو إعادة المحاولة.`,
         type: "subscription",
         link: "/dashboard/packages",
       }).catch(() => {});

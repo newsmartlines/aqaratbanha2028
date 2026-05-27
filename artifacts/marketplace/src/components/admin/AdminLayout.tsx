@@ -198,6 +198,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { icon: Flag,            label: "البلاغات",            href: "/admin/complaints",       perm: null },
     { icon: BarChart3,       label: t("reports"),         href: "/admin/reports",          perm: "reports" },
     { icon: TrendingUp,      label: "تحليلات الذكاء",     href: "/admin/analytics",        perm: "reports" },
+    { icon: TrendingUp,      label: "الترقيات والبوستات",  href: "/admin/promotions",        perm: null },
     { icon: Megaphone,       label: "إدارة الإعلانات",    href: "/admin/ads",              perm: null },
     { icon: Megaphone,       label: "البوب آب والإعلانات", href: "/admin/popups",           perm: null },
     { icon: MessageSquare,   label: "الرسائل والقوالب",   href: "/admin/messages",         perm: "settings" },

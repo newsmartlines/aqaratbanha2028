@@ -3,7 +3,7 @@ import {
   Download, Filter, Loader2, RefreshCw, Search,
   CheckCircle2, Clock, XCircle, CreditCard, Building2,
   UserCircle2, ChevronLeft, ChevronRight, TrendingUp, Banknote,
-  AlertCircle, ThumbsUp, ThumbsDown, ImageIcon, X,
+  AlertCircle, ThumbsUp, ThumbsDown, ImageIcon, X, ArrowDownToLine,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 
@@ -103,6 +105,10 @@ export default function AdminPayments() {
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<"all" | "paid" | "pending" | "failed">("all");
   const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const [previewInvoiceId, setPreviewInvoiceId] = useState<string | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectPaymentId, setRejectPaymentId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["admin-payments", appliedFilters],
@@ -121,14 +127,46 @@ export default function AdminPayments() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (paymentId: number) => api.admin.payments.rejectSubscription(paymentId),
+    mutationFn: ({ id, reason }: { id: number; reason: string }) =>
+      api.admin.payments.rejectSubscription(id, reason || undefined),
     onSuccess: () => {
       toast({ title: "تم رفض الطلب", description: "تم رفض طلب الاشتراك وإشعار المستخدم." });
       queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+      setRejectDialogOpen(false);
+      setRejectReason("");
+      setRejectPaymentId(null);
       refetch();
     },
     onError: (err: any) => toast({ title: "فشل الرفض", description: err?.message, variant: "destructive" }),
   });
+
+  function openRejectDialog(numId: number) {
+    setRejectPaymentId(numId);
+    setRejectReason("");
+    setRejectDialogOpen(true);
+  }
+
+  async function downloadReceipt() {
+    if (!previewImg) return;
+    try {
+      const res = await fetch(previewImg, { credentials: "include" });
+      const blob = await res.blob();
+      const ext = previewImg.split(".").pop()?.split("?")[0]?.toLowerCase() ?? "jpg";
+      const safeName = (previewInvoiceId ?? "receipt").replace(/[^a-zA-Z0-9_\-]/g, "_");
+      const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+        .replace(/ /g, "");
+      const filename = `receipt_${safeName}_${dateStr}.${ext}`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: "فشل التحميل", description: "تعذّر تحميل الإيصال", variant: "destructive" });
+    }
+  }
 
   const rows: PayRow[] = data?.rows ?? [];
   const totals = data?.totals ?? {
@@ -363,7 +401,7 @@ export default function AdminPayments() {
                                 )}
                                 {receiptUrl && (
                                   <button
-                                    onClick={() => setPreviewImg(receiptUrl)}
+                                    onClick={() => { setPreviewImg(receiptUrl); setPreviewInvoiceId(r.invoiceId ?? r.id); }}
                                     className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 transition-colors group"
                                     title="عرض الإيصال"
                                   >
@@ -435,7 +473,7 @@ export default function AdminPayments() {
                           {r.status === "pending" && r.invoiceId?.startsWith("SUB-REQ-") && (() => {
                             const numId = parseInt(r.id.replace(/^PY-/, ""), 10);
                             const isApproving = approveMutation.isPending && approveMutation.variables === numId;
-                            const isRejecting = rejectMutation.isPending && rejectMutation.variables === numId;
+                            const isRejecting = rejectMutation.isPending && rejectMutation.variables?.id === numId;
                             return (
                               <div className="flex gap-1">
                                 <Button
@@ -453,7 +491,7 @@ export default function AdminPayments() {
                                   variant="outline"
                                   className="h-6 px-2 text-[11px] border-red-200 text-red-600 hover:bg-red-50"
                                   disabled={isApproving || isRejecting}
-                                  onClick={() => rejectMutation.mutate(numId)}
+                                  onClick={() => openRejectDialog(numId)}
                                 >
                                   {isRejecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ThumbsDown className="w-3 h-3" />}
                                   <span className="mr-1">رفض</span>
@@ -524,15 +562,28 @@ export default function AdminPayments() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
-              <p className="text-sm font-bold text-slate-700">صورة الإيصال</p>
+              <p className="text-sm font-bold text-slate-700">
+                صورة الإيصال
+                {previewInvoiceId && (
+                  <span className="font-mono text-xs text-slate-400 mr-2">#{previewInvoiceId}</span>
+                )}
+              </p>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={downloadReceipt}
+                  title="تحميل الإيصال"
+                  className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 transition-colors px-2 py-1 rounded-lg hover:bg-teal-50"
+                >
+                  <ArrowDownToLine className="w-3.5 h-3.5" />
+                  تحميل
+                </button>
                 <a
                   href={previewImg}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-teal-600 hover:text-teal-800 underline underline-offset-2 transition-colors"
+                  className="text-xs text-slate-500 hover:text-slate-700 transition-colors px-2 py-1 rounded-lg hover:bg-slate-100"
                 >
-                  فتح في تبويب جديد
+                  فتح في تبويب
                 </a>
                 <button
                   onClick={() => setPreviewImg(null)}
@@ -552,6 +603,49 @@ export default function AdminPayments() {
           </div>
         </div>
       )}
+
+      {/* Reject With Reason Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={open => { if (!open) { setRejectDialogOpen(false); setRejectReason(""); } }}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right text-red-600">رفض طلب الاشتراك</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-slate-500">
+              سيتلقى المستخدم إشعاراً بالرفض. يمكنك كتابة سبب الرفض ليظهر في الإشعار (اختياري).
+            </p>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-slate-700">سبب الرفض</Label>
+              <Textarea
+                placeholder="مثال: الصورة غير واضحة، يرجى إعادة الإرسال..."
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                rows={3}
+                className="resize-none text-sm"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex-row-reverse gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={rejectMutation.isPending}
+              onClick={() => rejectPaymentId !== null && rejectMutation.mutate({ id: rejectPaymentId, reason: rejectReason })}
+            >
+              {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : <ThumbsDown className="w-4 h-4 ml-1" />}
+              تأكيد الرفض
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={rejectMutation.isPending}
+              onClick={() => { setRejectDialogOpen(false); setRejectReason(""); }}
+            >
+              إلغاء
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

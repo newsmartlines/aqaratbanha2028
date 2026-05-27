@@ -547,8 +547,8 @@ export const api = {
         `/api/admin/payments/export${qs(params)}`,
       approveSubscription: (paymentId: number) =>
         fetchJson(`/admin/payments/${paymentId}/approve-subscription`, { method: "POST" }),
-      rejectSubscription: (paymentId: number) =>
-        fetchJson(`/admin/payments/${paymentId}/reject-subscription`, { method: "POST" }),
+      rejectSubscription: (paymentId: number, reason?: string) =>
+        fetchJson(`/admin/payments/${paymentId}/reject-subscription`, { method: "POST", body: JSON.stringify({ reason: reason ?? null }) }),
     },
     subscriptions: {
       list: (params?: { status?: string; type?: string }) =>
@@ -1140,4 +1140,23 @@ export const promotions = {
   /** Expire stale promotions (maintenance) */
   expireStale: () =>
     fetchJson<{ success: boolean; expired: number }>("/promotions/expire-stale", { method: "POST" }),
+
+  /** Admin: get full promotions dashboard data */
+  adminDashboard: () => fetchJson<{ success: boolean; data: any }>("/admin/promotions/dashboard"),
+
+  /** Admin: revoke (deactivate) a specific promotion */
+  adminRevoke: (promotionId: number) =>
+    fetchJson<{ success: boolean }>(`/admin/promotions/${promotionId}/revoke`, { method: "POST" }),
+
+  /** Admin: manually bump a property */
+  adminBumpProperty: (propertyId: number, durationDays = 7) =>
+    fetchJson<{ success: boolean }>(`/admin/properties/${propertyId}/bump`, { method: "POST", body: JSON.stringify({ durationDays }) }),
+
+  /** Admin: manually feature a property */
+  adminFeatureProperty: (propertyId: number) =>
+    fetchJson<{ success: boolean }>(`/admin/properties/${propertyId}/feature`, { method: "POST" }),
+
+  /** Admin: manually spotlight a property */
+  adminSpotlightProperty: (propertyId: number) =>
+    fetchJson<{ success: boolean }>(`/admin/properties/${propertyId}/spotlight`, { method: "POST" }),
 };
