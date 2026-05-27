@@ -1431,18 +1431,91 @@ router.put("/admin/email/smtp", async (req, res) => {
 });
 
 // POST /api/admin/email/smtp/test
-router.post("/admin/email/smtp/test", async (_req, res) => {
+router.post("/admin/email/smtp/test", async (req, res) => {
   try {
     const cfg = await getSmtpConfig();
-    if (!cfg.smtpHost || !cfg.smtpUser || !cfg.smtpPass) return res.json({ success: false, error: "SMTP not configured" });
+    if (!cfg.smtpHost || !cfg.smtpUser || !cfg.smtpPass)
+      return res.json({ success: false, error: "SMTP غير مُضبوط — أدخل Host واسم المستخدم وكلمة المرور أولاً" });
+
+    const siteName = (await getSetting("siteName")) ?? "عقارات بنها";
+    const siteUrl  = (await getSetting("siteUrl"))  ?? "";
+    const testTo   = (req.body?.testTo as string | undefined) || cfg.smtpUser;
+    const year     = new Date().getFullYear();
+
     const nodemailer = await import("nodemailer");
     const transporter = nodemailer.default.createTransport({
       host: cfg.smtpHost, port: Number(cfg.smtpPort) || 587,
       secure: cfg.smtpSecure === "true", auth: { user: cfg.smtpUser, pass: cfg.smtpPass },
     } as any);
+
+    // Verify connection first
     await transporter.verify();
-    res.json({ success: true, message: "SMTP connection successful" });
-  } catch (e: any) { res.json({ success: false, error: e?.message ?? "Connection failed" }); }
+
+    // Send a real HTML test email
+    const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;direction:rtl;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f4f8;padding:32px 12px;">
+  <tr><td align="center">
+    <table width="580" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+      <tr>
+        <td style="background:linear-gradient(135deg,#0d9488,#0f766e);padding:36px 40px;text-align:center;">
+          <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:12px;padding:10px 24px;margin-bottom:12px;">
+            <span style="color:#fff;font-size:22px;font-weight:900;">🏠 ${siteName}</span>
+          </div>
+          <p style="margin:0;color:rgba(255,255,255,0.75);font-size:13px;">${siteUrl}</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:40px;">
+          <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;">✅ بريد اختبار ناجح!</h2>
+          <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.7;">
+            هذا بريد اختبار تلقائي للتحقق من أن إعدادات SMTP تعمل بشكل صحيح.
+          </p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;margin-bottom:24px;">
+            <p style="margin:0 0 8px;color:#0f172a;font-weight:700;font-size:14px;">📋 تفاصيل الإعدادات:</p>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr><td style="color:#64748b;font-size:13px;padding:4px 0;width:40%;">الخادم (Host)</td><td style="color:#0f172a;font-size:13px;font-weight:600;">${cfg.smtpHost}:${cfg.smtpPort}</td></tr>
+              <tr><td style="color:#64748b;font-size:13px;padding:4px 0;">المستخدم</td><td style="color:#0f172a;font-size:13px;font-weight:600;">${cfg.smtpUser}</td></tr>
+              <tr><td style="color:#64748b;font-size:13px;padding:4px 0;">SSL/TLS</td><td style="color:#0f172a;font-size:13px;font-weight:600;">${cfg.smtpSecure === "true" ? "مفعّل" : "غير مفعّل"}</td></tr>
+              <tr><td style="color:#64748b;font-size:13px;padding:4px 0;">اسم المرسل</td><td style="color:#0f172a;font-size:13px;font-weight:600;">${cfg.smtpFromName || siteName}</td></tr>
+            </table>
+          </div>
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin-bottom:24px;">
+            <p style="margin:0;color:#1e40af;font-size:13px;line-height:1.7;">
+              🎉 إعدادات SMTP تعمل بشكل مثالي! سيتلقى المستخدمون رسائل الترحيب وإشعارات الموافقة والرفض والبحث المحفوظ.
+            </p>
+          </div>
+          <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">أُرسل في ${new Date().toLocaleString("ar-EG")} — © ${year} ${siteName}</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+    await transporter.sendMail({
+      from: `"${cfg.smtpFromName || siteName}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
+      to: testTo,
+      subject: `✅ بريد اختبار ناجح — ${siteName}`,
+      html,
+    });
+
+    // Log it
+    await db.insert(emailLogsTable).values({
+      templateName: "smtp-test",
+      toEmail: testTo,
+      subject: `✅ بريد اختبار ناجح — ${siteName}`,
+      status: "sent",
+      error: null,
+      metadata: null,
+    }).catch(() => {});
+
+    res.json({ success: true, message: `تم إرسال بريد الاختبار إلى ${testTo}`, sentTo: testTo });
+  } catch (e: any) {
+    res.json({ success: false, error: e?.message ?? "فشل الاتصال أو الإرسال" });
+  }
 });
 
 // POST /api/admin/email/seed

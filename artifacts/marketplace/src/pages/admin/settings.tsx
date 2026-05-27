@@ -112,9 +112,10 @@ export default function AdminSettings() {
     smtpHost: "", smtpPort: "587", smtpSecure: "false",
     smtpUser: "", smtpPass: "", smtpFromName: "", smtpFromEmail: "",
   });
+  const [smtpTestTo, setSmtpTestTo] = useState("");
   const [smtpLoading, setSmtpLoading] = useState(false);
   const [smtpTesting, setSmtpTesting] = useState(false);
-  const [smtpTestResult, setSmtpTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [smtpTestResult, setSmtpTestResult] = useState<{ ok: boolean; msg: string; sentTo?: string } | null>(null);
   const [showSmtpPass, setShowSmtpPass] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -222,8 +223,17 @@ export default function AdminSettings() {
     setSmtpTesting(true);
     setSmtpTestResult(null);
     try {
-      const res = await api.fetchJson<{ success: boolean; error?: string; message?: string }>("/admin/email/smtp/test", { method: "POST" });
-      setSmtpTestResult({ ok: !!res.success, msg: res.success ? "الاتصال ناجح ✓" : (res.error ?? "فشل الاتصال") });
+      const res = await api.fetchJson<{ success: boolean; error?: string; message?: string; sentTo?: string }>(
+        "/admin/email/smtp/test",
+        { method: "POST", body: JSON.stringify({ testTo: smtpTestTo || smtpForm.smtpUser }) }
+      );
+      setSmtpTestResult({
+        ok: !!res.success,
+        msg: res.success
+          ? (res.message ?? "تم إرسال بريد الاختبار بنجاح ✓")
+          : (res.error ?? "فشل الاتصال"),
+        sentTo: res.sentTo,
+      });
     } catch (e: any) {
       setSmtpTestResult({ ok: false, msg: e?.message ?? "فشل الاتصال" });
     } finally { setSmtpTesting(false); }
@@ -758,39 +768,65 @@ export default function AdminSettings() {
         <TabsContent value="smtp">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-teal-600" /> إعدادات خادم البريد (SMTP)</CardTitle>
-              <CardDescription>إعدادات إرسال البريد الإلكتروني من المنصة — ترحيب، تأكيد، إشعارات</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800 leading-relaxed" dir="rtl">
-                <p className="font-semibold mb-1">📧 مزودو SMTP الشائعون:</p>
-                <div className="grid grid-cols-2 gap-1 text-xs">
-                  <span>Gmail: smtp.gmail.com (منفذ 587)</span>
-                  <span>Outlook: smtp-mail.outlook.com (587)</span>
-                  <span>SendGrid: smtp.sendgrid.net (587)</span>
-                  <span>Mailgun: smtp.mailgun.org (587)</span>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-teal-600" /> إعدادات خادم البريد (SMTP)</CardTitle>
+                  <CardDescription className="mt-1">إعدادات إرسال البريد الإلكتروني — ترحيب، تأكيد إعلان، موافقة، رفض، بحث محفوظ</CardDescription>
+                </div>
+                {/* Status badge */}
+                <div className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${smtpForm.smtpHost && smtpForm.smtpUser && smtpForm.smtpPass ? "bg-green-50 border-green-200 text-green-700" : "bg-amber-50 border-amber-200 text-amber-700"}`}>
+                  <span className={`w-2 h-2 rounded-full ${smtpForm.smtpHost && smtpForm.smtpUser && smtpForm.smtpPass ? "bg-green-500" : "bg-amber-500"}`} />
+                  {smtpForm.smtpHost && smtpForm.smtpUser && smtpForm.smtpPass ? "مُضبوط" : "غير مُضبوط"}
                 </div>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+
+              {/* Quick-start guide */}
+              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800 leading-relaxed">
+                <p className="font-semibold mb-2">📧 مزودو SMTP الشائعون وإعداداتهم:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {[
+                    { name: "Gmail", host: "smtp.gmail.com", port: "587", note: "يتطلب App Password" },
+                    { name: "Outlook / Hotmail", host: "smtp-mail.outlook.com", port: "587", note: "" },
+                    { name: "SendGrid", host: "smtp.sendgrid.net", port: "587", note: "مستخدم: apikey" },
+                    { name: "Mailgun", host: "smtp.mailgun.org", port: "587", note: "" },
+                  ].map(p => (
+                    <button key={p.name} type="button"
+                      className="text-start p-2 rounded-lg bg-white border border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                      onClick={() => setSmtpForm(s => ({ ...s, smtpHost: p.host, smtpPort: p.port, smtpSecure: "false" }))}>
+                      <span className="font-semibold text-blue-900">{p.name}</span>
+                      <span className="text-blue-600 mx-1">—</span>
+                      <span className="font-mono">{p.host}:{p.port}</span>
+                      {p.note && <span className="text-blue-500 block mt-0.5">{p.note}</span>}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-blue-600 mt-2">💡 انقر على أي مزود لملء الخادم والمنفذ تلقائياً</p>
+              </div>
+
+              {/* Host + Port */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5 md:col-span-2">
                   <Label>خادم SMTP (Host)</Label>
-                  <Input dir="ltr" value={smtpForm.smtpHost} onChange={e => setSmtpForm(s => ({ ...s, smtpHost: e.target.value }))} placeholder="smtp.gmail.com" />
+                  <Input dir="ltr" value={smtpForm.smtpHost} onChange={e => setSmtpForm(s => ({ ...s, smtpHost: e.target.value }))} placeholder="smtp.gmail.com" className="font-mono" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>المنفذ (Port)</Label>
-                  <Input dir="ltr" value={smtpForm.smtpPort} onChange={e => setSmtpForm(s => ({ ...s, smtpPort: e.target.value }))} placeholder="587" />
+                  <Input dir="ltr" value={smtpForm.smtpPort} onChange={e => setSmtpForm(s => ({ ...s, smtpPort: e.target.value }))} placeholder="587" className="font-mono" />
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <Switch
-                  checked={smtpForm.smtpSecure === "true"}
-                  onCheckedChange={v => setSmtpForm(s => ({ ...s, smtpSecure: v ? "true" : "false" }))}
-                />
+
+              {/* SSL toggle */}
+              <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <Switch checked={smtpForm.smtpSecure === "true"} onCheckedChange={v => setSmtpForm(s => ({ ...s, smtpSecure: v ? "true" : "false" }))} />
                 <div>
-                  <p className="text-sm font-medium">استخدام SSL/TLS</p>
-                  <p className="text-xs text-slate-500">فعّل للمنفذ 465، وأوقف للمنافذ 587 أو 25</p>
+                  <p className="text-sm font-semibold">استخدام SSL/TLS</p>
+                  <p className="text-xs text-slate-500">فعّل للمنفذ 465 فقط — أوقفه للمنافذ 587 أو 25 (STARTTLS)</p>
                 </div>
               </div>
+
+              {/* Credentials */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>اسم المستخدم (Username / Email)</Label>
@@ -799,14 +835,17 @@ export default function AdminSettings() {
                 <div className="space-y-1.5">
                   <Label>كلمة المرور / App Password</Label>
                   <div className="relative">
-                    <Input dir="ltr" type={showSmtpPass ? "text" : "password"} value={smtpForm.smtpPass} onChange={e => setSmtpForm(s => ({ ...s, smtpPass: e.target.value }))} placeholder="••••••••••••" />
-                    <button type="button" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    <Input dir="ltr" type={showSmtpPass ? "text" : "password"} value={smtpForm.smtpPass}
+                      onChange={e => setSmtpForm(s => ({ ...s, smtpPass: e.target.value }))} placeholder="••••••••••••" />
+                    <button type="button" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
                       onClick={() => setShowSmtpPass(v => !v)}>
                       {showSmtpPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
               </div>
+
+              {/* From name + email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>اسم المرسل (From Name)</Label>
@@ -818,22 +857,49 @@ export default function AdminSettings() {
                 </div>
               </div>
 
-              {smtpTestResult && (
-                <div className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium ${smtpTestResult.ok ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"}`}>
-                  {smtpTestResult.ok ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
-                  {smtpTestResult.msg}
+              {/* Divider */}
+              <div className="border-t border-dashed border-slate-200 pt-5">
+                <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-teal-600" /> إرسال بريد اختبار
+                </p>
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 space-y-1.5">
+                    <Label className="text-xs text-slate-500">البريد المستلم (فارغ = بريد المستخدم SMTP)</Label>
+                    <Input dir="ltr" type="email" value={smtpTestTo}
+                      onChange={e => setSmtpTestTo(e.target.value)}
+                      placeholder={smtpForm.smtpUser || "test@example.com"} />
+                  </div>
+                  <Button variant="outline" onClick={handleSmtpTest}
+                    disabled={smtpTesting || !smtpForm.smtpHost}
+                    className="gap-2 shrink-0">
+                    {smtpTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    إرسال اختبار
+                  </Button>
                 </div>
-              )}
 
-              <div className="flex items-center gap-3">
+                {smtpTestResult && (
+                  <div className={`mt-3 flex items-start gap-3 p-4 rounded-xl border text-sm ${smtpTestResult.ok ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-800"}`}>
+                    <div className="shrink-0 mt-0.5">
+                      {smtpTestResult.ok ? <Wifi className="w-5 h-5 text-green-600" /> : <WifiOff className="w-5 h-5 text-red-600" />}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{smtpTestResult.ok ? "✅ تم الإرسال بنجاح!" : "❌ فشل الإرسال"}</p>
+                      <p className="text-xs mt-0.5 opacity-80">{smtpTestResult.msg}</p>
+                      {smtpTestResult.ok && smtpTestResult.sentTo && (
+                        <p className="text-xs mt-1 font-mono opacity-70">أُرسل إلى: {smtpTestResult.sentTo}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Save button */}
+              <div className="flex items-center gap-3 pt-2">
                 <Button onClick={handleSmtpSave} disabled={smtpLoading} className="bg-teal-600 hover:bg-teal-700">
                   {smtpLoading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
                   حفظ إعدادات البريد
                 </Button>
-                <Button variant="outline" onClick={handleSmtpTest} disabled={smtpTesting || !smtpForm.smtpHost} className="gap-2">
-                  {smtpTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  اختبار الاتصال
-                </Button>
+                <p className="text-xs text-slate-400">احفظ الإعدادات أولاً قبل الاختبار</p>
               </div>
             </CardContent>
           </Card>
