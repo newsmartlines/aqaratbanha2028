@@ -45,10 +45,10 @@ function paramStr(v: string | string[] | undefined): string {
 router.get("/providers/:providerId/support-tickets", async (req: Request, res: Response) => {
   const providerId = parseInt(paramStr(req.params.providerId), 10);
   if (!Number.isFinite(providerId) || providerId < 1) {
-    return res.status(400).json({ success: false, error: "معرّف مقدم الخدمة غير صالح" });
+    return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });
   }
   if (!(await canAccessProviderTickets(req, providerId))) {
-    return res.status(401).json({ success: false, error: "غير مصرح — سجّل الدخول كمقدم الخدمة الصحيح" });
+    return res.status(401).json({ success: false, error: "غير مصرح — سجّل الدخول بالحساب الصحيح" });
   }
   try {
     const rows = await db
@@ -85,10 +85,10 @@ router.get("/providers/:providerId/support-tickets", async (req: Request, res: R
 router.post("/providers/:providerId/support-tickets", async (req: Request, res: Response) => {
   const providerId = parseInt(paramStr(req.params.providerId), 10);
   if (!Number.isFinite(providerId) || providerId < 1) {
-    return res.status(400).json({ success: false, error: "معرّف مقدم الخدمة غير صالح" });
+    return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });
   }
   if (!(await canAccessProviderTickets(req, providerId))) {
-    return res.status(401).json({ success: false, error: "غير مصرح — سجّل الدخول كمقدم الخدمة الصحيح" });
+    return res.status(401).json({ success: false, error: "غير مصرح — سجّل الدخول بالحساب الصحيح" });
   }
   const { subject, category, message } = req.body ?? {};
   if (!subject || typeof subject !== "string" || !subject.trim()) {
@@ -102,7 +102,7 @@ router.post("/providers/:providerId/support-tickets", async (req: Request, res: 
   }
   try {
     const [p] = await db.select({ id: providersTable.id }).from(providersTable).where(eq(providersTable.id, providerId));
-    if (!p) return res.status(404).json({ success: false, error: "لم يُعثر على مقدم الخدمة" });
+    if (!p) return res.status(404).json({ success: false, error: "لم يُعثر على الشركة العقارية" });
 
     let publicId = makePublicId();
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -162,7 +162,7 @@ router.patch("/providers/:providerId/support-tickets/:publicId", async (req: Req
   const providerId = parseInt(paramStr(req.params.providerId), 10);
   const publicId = paramStr(req.params.publicId);
   if (!Number.isFinite(providerId) || providerId < 1) {
-    return res.status(400).json({ success: false, error: "معرّف مقدم الخدمة غير صالح" });
+    return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });
   }
   if (!(await canAccessProviderTickets(req, providerId))) {
     return res.status(401).json({ success: false, error: "غير مصرح" });

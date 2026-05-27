@@ -552,7 +552,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (!Number.isFinite(id) || id < 1) {
-      return res.status(400).json({ success: false, error: "معرّف مقدم الخدمة غير صالح" });
+      return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });
     }
 
     const { packageId, billingPlanId } = req.body;

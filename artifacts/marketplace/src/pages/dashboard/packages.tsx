@@ -145,7 +145,12 @@ export default function PackagesPage() {
   };
 
   const subscribeMutation = useMutation({
-    mutationFn: (plan: BillingPlan) => api.subscriptions.subscribe(providerId!, plan.id, true),
+    mutationFn: (plan: BillingPlan) => {
+      if (!providerId || !Number.isFinite(providerId) || providerId < 1) {
+        return Promise.reject(new Error("لم يتم تحديد حساب الشركة العقارية. حاول تسجيل الخروج وإعادة الدخول."));
+      }
+      return api.subscriptions.subscribe(providerId, plan.id, true);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
       queryClient.invalidateQueries({ queryKey: ["subscriptionHistory", providerId] });

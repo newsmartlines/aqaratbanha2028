@@ -150,7 +150,7 @@ router.post("/auth/register", authLimiter, async (req, res) => {
       const [prov] = await db.insert(providersTable).values({ userId: user.id }).returning({ id: providersTable.id });
       if (!prov?.id) {
         await db.delete(usersTable).where(eq(usersTable.id, user.id));
-        return res.status(500).json({ success: false, error: "تعذر إنشاء ملف مقدم الخدمة، حاول مرة أخرى" });
+        return res.status(500).json({ success: false, error: "تعذر إنشاء ملف الشركة العقارية، حاول مرة أخرى" });
       }
       providerId = prov.id;
     }
@@ -158,7 +158,7 @@ router.post("/auth/register", authLimiter, async (req, res) => {
     const token = await createSession(user.id, user.role, providerId);
     setSessionCookie(res, token);
 
-    const roleLabel = role === "provider" ? "مقدم خدمة" : "مستخدم عادي";
+    const roleLabel = role === "provider" ? "شركة عقارية" : "مستخدم عادي";
     db.insert(notificationsTable).values({
       userId: null as any,
       type: "info",
@@ -262,7 +262,7 @@ router.post("/auth/become-provider", async (req: Request, res) => {
     }
 
     if (!providerId) {
-      return res.status(500).json({ success: false, error: "تعذر إنشاء ملف مقدم الخدمة" });
+      return res.status(500).json({ success: false, error: "تعذر إنشاء ملف الشركة العقارية" });
     }
 
     await updateSession(token, { role: "provider", providerId });
@@ -285,7 +285,7 @@ router.post("/auth/become-provider", async (req: Request, res) => {
     res.json({ success: true, data: { ...updatedUser, providerId, providerApproved } });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ success: false, error: "فشل تجهيز حساب مقدم الخدمة" });
+    res.status(500).json({ success: false, error: "فشل تجهيز حساب الشركة العقارية" });
   }
 });
 
