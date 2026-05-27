@@ -577,6 +577,29 @@ export default function PackagesPage() {
             )}
 
             {/* ══════════════════════════════════════════════════════════════════
+                SECTION 1.5 — Promotion Quick Access Banner
+            ══════════════════════════════════════════════════════════════════ */}
+            {sub?.isActive && (
+              <div className="rounded-2xl bg-gradient-to-r from-violet-600 to-violet-800 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-5 h-5 text-amber-300" />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-sm">ارفع إعلاناتك إلى أعلى نتائج البحث</p>
+                    <p className="text-white/70 text-xs mt-0.5">استخدم Bump Up، Featured وSpotlight من حصة باقتك الشهرية</p>
+                  </div>
+                </div>
+                <Link href="/dashboard/promotions">
+                  <Button size="sm" className="bg-white text-violet-700 hover:bg-white/90 font-semibold shrink-0 gap-1.5">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    الترقيات
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════════
                 SECTION 2 — Subscription History (all users)
             ══════════════════════════════════════════════════════════════════ */}
             {<div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">

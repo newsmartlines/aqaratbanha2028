@@ -15,7 +15,7 @@ import {
   LayoutDashboard, Bell, CreditCard, Settings, LogOut, Menu,
   Home, MessageCircle as MessageCircleIcon,
   Ticket, Building2, Package, Heart, BellRing, Plus, User2,
-  Briefcase, AlertTriangle,
+  Briefcase, AlertTriangle, Rocket,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ const SHARED_NAV = [
   { name: "لوحة التحكم",      href: "/dashboard",                 icon: LayoutDashboard },
   { name: "عقاراتي",           href: "/dashboard/properties",      icon: Building2 },
   { name: "باقاتي",            href: "/dashboard/packages",        icon: Package },
+  { name: "الترقيات",          href: "/dashboard/promotions",      icon: Rocket },
   { name: "المفضلة",           href: "/dashboard/favorites",       icon: Heart },
   { name: "تنبيهات البحث",    href: "/dashboard/saved-searches",  icon: BellRing },
   { name: "المدفوعات",         href: "/dashboard/payments",        icon: CreditCard },

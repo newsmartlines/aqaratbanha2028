@@ -7,6 +7,7 @@ import {
 } from "@workspace/db";
 import { eq, desc, and, or, ilike, sql, getTableColumns, lt, gt, inArray } from "drizzle-orm";
 import { getSession } from "./auth";
+import { applySmartRanking } from "../lib/promotionEngine";
 
 const router = Router();
 
@@ -265,7 +266,15 @@ router.get("/properties", async (req, res) => {
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(sql`${propertiesTable.featured} DESC NULLS LAST`, sql`${propertiesTable.urgent} DESC NULLS LAST`, orderClause);
 
-    res.json({ success: true, data: rows });
+    // Apply smart ranking (boost scores from active promotions)
+    const ranked = await applySmartRanking(rows.map(r => ({
+      ...r,
+      featured: r.featured ?? false,
+      urgent: r.urgent ?? false,
+      viewCount: r.viewCount ?? 0,
+    })));
+
+    res.json({ success: true, data: ranked });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to fetch properties" });
   }

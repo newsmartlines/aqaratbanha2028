@@ -37,3 +37,4 @@ export * from "./popups";
 export * from "./propertyFeatures";
 export * from "./propertyFieldConfigs";
 export * from "./marketSnapshots";
+export * from "./promotions";

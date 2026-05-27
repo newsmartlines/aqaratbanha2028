@@ -1102,3 +1102,39 @@ export type BillingPlan = {
   commissionPercent: string;
   createdAt: string;
 };
+
+// ── Promotions API ────────────────────────────────────────────────────────────
+export const promotions = {
+  /** Get the current user's monthly quota usage */
+  getQuotas: () => fetchJson<{ success: boolean; data: any }>("/users/me/promotion-quotas"),
+
+  /** Bump (bump-up) a property to the top of search results */
+  bumpProperty: (propertyId: number) =>
+    fetchJson<{ success: boolean; message: string }>(`/properties/${propertyId}/bump`, { method: "POST" }),
+
+  /** Feature a property (marks as "مميز") */
+  featureProperty: (propertyId: number) =>
+    fetchJson<{ success: boolean; message: string }>(`/properties/${propertyId}/feature`, { method: "POST" }),
+
+  /** Spotlight a property */
+  spotlightProperty: (propertyId: number) =>
+    fetchJson<{ success: boolean; message: string }>(`/properties/${propertyId}/spotlight`, { method: "POST" }),
+
+  /** Get the user's active addon boosts */
+  getAddonBoosts: () => fetchJson<{ success: boolean; data: any[] }>("/users/me/addon-boosts"),
+
+  /** Get all promotions for a user's properties */
+  getUserPromotions: (userId: number) =>
+    fetchJson<{ success: boolean; data: any[] }>(`/users/${userId}/property-promotions`),
+
+  /** Admin: get promotion overview stats */
+  adminOverview: () => fetchJson<{ success: boolean; data: any }>("/admin/promotions/overview"),
+
+  /** Admin: grant addon boosts to a user */
+  adminGrantAddon: (data: { userId: number; type: string; quantity: number; note?: string; daysValid?: number }) =>
+    fetchJson<{ success: boolean }>("/admin/promotions/grant-addon", { method: "POST", body: JSON.stringify(data) }),
+
+  /** Expire stale promotions (maintenance) */
+  expireStale: () =>
+    fetchJson<{ success: boolean; expired: number }>("/promotions/expire-stale", { method: "POST" }),
+};

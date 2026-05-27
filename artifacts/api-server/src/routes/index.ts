@@ -36,6 +36,7 @@ import wpImportRouter from "./wpImport";
 import popupsRouter from "./popups";
 import marketRouter from "./market";
 import userPaymentsRouter from "./userPayments";
+import promotionsRouter from "./promotions";
 
 const router: IRouter = Router();
 
@@ -76,5 +77,6 @@ router.use(wpImportRouter);
 router.use(popupsRouter);
 router.use(marketRouter);
 router.use(userPaymentsRouter);
+router.use(promotionsRouter);
 
 export default router;

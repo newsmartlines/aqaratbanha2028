@@ -45,8 +45,18 @@ type Coupon = {
   minAmount?: string; expiresAt?: string; isActive: boolean; createdAt: string;
 };
 
-type Limits = { properties: number; photos: number; videos: number; featuredAds: number; pinnedAds: number; messages: number; leads: number };
-type Features = { homepageDisplay: boolean; topSearch: boolean; verifiedBadge: boolean; premiumBadge: boolean; prioritySupport: boolean; analytics: boolean; seo: boolean; aiTools: boolean; autoBoost: boolean };
+type Limits = {
+  properties: number; photos: number; videos: number;
+  featuredAds: number; pinnedAds: number; messages: number; leads: number;
+  bumpUpsPerMonth: number; spotlightAds: number; boostDurationDays: number;
+  priorityScore: number;
+};
+type Features = {
+  homepageDisplay: boolean; topSearch: boolean; verifiedBadge: boolean;
+  premiumBadge: boolean; prioritySupport: boolean; analytics: boolean;
+  seo: boolean; aiTools: boolean; autoBoost: boolean;
+  bumpUp: boolean; spotlightAd: boolean; extraBoostPurchase: boolean;
+};
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -59,11 +69,28 @@ const USER_TYPES: Record<string, string> = {
 };
 const DURATION_TYPES: Record<string, string> = { monthly: "شهري", quarterly: "ربع سنوي", yearly: "سنوي", lifetime: "مدى الحياة" };
 const APPLIES_TO: Record<string, string> = { all: "الكل", sale: "بيع", rent: "إيجار", featured: "إعلان مميز", renewal: "تجديد", paid_ads: "إعلانات مدفوعة" };
-const LIMIT_LABELS: Record<keyof Limits, string> = { properties: "العقارات", photos: "الصور", videos: "الفيديوهات", featuredAds: "إعلانات مميزة", pinnedAds: "إعلانات مثبتة", messages: "الرسائل", leads: "الطلبات" };
-const FEATURE_LABELS: Record<keyof Features, string> = { homepageDisplay: "ظهور الصفحة الرئيسية", topSearch: "أعلى البحث", verifiedBadge: "شارة موثق", premiumBadge: "شارة Premium", prioritySupport: "دعم الأولوية", analytics: "إحصائيات متقدمة", seo: "SEO متقدم", aiTools: "أدوات AI", autoBoost: "Auto Boost" };
+const LIMIT_LABELS: Record<keyof Limits, string> = {
+  properties: "العقارات", photos: "الصور", videos: "الفيديوهات",
+  featuredAds: "إعلانات مميزة / شهر", pinnedAds: "إعلانات مثبتة", messages: "الرسائل", leads: "الطلبات",
+  bumpUpsPerMonth: "⬆ Bump Up / شهر (-1 = ∞)", spotlightAds: "✨ Spotlight Ads / شهر",
+  boostDurationDays: "مدة الترقية (أيام)", priorityScore: "أولوية الظهور (0-100)",
+};
+const FEATURE_LABELS: Record<keyof Features, string> = {
+  homepageDisplay: "ظهور الصفحة الرئيسية", topSearch: "أعلى البحث", verifiedBadge: "شارة موثق",
+  premiumBadge: "شارة Premium", prioritySupport: "دعم الأولوية", analytics: "إحصائيات متقدمة",
+  seo: "SEO متقدم", aiTools: "أدوات AI", autoBoost: "Auto Boost تلقائي",
+  bumpUp: "⬆ ترفيع الإعلانات (Bump Up)", spotlightAd: "✨ Spotlight Ads", extraBoostPurchase: "شراء ترقيات إضافية",
+};
 
-const defaultLimits: Limits = { properties: 10, photos: 20, videos: 2, featuredAds: 3, pinnedAds: 1, messages: 100, leads: 50 };
-const defaultFeatures: Features = { homepageDisplay: false, topSearch: false, verifiedBadge: false, premiumBadge: false, prioritySupport: false, analytics: false, seo: false, aiTools: false, autoBoost: false };
+const defaultLimits: Limits = {
+  properties: 10, photos: 20, videos: 2, featuredAds: 3, pinnedAds: 1, messages: 100, leads: 50,
+  bumpUpsPerMonth: 0, spotlightAds: 0, boostDurationDays: 7, priorityScore: 0,
+};
+const defaultFeatures: Features = {
+  homepageDisplay: false, topSearch: false, verifiedBadge: false, premiumBadge: false,
+  prioritySupport: false, analytics: false, seo: false, aiTools: false, autoBoost: false,
+  bumpUp: false, spotlightAd: false, extraBoostPurchase: false,
+};
 
 const defaultPlan = {
   name: "", nameAr: "", descriptionAr: "", price: "99", yearlyPrice: "",

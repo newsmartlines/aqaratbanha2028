@@ -36,6 +36,7 @@ import AdminLocations from "@/pages/admin/locations";
 import DashboardOverview from "@/pages/dashboard/index";
 import DashboardProperties from "@/pages/dashboard/properties";
 import DashboardPackages from "@/pages/dashboard/packages";
+import DashboardPromotions from "@/pages/dashboard/promotions";
 import DashboardMessages from "@/pages/dashboard/messages";
 import DashboardFavorites from "@/pages/dashboard/favorites";
 import DashboardSavedSearches from "@/pages/dashboard/saved-searches";
@@ -200,6 +201,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/properties">
         {() => <RoleProtectedRoute component={DashboardProperties} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/promotions">
+        {() => <RoleProtectedRoute component={DashboardPromotions} roles={["user", "provider"]} />}
       </Route>
       <Route path="/dashboard/packages">
         {() => <RoleProtectedRoute component={DashboardPackages} roles={["user", "provider"]} />}
