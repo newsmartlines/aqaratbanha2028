@@ -472,6 +472,7 @@ export default function Home() {
     if (heroRegionId != null) params.set("regionId", String(heroRegionId));
     if (heroCityName && heroCityName !== "__all__") params.set("city", heroCityName);
     if (heroAreaName) params.set("district", heroAreaName);
+    if (heroSubcategoryId && heroSubcategoryId !== "all") params.set("subcategoryId", heroSubcategoryId);
     if (heroPropertyType && heroPropertyType !== "all") params.set("propertyType", heroPropertyType);
     setLocation(`/properties?${params.toString()}`);
   };
@@ -610,23 +611,25 @@ export default function Home() {
                   </Select>
                 </div>
 
-                {/* Property Type Sub-dropdown — appears when a category with types is selected */}
+                {/* Property Sub-type dropdown — subcategories from DB, appears inline when a category is selected */}
                 {(() => {
                   const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
-                  const types = selCat ? (CATEGORY_PROPERTY_TYPES[selCat.slug ?? ""] ?? []) : [];
-                  if (selectedCategory === "all" || types.length === 0) return null;
+                  const subs = selCat
+                    ? ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === selCat.id)
+                    : [];
+                  if (selectedCategory === "all" || subs.length === 0) return null;
                   return (
                     <>
                       <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
-                      <div className="w-28 shrink-0">
-                        <Select value={heroPropertyType} onValueChange={setHeroPropertyType}>
+                      <div className="w-32 shrink-0">
+                        <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
                           <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
-                            <SelectValue placeholder="النوع" />
+                            <SelectValue placeholder="النوع الفرعي" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">كل الأنواع</SelectItem>
-                            {types.map(t => (
-                              <SelectItem key={t} value={t}>{t}</SelectItem>
+                            {subs.map(s => (
+                              <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -666,46 +669,6 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* ── Subcategory pills — animates in when category selected ── */}
-              {(() => {
-                const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
-                const subs = selCat ? ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === selCat.id) : [];
-                if (selectedCategory === "all" || subs.length === 0) return null;
-                return (
-                  <motion.div
-                    key={selectedCategory}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.22, ease: "easeOut" }}
-                    className="border-t border-gray-100 px-4 py-3 overflow-hidden rounded-b-2xl"
-                    dir="rtl"
-                  >
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-gray-400 shrink-0">النوع:</span>
-                      <button
-                        onClick={() => setHeroSubcategoryId("all")}
-                        className={`px-3.5 py-1 rounded-full text-xs font-bold border transition-all duration-150 shrink-0
-                          ${heroSubcategoryId === "all"
-                            ? "bg-primary text-white border-primary"
-                            : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
-                          }`}
-                      >الكل</button>
-                      {subs.map(s => (
-                        <button
-                          key={s.id}
-                          onClick={() => setHeroSubcategoryId(heroSubcategoryId === String(s.id) ? "all" : String(s.id))}
-                          className={`px-3.5 py-1 rounded-full text-xs font-bold border transition-all duration-150 shrink-0
-                            ${heroSubcategoryId === String(s.id)
-                              ? "bg-primary text-white border-primary"
-                              : "bg-white text-gray-500 border-gray-200 hover:border-primary/40 hover:text-primary"
-                            }`}
-                        >{s.nameAr}</button>
-                      ))}
-                    </div>
-                  </motion.div>
-                );
-              })()}
             </motion.div>
 
           </div>
