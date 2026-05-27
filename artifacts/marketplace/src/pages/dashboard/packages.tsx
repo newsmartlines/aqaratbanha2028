@@ -5,7 +5,7 @@ import {
   Package, Building2, Loader2, ChevronRight, ChevronLeft,
   Search, Filter, RefreshCw, Zap, Shield, Star, TrendingUp,
   Home, BarChart2, Headphones, Sparkles, Repeat2,
-  ArrowUpRight, Check, X,
+  ArrowUpRight, Check, X, CreditCard, Smartphone, Lock,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -307,6 +307,8 @@ export default function PackagesPage() {
   const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [alertDismissed, setAlertDismissed] = useState(false);
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [payGateway, setPayGateway] = useState<"vodafone_cash" | "fawry" | "instapay" | "bank_transfer">("vodafone_cash");
 
   // ── Queries ──────────────────────────────────────────────────────────────────
   // Provider stats (providers only)
@@ -429,17 +431,24 @@ export default function PackagesPage() {
     }
     setSelectedPlan(plan);
     if (parseFloat(String(plan.price ?? "0")) > 0) {
-      const qs = new URLSearchParams({
-        planName: plan.nameAr ?? plan.name ?? "",
-        price: String(plan.price),
-        duration: String(plan.durationDays),
-        currency: plan.currency ?? "EGP",
-        planId: String(plan.id),
-      }).toString();
-      setLocation(`/pay/subscription?${qs}`);
+      setPayModalOpen(true);
     } else {
       setConfirmOpen(true);
     }
+  };
+
+  const handleGoToPay = () => {
+    if (!selectedPlan) return;
+    const qs = new URLSearchParams({
+      planName: selectedPlan.nameAr ?? selectedPlan.name ?? "",
+      price: String(selectedPlan.price),
+      duration: String(selectedPlan.durationDays),
+      currency: selectedPlan.currency ?? "EGP",
+      planId: String(selectedPlan.id),
+      gateway: payGateway,
+    }).toString();
+    setPayModalOpen(false);
+    setLocation(`/pay/subscription?${qs}`);
   };
 
   const subscribeMutation = useMutation({
