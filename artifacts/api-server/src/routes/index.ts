@@ -37,6 +37,7 @@ import popupsRouter from "./popups";
 import marketRouter from "./market";
 import userPaymentsRouter from "./userPayments";
 import promotionsRouter from "./promotions";
+import sseRouter from "./sse";
 
 const router: IRouter = Router();
 
@@ -78,5 +79,6 @@ router.use(popupsRouter);
 router.use(marketRouter);
 router.use(userPaymentsRouter);
 router.use(promotionsRouter);
+router.use(sseRouter);
 
 export default router;

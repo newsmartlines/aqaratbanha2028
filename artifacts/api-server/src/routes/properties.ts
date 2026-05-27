@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { events } from "../lib/event-service";
+import { mailer } from "../lib/mailer";
 import { db } from "@workspace/db";
 import {
   propertiesTable, propertyFavoritesTable, savedSearchesTable,
@@ -48,58 +50,11 @@ async function sendWhatsAppNotification(property: any) {
   }
 }
 
-// ── Email helper (uses nodemailer via site settings) ──────────────────────
-async function getSetting(key: string): Promise<string | null> {
-  const [row] = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, key));
-  return row?.value ?? null;
-}
-
+// ── Saved search email — delegates to unified mailer ─────────────────────
 async function sendSavedSearchEmail(toEmail: string, toName: string, property: any) {
-  try {
-    const cfg: Record<string, string> = {};
-    for (const k of ["smtpHost", "smtpPort", "smtpSecure", "smtpUser", "smtpPass", "smtpFromName", "smtpFromEmail"]) {
-      cfg[k] = (await getSetting(k)) ?? "";
-    }
-    if (!(cfg.smtpHost && cfg.smtpUser && cfg.smtpPass)) return;
-    const nodemailer = await import("nodemailer");
-    const tr = nodemailer.default.createTransport({
-      host: cfg.smtpHost, port: Number(cfg.smtpPort) || 587,
-      secure: cfg.smtpSecure === "true", auth: { user: cfg.smtpUser, pass: cfg.smtpPass },
-    } as any);
-    const siteName = (await getSetting("siteName")) ?? "عقارات بنها";
-    const siteUrl = (await getSetting("siteUrl")) ?? "";
-    const price = property.price ? `${Number(property.price).toLocaleString("ar-EG")} جنيه` : "السعر عند التواصل";
-    const propLink = siteUrl ? `${siteUrl}/property/${property.id}` : `/property/${property.id}`;
-    const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"/></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;direction:rtl;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;padding:40px 0;">
-<tr><td align="center">
-<table width="580" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:linear-gradient(135deg,#12B5D0,#0060A0);padding:32px;text-align:center;">
-<p style="margin:0;color:#fff;font-size:22px;font-weight:800;">${siteName}</p>
-<p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">عقار يطابق بحثك المحفوظ!</p>
-</td></tr>
-<tr><td style="padding:32px;">
-<p style="color:#1e293b;font-size:16px;margin:0 0 8px;">مرحباً ${toName}،</p>
-<p style="color:#475569;font-size:14px;margin:0 0 24px;">وجدنا عقاراً جديداً يتطابق مع بحثك المحفوظ:</p>
-<div style="border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:24px;">
-<p style="margin:0 0 8px;color:#1e293b;font-size:18px;font-weight:700;">${property.title}</p>
-<p style="margin:0 0 4px;color:#0060A0;font-size:20px;font-weight:800;">${price}</p>
-<p style="margin:0;color:#64748b;font-size:13px;">${property.address ?? property.district ?? ""}</p>
-</div>
-<a href="${propLink}" style="display:inline-block;background:linear-gradient(135deg,#12B5D0,#0060A0);color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;">عرض العقار</a>
-</td></tr>
-</table></td></tr></table>
-</body></html>`;
-    await tr.sendMail({
-      from: `"${cfg.smtpFromName || siteName}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
-      to: `"${toName}" <${toEmail}>`,
-      subject: `🏠 عقار جديد يطابق بحثك: ${property.title}`,
-      html,
-    });
-  } catch (e) {
-    console.warn("[SavedSearch] Email failed:", e);
-  }
+  const price = property.price ? `${Number(property.price).toLocaleString("ar-EG")} جنيه` : "السعر عند التواصل";
+  const address = property.address ?? property.district ?? "";
+  return mailer.savedSearchMatch(toEmail, toName, property.title, property.id, price, address);
 }
 
 // ── Match a property against saved search filters ─────────────────────────
@@ -482,6 +437,7 @@ router.post("/properties", async (req, res) => {
 
     sendWhatsAppNotification(property).catch(() => {});
     triggerSavedSearchAlerts(property).catch(() => {});
+    events.onPropertySubmitted(property).catch(() => {});
 
     // Invalidate market cache for this area/category
     import("../lib/market-engine").then(({ invalidateMarketCache }) =>
@@ -550,6 +506,9 @@ router.put("/properties/:id", async (req, res) => {
 
     const [updated] = await db.update(propertiesTable).set(updateData).where(eq(propertiesTable.id, id)).returning();
 
+    // Fire edit event (SSE broadcast so admin panel refreshes)
+    events.onPropertyEdited(updated ?? existing).catch(() => {});
+
     // Invalidate market cache
     import("../lib/market-engine").then(({ invalidateMarketCache }) =>
       invalidateMarketCache(existing.mainCategory, existing.cityId, existing.regionId).catch(() => {})
@@ -572,8 +531,12 @@ router.delete("/properties/:id", async (req, res) => {
     const [toDelete] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     await db.delete(propertiesTable).where(eq(propertiesTable.id, id));
 
-    // Invalidate market cache
+    // Fire events
     if (toDelete) {
+      const sessionRole = (session as any).role;
+      const deletedByAdmin = sessionRole === "admin" || sessionRole === "moderator";
+      events.onPropertyDeleted(toDelete, deletedByAdmin).catch(() => {});
+
       import("../lib/market-engine").then(({ invalidateMarketCache }) =>
         invalidateMarketCache(toDelete.mainCategory, toDelete.cityId, toDelete.regionId).catch(() => {})
       ).catch(() => {});
@@ -641,25 +604,11 @@ router.patch("/properties/:id/status", async (req, res) => {
       ).catch(() => {});
     }
 
-    const ownerUserId = property.ownerUserId;
-    if (ownerUserId && (isApproving || isRejecting)) {
-      let notifMessage: string;
-      if (isApproving) {
-        notifMessage = `تمت الموافقة على إعلانك "${property.title}" وهو الآن ظاهر للجمهور.`;
-      } else {
-        notifMessage = `تم رفض إعلانك "${property.title}".`;
-        if (rejectionReason) {
-          notifMessage += `\n\n📋 سبب الرفض:\n${rejectionReason}`;
-        }
-        notifMessage += "\n\nيمكنك تعديل البيانات وإعادة تقديم الإعلان.";
-      }
-      await db.insert(notificationsTable).values({
-        userId: ownerUserId,
-        title: isApproving ? "✅ تمت الموافقة على عقارك" : "❌ تم رفض عقارك",
-        message: notifMessage,
-        type: isApproving ? "success" : "warning",
-        link: "/user/my-properties",
-      });
+    // Fire events: email + in-app notification + SSE broadcast
+    if (isApproving) {
+      events.onPropertyApproved(property).catch(() => {});
+    } else if (isRejecting) {
+      events.onPropertyRejected(property, rejectionReason ?? "").catch(() => {});
     }
 
     res.json({ success: true, data: updated });

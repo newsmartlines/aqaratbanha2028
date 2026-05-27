@@ -62,6 +62,21 @@ export default defineConfig({
       deny: ["**/.*"],
     },
     proxy: {
+      "/api/sse": {
+        target: API_SERVER,
+        changeOrigin: true,
+        proxyTimeout: 0,
+        timeout: 0,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            proxyReq.setHeader("Cache-Control", "no-cache");
+            proxyReq.setHeader("Accept", "text/event-stream");
+            const incomingHost = req.headers["x-forwarded-host"] || req.headers.host;
+            if (incomingHost) proxyReq.setHeader("X-Forwarded-Host", String(incomingHost));
+          });
+          proxy.on("error", (_err, _req, _res) => { /* SSE reconnects automatically */ });
+        },
+      },
       "/api": {
         target: API_SERVER,
         changeOrigin: true,

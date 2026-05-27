@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { getEffectivePermissions } from "../middleware/requirePermission";
+import { events } from "../lib/event-service";
 
 const router = Router();
 
@@ -158,14 +159,8 @@ router.post("/auth/register", authLimiter, async (req, res) => {
     const token = await createSession(user.id, user.role, providerId);
     setSessionCookie(res, token);
 
-    const roleLabel = role === "provider" ? "شركة عقارية" : "مستخدم عادي";
-    db.insert(notificationsTable).values({
-      userId: null as any,
-      type: "info",
-      title: `تسجيل جديد: ${name}`,
-      message: `نوع الحساب: ${roleLabel} — ${new Date().toLocaleString("ar-EG")}`,
-      link: "/admin/users",
-    }).catch(() => {});
+    // Fire events: welcome email + admin notification + SSE
+    events.onUserRegistered({ id: user.id, name: user.name, email: user.email, role: user.role }).catch(() => {});
 
     res.json({ success: true, data: { ...user, providerId } });
   } catch (err: any) {
@@ -348,6 +343,10 @@ router.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
 
     const resetToken = await createResetToken(user.id, user.email);
 
+    // Send reset password email
+    const userName = (await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, user.id)))[0]?.name ?? "";
+    events.onForgotPassword(user.email, userName, resetToken).catch(() => {});
+
     res.json({
       success: true,
       message: "تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني",
@@ -446,13 +445,8 @@ router.post("/auth/google", async (req, res) => {
         authProvider: "google",
       } as any).returning();
       user = newUser;
-      db.insert(notificationsTable).values({
-        userId: null as any,
-        type: "info",
-        title: `تسجيل جديد عبر جوجل: ${name ?? email}`,
-        message: `حساب جوجل — ${new Date().toLocaleString("ar-EG")}`,
-        link: "/admin/users",
-      }).catch(() => {});
+      // Fire events for new Google user
+      events.onUserRegistered({ id: newUser.id, name: newUser.name, email: newUser.email, role: "user" }).catch(() => {});
     } else if (!(user as any).googleId) {
       await db.update(usersTable).set({
         googleId, authProvider: "google",

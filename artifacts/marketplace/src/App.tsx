@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { api, mediaUrl, type SiteSettings } from "@/lib/api";
 import { ScrollRestorer, ScrollToTopButton } from "@/components/ScrollToTop";
 import AiChat from "@/components/AiChat";
+import { useSse } from "@/lib/use-sse";
 
 // ── Site-settings context ───────────────────────────────────────────────────
 export const SiteSettingsContext = createContext<SiteSettings | null>(null);
@@ -426,6 +427,11 @@ function GoogleWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+function SseConnector() {
+  useSse(true);
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -433,6 +439,7 @@ function App() {
         <AuthProvider>
           <GoogleWrapper>
             <TooltipProvider>
+              <SseConnector />
               <FaviconUpdater />
               <ThemeProvider />
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
