@@ -2,526 +2,526 @@
   "version": "1.0",
   "group": "locations",
   "label": "المواقع الجغرافية",
-  "exportedAt": "2026-05-27T23:17:27.821Z",
+  "exportedAt": "2026-05-27T23:45:08.037Z",
   "tables": {
     "regions": [
       {
-        "id": "2",
-        "name_ar": "محافظة القليوبية",
-        "name_en": "Qalyubia Governorate",
-        "order": "1",
-        "enabled": "t"
+        "id": 2,
+        "nameAr": "محافظة القليوبية",
+        "nameEn": "Qalyubia Governorate",
+        "order": 1,
+        "enabled": true
       }
     ],
     "cities": [
       {
-        "id": "2",
-        "region_id": "2",
-        "name_ar": "بنها",
-        "name_en": "Banha",
-        "enabled": "t"
+        "id": 2,
+        "regionId": 2,
+        "nameAr": "بنها",
+        "nameEn": "Banha",
+        "enabled": true
       },
       {
-        "id": "3",
-        "region_id": "2",
-        "name_ar": "قليوب",
-        "name_en": "Qalyub",
-        "enabled": "t"
+        "id": 3,
+        "regionId": 2,
+        "nameAr": "قليوب",
+        "nameEn": "Qalyub",
+        "enabled": true
       },
       {
-        "id": "4",
-        "region_id": "2",
-        "name_ar": "طوخ",
-        "name_en": "Toukh",
-        "enabled": "t"
+        "id": 4,
+        "regionId": 2,
+        "nameAr": "طوخ",
+        "nameEn": "Toukh",
+        "enabled": true
       },
       {
-        "id": "5",
-        "region_id": "2",
-        "name_ar": "الخانكة",
-        "name_en": "El Khanka",
-        "enabled": "t"
+        "id": 5,
+        "regionId": 2,
+        "nameAr": "الخانكة",
+        "nameEn": "El Khanka",
+        "enabled": true
       },
       {
-        "id": "6",
-        "region_id": "2",
-        "name_ar": "القناطر الخيرية",
-        "name_en": "Al Qanater El Khayreya",
-        "enabled": "t"
+        "id": 6,
+        "regionId": 2,
+        "nameAr": "القناطر الخيرية",
+        "nameEn": "Al Qanater El Khayreya",
+        "enabled": true
       },
       {
-        "id": "7",
-        "region_id": "2",
-        "name_ar": "شبرا الخيمة",
-        "name_en": "Shubra El Kheima",
-        "enabled": "t"
+        "id": 7,
+        "regionId": 2,
+        "nameAr": "شبرا الخيمة",
+        "nameEn": "Shubra El Kheima",
+        "enabled": true
       },
       {
-        "id": "8",
-        "region_id": "2",
-        "name_ar": "كفر شكر",
-        "name_en": "Kafr Shukr",
-        "enabled": "t"
+        "id": 8,
+        "regionId": 2,
+        "nameAr": "كفر شكر",
+        "nameEn": "Kafr Shukr",
+        "enabled": true
       },
       {
-        "id": "10",
-        "region_id": "2",
-        "name_ar": "ميت العطار",
-        "name_en": "Mit El Attar",
-        "enabled": "t"
+        "id": 10,
+        "regionId": 2,
+        "nameAr": "ميت العطار",
+        "nameEn": "Mit El Attar",
+        "enabled": true
       },
       {
-        "id": "11",
-        "region_id": "2",
-        "name_ar": "كفر سعد",
-        "name_en": "Kafr Saad",
-        "enabled": "t"
+        "id": 11,
+        "regionId": 2,
+        "nameAr": "كفر سعد",
+        "nameEn": "Kafr Saad",
+        "enabled": true
       }
     ],
     "areas": [
       {
-        "id": "2",
-        "city_id": "2",
-        "name_ar": "وسط البلد",
-        "name_en": "وسط البلد",
-        "enabled": "t"
+        "id": 2,
+        "cityId": 2,
+        "nameAr": "وسط البلد",
+        "nameEn": "وسط البلد",
+        "enabled": true
       },
       {
-        "id": "3",
-        "city_id": "2",
-        "name_ar": "أتريب بلس",
-        "name_en": "الحي الأول",
-        "enabled": "t"
+        "id": 3,
+        "cityId": 2,
+        "nameAr": "أتريب بلس",
+        "nameEn": "الحي الأول",
+        "enabled": true
       },
       {
-        "id": "4",
-        "city_id": "2",
-        "name_ar": "الحي الثاني",
-        "name_en": "الحي الثاني",
-        "enabled": "t"
+        "id": 4,
+        "cityId": 2,
+        "nameAr": "الحي الثاني",
+        "nameEn": "الحي الثاني",
+        "enabled": true
       },
       {
-        "id": "5",
-        "city_id": "2",
-        "name_ar": "الحي الثالث",
-        "name_en": "الحي الثالث",
-        "enabled": "t"
+        "id": 5,
+        "cityId": 2,
+        "nameAr": "الحي الثالث",
+        "nameEn": "الحي الثالث",
+        "enabled": true
       },
       {
-        "id": "6",
-        "city_id": "2",
-        "name_ar": "الحي الرابع",
-        "name_en": "الحي الرابع",
-        "enabled": "t"
+        "id": 6,
+        "cityId": 2,
+        "nameAr": "الحي الرابع",
+        "nameEn": "الحي الرابع",
+        "enabled": true
       },
       {
-        "id": "7",
-        "city_id": "2",
-        "name_ar": "الحي الخامس",
-        "name_en": "الحي الخامس",
-        "enabled": "t"
+        "id": 7,
+        "cityId": 2,
+        "nameAr": "الحي الخامس",
+        "nameEn": "الحي الخامس",
+        "enabled": true
       },
       {
-        "id": "8",
-        "city_id": "2",
-        "name_ar": "الحي السادس",
-        "name_en": "الحي السادس",
-        "enabled": "t"
+        "id": 8,
+        "cityId": 2,
+        "nameAr": "الحي السادس",
+        "nameEn": "الحي السادس",
+        "enabled": true
       },
       {
-        "id": "9",
-        "city_id": "2",
-        "name_ar": "الحي السابع",
-        "name_en": "الحي السابع",
-        "enabled": "t"
+        "id": 9,
+        "cityId": 2,
+        "nameAr": "الحي السابع",
+        "nameEn": "الحي السابع",
+        "enabled": true
       },
       {
-        "id": "10",
-        "city_id": "2",
-        "name_ar": "الحي الثامن",
-        "name_en": "الحي الثامن",
-        "enabled": "t"
+        "id": 10,
+        "cityId": 2,
+        "nameAr": "الحي الثامن",
+        "nameEn": "الحي الثامن",
+        "enabled": true
       },
       {
-        "id": "11",
-        "city_id": "2",
-        "name_ar": "الفلل",
-        "name_en": "الحي التاسع",
-        "enabled": "t"
+        "id": 11,
+        "cityId": 2,
+        "nameAr": "الفلل",
+        "nameEn": "الحي التاسع",
+        "enabled": true
       },
       {
-        "id": "12",
-        "city_id": "2",
-        "name_ar": "الحي العاشر",
-        "name_en": "الحي العاشر",
-        "enabled": "t"
+        "id": 12,
+        "cityId": 2,
+        "nameAr": "الحي العاشر",
+        "nameEn": "الحي العاشر",
+        "enabled": true
       },
       {
-        "id": "13",
-        "city_id": "2",
-        "name_ar": "فيلتس",
-        "name_en": "فيلتس",
-        "enabled": "t"
+        "id": 13,
+        "cityId": 2,
+        "nameAr": "فيلتس",
+        "nameEn": "فيلتس",
+        "enabled": true
       },
       {
-        "id": "14",
-        "city_id": "2",
-        "name_ar": "شارع الجمهورية",
-        "name_en": "شارع الجمهورية",
-        "enabled": "t"
+        "id": 14,
+        "cityId": 2,
+        "nameAr": "شارع الجمهورية",
+        "nameEn": "شارع الجمهورية",
+        "enabled": true
       },
       {
-        "id": "15",
-        "city_id": "2",
-        "name_ar": "شارع سعد زغلول",
-        "name_en": "شارع سعد زغلول",
-        "enabled": "t"
+        "id": 15,
+        "cityId": 2,
+        "nameAr": "شارع سعد زغلول",
+        "nameEn": "شارع سعد زغلول",
+        "enabled": true
       },
       {
-        "id": "16",
-        "city_id": "2",
-        "name_ar": "شارع التحرير",
-        "name_en": "شارع التحرير",
-        "enabled": "t"
+        "id": 16,
+        "cityId": 2,
+        "nameAr": "شارع التحرير",
+        "nameEn": "شارع التحرير",
+        "enabled": true
       },
       {
-        "id": "17",
-        "city_id": "2",
-        "name_ar": "الحي العسكري",
-        "name_en": "الحي العسكري",
-        "enabled": "t"
+        "id": 17,
+        "cityId": 2,
+        "nameAr": "الحي العسكري",
+        "nameEn": "الحي العسكري",
+        "enabled": true
       },
       {
-        "id": "18",
-        "city_id": "2",
-        "name_ar": "منطقة الجامعة",
-        "name_en": "منطقة الجامعة",
-        "enabled": "t"
+        "id": 18,
+        "cityId": 2,
+        "nameAr": "منطقة الجامعة",
+        "nameEn": "منطقة الجامعة",
+        "enabled": true
       },
       {
-        "id": "19",
-        "city_id": "2",
-        "name_ar": "المنطقة الصناعية",
-        "name_en": "المنطقة الصناعية",
-        "enabled": "t"
+        "id": 19,
+        "cityId": 2,
+        "nameAr": "المنطقة الصناعية",
+        "nameEn": "المنطقة الصناعية",
+        "enabled": true
       },
       {
-        "id": "20",
-        "city_id": "2",
-        "name_ar": "بنها الجديدة",
-        "name_en": "بنها الجديدة",
-        "enabled": "t"
+        "id": 20,
+        "cityId": 2,
+        "nameAr": "بنها الجديدة",
+        "nameEn": "بنها الجديدة",
+        "enabled": true
       },
       {
-        "id": "21",
-        "city_id": "2",
-        "name_ar": "كفر الجزار",
-        "name_en": "كفر الجزار",
-        "enabled": "t"
+        "id": 21,
+        "cityId": 2,
+        "nameAr": "كفر الجزار",
+        "nameEn": "كفر الجزار",
+        "enabled": true
       },
       {
-        "id": "22",
-        "city_id": "3",
-        "name_ar": "وسط قليوب",
-        "name_en": "وسط قليوب",
-        "enabled": "t"
+        "id": 22,
+        "cityId": 3,
+        "nameAr": "وسط قليوب",
+        "nameEn": "وسط قليوب",
+        "enabled": true
       },
       {
-        "id": "23",
-        "city_id": "3",
-        "name_ar": "قليوب الجديدة",
-        "name_en": "قليوب الجديدة",
-        "enabled": "t"
+        "id": 23,
+        "cityId": 3,
+        "nameAr": "قليوب الجديدة",
+        "nameEn": "قليوب الجديدة",
+        "enabled": true
       },
       {
-        "id": "24",
-        "city_id": "3",
-        "name_ar": "شرق قليوب",
-        "name_en": "شرق قليوب",
-        "enabled": "t"
+        "id": 24,
+        "cityId": 3,
+        "nameAr": "شرق قليوب",
+        "nameEn": "شرق قليوب",
+        "enabled": true
       },
       {
-        "id": "25",
-        "city_id": "3",
-        "name_ar": "غرب قليوب",
-        "name_en": "غرب قليوب",
-        "enabled": "t"
+        "id": 25,
+        "cityId": 3,
+        "nameAr": "غرب قليوب",
+        "nameEn": "غرب قليوب",
+        "enabled": true
       },
       {
-        "id": "26",
-        "city_id": "3",
-        "name_ar": "الحي العمالي",
-        "name_en": "الحي العمالي",
-        "enabled": "t"
+        "id": 26,
+        "cityId": 3,
+        "nameAr": "الحي العمالي",
+        "nameEn": "الحي العمالي",
+        "enabled": true
       },
       {
-        "id": "27",
-        "city_id": "3",
-        "name_ar": "شارع الجمهورية",
-        "name_en": "شارع الجمهورية",
-        "enabled": "t"
+        "id": 27,
+        "cityId": 3,
+        "nameAr": "شارع الجمهورية",
+        "nameEn": "شارع الجمهورية",
+        "enabled": true
       },
       {
-        "id": "28",
-        "city_id": "3",
-        "name_ar": "كفر حجازي",
-        "name_en": "كفر حجازي",
-        "enabled": "t"
+        "id": 28,
+        "cityId": 3,
+        "nameAr": "كفر حجازي",
+        "nameEn": "كفر حجازي",
+        "enabled": true
       },
       {
-        "id": "29",
-        "city_id": "4",
-        "name_ar": "مركز طوخ",
-        "name_en": "مركز طوخ",
-        "enabled": "t"
+        "id": 29,
+        "cityId": 4,
+        "nameAr": "مركز طوخ",
+        "nameEn": "مركز طوخ",
+        "enabled": true
       },
       {
-        "id": "30",
-        "city_id": "4",
-        "name_ar": "طوخ الصناعية",
-        "name_en": "طوخ الصناعية",
-        "enabled": "t"
+        "id": 30,
+        "cityId": 4,
+        "nameAr": "طوخ الصناعية",
+        "nameEn": "طوخ الصناعية",
+        "enabled": true
       },
       {
-        "id": "31",
-        "city_id": "4",
-        "name_ar": "كفر عبده",
-        "name_en": "كفر عبده",
-        "enabled": "t"
+        "id": 31,
+        "cityId": 4,
+        "nameAr": "كفر عبده",
+        "nameEn": "كفر عبده",
+        "enabled": true
       },
       {
-        "id": "32",
-        "city_id": "4",
-        "name_ar": "نزلة عيسى",
-        "name_en": "نزلة عيسى",
-        "enabled": "t"
+        "id": 32,
+        "cityId": 4,
+        "nameAr": "نزلة عيسى",
+        "nameEn": "نزلة عيسى",
+        "enabled": true
       },
       {
-        "id": "33",
-        "city_id": "4",
-        "name_ar": "أبو زعبل",
-        "name_en": "أبو زعبل",
-        "enabled": "t"
+        "id": 33,
+        "cityId": 4,
+        "nameAr": "أبو زعبل",
+        "nameEn": "أبو زعبل",
+        "enabled": true
       },
       {
-        "id": "34",
-        "city_id": "5",
-        "name_ar": "مركز الخانكة",
-        "name_en": "مركز الخانكة",
-        "enabled": "t"
+        "id": 34,
+        "cityId": 5,
+        "nameAr": "مركز الخانكة",
+        "nameEn": "مركز الخانكة",
+        "enabled": true
       },
       {
-        "id": "35",
-        "city_id": "5",
-        "name_ar": "ريف الخانكة",
-        "name_en": "ريف الخانكة",
-        "enabled": "t"
+        "id": 35,
+        "cityId": 5,
+        "nameAr": "ريف الخانكة",
+        "nameEn": "ريف الخانكة",
+        "enabled": true
       },
       {
-        "id": "36",
-        "city_id": "5",
-        "name_ar": "مستشفى الخانكة",
-        "name_en": "مستشفى الخانكة",
-        "enabled": "t"
+        "id": 36,
+        "cityId": 5,
+        "nameAr": "مستشفى الخانكة",
+        "nameEn": "مستشفى الخانكة",
+        "enabled": true
       },
       {
-        "id": "37",
-        "city_id": "6",
-        "name_ar": "القناطر الجديدة",
-        "name_en": "القناطر الجديدة",
-        "enabled": "t"
+        "id": 37,
+        "cityId": 6,
+        "nameAr": "القناطر الجديدة",
+        "nameEn": "القناطر الجديدة",
+        "enabled": true
       },
       {
-        "id": "38",
-        "city_id": "6",
-        "name_ar": "كورنيش القناطر",
-        "name_en": "كورنيش القناطر",
-        "enabled": "t"
+        "id": 38,
+        "cityId": 6,
+        "nameAr": "كورنيش القناطر",
+        "nameEn": "كورنيش القناطر",
+        "enabled": true
       },
       {
-        "id": "39",
-        "city_id": "6",
-        "name_ar": "شبين القناطر",
-        "name_en": "شبين القناطر",
-        "enabled": "t"
+        "id": 39,
+        "cityId": 6,
+        "nameAr": "شبين القناطر",
+        "nameEn": "شبين القناطر",
+        "enabled": true
       },
       {
-        "id": "40",
-        "city_id": "6",
-        "name_ar": "قناطر القليوبية",
-        "name_en": "قناطر القليوبية",
-        "enabled": "t"
+        "id": 40,
+        "cityId": 6,
+        "nameAr": "قناطر القليوبية",
+        "nameEn": "قناطر القليوبية",
+        "enabled": true
       },
       {
-        "id": "41",
-        "city_id": "7",
-        "name_ar": "شبرا الخيمة الأولى",
-        "name_en": "شبرا الخيمة الأولى",
-        "enabled": "t"
+        "id": 41,
+        "cityId": 7,
+        "nameAr": "شبرا الخيمة الأولى",
+        "nameEn": "شبرا الخيمة الأولى",
+        "enabled": true
       },
       {
-        "id": "42",
-        "city_id": "7",
-        "name_ar": "شبرا الخيمة الثانية",
-        "name_en": "شبرا الخيمة الثانية",
-        "enabled": "t"
+        "id": 42,
+        "cityId": 7,
+        "nameAr": "شبرا الخيمة الثانية",
+        "nameEn": "شبرا الخيمة الثانية",
+        "enabled": true
       },
       {
-        "id": "43",
-        "city_id": "7",
-        "name_ar": "شبرا الخيمة الثالثة",
-        "name_en": "شبرا الخيمة الثالثة",
-        "enabled": "t"
+        "id": 43,
+        "cityId": 7,
+        "nameAr": "شبرا الخيمة الثالثة",
+        "nameEn": "شبرا الخيمة الثالثة",
+        "enabled": true
       },
       {
-        "id": "44",
-        "city_id": "7",
-        "name_ar": "شبرا الخيمة الرابعة",
-        "name_en": "شبرا الخيمة الرابعة",
-        "enabled": "t"
+        "id": 44,
+        "cityId": 7,
+        "nameAr": "شبرا الخيمة الرابعة",
+        "nameEn": "شبرا الخيمة الرابعة",
+        "enabled": true
       },
       {
-        "id": "45",
-        "city_id": "8",
-        "name_ar": "مركز كفر شكر",
-        "name_en": "مركز كفر شكر",
-        "enabled": "t"
+        "id": 45,
+        "cityId": 8,
+        "nameAr": "مركز كفر شكر",
+        "nameEn": "مركز كفر شكر",
+        "enabled": true
       },
       {
-        "id": "46",
-        "city_id": "8",
-        "name_ar": "ميت أبو غالب",
-        "name_en": "ميت أبو غالب",
-        "enabled": "t"
+        "id": 46,
+        "cityId": 8,
+        "nameAr": "ميت أبو غالب",
+        "nameEn": "ميت أبو غالب",
+        "enabled": true
       },
       {
-        "id": "47",
-        "city_id": "8",
-        "name_ar": "أبشواي",
-        "name_en": "أبشواي",
-        "enabled": "t"
+        "id": 47,
+        "cityId": 8,
+        "nameAr": "أبشواي",
+        "nameEn": "أبشواي",
+        "enabled": true
       },
       {
-        "id": "50",
-        "city_id": "10",
-        "name_ar": "مركز ميت العطار",
-        "name_en": "مركز ميت العطار",
-        "enabled": "t"
+        "id": 50,
+        "cityId": 10,
+        "nameAr": "مركز ميت العطار",
+        "nameEn": "مركز ميت العطار",
+        "enabled": true
       },
       {
-        "id": "51",
-        "city_id": "10",
-        "name_ar": "كفر ميت العطار",
-        "name_en": "كفر ميت العطار",
-        "enabled": "t"
+        "id": 51,
+        "cityId": 10,
+        "nameAr": "كفر ميت العطار",
+        "nameEn": "كفر ميت العطار",
+        "enabled": true
       },
       {
-        "id": "52",
-        "city_id": "11",
-        "name_ar": "مركز كفر سعد",
-        "name_en": "مركز كفر سعد",
-        "enabled": "t"
+        "id": 52,
+        "cityId": 11,
+        "nameAr": "مركز كفر سعد",
+        "nameEn": "مركز كفر سعد",
+        "enabled": true
       }
     ],
     "featuredAreas": [
       {
-        "id": "2",
-        "name_ar": "بنها",
+        "id": 2,
+        "nameAr": "بنها",
         "image": "https://images.unsplash.com/photo-1582407947304-fd86f28f7f89?w=600&q=80",
-        "city_name": "بنها",
-        "display_order": "1",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "بنها",
+        "displayOrder": 1,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "3",
-        "name_ar": "شبرا الخيمة",
+        "id": 3,
+        "nameAr": "شبرا الخيمة",
         "image": "https://images.unsplash.com/photo-1560472355-536de3962603?w=600&q=80",
-        "city_name": "شبرا الخيمة",
-        "display_order": "2",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "شبرا الخيمة",
+        "displayOrder": 2,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "4",
-        "name_ar": "القناطر الخيرية",
+        "id": 4,
+        "nameAr": "القناطر الخيرية",
         "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=600&q=80",
-        "city_name": "القناطر الخيرية",
-        "display_order": "3",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "القناطر الخيرية",
+        "displayOrder": 3,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "5",
-        "name_ar": "طوخ",
+        "id": 5,
+        "nameAr": "طوخ",
         "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80",
-        "city_name": "طوخ",
-        "display_order": "4",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "طوخ",
+        "displayOrder": 4,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "6",
-        "name_ar": "قليوب",
+        "id": 6,
+        "nameAr": "قليوب",
         "image": "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=600&q=80",
-        "city_name": "قليوب",
-        "display_order": "5",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "قليوب",
+        "displayOrder": 5,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "7",
-        "name_ar": "التجمع الخامس",
+        "id": 7,
+        "nameAr": "التجمع الخامس",
         "image": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80",
-        "city_name": "التجمع الخامس",
-        "display_order": "6",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "التجمع الخامس",
+        "displayOrder": 6,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "8",
-        "name_ar": "الشيخ زايد",
+        "id": 8,
+        "nameAr": "الشيخ زايد",
         "image": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80",
-        "city_name": "الشيخ زايد",
-        "display_order": "7",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "الشيخ زايد",
+        "displayOrder": 7,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "9",
-        "name_ar": "مدينة بدر",
+        "id": 9,
+        "nameAr": "مدينة بدر",
         "image": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80",
-        "city_name": "مدينة بدر",
-        "display_order": "8",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "مدينة بدر",
+        "displayOrder": 8,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "10",
-        "name_ar": "العبور",
+        "id": 10,
+        "nameAr": "العبور",
         "image": "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80",
-        "city_name": "العبور",
-        "display_order": "9",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "العبور",
+        "displayOrder": 9,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "11",
-        "name_ar": "الخانكة",
+        "id": 11,
+        "nameAr": "الخانكة",
         "image": "https://images.unsplash.com/photo-1502005097973-6a7082348e28?w=600&q=80",
-        "city_name": "الخانكة",
-        "display_order": "10",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "الخانكة",
+        "displayOrder": 10,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       },
       {
-        "id": "12",
-        "name_ar": "كفر شكر",
+        "id": 12,
+        "nameAr": "كفر شكر",
         "image": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80",
-        "city_name": "كفر شكر",
-        "display_order": "11",
-        "enabled": "t",
-        "created_at": "2026-05-27 22:57:20.233038"
+        "cityName": "كفر شكر",
+        "displayOrder": 11,
+        "enabled": true,
+        "createdAt": "2026-05-27T22:57:20.233Z"
       }
     ]
   }

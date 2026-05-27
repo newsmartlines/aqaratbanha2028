@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "platform": "عقارات بنها",
-  "exportedAt": "2026-05-27T23:19:19.656Z",
+  "exportedAt": "2026-05-27T23:45:08.038Z",
   "files": [
     "locations.json",
     "categories.json",
@@ -12,23 +12,5 @@
     "field-configs.json",
     "admin.json"
   ],
-  "tableCounts": {
-    "regions": 1,
-    "cities": 9,
-    "areas": 49,
-    "featuredAreas": 11,
-    "categories": 10,
-    "subcategories": 24,
-    "properties": 34,
-    "emailTemplates": 827,
-    "siteSettings": 19,
-    "billingPlans": 5,
-    "commissionRules": 3,
-    "packages": 3,
-    "propertyFieldConfigs": 252,
-    "adminStaff": 0,
-    "users": 7
-  },
-  "totalRows": 1254,
-  "description": "حفظ كامل للبيانات — مواقع + تصنيفات + عقارات + إعدادات + فواتير + حقول + مستخدمون"
+  "description": "Auto-updated by write-through export. Do not edit manually."
 }

@@ -99,11 +99,22 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
   const priceNum = parseFloat((p.price as string) ?? "0") || 0;
   const gallery = images.length > 0 ? images : [DEFAULT_IMG];
 
+  const listingTypeAr: Record<string, string> = {
+    sale: "للبيع", rent: "للإيجار", investment: "للاستثمار",
+    للبيع: "للبيع", للإيجار: "للإيجار", للاستثمار: "للاستثمار",
+  };
+  const mainCategoryAr: Record<string, string> = {
+    residential: "سكني", commercial: "تجاري", land: "أرض",
+    administrative: "إداري", industrial: "صناعي", hotel: "فندقي",
+    agricultural: "زراعي", medical: "طبي", educational: "تعليمي",
+    سكني: "سكني", تجاري: "تجاري", أرض: "أرض", إداري: "إداري",
+  };
+
   return {
     id: p.id as number,
     title: (p.title as string) ?? "",
-    type: (p.listingType as string) ?? "للبيع",
-    kind: (p.mainCategory as string) ?? "شقة",
+    type: listingTypeAr[(p.listingType as string) ?? ""] ?? (p.listingType as string) ?? "للبيع",
+    kind: mainCategoryAr[(p.mainCategory as string) ?? ""] ?? (p.mainCategory as string) ?? "سكني",
     featured: (p.featured as boolean) ?? false,
     address: (p.address as string) ?? "",
     location: (p.address as string) ?? "",
@@ -842,7 +853,6 @@ export default function PropertyDetail() {
                   { icon: MapPin, label: "الموقع", value: property.location },
                   { icon: TrendingUp, label: "الحالة", value: property.type },
                   { icon: Eye, label: "المشاهدات", value: `${(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة` },
-                  { icon: Phone, label: "ضغطات الاتصال", value: `${(property.phoneClickCount ?? 0).toLocaleString("ar-EG")} ضغطة` },
                   { icon: Clock, label: "تاريخ النشر", value: property.createdAt ? new Date(property.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—" },
                   { icon: ShieldCheck, label: "رقم الإعلان", value: `#${property.id}` },
                 ].map((item, i) => (

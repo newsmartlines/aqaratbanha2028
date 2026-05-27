@@ -16,7 +16,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   Heart, BellRing, Bell, Search, Building2,
-  Loader2, AlertCircle, Plus, Eye,
+  Loader2, AlertCircle, Plus, Eye, Phone, MessageCircle,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
@@ -68,6 +68,15 @@ export default function DashboardOverview() {
     enabled: isUser && !!user,
     staleTime: 60_000,
   });
+
+  // ── Provider stats (phone + whatsapp clicks) ──────────────────────────────
+  const { data: providerStats } = useQuery({
+    queryKey: ["provider-stats", providerId],
+    queryFn: () => api.providers.stats(providerId!),
+    enabled: isProvider && !!providerId,
+    staleTime: 60_000,
+  });
+  const stats = providerStats;
 
   // ── Shared: recent notifications ──────────────────────────────────────────
   const { data: notificationsRaw } = useQuery({
@@ -244,6 +253,79 @@ export default function DashboardOverview() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════════════
+            PROVIDER-ONLY: Contact interaction stats
+        ════════════════════════════════════════════════════════════════════ */}
+        {isProvider && providerId != null && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">إحصائيات التواصل</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">كم زائر تواصل معك عبر إعلاناتك — مرئي لك فقط</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                {
+                  icon: Eye,
+                  label: "إجمالي المشاهدات",
+                  value: stats?.totalViews ?? 0,
+                  sub: "مشاهدة لإعلاناتك",
+                  bg: "bg-blue-50 dark:bg-blue-950/30",
+                  border: "border-blue-200 dark:border-blue-800/50",
+                  iconCls: "bg-blue-100 dark:bg-blue-900/40 text-blue-600",
+                  valueCls: "text-blue-700 dark:text-blue-300",
+                },
+                {
+                  icon: Building2,
+                  label: "إجمالي الإعلانات",
+                  value: stats?.totalProperties ?? 0,
+                  sub: "عقار مُعلَن",
+                  bg: "bg-teal-50 dark:bg-teal-950/30",
+                  border: "border-teal-200 dark:border-teal-800/50",
+                  iconCls: "bg-teal-100 dark:bg-teal-900/40 text-teal-600",
+                  valueCls: "text-teal-700 dark:text-teal-300",
+                },
+                {
+                  icon: Phone,
+                  label: "ضغطات الاتصال",
+                  value: stats?.totalPhoneClicks ?? 0,
+                  sub: "زائر طلب رقمك",
+                  bg: "bg-emerald-50 dark:bg-emerald-950/30",
+                  border: "border-emerald-200 dark:border-emerald-800/50",
+                  iconCls: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600",
+                  valueCls: "text-emerald-700 dark:text-emerald-300",
+                },
+                {
+                  icon: MessageCircle,
+                  label: "ضغطات واتساب",
+                  value: stats?.totalWhatsappClicks ?? 0,
+                  sub: "زائر فتح واتساب",
+                  bg: "bg-green-50 dark:bg-green-950/30",
+                  border: "border-green-200 dark:border-green-800/50",
+                  iconCls: "bg-green-100 dark:bg-green-900/40 text-green-600",
+                  valueCls: "text-green-700 dark:text-green-300",
+                },
+              ].map((stat) => (
+                <Card key={stat.label} className={`border ${stat.border} ${stat.bg} shadow-sm`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.iconCls}`}>
+                        <stat.icon className="w-4 h-4" />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-medium leading-tight">{stat.label}</p>
+                    </div>
+                    <p className={`text-2xl font-extrabold ${stat.valueCls}`}>
+                      {Number(stat.value).toLocaleString("ar-EG")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* ════════════════════════════════════════════════════════════════════

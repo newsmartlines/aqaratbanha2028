@@ -83,7 +83,7 @@ export const events = {
    */
   async onPropertySubmitted(property: {
     id: number; title: string; ownerUserId?: number | null; providerId?: number | null;
-    mainCategory?: string; listingType?: string; price?: string;
+    mainCategory?: string | null; listingType?: string | null; price?: string | null;
   }) {
     // Find owner
     const ownerId = property.ownerUserId;
