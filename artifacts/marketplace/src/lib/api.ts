@@ -810,19 +810,24 @@ export const api = {
   subscriptionHistory: {
     list: async (providerId: number) => {
       const res = await fetchJson<any>(`/providers/${providerId}/subscriptions-history`);
-      return (Array.isArray(res) ? res : (res?.data ?? [])) as Array<{
-        id: number;
-        planNameAr: string | null;
-        planPrice: string | null;
-        durationDays: number;
-        maxListings: number | null;
-        startDate: string;
-        endDate: string;
-        status: string;
-        createdAt: string;
-        isActive: boolean;
-      }>;
+      return (Array.isArray(res) ? res : (res?.data ?? [])) as SubHistoryItem[];
     },
+    listForUser: async (userId: number) => {
+      const res = await fetchJson<any>(`/users/${userId}/subscriptions-history`);
+      return (Array.isArray(res) ? res : (res?.data ?? [])) as SubHistoryItem[];
+    },
+  },
+
+  userSubscription: {
+    current: async (userId: number) => {
+      const res = await fetchJson<any>(`/users/${userId}/current-subscription`);
+      return (res?.data ?? null) as UserCurrentSub | null;
+    },
+    subscribe: (userId: number, billingPlanId: number) =>
+      fetchJson(`/users/${userId}/subscribe`, {
+        method: "POST",
+        body: JSON.stringify({ billingPlanId }),
+      }),
   },
 
   stats: {
@@ -1022,6 +1027,35 @@ export const api = {
   },
 
   fetchJson,
+};
+
+export type SubHistoryItem = {
+  id: number;
+  planNameAr: string | null;
+  planPrice: string | null;
+  durationDays: number;
+  maxListings: number | null;
+  startDate: string;
+  endDate: string;
+  status: string;
+  createdAt: string;
+  isActive: boolean;
+};
+
+export type UserCurrentSub = {
+  id: number;
+  billingPlanId: number | null;
+  packageNameAr: string | null;
+  packagePrice: string | null;
+  durationDays: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  isActive: boolean;
+  daysLeft: number;
+  limits: Record<string, number> | null;
+  features: Record<string, boolean> | null;
+  color: string | null;
 };
 
 export type BillingPlan = {

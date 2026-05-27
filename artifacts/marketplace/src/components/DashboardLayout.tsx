@@ -48,6 +48,7 @@ function getInitials(name: string) {
 const SHARED_NAV = [
   { name: "لوحة التحكم",      href: "/dashboard",                 icon: LayoutDashboard },
   { name: "عقاراتي",           href: "/dashboard/properties",      icon: Building2 },
+  { name: "باقاتي",            href: "/dashboard/packages",        icon: Package },
   { name: "المفضلة",           href: "/dashboard/favorites",       icon: Heart },
   { name: "تنبيهات البحث",    href: "/dashboard/saved-searches",  icon: BellRing },
   { name: "المدفوعات",         href: "/dashboard/payments",        icon: CreditCard },
@@ -57,13 +58,9 @@ const SHARED_NAV = [
   { name: "الإعدادات",         href: "/dashboard/settings",        icon: Settings },
 ] as const;
 
-const PROVIDER_NAV = [
-  { name: "باقاتي",            href: "/dashboard/packages",        icon: Package },
-] as const;
+const PROVIDER_NAV = [] as const;
 
-const USER_NAV = [
-  // (currently no user-only nav items)
-] as const;
+const USER_NAV = [] as const;
 
 function buildNav(
   isProvider: boolean,

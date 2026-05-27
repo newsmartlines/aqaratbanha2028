@@ -12,7 +12,7 @@ const dict = {
   activeBronze: { ar: "اشتراكات أساسية (<200 ج.م)", en: "Standard Subscriptions (<200 EGP)" },
   monthlyRecurring: { ar: "الإيراد المتكرر شهرياً", en: "Monthly Recurring Revenue" },
   activeSubs: { ar: "جميع الاشتراكات", en: "All Subscriptions" },
-  provider: { ar: "مقدم الخدمة", en: "Provider" },
+  provider: { ar: "المشترك", en: "Subscriber" },
   plan: { ar: "الباقة", en: "Plan" },
   status: { ar: "الحالة", en: "Status" },
   startDate: { ar: "تاريخ البداية", en: "Start Date" },

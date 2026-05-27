@@ -7,8 +7,10 @@ import {
   providersTable,
   usersTable,
   packagesTable,
+  billingPlansTable,
 } from "@workspace/db";
 import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
@@ -285,16 +287,27 @@ router.get("/admin/subscriptions", async (req, res) => {
     const status = typeof req.query.status === "string" ? req.query.status : null;
     const conditions = [];
     if (status) conditions.push(eq(subscriptionsTable.status, status));
+
+    const directUsersTable = alias(usersTable, "direct_user");
+
     const rows = await db
       .select({
         id: subscriptionsTable.id,
         providerId: subscriptionsTable.providerId,
+        userId: subscriptionsTable.userId,
         providerName: usersTable.name,
         providerEmail: usersTable.email,
+        directUserName: directUsersTable.name,
+        directUserEmail: directUsersTable.email,
         packageId: subscriptionsTable.packageId,
         packageNameAr: packagesTable.nameAr,
         packageNameEn: packagesTable.nameEn,
         packagePrice: packagesTable.price,
+        planNameAr: subscriptionsTable.planNameAr,
+        planPrice: subscriptionsTable.planPrice,
+        billingPlanId: subscriptionsTable.billingPlanId,
+        bpNameAr: billingPlansTable.nameAr,
+        bpPrice: billingPlansTable.price,
         durationDays: packagesTable.durationDays,
         startDate: subscriptionsTable.startDate,
         endDate: subscriptionsTable.endDate,
@@ -304,17 +317,36 @@ router.get("/admin/subscriptions", async (req, res) => {
       .from(subscriptionsTable)
       .leftJoin(providersTable, eq(subscriptionsTable.providerId, providersTable.id))
       .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
+      .leftJoin(directUsersTable, eq(subscriptionsTable.userId, directUsersTable.id))
       .leftJoin(packagesTable, eq(subscriptionsTable.packageId, packagesTable.id))
+      .leftJoin(billingPlansTable, eq(subscriptionsTable.billingPlanId, billingPlansTable.id))
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(subscriptionsTable.createdAt));
 
     const now = Date.now();
-    const enriched = rows.map((r) => ({
-      ...r,
-      isActive: r.status === "active" && new Date(r.endDate).getTime() > now,
-    }));
+    const enriched = rows.map((r) => {
+      const resolvedName = r.providerName ?? r.directUserName ?? "غير معروف";
+      const resolvedEmail = r.providerEmail ?? r.directUserEmail ?? null;
+      const resolvedPrice = r.billingPlanId ? (r.bpPrice ?? r.planPrice) : (r.packagePrice ?? r.planPrice);
+      const resolvedNameAr = r.billingPlanId ? (r.bpNameAr ?? r.planNameAr) : (r.packageNameAr ?? r.planNameAr);
+      return {
+        ...r,
+        providerName: resolvedName,
+        providerEmail: resolvedEmail,
+        packageNameAr: resolvedNameAr,
+        packagePrice: resolvedPrice,
+        subscriberType: r.providerId ? "company" : "user",
+        isActive: r.status === "active" && new Date(r.endDate).getTime() > now,
+        isPastDue: r.status === "active" && new Date(r.endDate).getTime() <= now,
+      };
+    });
 
-    res.json({ success: true, data: { rows: enriched } });
+    const activeRows = enriched.filter(r => r.isActive);
+    const premiumActive = activeRows.filter(r => parseFloat(r.packagePrice ?? "0") >= 200).length;
+    const bronzeActive = activeRows.filter(r => parseFloat(r.packagePrice ?? "0") < 200).length;
+    const monthlyRecurring = activeRows.reduce((sum, r) => sum + parseFloat(r.packagePrice ?? "0"), 0);
+
+    res.json({ success: true, data: { rows: enriched, totals: { premiumActive, bronzeActive, monthlyRecurring } } });
   } catch (e) {
     console.error("admin subs error", e);
     res.status(500).json({ success: false, error: "Failed to fetch subscriptions" });

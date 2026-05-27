@@ -15,28 +15,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/lib/use-role";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type ProviderStats, type BillingPlan } from "@/lib/api";
+import { api, type ProviderStats, type BillingPlan, type UserCurrentSub, type SubHistoryItem } from "@/lib/api";
 import {
   parseLimits, parseFeatures, fmtLimit, fmtMoney, fmtDate,
   FEATURE_LABELS, LIMIT_LABELS,
 } from "@/lib/plan-helpers";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-type SubHistory = {
-  id: number;
-  planNameAr: string | null;
-  planPrice: string | null;
-  durationDays: number;
-  maxListings: number | null;
-  startDate: string;
-  endDate: string;
-  status: string;
-  createdAt: string;
-  isActive: boolean;
-};
-
 // ── Status helpers ─────────────────────────────────────────────────────────────
-function subStatus(row: SubHistory) {
+function subStatus(row: SubHistoryItem) {
   if (row.isActive) {
     const days = Math.ceil((new Date(row.endDate).getTime() - Date.now()) / 86400000);
     if (days <= 7) return { label: "تنتهي قريباً", cls: "bg-amber-50 text-amber-700 border border-amber-200" };
@@ -71,6 +57,7 @@ function PlanIcon({ plan }: { plan: BillingPlan }) {
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function PackagesPage() {
   const { user, isProvider, providerId } = useRole();
+  const userId = user?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -83,26 +70,53 @@ export default function PackagesPage() {
   const [alertDismissed, setAlertDismissed] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────────
+  // Provider stats (providers only)
   const { data: stats, isLoading: statsLoading } = useQuery<ProviderStats>({
     queryKey: ["providerStats", providerId],
     queryFn: () => api.providers.stats(providerId!),
-    enabled: !!providerId,
+    enabled: !!providerId && isProvider,
     refetchInterval: 60_000,
   });
 
-  const { data: history = [], isLoading: histLoading } = useQuery<SubHistory[]>({
-    queryKey: ["subscriptionHistory", providerId],
-    queryFn: () => api.subscriptionHistory.list(providerId!),
-    enabled: !!providerId,
+  // User current subscription (regular users only)
+  const { data: userSub, isLoading: userSubLoading } = useQuery<UserCurrentSub | null>({
+    queryKey: ["userCurrentSub", userId],
+    queryFn: () => api.userSubscription.current(userId!),
+    enabled: !!userId && !isProvider,
+    refetchInterval: 60_000,
+  });
+
+  // Subscription history — provider or user
+  const { data: history = [], isLoading: histLoading } = useQuery<SubHistoryItem[]>({
+    queryKey: ["subscriptionHistory", isProvider ? providerId : userId, isProvider ? "provider" : "user"],
+    queryFn: () =>
+      isProvider
+        ? api.subscriptionHistory.list(providerId!)
+        : api.subscriptionHistory.listForUser(userId!),
+    enabled: isProvider ? !!providerId : !!userId,
   });
 
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billingPlans", "company"],
-    queryFn: () => api.billingPlans.publicListByType("company"),
+    queryKey: ["billingPlans", "all"],
+    queryFn: () => api.billingPlans.publicList(),
   });
 
-  const sub = stats?.subscription ?? null;
-  const isLoading = statsLoading || plansLoading;
+  // Unified current subscription object
+  const sub: {
+    isActive: boolean;
+    billingPlanId?: number | null;
+    packageNameAr?: string | null;
+    packagePrice?: string | null;
+    durationDays?: number | null;
+    daysLeft?: number | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    maxListings?: number | null;
+  } | null = isProvider
+    ? (stats?.subscription ? { ...stats.subscription, startDate: stats.subscription.startDate ? String(stats.subscription.startDate) : null, endDate: stats.subscription.endDate ? String(stats.subscription.endDate) : null } : null)
+    : (userSub ?? null);
+
+  const isLoading = (isProvider ? statsLoading : userSubLoading) || plansLoading;
 
   // ── Subscription helpers ─────────────────────────────────────────────────────
   const progressPct = sub?.daysLeft != null && sub?.durationDays
@@ -146,14 +160,22 @@ export default function PackagesPage() {
 
   const subscribeMutation = useMutation({
     mutationFn: (plan: BillingPlan) => {
-      if (!providerId || !Number.isFinite(providerId) || providerId < 1) {
-        return Promise.reject(new Error("لم يتم تحديد حساب الشركة العقارية. حاول تسجيل الخروج وإعادة الدخول."));
+      if (isProvider) {
+        if (!providerId || !Number.isFinite(providerId) || providerId < 1) {
+          return Promise.reject(new Error("لم يتم تحديد حساب الشركة العقارية. حاول تسجيل الخروج وإعادة الدخول."));
+        }
+        return api.subscriptions.subscribe(providerId, plan.id, true);
+      } else {
+        if (!userId || !Number.isFinite(userId) || userId < 1) {
+          return Promise.reject(new Error("لم يتم تحديد حساب المستخدم. حاول تسجيل الخروج وإعادة الدخول."));
+        }
+        return api.userSubscription.subscribe(userId, plan.id);
       }
-      return api.subscriptions.subscribe(providerId, plan.id, true);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
-      queryClient.invalidateQueries({ queryKey: ["subscriptionHistory", providerId] });
+      queryClient.invalidateQueries({ queryKey: ["userCurrentSub", userId] });
+      queryClient.invalidateQueries({ queryKey: ["subscriptionHistory"] });
       toast({ title: "تم الاشتراك بنجاح! 🎉", description: `تم تفعيل باقة ${selectedPlan?.nameAr ?? selectedPlan?.name}` });
       setConfirmOpen(false);
       setSelectedPlan(null);
@@ -196,18 +218,17 @@ export default function PackagesPage() {
               {isProvider ? "إدارة اشتراكك الحالي وسجل باقاتك السابقة" : "الباقات المتاحة للنشر والإعلان العقاري"}
             </p>
           </div>
-          {isProvider && (
-            <button
-              onClick={() => {
-                queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
-                queryClient.invalidateQueries({ queryKey: ["subscriptionHistory", providerId] });
-              }}
-              className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-              title="تحديث"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
+              queryClient.invalidateQueries({ queryKey: ["userCurrentSub", userId] });
+              queryClient.invalidateQueries({ queryKey: ["subscriptionHistory"] });
+            }}
+            className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            title="تحديث"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
 
         {/* ── Expiry Alert (providers only) ─────────────────────────────────────── */}
@@ -244,22 +265,54 @@ export default function PackagesPage() {
           </div>
         ) : (
           <>
-            {/* ── User free listing info ─────────────────────────────────────────── */}
-            {!isProvider && (
-              <div className="rounded-2xl border border-teal-200 bg-teal-50 p-8 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center mx-auto">
-                  <Building2 className="w-8 h-8 text-teal-600" />
+            {/* ── User current subscription info ──────────────────────────────────── */}
+            {!isProvider && userSub && userSub.isActive && (
+              <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 overflow-hidden shadow-sm">
+                <div className="h-1.5 w-full bg-gradient-to-l from-teal-500 via-emerald-500 to-green-500" />
+                <div className="p-6 sm:p-8">
+                  <div className="flex flex-wrap items-start gap-6">
+                    <div className="flex-1 min-w-[200px] space-y-3">
+                      <span className="text-xs font-semibold text-teal-600 uppercase tracking-wide">اشتراكك الحالي</span>
+                      <h2 className="text-2xl font-extrabold text-foreground">{userSub.packageNameAr ?? "اشتراك"}</h2>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          نشط
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {userSub.daysLeft} {userSub.daysLeft === 1 ? "يوم" : "أيام"} متبقية
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-left shrink-0">
+                      <p className="text-2xl font-bold text-teal-700">{fmtMoney(userSub.packagePrice ?? "0")} ج.م</p>
+                      <p className="text-sm text-muted-foreground">{userSub.durationDays ?? 30} يوم</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>المدة المتبقية</span>
+                      <span>{Math.min(100, Math.round(((userSub.daysLeft ?? 0) / (userSub.durationDays ?? 30)) * 100))}%</span>
+                    </div>
+                    <Progress value={Math.min(100, Math.round(((userSub.daysLeft ?? 0) / (userSub.durationDays ?? 30)) * 100))} className="h-2 bg-teal-100" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    ينتهي في: <strong className="text-foreground">{fmtDate(userSub.endDate)}</strong>
+                  </p>
                 </div>
-                <h2 className="text-xl font-bold">أضف عقاراتك مجاناً</h2>
-                <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
-                  كمستخدم، يمكنك إضافة إعلانات عقارية مجاناً دون الحاجة إلى اشتراك مدفوع. تتوفر الباقات المدفوعة للمعلنين المحترفين الراغبين في ميزات إضافية.
-                </p>
-                <Link href="/add-property">
-                  <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2 mt-2">
-                    <Building2 className="w-4 h-4" />
-                    أضف عقارك الآن
-                  </Button>
-                </Link>
+              </div>
+            )}
+
+            {/* ── User no subscription info ────────────────────────────────────────── */}
+            {!isProvider && !userSub && (
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-6 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                  <Package className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">لا يوجد اشتراك نشط</h3>
+                  <p className="text-sm text-muted-foreground mt-1">اختر إحدى الباقات أدناه للحصول على مزايا إضافية عند نشر عقاراتك.</p>
+                </div>
               </div>
             )}
 
