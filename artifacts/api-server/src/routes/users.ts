@@ -305,7 +305,6 @@ router.get("/users/:userId/current-subscription", async (req, res) => {
     if (!Number.isFinite(userId) || userId < 1)
       return res.status(400).json({ success: false, error: "معرّف المستخدم غير صالح" });
 
-    const now = new Date();
     const rows = await db
       .select({
         id: subscriptionsTable.id,
@@ -324,13 +323,17 @@ router.get("/users/:userId/current-subscription", async (req, res) => {
       })
       .from(subscriptionsTable)
       .leftJoin(billingPlansTable, eq(subscriptionsTable.billingPlanId, billingPlansTable.id))
-      .where(and(eq(subscriptionsTable.userId, userId), eq(subscriptionsTable.status, "active")))
+      .where(eq(subscriptionsTable.userId, userId))
       .orderBy(desc(subscriptionsTable.createdAt))
-      .limit(1);
+      .limit(5);
 
-    if (!rows.length) return res.json({ success: true, data: null });
+    // Find the most recent truly active one (status active + endDate in future)
+    const now = Date.now();
+    const activeRow = rows.find(s => s.status === "active" && new Date(s.endDate).getTime() > now);
 
-    const s = rows[0];
+    if (!activeRow) return res.json({ success: true, data: null });
+
+    const s = activeRow;
     const durationDays = s.bpDurationDays ?? 30;
     const endMs = new Date(s.endDate).getTime();
     const daysLeft = Math.max(0, Math.ceil((endMs - Date.now()) / 86400000));
@@ -359,6 +362,68 @@ router.get("/users/:userId/current-subscription", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, error: "Failed to fetch subscription" });
+  }
+});
+
+// POST /payments/subscription-request — user submits payment evidence for a paid plan
+router.post("/payments/subscription-request", async (req, res) => {
+  try {
+    const userId = await sessionUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: "يجب تسجيل الدخول" });
+
+    const { billingPlanId, gateway, receiptUrl } = req.body ?? {};
+    if (!billingPlanId) return res.status(400).json({ success: false, error: "يجب اختيار باقة" });
+
+    const bpId = parseInt(String(billingPlanId), 10);
+    if (!Number.isFinite(bpId)) return res.status(400).json({ success: false, error: "معرّف الباقة غير صالح" });
+
+    const [bp] = await db.select().from(billingPlansTable).where(eq(billingPlansTable.id, bpId));
+    if (!bp) return res.status(404).json({ success: false, error: "الباقة غير موجودة" });
+
+    const price = parseFloat(String(bp.price ?? "0"));
+    if (price <= 0) return res.status(400).json({ success: false, error: "هذه الباقة مجانية، لا تحتاج إلى موافقة" });
+
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + (bp.durationDays ?? 30) * 24 * 60 * 60 * 1000);
+
+    const [sub] = await db.insert(subscriptionsTable).values({
+      userId,
+      billingPlanId: bp.id,
+      planName: bp.name,
+      planNameAr: bp.nameAr ?? bp.name,
+      planPrice: String(bp.price ?? "0"),
+      startDate,
+      endDate,
+      status: "pending",
+    }).returning();
+
+    const invoiceId = `SUB-REQ-${sub.id}`;
+    const receiptNote = receiptUrl ? String(receiptUrl).slice(0, 500) : null;
+
+    const [payment] = await db.insert(paymentsTable).values({
+      userId,
+      type: "subscription",
+      amount: String(bp.price ?? "0"),
+      status: "pending",
+      invoiceId,
+      planName: `${bp.nameAr ?? bp.name}${receiptNote ? ` | إيصال: ${receiptNote}` : ""}`,
+    }).returning();
+
+    const [userRow] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, userId));
+    const userName = userRow?.name ?? "مستخدم";
+
+    await db.insert(notificationsTable).values({
+      userId: null as any,
+      title: "طلب اشتراك جديد يحتاج موافقة",
+      message: `المستخدم "${userName}" طلب الاشتراك في باقة ${bp.nameAr ?? bp.name} بقيمة ${bp.price} ج.م — بوابة: ${gateway ?? "غير محدد"}`,
+      type: "payment",
+      link: "/admin/payments",
+    }).catch(() => {});
+
+    res.json({ success: true, data: { paymentId: payment.id, subscriptionId: sub.id } });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, error: "فشل إرسال طلب الاشتراك" });
   }
 });
 

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight, Shield, CheckCircle2, Loader2, Upload, X,
   Copy, CheckCheck, Smartphone, Zap, CreditCard, Building2,
@@ -121,6 +120,7 @@ export default function SubscriptionPayPage() {
   const price = params.get("price") ?? "0";
   const duration = params.get("duration") ?? "30";
   const currency = params.get("currency") ?? "EGP";
+  const planId = params.get("planId") ? parseInt(params.get("planId")!) : null;
 
   const KEY_MAP: Record<Gateway, string> = {
     vodafone_cash:  "vodafoneCashEnabled",
@@ -170,8 +170,19 @@ export default function SubscriptionPayPage() {
       return;
     }
     setPhase("uploading");
-    await new Promise(r => setTimeout(r, 1200));
-    setPhase("done");
+    try {
+      if (planId && isPaid) {
+        await api.payments.requestSubscription({
+          billingPlanId: planId,
+          gateway: activeGateway ?? "manual",
+          receiptUrl: receipt ?? undefined,
+        });
+      }
+      setPhase("done");
+    } catch (err: any) {
+      setPhase("payment");
+      toast.error(err?.message ?? "فشل إرسال الطلب، حاول مرة أخرى");
+    }
   };
 
   if (phase === "uploading") {

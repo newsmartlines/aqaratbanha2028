@@ -3,9 +3,9 @@ import {
   Download, Filter, Loader2, RefreshCw, Search,
   CheckCircle2, Clock, XCircle, CreditCard, Building2,
   UserCircle2, ChevronLeft, ChevronRight, TrendingUp, Banknote,
-  AlertCircle,
+  AlertCircle, ThumbsUp, ThumbsDown,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 
 const PAGE_SIZE = 15;
@@ -81,6 +82,8 @@ function StatCard({ label, value, sub, icon: Icon, valueColor = "text-slate-900"
 }
 
 export default function AdminPayments() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -93,6 +96,26 @@ export default function AdminPayments() {
     queryKey: ["admin-payments", appliedFilters],
     queryFn: () => api.admin.payments.list(appliedFilters),
     refetchInterval: 15_000,
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (paymentId: number) => api.admin.payments.approveSubscription(paymentId),
+    onSuccess: () => {
+      toast({ title: "✅ تم تفعيل الاشتراك", description: "تم قبول الدفعة وتفعيل الاشتراك بنجاح." });
+      queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+      refetch();
+    },
+    onError: (err: any) => toast({ title: "فشل القبول", description: err?.message, variant: "destructive" }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (paymentId: number) => api.admin.payments.rejectSubscription(paymentId),
+    onSuccess: () => {
+      toast({ title: "تم رفض الطلب", description: "تم رفض طلب الاشتراك وإشعار المستخدم." });
+      queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+      refetch();
+    },
+    onError: (err: any) => toast({ title: "فشل الرفض", description: err?.message, variant: "destructive" }),
   });
 
   const rows: PayRow[] = data?.rows ?? [];
@@ -360,11 +383,42 @@ export default function AdminPayments() {
                       {/* Date */}
                       <TableCell className="text-slate-500 text-xs">{fmtDate(r.createdAt)}</TableCell>
 
-                      {/* Invoice ID */}
+                      {/* Invoice ID + actions */}
                       <TableCell className="text-end">
-                        <span className="font-mono text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                          {r.invoiceId ?? r.id}
-                        </span>
+                        <div className="flex flex-col items-end gap-1.5">
+                          <span className="font-mono text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                            {r.invoiceId ?? r.id}
+                          </span>
+                          {r.status === "pending" && r.invoiceId?.startsWith("SUB-REQ-") && (() => {
+                            const numId = parseInt(r.id.replace(/^PY-/, ""), 10);
+                            const isApproving = approveMutation.isPending && approveMutation.variables === numId;
+                            const isRejecting = rejectMutation.isPending && rejectMutation.variables === numId;
+                            return (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 px-2 text-[11px] border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                  disabled={isApproving || isRejecting}
+                                  onClick={() => approveMutation.mutate(numId)}
+                                >
+                                  {isApproving ? <Loader2 className="w-3 h-3 animate-spin" /> : <ThumbsUp className="w-3 h-3" />}
+                                  <span className="mr-1">قبول</span>
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 px-2 text-[11px] border-red-200 text-red-600 hover:bg-red-50"
+                                  disabled={isApproving || isRejecting}
+                                  onClick={() => rejectMutation.mutate(numId)}
+                                >
+                                  {isRejecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ThumbsDown className="w-3 h-3" />}
+                                  <span className="mr-1">رفض</span>
+                                </Button>
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

@@ -8,6 +8,7 @@ import {
   usersTable,
   packagesTable,
   billingPlansTable,
+  notificationsTable,
 } from "@workspace/db";
 import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -380,6 +381,98 @@ router.get("/admin/subscriptions", async (req, res) => {
   } catch (e) {
     console.error("admin subs error", e);
     res.status(500).json({ success: false, error: "Failed to fetch subscriptions" });
+  }
+});
+
+// POST /admin/payments/:paymentId/approve-subscription
+// Approves a pending subscription payment and activates the linked subscription
+router.post("/admin/payments/:paymentId/approve-subscription", async (req, res) => {
+  try {
+    const paymentId = parseInt(req.params.paymentId, 10);
+    if (!Number.isFinite(paymentId) || paymentId < 1)
+      return res.status(400).json({ success: false, error: "معرّف الدفعة غير صالح" });
+
+    const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, paymentId));
+    if (!payment) return res.status(404).json({ success: false, error: "الدفعة غير موجودة" });
+    if (payment.status !== "pending")
+      return res.status(400).json({ success: false, error: "الدفعة ليست في حالة معلقة" });
+
+    const match = payment.invoiceId?.match(/^SUB-REQ-(\d+)$/);
+    if (!match) return res.status(400).json({ success: false, error: "لا يمكن تحديد الاشتراك المرتبط بهذه الدفعة" });
+
+    const subscriptionId = parseInt(match[1], 10);
+    const [sub] = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.id, subscriptionId));
+    if (!sub) return res.status(404).json({ success: false, error: "الاشتراك المرتبط غير موجود" });
+
+    // Activate subscription — reset dates from now
+    const startDate = new Date();
+    const originalDuration = new Date(sub.endDate).getTime() - new Date(sub.startDate).getTime();
+    const endDate = new Date(startDate.getTime() + originalDuration);
+
+    await db.update(subscriptionsTable)
+      .set({ status: "active", startDate, endDate })
+      .where(eq(subscriptionsTable.id, subscriptionId));
+
+    await db.update(paymentsTable)
+      .set({ status: "paid" })
+      .where(eq(paymentsTable.id, paymentId));
+
+    if (sub.userId) {
+      await db.insert(notificationsTable).values({
+        userId: sub.userId,
+        title: "🎉 تم تفعيل اشتراكك بنجاح",
+        message: `تمت الموافقة على دفعتك وتفعيل باقة ${sub.planNameAr ?? sub.planName} بنجاح. مدة الاشتراك ${Math.ceil(originalDuration / 86400000)} يوم.`,
+        type: "subscription",
+        link: "/dashboard/packages",
+      }).catch(() => {});
+    }
+
+    res.json({ success: true });
+  } catch (e) {
+    console.error("approve subscription error", e);
+    res.status(500).json({ success: false, error: "فشل الموافقة على الاشتراك" });
+  }
+});
+
+// POST /admin/payments/:paymentId/reject-subscription
+// Rejects a pending subscription payment
+router.post("/admin/payments/:paymentId/reject-subscription", async (req, res) => {
+  try {
+    const paymentId = parseInt(req.params.paymentId, 10);
+    if (!Number.isFinite(paymentId) || paymentId < 1)
+      return res.status(400).json({ success: false, error: "معرّف الدفعة غير صالح" });
+
+    const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, paymentId));
+    if (!payment) return res.status(404).json({ success: false, error: "الدفعة غير موجودة" });
+    if (payment.status !== "pending")
+      return res.status(400).json({ success: false, error: "الدفعة ليست في حالة معلقة" });
+
+    const match = payment.invoiceId?.match(/^SUB-REQ-(\d+)$/);
+    if (match) {
+      const subscriptionId = parseInt(match[1], 10);
+      await db.update(subscriptionsTable)
+        .set({ status: "cancelled" })
+        .where(eq(subscriptionsTable.id, subscriptionId));
+    }
+
+    await db.update(paymentsTable)
+      .set({ status: "failed" })
+      .where(eq(paymentsTable.id, paymentId));
+
+    if (payment.userId) {
+      await db.insert(notificationsTable).values({
+        userId: payment.userId,
+        title: "تم رفض طلب الاشتراك",
+        message: `عذراً، لم يتم قبول دفعة الاشتراك. يرجى التواصل مع الدعم أو إعادة المحاولة.`,
+        type: "subscription",
+        link: "/dashboard/packages",
+      }).catch(() => {});
+    }
+
+    res.json({ success: true });
+  } catch (e) {
+    console.error("reject subscription error", e);
+    res.status(500).json({ success: false, error: "فشل رفض الاشتراك" });
   }
 });
 

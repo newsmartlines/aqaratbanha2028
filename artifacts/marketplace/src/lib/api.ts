@@ -545,6 +545,10 @@ export const api = {
         }>(`/admin/payments${qs(params)}`),
       exportUrl: (params?: { from?: string; to?: string; status?: string }) =>
         `/api/admin/payments/export${qs(params)}`,
+      approveSubscription: (paymentId: number) =>
+        fetchJson(`/admin/payments/${paymentId}/approve-subscription`, { method: "POST" }),
+      rejectSubscription: (paymentId: number) =>
+        fetchJson(`/admin/payments/${paymentId}/reject-subscription`, { method: "POST" }),
     },
     subscriptions: {
       list: (params?: { status?: string; type?: string }) =>
@@ -757,6 +761,11 @@ export const api = {
           amount: string; refId: string | null; note: string | null; createdAt: string;
         }>;
       }>(`/admin/wallet`),
+    requestSubscription: (data: { billingPlanId: number; gateway: string; receiptUrl?: string }) =>
+      fetchJson(`/payments/subscription-request`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
   },
 
   requests: {

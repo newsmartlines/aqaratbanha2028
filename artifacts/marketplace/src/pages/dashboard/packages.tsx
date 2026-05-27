@@ -352,22 +352,45 @@ export default function PackagesPage() {
         planColor: null,
       };
     }
-    if (!userSub) return null;
-    const maxListings = userSub.limits?.properties ?? null;
-    return {
-      isActive: userSub.isActive,
-      billingPlanId: userSub.billingPlanId,
-      packageNameAr: userSub.packageNameAr,
-      packagePrice: userSub.packagePrice,
-      durationDays: userSub.durationDays,
-      daysLeft: userSub.daysLeft,
-      startDate: userSub.startDate ? String(userSub.startDate) : null,
-      endDate: userSub.endDate ? String(userSub.endDate) : null,
-      maxListings: maxListings != null && maxListings < 0 ? -1 : maxListings,
-      planColor: userSub.color,
-    };
+
+    // Try the dedicated current-subscription endpoint first
+    if (userSub) {
+      const maxListings = userSub.limits?.properties ?? null;
+      return {
+        isActive: userSub.isActive,
+        billingPlanId: userSub.billingPlanId,
+        packageNameAr: userSub.packageNameAr,
+        packagePrice: userSub.packagePrice,
+        durationDays: userSub.durationDays,
+        daysLeft: userSub.daysLeft,
+        startDate: userSub.startDate ? String(userSub.startDate) : null,
+        endDate: userSub.endDate ? String(userSub.endDate) : null,
+        maxListings: maxListings != null && maxListings < 0 ? -1 : maxListings,
+        planColor: userSub.color,
+      };
+    }
+
+    // Fallback: derive from the most recent active history item
+    const activeHistoryItem = history.find(h => h.isActive);
+    if (activeHistoryItem) {
+      const dl = daysLeft(String(activeHistoryItem.endDate));
+      return {
+        isActive: true,
+        billingPlanId: null,
+        packageNameAr: activeHistoryItem.planNameAr,
+        packagePrice: activeHistoryItem.planPrice,
+        durationDays: activeHistoryItem.durationDays,
+        daysLeft: dl,
+        startDate: activeHistoryItem.startDate ? String(activeHistoryItem.startDate) : null,
+        endDate: activeHistoryItem.endDate ? String(activeHistoryItem.endDate) : null,
+        maxListings: activeHistoryItem.maxListings ?? null,
+        planColor: null,
+      };
+    }
+
+    return null;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isProvider, stats?.subscription, userSub]);
+  }, [isProvider, stats?.subscription, userSub, history]);
 
   // True while any required data is still in-flight (including auth)
   const isLoading = authLoading || (isProvider ? (statsLoading && !!providerId) : userSubLoading) || plansLoading;
