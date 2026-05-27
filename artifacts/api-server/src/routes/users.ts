@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { db } from "@workspace/db";
-import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable } from "@workspace/db";
+import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable, paymentsTable } from "@workspace/db";
 import { eq, ne, and, desc } from "drizzle-orm";
 import { getSession } from "./auth";
 
@@ -278,6 +278,17 @@ router.post("/users/:userId/subscribe", async (req, res) => {
       message: `المستخدم "${userName}" اشترك في باقة ${bp.nameAr ?? bp.name}.`,
       type: "subscription",
       link: "/admin/subscriptions",
+    }).catch(() => {});
+
+    // Record a payment entry so it appears in admin payments dashboard
+    await db.insert(paymentsTable).values({
+      userId,
+      providerId: null,
+      type: "subscription",
+      amount: String(bp.price ?? "0"),
+      status: "paid",
+      invoiceId: `USER-SUB-${sub.id}`,
+      planName: bp.nameAr ?? bp.name,
     }).catch(() => {});
 
     res.json({ success: true, data: { subscription: sub } });

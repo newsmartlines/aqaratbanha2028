@@ -515,15 +515,21 @@ export const api = {
       list: (params?: { from?: string; to?: string; status?: string }) =>
         fetchJson<{
           rows: Array<{
-            id: number;
+            id: string;
+            invoiceId: string | null;
+            type: string;
+            subscriberType: string;
             providerId: number | null;
             providerName: string | null;
             providerEmail: string | null;
             providerPhone: string | null;
-            type: string;
+            planName: string | null;
             amount: string;
+            commissionAmount: string;
             status: string;
-            invoiceId: string | null;
+            gateway: string | null;
+            gatewayRef: string | null;
+            paidAt: string | null;
             createdAt: string;
           }>;
           totals: {
@@ -534,20 +540,22 @@ export const api = {
             pendingAmount: number;
             failedAmount: number;
             totalAmount: number;
+            commissionTotal: number;
           };
         }>(`/admin/payments${qs(params)}`),
       exportUrl: (params?: { from?: string; to?: string; status?: string }) =>
         `/api/admin/payments/export${qs(params)}`,
     },
     subscriptions: {
-      list: (params?: { status?: string }) =>
+      list: (params?: { status?: string; type?: string }) =>
         fetchJson<{
           rows: Array<{
             id: number;
             providerId: number | null;
-            providerName: string | null;
-            providerEmail: string | null;
-            packageId: number | null;
+            userId: number | null;
+            subscriberType: string;
+            subscriberName: string;
+            subscriberEmail: string | null;
             packageNameAr: string | null;
             packageNameEn: string | null;
             packagePrice: string | null;
@@ -558,11 +566,16 @@ export const api = {
             createdAt: string;
             isActive: boolean;
             isPastDue: boolean;
+            daysLeft: number;
           }>;
           totals: {
             premiumActive: number;
             bronzeActive: number;
+            freeActive: number;
             monthlyRecurring: number;
+            totalActive: number;
+            userActive: number;
+            companyActive: number;
           };
         }>(`/admin/subscriptions${qs(params)}`),
     },

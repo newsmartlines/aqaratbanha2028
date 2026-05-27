@@ -36,9 +36,8 @@ function startOfDay(d: Date): Date {
 }
 
 /**
- * Unified payments view: combines paymentTransactionsTable with paymentsTable
- * (legacy subscription invoice rows). Each row has the same shape so the admin
- * UI can render them uniformly with status badges (paid / pending / failed).
+ * Unified payments view: combines paymentTransactionsTable (gateway-linked)
+ * with paymentsTable (subscription receipts, including free-plan user subs).
  */
 async function loadPayments(opts: { from?: Date | null; to?: Date | null; status?: string | null }) {
   const txConds = [];
@@ -46,7 +45,7 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
   if (opts.to) txConds.push(lte(paymentTransactionsTable.createdAt, endOfDay(opts.to)));
   if (opts.status) txConds.push(eq(paymentTransactionsTable.status, opts.status));
 
-  // 1) Payment transactions history
+  // 1) Payment transactions history (gateway payments — providers)
   const txRows = await db
     .select({
       id: paymentTransactionsTable.id,
@@ -72,21 +71,23 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
     .where(txConds.length ? and(...txConds) : undefined)
     .orderBy(desc(paymentTransactionsTable.createdAt));
 
-  // Hydrate customer names + service titles in batch
-  const customerIds = [...new Set(txRows.map((r) => r.customerId).filter((x): x is number => !!x))];
-  const [customerRows] = await Promise.all([
-    customerIds.length
-      ? db.select({ id: usersTable.id, name: usersTable.name, phone: usersTable.phone })
-          .from(usersTable)
-          .where(sql`${usersTable.id} = ANY(${customerIds})`)
-      : Promise.resolve([] as { id: number; name: string | null; phone: string | null }[]),
-  ]);
-  const customerMap = new Map(customerRows.map((c) => [c.id, c]));
+  // Hydrate customer names in batch
+  const customerIds: number[] = [...new Set(
+    txRows.map((r) => r.customerId).filter((x): x is number => !!x)
+  )];
+  type CustomerRow = { id: number; name: string | null; phone: string | null };
+  const customerRows: CustomerRow[] = customerIds.length
+    ? await db.select({ id: usersTable.id, name: usersTable.name, phone: usersTable.phone })
+        .from(usersTable)
+        .where(sql`${usersTable.id} = ANY(${customerIds})`)
+    : [];
+  const customerMap = new Map<number, CustomerRow>(customerRows.map((c) => [c.id, c]));
 
   const unifiedTx = txRows.map((r) => ({
     id: `TX-${r.id}`,
     invoiceId: r.refId,
     type: r.kind === "service_request" ? "service_request" : "subscription",
+    subscriberType: "company" as const,
     providerId: r.providerId,
     providerName: r.providerName,
     providerEmail: r.providerEmail,
@@ -96,6 +97,7 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
     customerPhone: r.customerId ? customerMap.get(r.customerId)?.phone ?? null : null,
     serviceId: null,
     serviceTitle: null,
+    planName: null as string | null,
     amount: r.amount,
     commissionAmount: r.commissionAmount ?? "0",
     status: r.status,
@@ -105,9 +107,8 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
     createdAt: r.createdAt.toISOString(),
   }));
 
-  // 2) Older paymentsTable rows (legacy subscription receipts not always linked
-  // to a paymentTransactionsTable row) — only include rows whose invoiceId
-  // wasn't already represented in the tx history above.
+  // 2) paymentsTable rows — subscription receipts (includes user subscriptions where userId is set)
+  const directUserAlias = alias(usersTable, "direct_user");
   const seenRefs = new Set(
     unifiedTx.map((r) => r.invoiceId).filter((x): x is string => !!x)
   );
@@ -115,48 +116,60 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
   if (opts.from) payConds.push(gte(paymentsTable.createdAt, startOfDay(opts.from)));
   if (opts.to) payConds.push(lte(paymentsTable.createdAt, endOfDay(opts.to)));
   if (opts.status) payConds.push(eq(paymentsTable.status, opts.status));
+
   const payRows = await db
     .select({
       id: paymentsTable.id,
       providerId: paymentsTable.providerId,
+      userId: paymentsTable.userId,
       providerName: usersTable.name,
       providerEmail: usersTable.email,
       providerPhone: providersTable.phone,
+      directUserName: directUserAlias.name,
+      directUserEmail: directUserAlias.email,
       type: paymentsTable.type,
       amount: paymentsTable.amount,
       status: paymentsTable.status,
       invoiceId: paymentsTable.invoiceId,
+      planName: paymentsTable.planName,
       createdAt: paymentsTable.createdAt,
     })
     .from(paymentsTable)
     .leftJoin(providersTable, eq(paymentsTable.providerId, providersTable.id))
     .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
+    .leftJoin(directUserAlias, eq(paymentsTable.userId, directUserAlias.id))
     .where(payConds.length ? and(...payConds) : undefined)
     .orderBy(desc(paymentsTable.createdAt));
 
   const legacyRows = payRows
     .filter((p) => !p.invoiceId || !seenRefs.has(p.invoiceId))
-    .map((p) => ({
-      id: `PY-${p.id}`,
-      invoiceId: p.invoiceId,
-      type: p.type,
-      providerId: p.providerId,
-      providerName: p.providerName,
-      providerEmail: p.providerEmail,
-      providerPhone: p.providerPhone,
-      customerId: null,
-      customerName: null,
-      customerPhone: null,
-      serviceId: null,
-      serviceTitle: null,
-      amount: p.amount,
-      commissionAmount: "0",
-      status: p.status,
-      gateway: "manual",
-      gatewayRef: null,
-      paidAt: p.status === "paid" ? p.createdAt.toISOString() : null,
-      createdAt: p.createdAt.toISOString(),
-    }));
+    .map((p) => {
+      // user subscription: userId set, no providerId
+      const isUserSub = !p.providerId && !!p.userId;
+      return {
+        id: `PY-${p.id}`,
+        invoiceId: p.invoiceId,
+        type: p.type,
+        subscriberType: isUserSub ? ("user" as const) : ("company" as const),
+        providerId: p.providerId,
+        providerName: isUserSub ? p.directUserName : p.providerName,
+        providerEmail: isUserSub ? p.directUserEmail : p.providerEmail,
+        providerPhone: isUserSub ? null : p.providerPhone,
+        customerId: null,
+        customerName: null,
+        customerPhone: null,
+        serviceId: null,
+        serviceTitle: null,
+        planName: p.planName,
+        amount: p.amount,
+        commissionAmount: "0",
+        status: p.status,
+        gateway: isUserSub ? "free" : "manual",
+        gatewayRef: null,
+        paidAt: p.status === "paid" ? p.createdAt.toISOString() : null,
+        createdAt: p.createdAt.toISOString(),
+      };
+    });
 
   const all = [...unifiedTx, ...legacyRows].sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : -1
@@ -225,50 +238,26 @@ router.get("/admin/payments/export", async (req, res) => {
     const rows = await loadPayments({ from, to, status });
 
     const header = [
-      "Payment ID",
-      "Invoice ID / Ref",
-      "Type",
-      "Provider ID",
-      "Provider Name",
-      "Provider Email",
-      "Provider Phone",
-      "Customer Name",
-      "Customer Phone",
-      "Service",
-      "Amount (EGP)",
-      "Commission (EGP)",
-      "Status",
-      "Gateway",
-      "Date",
+      "Payment ID", "Invoice ID / Ref", "Type", "Subscriber Type",
+      "Name", "Email", "Phone", "Plan",
+      "Amount (EGP)", "Commission (EGP)", "Status", "Gateway", "Date",
     ];
 
     const lines = [header.map(csvEscape).join(",")];
     for (const r of rows) {
       lines.push(
         [
-          r.id,
-          r.invoiceId ?? "",
-          r.type,
-          r.providerId ?? "",
-          r.providerName ?? "",
-          r.providerEmail ?? "",
-          r.providerPhone ?? "",
-          r.customerName ?? "",
-          r.customerPhone ?? "",
-          r.serviceTitle ?? "",
+          r.id, r.invoiceId ?? "", r.type, r.subscriberType ?? "",
+          r.providerName ?? "", r.providerEmail ?? "", r.providerPhone ?? "",
+          r.planName ?? "",
           parseFloat(String(r.amount ?? "0")).toFixed(2),
           parseFloat(String(r.commissionAmount ?? "0")).toFixed(2),
-          r.status,
-          r.gateway ?? "",
-          new Date(r.createdAt).toISOString(),
-        ]
-          .map(csvEscape)
-          .join(","),
+          r.status, r.gateway ?? "", new Date(r.createdAt).toISOString(),
+        ].map(csvEscape).join(","),
       );
     }
 
     const csv = "\uFEFF" + lines.join("\n");
-
     const fromStr = from ? from.toISOString().slice(0, 10) : "all";
     const toStr = to ? to.toISOString().slice(0, 10) : "all";
     const filename = `payments-${status}-${fromStr}_to_${toStr}.csv`;
@@ -284,9 +273,10 @@ router.get("/admin/payments/export", async (req, res) => {
 
 router.get("/admin/subscriptions", async (req, res) => {
   try {
-    const status = typeof req.query.status === "string" ? req.query.status : null;
+    const statusFilter = typeof req.query.status === "string" ? req.query.status : null;
+    const typeFilter = typeof req.query.type === "string" ? req.query.type : null;
     const conditions = [];
-    if (status) conditions.push(eq(subscriptionsTable.status, status));
+    if (statusFilter && statusFilter !== "all") conditions.push(eq(subscriptionsTable.status, statusFilter));
 
     const directUsersTable = alias(usersTable, "direct_user");
 
@@ -304,11 +294,14 @@ router.get("/admin/subscriptions", async (req, res) => {
         packageNameEn: packagesTable.nameEn,
         packagePrice: packagesTable.price,
         planNameAr: subscriptionsTable.planNameAr,
+        planName: subscriptionsTable.planName,
         planPrice: subscriptionsTable.planPrice,
         billingPlanId: subscriptionsTable.billingPlanId,
         bpNameAr: billingPlansTable.nameAr,
+        bpNameEn: billingPlansTable.name,
         bpPrice: billingPlansTable.price,
-        durationDays: packagesTable.durationDays,
+        bpDurationDays: billingPlansTable.durationDays,
+        pkgDurationDays: packagesTable.durationDays,
         startDate: subscriptionsTable.startDate,
         endDate: subscriptionsTable.endDate,
         status: subscriptionsTable.status,
@@ -324,29 +317,66 @@ router.get("/admin/subscriptions", async (req, res) => {
       .orderBy(desc(subscriptionsTable.createdAt));
 
     const now = Date.now();
-    const enriched = rows.map((r) => {
-      const resolvedName = r.providerName ?? r.directUserName ?? "غير معروف";
-      const resolvedEmail = r.providerEmail ?? r.directUserEmail ?? null;
+    let enriched = rows.map((r) => {
+      const isCompany = !!r.providerId;
+      const resolvedName = isCompany
+        ? (r.providerName ?? "شركة غير معروفة")
+        : (r.directUserName ?? "مستخدم غير معروف");
+      const resolvedEmail = isCompany ? r.providerEmail : r.directUserEmail;
       const resolvedPrice = r.billingPlanId ? (r.bpPrice ?? r.planPrice) : (r.packagePrice ?? r.planPrice);
-      const resolvedNameAr = r.billingPlanId ? (r.bpNameAr ?? r.planNameAr) : (r.packageNameAr ?? r.planNameAr);
+      const resolvedNameAr = r.billingPlanId
+        ? (r.bpNameAr ?? r.planNameAr)
+        : (r.packageNameAr ?? r.planNameAr);
+      const resolvedNameEn = r.billingPlanId ? r.bpNameEn : r.packageNameEn;
+      const resolvedDuration = r.billingPlanId ? r.bpDurationDays : r.pkgDurationDays;
+      const endTime = new Date(r.endDate).getTime();
+      const isActive = r.status === "active" && endTime > now;
+      const isPastDue = r.status === "active" && endTime <= now;
+      const daysLeft = isActive ? Math.ceil((endTime - now) / 86400000) : 0;
       return {
-        ...r,
-        providerName: resolvedName,
-        providerEmail: resolvedEmail,
+        id: r.id,
+        providerId: r.providerId,
+        userId: r.userId,
+        subscriberType: isCompany ? "company" : "user",
+        subscriberName: resolvedName,
+        subscriberEmail: resolvedEmail ?? null,
         packageNameAr: resolvedNameAr,
+        packageNameEn: resolvedNameEn,
         packagePrice: resolvedPrice,
-        subscriberType: r.providerId ? "company" : "user",
-        isActive: r.status === "active" && new Date(r.endDate).getTime() > now,
-        isPastDue: r.status === "active" && new Date(r.endDate).getTime() <= now,
+        durationDays: resolvedDuration,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        status: r.status,
+        isActive,
+        isPastDue,
+        daysLeft,
+        createdAt: r.createdAt,
       };
     });
 
-    const activeRows = enriched.filter(r => r.isActive);
-    const premiumActive = activeRows.filter(r => parseFloat(r.packagePrice ?? "0") >= 200).length;
-    const bronzeActive = activeRows.filter(r => parseFloat(r.packagePrice ?? "0") < 200).length;
-    const monthlyRecurring = activeRows.reduce((sum, r) => sum + parseFloat(r.packagePrice ?? "0"), 0);
+    // Filter by type after enrichment
+    if (typeFilter === "user") enriched = enriched.filter(r => r.subscriberType === "user");
+    if (typeFilter === "company") enriched = enriched.filter(r => r.subscriberType === "company");
 
-    res.json({ success: true, data: { rows: enriched, totals: { premiumActive, bronzeActive, monthlyRecurring } } });
+    const activeRows = enriched.filter(r => r.isActive);
+    const premiumActive = activeRows.filter(r => parseFloat(String(r.packagePrice ?? "0")) >= 200).length;
+    const bronzeActive = activeRows.filter(r => {
+      const p = parseFloat(String(r.packagePrice ?? "0"));
+      return p > 0 && p < 200;
+    }).length;
+    const freeActive = activeRows.filter(r => parseFloat(String(r.packagePrice ?? "0")) === 0).length;
+    const monthlyRecurring = activeRows.reduce((sum, r) => sum + parseFloat(String(r.packagePrice ?? "0")), 0);
+    const totalActive = activeRows.length;
+    const userActive = activeRows.filter(r => r.subscriberType === "user").length;
+    const companyActive = activeRows.filter(r => r.subscriberType === "company").length;
+
+    res.json({
+      success: true,
+      data: {
+        rows: enriched,
+        totals: { premiumActive, bronzeActive, freeActive, monthlyRecurring, totalActive, userActive, companyActive },
+      },
+    });
   } catch (e) {
     console.error("admin subs error", e);
     res.status(500).json({ success: false, error: "Failed to fetch subscriptions" });
