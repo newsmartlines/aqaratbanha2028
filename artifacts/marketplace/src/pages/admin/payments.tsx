@@ -3,7 +3,7 @@ import {
   Download, Filter, Loader2, RefreshCw, Search,
   CheckCircle2, Clock, XCircle, CreditCard, Building2,
   UserCircle2, ChevronLeft, ChevronRight, TrendingUp, Banknote,
-  AlertCircle, ThumbsUp, ThumbsDown,
+  AlertCircle, ThumbsUp, ThumbsDown, ImageIcon, X,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -44,6 +44,18 @@ type PayRow = {
   gateway: string | null;
   createdAt: string;
 };
+
+function parseReceipt(planName: string | null | undefined): { label: string; receiptUrl: string | null } {
+  if (!planName) return { label: "", receiptUrl: null };
+  const sep = " | إيصال: ";
+  const idx = planName.indexOf(sep);
+  if (idx === -1) return { label: planName, receiptUrl: null };
+  const label = planName.slice(0, idx).trim();
+  const raw = planName.slice(idx + sep.length).trim();
+  if (!raw) return { label, receiptUrl: null };
+  const receiptUrl = raw.startsWith("http") ? raw : `/api-server/${raw.replace(/^\//, "")}`;
+  return { label, receiptUrl };
+}
 
 const TYPE_META: Record<string, { label: string; cls: string }> = {
   subscription:    { label: "اشتراك",     cls: "bg-purple-50 text-purple-700 border-purple-200" },
@@ -91,6 +103,7 @@ export default function AdminPayments() {
   const [appliedFilters, setAppliedFilters] = useState<{ from?: string; to?: string; status?: string }>({});
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<"all" | "paid" | "pending" | "failed">("all");
+  const [previewImg, setPreviewImg] = useState<string | null>(null);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["admin-payments", appliedFilters],
@@ -341,10 +354,41 @@ export default function AdminPayments() {
 
                       {/* Plan + Type */}
                       <TableCell>
-                        <div className="space-y-1">
-                          {r.planName && (
-                            <p className="text-sm font-medium text-slate-700">{r.planName}</p>
-                          )}
+                        <div className="space-y-1.5">
+                          {r.planName && (() => {
+                            const { label, receiptUrl } = parseReceipt(r.planName);
+                            return (
+                              <>
+                                {label && (
+                                  <p className="text-sm font-medium text-slate-700">{label}</p>
+                                )}
+                                {receiptUrl && (
+                                  <button
+                                    onClick={() => setPreviewImg(receiptUrl)}
+                                    className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 transition-colors group"
+                                    title="عرض الإيصال"
+                                  >
+                                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-teal-200 group-hover:border-teal-400 transition-colors shrink-0">
+                                      <img
+                                        src={receiptUrl}
+                                        alt="إيصال"
+                                        className="w-full h-full object-cover"
+                                        onError={e => {
+                                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                                          (e.currentTarget.nextElementSibling as HTMLElement | null)?.style &&
+                                            ((e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex");
+                                        }}
+                                      />
+                                      <div className="hidden absolute inset-0 items-center justify-center bg-slate-100">
+                                        <ImageIcon className="w-4 h-4 text-slate-400" />
+                                      </div>
+                                    </div>
+                                    <span className="underline underline-offset-2">عرض الإيصال</span>
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
                           <Badge variant="outline" className={`text-xs ${typeMeta.cls}`}>
                             {typeMeta.label}
                           </Badge>
@@ -469,6 +513,46 @@ export default function AdminPayments() {
           </div>
         )}
       </div>
+
+      {/* Receipt Image Lightbox */}
+      {previewImg && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setPreviewImg(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+              <p className="text-sm font-bold text-slate-700">صورة الإيصال</p>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewImg}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-teal-600 hover:text-teal-800 underline underline-offset-2 transition-colors"
+                >
+                  فتح في تبويب جديد
+                </a>
+                <button
+                  onClick={() => setPreviewImg(null)}
+                  className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-4 h-4 text-slate-500" />
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[calc(90vh-56px)] flex items-center justify-center bg-slate-50 p-4">
+              <img
+                src={previewImg}
+                alt="إيصال الدفع"
+                className="max-w-full max-h-[75vh] object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

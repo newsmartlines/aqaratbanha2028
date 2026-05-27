@@ -400,9 +400,18 @@ export default function PackagesPage() {
     ? Math.min(100, Math.round((sub.daysLeft / sub.durationDays) * 100))
     : 0;
 
+  const filteredPlans = useMemo(() => {
+    if (!plans.length) return plans;
+    if (isProvider) {
+      return plans.filter(p => p.userType !== "user");
+    } else {
+      return plans.filter(p => p.userType === "all" || p.userType === "user");
+    }
+  }, [plans, isProvider]);
+
   const sortedPlans = useMemo(
-    () => [...plans].sort((a, b) => a.sortOrder - b.sortOrder || parseFloat(a.price ?? "0") - parseFloat(b.price ?? "0")),
-    [plans]
+    () => [...filteredPlans].sort((a, b) => a.sortOrder - b.sortOrder || parseFloat(a.price ?? "0") - parseFloat(b.price ?? "0")),
+    [filteredPlans]
   );
 
   const isCurrentPlan = (plan: BillingPlan) => {
