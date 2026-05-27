@@ -54,6 +54,14 @@ function permissionForPath(path: string): string | null {
       return "reports";
     case "settings":
       return "settings";
+    case "ads":
+    case "promotions":
+    case "featured-areas":
+    case "billing-plans":
+    case "email-templates":
+    case "popups":
+    case "backup":
+      return "settings";
     default:
       return null;
   }

@@ -73,8 +73,8 @@ async function loadPayments(opts: { from?: Date | null; to?: Date | null; status
     .orderBy(desc(paymentTransactionsTable.createdAt));
 
   // Hydrate customer names in batch
-  const customerIds: number[] = [...new Set(
-    txRows.map((r) => r.customerId).filter((x): x is number => !!x)
+  const customerIds: number[] = [...new Set<number>(
+    txRows.map((r: any) => r.customerId).filter((x): x is number => typeof x === "number")
   )];
   type CustomerRow = { id: number; name: string | null; phone: string | null };
   const customerRows: CustomerRow[] = customerIds.length

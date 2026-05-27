@@ -284,6 +284,7 @@ router.get("/properties", async (req, res) => {
 router.get("/properties/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!property) return res.status(404).json({ success: false, error: "Not found" });
 
@@ -347,6 +348,7 @@ router.get("/properties/:id", async (req, res) => {
 router.post("/properties/:id/view", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const sessionId: string = req.body?.sessionId ?? req.ip ?? "anon";
 
     // Check for existing view from same sessionId within 24 hours
@@ -499,6 +501,7 @@ router.put("/properties/:id", async (req, res) => {
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
 
     const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const [existing] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!existing) return res.status(404).json({ success: false, error: "Property not found" });
 
@@ -565,6 +568,7 @@ router.delete("/properties/:id", async (req, res) => {
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
 
     const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const [toDelete] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     await db.delete(propertiesTable).where(eq(propertiesTable.id, id));
 

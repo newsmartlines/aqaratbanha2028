@@ -61,6 +61,7 @@ type DbProp = {
   title: string;
   listingType: string;
   mainCategory: string;
+  subCategory: string | null;
   featured: boolean | null;
   images: string | null;
   address: string | null;
@@ -93,6 +94,7 @@ type DisplayProp = {
   title: string;
   type: string;
   kind: string;
+  subCategory: string;
   featured: boolean;
   img: string;
   imgs: string[];
@@ -140,6 +142,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     title: row.title,
     type: LISTING_TYPE_AR[row.listingType] ?? row.listingType,
     kind: row.mainCategory,
+    subCategory: row.subCategory ?? "",
     featured: row.featured ?? false,
     img: imgs[0] ?? fallback,
     imgs,
@@ -265,6 +268,7 @@ function getUrlParams() {
     price: sp.get("price") ?? null,
     city: sp.get("city") ?? null,
     district: sp.get("district") ?? null,
+    subcategoryId: sp.get("subcategoryId") ? Number(sp.get("subcategoryId")) : null,
   };
 }
 
@@ -330,6 +334,15 @@ export default function PropertiesPage() {
     enabled: !!selectedCatObj,
     staleTime: 5 * 60 * 1000,
   });
+
+  // Initialise selectedSubKind from URL ?subcategoryId= once subcategories have loaded
+  useEffect(() => {
+    const initSubcategoryId = initParams.subcategoryId;
+    if (!initSubcategoryId || !subCategories.length || selectedSubKind) return;
+    const match = subCategories.find((s) => s.id === initSubcategoryId);
+    if (match) setSelectedSubKind(match.nameAr);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subCategories]);
 
   const { data: banhaAreas = [] } = useQuery<Area[]>({
     queryKey: ["areas", 45],
@@ -434,7 +447,7 @@ export default function PropertiesPage() {
       if (search && !p.title.includes(search) && !p.location.includes(search) && !p.district.includes(search)) return false;
       if (selectedType && p.type !== selectedType) return false;
       if (selectedKind && !selectedSubKind && p.kind !== selectedKind) return false;
-      if (selectedSubKind && p.kind !== selectedSubKind) return false;
+      if (selectedSubKind && p.subCategory !== selectedSubKind) return false;
       if (selectedCity && !p.location.includes(selectedCity)) return false;
       if (selectedDistrict && p.district !== selectedDistrict && !p.location.includes(selectedDistrict)) return false;
       if (selectedFinishing && p.finishing !== selectedFinishing) return false;

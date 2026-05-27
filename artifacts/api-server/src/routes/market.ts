@@ -110,8 +110,11 @@ router.get("/market/overview", async (_req, res) => {
       .select({ id: regionsTable.id, nameAr: regionsTable.nameAr })
       .from(regionsTable);
 
-    const regionMap = new Map(regions.map(r => [r.id, r.nameAr]));
-    const cityMap = new Map(cities.map(c => [c.id, { ...c, regionNameAr: regionMap.get(c.regionId) ?? "" }]));
+    const regionMap = new Map(regions.map((r: any) => [r.id, r.nameAr]));
+    type CityInfo = { id: number; nameAr: string; regionId: number; regionNameAr: string };
+    const cityMap = new Map<number, CityInfo>(
+      cities.map((c: any) => [c.id, { id: c.id, nameAr: c.nameAr, regionId: c.regionId, regionNameAr: regionMap.get(c.regionId) ?? "" }])
+    );
 
     // Compute per-city × per-category ppm2 arrays
     type CatStats = { ppm2s: number[]; views: number[] };

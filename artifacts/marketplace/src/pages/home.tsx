@@ -94,12 +94,6 @@ const CITIES = [
   { value: "أبها", label: "أبها" },
 ];
 
-const CATEGORY_PROPERTY_TYPES: Record<string, string[]> = {
-  "residential": ["شقة", "فيلا", "دوبلكس", "استوديو", "روف", "غرفة", "استراحة", "عمارة"],
-  "commercial":  ["محل تجاري", "مجمع تجاري", "مكتب", "عيادة", "فندق", "مستودع"],
-  "land":        ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
-  "industrial":  ["مستودع"],
-};
 
 const CITY_COORDS: Record<string, [number, number]> = {
   "القاهرة": [24.7136, 46.6753],
@@ -290,7 +284,7 @@ export default function Home() {
   /* ─── Real-estate hero search ─── */
   const [listingType, setListingType] = useState<"للبيع" | "للإيجار">("للبيع");
   const [heroSubcategoryId, setHeroSubcategoryId] = useState<string>("all");
-  const [heroPropertyType, setHeroPropertyType] = useState<string>("all");
+
   const [priceRange, setPriceRange] = useState<string>("all");
   const [nearMeLoading, setNearMeLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -473,7 +467,6 @@ export default function Home() {
     if (heroCityName && heroCityName !== "__all__") params.set("city", heroCityName);
     if (heroAreaName) params.set("district", heroAreaName);
     if (heroSubcategoryId && heroSubcategoryId !== "all") params.set("subcategoryId", heroSubcategoryId);
-    if (heroPropertyType && heroPropertyType !== "all") params.set("propertyType", heroPropertyType);
     setLocation(`/properties?${params.toString()}`);
   };
 
@@ -597,7 +590,7 @@ export default function Home() {
 
                 {/* Category */}
                 <div className="w-32 shrink-0">
-                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); setHeroPropertyType("all"); }}>
+                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
                     <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
                       <Building2 className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="النوع" />
