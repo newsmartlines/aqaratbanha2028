@@ -2,370 +2,370 @@
   "version": "1.0",
   "group": "categories",
   "label": "التصنيفات",
-  "exportedAt": "2026-05-27T23:08:14.990Z",
+  "exportedAt": "2026-05-27T23:17:27.821Z",
   "tables": {
     "categories": [
       {
-        "id": 2,
-        "nameAr": "طعام منزلي",
-        "nameEn": "Home Food",
+        "id": "2",
+        "name_ar": "طعام منزلي",
+        "name_en": "Home Food",
         "icon": "ChefHat",
         "slug": "food",
         "description": null,
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-05-27T22:57:19.825Z"
+        "created_at": "2026-05-27 22:57:19.825335"
       },
       {
-        "id": 3,
-        "nameAr": "صيانة",
-        "nameEn": "Maintenance",
+        "id": "3",
+        "name_ar": "صيانة",
+        "name_en": "Maintenance",
         "icon": "Wrench",
         "slug": "maintenance",
         "description": null,
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-05-27T22:57:19.825Z"
+        "created_at": "2026-05-27 22:57:19.825335"
       },
       {
-        "id": 4,
-        "nameAr": "تصميم",
-        "nameEn": "Design",
+        "id": "4",
+        "name_ar": "تصميم",
+        "name_en": "Design",
         "icon": "Palette",
         "slug": "design",
         "description": null,
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-05-27T22:57:19.825Z"
+        "created_at": "2026-05-27 22:57:19.825335"
       },
       {
-        "id": 5,
-        "nameAr": "تعليم",
-        "nameEn": "Education",
+        "id": "5",
+        "name_ar": "تعليم",
+        "name_en": "Education",
         "icon": "BookOpen",
         "slug": "education",
         "description": null,
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-05-27T22:57:19.825Z"
+        "created_at": "2026-05-27 22:57:19.825335"
       },
       {
-        "id": 6,
-        "nameAr": "فعاليات",
-        "nameEn": "Events",
+        "id": "6",
+        "name_ar": "فعاليات",
+        "name_en": "Events",
         "icon": "Calendar",
         "slug": "events",
         "description": null,
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-05-27T22:57:19.825Z"
+        "created_at": "2026-05-27 22:57:19.825335"
       },
       {
-        "id": 7,
-        "nameAr": "جمال",
-        "nameEn": "Beauty",
+        "id": "7",
+        "name_ar": "جمال",
+        "name_en": "Beauty",
         "icon": "Sparkles",
         "slug": "beauty",
         "description": null,
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-05-27T22:57:19.825Z"
+        "created_at": "2026-05-27 22:57:19.825335"
       },
       {
-        "id": 8,
-        "nameAr": "سكني",
-        "nameEn": "Residential",
+        "id": "8",
+        "name_ar": "سكني",
+        "name_en": "Residential",
         "icon": "Home",
         "slug": "residential",
         "description": "الشقق والفيلات والمنازل السكنية",
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-05-27T22:57:20.213Z"
+        "created_at": "2026-05-27 22:57:20.213245"
       },
       {
-        "id": 9,
-        "nameAr": "تجاري",
-        "nameEn": "Commercial",
+        "id": "9",
+        "name_ar": "تجاري",
+        "name_en": "Commercial",
         "icon": "Store",
         "slug": "commercial",
         "description": "المحلات والمكاتب والعقارات التجارية",
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-05-27T22:57:20.213Z"
+        "created_at": "2026-05-27 22:57:20.213245"
       },
       {
-        "id": 10,
-        "nameAr": "أراضي",
-        "nameEn": "Land",
+        "id": "10",
+        "name_ar": "أراضي",
+        "name_en": "Land",
         "icon": "MapPin",
         "slug": "land",
         "description": "الأراضي والقطع السكنية والزراعية",
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-05-27T22:57:20.213Z"
+        "created_at": "2026-05-27 22:57:20.213245"
       },
       {
-        "id": 11,
-        "nameAr": "صناعي",
-        "nameEn": "Industrial",
+        "id": "11",
+        "name_ar": "صناعي",
+        "name_en": "Industrial",
         "icon": "Factory",
         "slug": "industrial",
         "description": "المخازن والمستودعات والمصانع",
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-05-27T22:57:20.213Z"
+        "created_at": "2026-05-27 22:57:20.213245"
       }
     ],
     "subcategories": [
       {
-        "id": 2,
-        "categoryId": 8,
-        "nameAr": "شقة",
-        "nameEn": "Apartment",
+        "id": "2",
+        "category_id": "8",
+        "name_ar": "شقة",
+        "name_en": "Apartment",
         "icon": "Building2",
         "slug": "apartment",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 3,
-        "categoryId": 8,
-        "nameAr": "فيلا",
-        "nameEn": "Villa",
+        "id": "3",
+        "category_id": "8",
+        "name_ar": "فيلا",
+        "name_en": "Villa",
         "icon": "Home",
         "slug": "villa",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 4,
-        "categoryId": 8,
-        "nameAr": "دوبلكس",
-        "nameEn": "Duplex",
+        "id": "4",
+        "category_id": "8",
+        "name_ar": "دوبلكس",
+        "name_en": "Duplex",
         "icon": "Layers",
         "slug": "duplex",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 5,
-        "categoryId": 8,
-        "nameAr": "استوديو",
-        "nameEn": "Studio",
+        "id": "5",
+        "category_id": "8",
+        "name_ar": "استوديو",
+        "name_en": "Studio",
         "icon": "Home",
         "slug": "studio",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 6,
-        "categoryId": 8,
-        "nameAr": "شاليه",
-        "nameEn": "Chalet",
+        "id": "6",
+        "category_id": "8",
+        "name_ar": "شاليه",
+        "name_en": "Chalet",
         "icon": "Sunset",
         "slug": "chalet",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 7,
-        "categoryId": 8,
-        "nameAr": "غرفة مفردة",
-        "nameEn": "Single Room",
+        "id": "7",
+        "category_id": "8",
+        "name_ar": "غرفة مفردة",
+        "name_en": "Single Room",
         "icon": "Tag",
         "slug": "single-room",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 8,
-        "categoryId": 8,
-        "nameAr": "منزل مستقل",
-        "nameEn": "Standalone",
+        "id": "8",
+        "category_id": "8",
+        "name_ar": "منزل مستقل",
+        "name_en": "Standalone",
         "icon": "Home",
         "slug": "standalone",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 9,
-        "categoryId": 8,
-        "nameAr": "طابق كامل",
-        "nameEn": "Full Floor",
+        "id": "9",
+        "category_id": "8",
+        "name_ar": "طابق كامل",
+        "name_en": "Full Floor",
         "icon": "Layers",
         "slug": "full-floor",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.218Z"
+        "created_at": "2026-05-27 22:57:20.218183"
       },
       {
-        "id": 10,
-        "categoryId": 9,
-        "nameAr": "محل تجاري",
-        "nameEn": "Shop",
+        "id": "10",
+        "category_id": "9",
+        "name_ar": "محل تجاري",
+        "name_en": "Shop",
         "icon": "Store",
         "slug": "shop",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 11,
-        "categoryId": 9,
-        "nameAr": "مكتب",
-        "nameEn": "Office",
+        "id": "11",
+        "category_id": "9",
+        "name_ar": "مكتب",
+        "name_en": "Office",
         "icon": "Building",
         "slug": "office",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 12,
-        "categoryId": 9,
-        "nameAr": "مستودع",
-        "nameEn": "Warehouse",
+        "id": "12",
+        "category_id": "9",
+        "name_ar": "مستودع",
+        "name_en": "Warehouse",
         "icon": "Warehouse",
         "slug": "warehouse",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 13,
-        "categoryId": 9,
-        "nameAr": "عمارة تجارية",
-        "nameEn": "Commercial Building",
+        "id": "13",
+        "category_id": "9",
+        "name_ar": "عمارة تجارية",
+        "name_en": "Commercial Building",
         "icon": "Building2",
         "slug": "commercial-building",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 14,
-        "categoryId": 9,
-        "nameAr": "معرض",
-        "nameEn": "Showroom",
+        "id": "14",
+        "category_id": "9",
+        "name_ar": "معرض",
+        "name_en": "Showroom",
         "icon": "Layers",
         "slug": "showroom",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 15,
-        "categoryId": 9,
-        "nameAr": "صيدلية",
-        "nameEn": "Pharmacy",
+        "id": "15",
+        "category_id": "9",
+        "name_ar": "صيدلية",
+        "name_en": "Pharmacy",
         "icon": "Tag",
         "slug": "pharmacy",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 16,
-        "categoryId": 9,
-        "nameAr": "مطعم أو كافيه",
-        "nameEn": "Restaurant/Cafe",
+        "id": "16",
+        "category_id": "9",
+        "name_ar": "مطعم أو كافيه",
+        "name_en": "Restaurant/Cafe",
         "icon": "Store",
         "slug": "restaurant",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.221Z"
+        "created_at": "2026-05-27 22:57:20.22117"
       },
       {
-        "id": 17,
-        "categoryId": 10,
-        "nameAr": "أرض سكنية",
-        "nameEn": "Residential Land",
+        "id": "17",
+        "category_id": "10",
+        "name_ar": "أرض سكنية",
+        "name_en": "Residential Land",
         "icon": "Home",
         "slug": "land-residential",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.224Z"
+        "created_at": "2026-05-27 22:57:20.224692"
       },
       {
-        "id": 18,
-        "categoryId": 10,
-        "nameAr": "أرض تجارية",
-        "nameEn": "Commercial Land",
+        "id": "18",
+        "category_id": "10",
+        "name_ar": "أرض تجارية",
+        "name_en": "Commercial Land",
         "icon": "Store",
         "slug": "land-commercial",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.224Z"
+        "created_at": "2026-05-27 22:57:20.224692"
       },
       {
-        "id": 19,
-        "categoryId": 10,
-        "nameAr": "أرض زراعية",
-        "nameEn": "Agricultural Land",
+        "id": "19",
+        "category_id": "10",
+        "name_ar": "أرض زراعية",
+        "name_en": "Agricultural Land",
         "icon": "Trees",
         "slug": "land-agricultural",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.224Z"
+        "created_at": "2026-05-27 22:57:20.224692"
       },
       {
-        "id": 20,
-        "categoryId": 10,
-        "nameAr": "أرض صناعية",
-        "nameEn": "Industrial Land",
+        "id": "20",
+        "category_id": "10",
+        "name_ar": "أرض صناعية",
+        "name_en": "Industrial Land",
         "icon": "Factory",
         "slug": "land-industrial",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.224Z"
+        "created_at": "2026-05-27 22:57:20.224692"
       },
       {
-        "id": 21,
-        "categoryId": 10,
-        "nameAr": "أرض خدمية",
-        "nameEn": "Service Land",
+        "id": "21",
+        "category_id": "10",
+        "name_ar": "أرض خدمية",
+        "name_en": "Service Land",
         "icon": "MapPin",
         "slug": "land-service",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.224Z"
+        "created_at": "2026-05-27 22:57:20.224692"
       },
       {
-        "id": 22,
-        "categoryId": 11,
-        "nameAr": "مصنع",
-        "nameEn": "Factory",
+        "id": "22",
+        "category_id": "11",
+        "name_ar": "مصنع",
+        "name_en": "Factory",
         "icon": "Factory",
         "slug": "factory",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.227Z"
+        "created_at": "2026-05-27 22:57:20.227121"
       },
       {
-        "id": 23,
-        "categoryId": 11,
-        "nameAr": "مستودع صناعي",
-        "nameEn": "Industrial Warehouse",
+        "id": "23",
+        "category_id": "11",
+        "name_ar": "مستودع صناعي",
+        "name_en": "Industrial Warehouse",
         "icon": "Warehouse",
         "slug": "industrial-warehouse",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.227Z"
+        "created_at": "2026-05-27 22:57:20.227121"
       },
       {
-        "id": 24,
-        "categoryId": 11,
-        "nameAr": "ورشة",
-        "nameEn": "Workshop",
+        "id": "24",
+        "category_id": "11",
+        "name_ar": "ورشة",
+        "name_en": "Workshop",
         "icon": "Hammer",
         "slug": "workshop",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.227Z"
+        "created_at": "2026-05-27 22:57:20.227121"
       },
       {
-        "id": 25,
-        "categoryId": 11,
-        "nameAr": "منشأة صناعية",
-        "nameEn": "Industrial Facility",
+        "id": "25",
+        "category_id": "11",
+        "name_ar": "منشأة صناعية",
+        "name_en": "Industrial Facility",
         "icon": "Factory",
         "slug": "industrial-facility",
         "status": "active",
-        "createdAt": "2026-05-27T22:57:20.227Z"
+        "created_at": "2026-05-27 22:57:20.227121"
       }
     ]
   }

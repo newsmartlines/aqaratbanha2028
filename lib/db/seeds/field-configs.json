@@ -1,0 +1,2278 @@
+{
+  "version": "1.0",
+  "group": "fieldConfigs",
+  "label": "حقول العقارات الديناميكية",
+  "exportedAt": "2026-05-27T23:17:27.821Z",
+  "tables": {
+    "propertyFieldConfigs": [
+      {
+        "id": "1",
+        "main_category": "شقة",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "0",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "2",
+        "main_category": "شقة",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "1",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "3",
+        "main_category": "شقة",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "2",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "4",
+        "main_category": "شقة",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "3",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "5",
+        "main_category": "شقة",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "4",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "6",
+        "main_category": "شقة",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "5",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "7",
+        "main_category": "شقة",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "6",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "8",
+        "main_category": "شقة",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "7",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "9",
+        "main_category": "شقة",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "8",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "10",
+        "main_category": "شقة",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "9",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "11",
+        "main_category": "شقة",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "10",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "12",
+        "main_category": "شقة",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "11",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "13",
+        "main_category": "شقة",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "12",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "14",
+        "main_category": "شقة",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "13",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "15",
+        "main_category": "دوبلكس",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "14",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "16",
+        "main_category": "دوبلكس",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "15",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "17",
+        "main_category": "دوبلكس",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "16",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "18",
+        "main_category": "دوبلكس",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "17",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "19",
+        "main_category": "دوبلكس",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "18",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "20",
+        "main_category": "دوبلكس",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "19",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "21",
+        "main_category": "دوبلكس",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "20",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "22",
+        "main_category": "دوبلكس",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "21",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "23",
+        "main_category": "دوبلكس",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "22",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "24",
+        "main_category": "دوبلكس",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "23",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "25",
+        "main_category": "دوبلكس",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "24",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "26",
+        "main_category": "دوبلكس",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "25",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "27",
+        "main_category": "دوبلكس",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "26",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "28",
+        "main_category": "دوبلكس",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "27",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "29",
+        "main_category": "استوديو",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "28",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "30",
+        "main_category": "استوديو",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "29",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "31",
+        "main_category": "استوديو",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "30",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "32",
+        "main_category": "استوديو",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "31",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "33",
+        "main_category": "استوديو",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "32",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "34",
+        "main_category": "استوديو",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "33",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "35",
+        "main_category": "استوديو",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "34",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "36",
+        "main_category": "استوديو",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "35",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "37",
+        "main_category": "استوديو",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "36",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "38",
+        "main_category": "استوديو",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "37",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "39",
+        "main_category": "استوديو",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "38",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "40",
+        "main_category": "استوديو",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "39",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "41",
+        "main_category": "استوديو",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "40",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "42",
+        "main_category": "استوديو",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "41",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "43",
+        "main_category": "روف",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "42",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "44",
+        "main_category": "روف",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "43",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "45",
+        "main_category": "روف",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "44",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "46",
+        "main_category": "روف",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "45",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "47",
+        "main_category": "روف",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "46",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "48",
+        "main_category": "روف",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "47",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "49",
+        "main_category": "روف",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "48",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "50",
+        "main_category": "روف",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "49",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "51",
+        "main_category": "روف",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "50",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "52",
+        "main_category": "روف",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "51",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "53",
+        "main_category": "روف",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "52",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "54",
+        "main_category": "روف",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "53",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "55",
+        "main_category": "روف",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "54",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "56",
+        "main_category": "روف",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "55",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "57",
+        "main_category": "غرفة",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "56",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "58",
+        "main_category": "غرفة",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "57",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "59",
+        "main_category": "غرفة",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "58",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "60",
+        "main_category": "غرفة",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "59",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "61",
+        "main_category": "غرفة",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "60",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "62",
+        "main_category": "غرفة",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "61",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "63",
+        "main_category": "غرفة",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "62",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "64",
+        "main_category": "غرفة",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "63",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "65",
+        "main_category": "غرفة",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "64",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "66",
+        "main_category": "غرفة",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "65",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "67",
+        "main_category": "غرفة",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "66",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "68",
+        "main_category": "غرفة",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "67",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "69",
+        "main_category": "غرفة",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "68",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "70",
+        "main_category": "غرفة",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "69",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "71",
+        "main_category": "فيلا",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "70",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "72",
+        "main_category": "فيلا",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "71",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "73",
+        "main_category": "فيلا",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "72",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "74",
+        "main_category": "فيلا",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "73",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "75",
+        "main_category": "فيلا",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "74",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "76",
+        "main_category": "فيلا",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "75",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "77",
+        "main_category": "فيلا",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "76",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "78",
+        "main_category": "فيلا",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "77",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "79",
+        "main_category": "فيلا",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "78",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "80",
+        "main_category": "فيلا",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "79",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "81",
+        "main_category": "فيلا",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "80",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "82",
+        "main_category": "فيلا",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "81",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "83",
+        "main_category": "فيلا",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "82",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "84",
+        "main_category": "فيلا",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "83",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "85",
+        "main_category": "استراحة",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "84",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "86",
+        "main_category": "استراحة",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "85",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "87",
+        "main_category": "استراحة",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "86",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "88",
+        "main_category": "استراحة",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "87",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "89",
+        "main_category": "استراحة",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "88",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "90",
+        "main_category": "استراحة",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "89",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "91",
+        "main_category": "استراحة",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "90",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "92",
+        "main_category": "استراحة",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "91",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "93",
+        "main_category": "استراحة",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "92",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "94",
+        "main_category": "استراحة",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "93",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "95",
+        "main_category": "استراحة",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "94",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "96",
+        "main_category": "استراحة",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "95",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "97",
+        "main_category": "استراحة",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "96",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "98",
+        "main_category": "استراحة",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "97",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "99",
+        "main_category": "عمارة",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "98",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "100",
+        "main_category": "عمارة",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "99",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "101",
+        "main_category": "عمارة",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "100",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "102",
+        "main_category": "عمارة",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "101",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "103",
+        "main_category": "عمارة",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "102",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "104",
+        "main_category": "عمارة",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "103",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "105",
+        "main_category": "عمارة",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "104",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "106",
+        "main_category": "عمارة",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "105",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "107",
+        "main_category": "عمارة",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "106",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "108",
+        "main_category": "عمارة",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "107",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "109",
+        "main_category": "عمارة",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "108",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "110",
+        "main_category": "عمارة",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "109",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "111",
+        "main_category": "عمارة",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "110",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "112",
+        "main_category": "عمارة",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "111",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "113",
+        "main_category": "مكتب",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "112",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "114",
+        "main_category": "مكتب",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "113",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "115",
+        "main_category": "مكتب",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "114",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "116",
+        "main_category": "مكتب",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "115",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "117",
+        "main_category": "مكتب",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "116",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "118",
+        "main_category": "مكتب",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "117",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "119",
+        "main_category": "مكتب",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "118",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "120",
+        "main_category": "مكتب",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "119",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "121",
+        "main_category": "مكتب",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "120",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "122",
+        "main_category": "مكتب",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "121",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "123",
+        "main_category": "مكتب",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "122",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "124",
+        "main_category": "مكتب",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "123",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "125",
+        "main_category": "مكتب",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "124",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "126",
+        "main_category": "مكتب",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "125",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "127",
+        "main_category": "عيادة",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "126",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "128",
+        "main_category": "عيادة",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "127",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "129",
+        "main_category": "عيادة",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "128",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "130",
+        "main_category": "عيادة",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "129",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "131",
+        "main_category": "عيادة",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "130",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "132",
+        "main_category": "عيادة",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "131",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "133",
+        "main_category": "عيادة",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "132",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "134",
+        "main_category": "عيادة",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "133",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "135",
+        "main_category": "عيادة",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "134",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "136",
+        "main_category": "عيادة",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "135",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "137",
+        "main_category": "عيادة",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "136",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "138",
+        "main_category": "عيادة",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "137",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "139",
+        "main_category": "عيادة",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "138",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "140",
+        "main_category": "عيادة",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "139",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "141",
+        "main_category": "محل تجاري",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "140",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "142",
+        "main_category": "محل تجاري",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "141",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "143",
+        "main_category": "محل تجاري",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "142",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "144",
+        "main_category": "محل تجاري",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "143",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "145",
+        "main_category": "محل تجاري",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "144",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "146",
+        "main_category": "محل تجاري",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "145",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "147",
+        "main_category": "محل تجاري",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "146",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "148",
+        "main_category": "محل تجاري",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "147",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "149",
+        "main_category": "محل تجاري",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "148",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "150",
+        "main_category": "محل تجاري",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "149",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "151",
+        "main_category": "محل تجاري",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "150",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "152",
+        "main_category": "محل تجاري",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "151",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "153",
+        "main_category": "محل تجاري",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "152",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "154",
+        "main_category": "محل تجاري",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "153",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "155",
+        "main_category": "مجمع تجاري",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "154",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "156",
+        "main_category": "مجمع تجاري",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "155",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "157",
+        "main_category": "مجمع تجاري",
+        "field_key": "floor",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "156",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "158",
+        "main_category": "مجمع تجاري",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "157",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "159",
+        "main_category": "مجمع تجاري",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "158",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "160",
+        "main_category": "مجمع تجاري",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "159",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "161",
+        "main_category": "مجمع تجاري",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "160",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "162",
+        "main_category": "مجمع تجاري",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "161",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "163",
+        "main_category": "مجمع تجاري",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "162",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "164",
+        "main_category": "مجمع تجاري",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "163",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "165",
+        "main_category": "مجمع تجاري",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "164",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "166",
+        "main_category": "مجمع تجاري",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "165",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "167",
+        "main_category": "مجمع تجاري",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "166",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "168",
+        "main_category": "مجمع تجاري",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "167",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "169",
+        "main_category": "فندق",
+        "field_key": "rooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "168",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "170",
+        "main_category": "فندق",
+        "field_key": "bathrooms",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "169",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "171",
+        "main_category": "فندق",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "170",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "172",
+        "main_category": "فندق",
+        "field_key": "totalFloors",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "171",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "173",
+        "main_category": "فندق",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "172",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "174",
+        "main_category": "فندق",
+        "field_key": "finishing",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "173",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "175",
+        "main_category": "فندق",
+        "field_key": "furnished",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "174",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "176",
+        "main_category": "فندق",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "175",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "177",
+        "main_category": "فندق",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "176",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "178",
+        "main_category": "فندق",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "177",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "179",
+        "main_category": "فندق",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "178",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "180",
+        "main_category": "فندق",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "179",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "181",
+        "main_category": "فندق",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "180",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "182",
+        "main_category": "فندق",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "181",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "183",
+        "main_category": "مستودع",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "182",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "184",
+        "main_category": "مستودع",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "183",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "185",
+        "main_category": "مستودع",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "184",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "186",
+        "main_category": "مستودع",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "185",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "187",
+        "main_category": "مستودع",
+        "field_key": "buildYear",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "186",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "188",
+        "main_category": "مستودع",
+        "field_key": "finishing",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "187",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "189",
+        "main_category": "مستودع",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "188",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "190",
+        "main_category": "مستودع",
+        "field_key": "condition",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "189",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "191",
+        "main_category": "مستودع",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "190",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "192",
+        "main_category": "مستودع",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "191",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "193",
+        "main_category": "مستودع",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "192",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "194",
+        "main_category": "مستودع",
+        "field_key": "landType",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "193",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "195",
+        "main_category": "مستودع",
+        "field_key": "landDimensions",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "194",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "196",
+        "main_category": "مستودع",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "195",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "197",
+        "main_category": "أرض سكنية",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "196",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "198",
+        "main_category": "أرض سكنية",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "197",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "199",
+        "main_category": "أرض سكنية",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "198",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "200",
+        "main_category": "أرض سكنية",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "199",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "201",
+        "main_category": "أرض سكنية",
+        "field_key": "buildYear",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "200",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "202",
+        "main_category": "أرض سكنية",
+        "field_key": "finishing",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "201",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "203",
+        "main_category": "أرض سكنية",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "202",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "204",
+        "main_category": "أرض سكنية",
+        "field_key": "condition",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "203",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "205",
+        "main_category": "أرض سكنية",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "204",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "206",
+        "main_category": "أرض سكنية",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "205",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "207",
+        "main_category": "أرض سكنية",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "206",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "208",
+        "main_category": "أرض سكنية",
+        "field_key": "landType",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "207",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "209",
+        "main_category": "أرض سكنية",
+        "field_key": "landDimensions",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "208",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "210",
+        "main_category": "أرض سكنية",
+        "field_key": "buildRatio",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "209",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "211",
+        "main_category": "أرض تجارية",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "210",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "212",
+        "main_category": "أرض تجارية",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "211",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "213",
+        "main_category": "أرض تجارية",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "212",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "214",
+        "main_category": "أرض تجارية",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "213",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "215",
+        "main_category": "أرض تجارية",
+        "field_key": "buildYear",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "214",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "216",
+        "main_category": "أرض تجارية",
+        "field_key": "finishing",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "215",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "217",
+        "main_category": "أرض تجارية",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "216",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "218",
+        "main_category": "أرض تجارية",
+        "field_key": "condition",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "217",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "219",
+        "main_category": "أرض تجارية",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "218",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "220",
+        "main_category": "أرض تجارية",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "219",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "221",
+        "main_category": "أرض تجارية",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "220",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "222",
+        "main_category": "أرض تجارية",
+        "field_key": "landType",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "221",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "223",
+        "main_category": "أرض تجارية",
+        "field_key": "landDimensions",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "222",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "224",
+        "main_category": "أرض تجارية",
+        "field_key": "buildRatio",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "223",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "225",
+        "main_category": "أرض زراعية",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "224",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "226",
+        "main_category": "أرض زراعية",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "225",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "227",
+        "main_category": "أرض زراعية",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "226",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "228",
+        "main_category": "أرض زراعية",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "227",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "229",
+        "main_category": "أرض زراعية",
+        "field_key": "buildYear",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "228",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "230",
+        "main_category": "أرض زراعية",
+        "field_key": "finishing",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "229",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "231",
+        "main_category": "أرض زراعية",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "230",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "232",
+        "main_category": "أرض زراعية",
+        "field_key": "condition",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "231",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "233",
+        "main_category": "أرض زراعية",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "232",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "234",
+        "main_category": "أرض زراعية",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "233",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "235",
+        "main_category": "أرض زراعية",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "234",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "236",
+        "main_category": "أرض زراعية",
+        "field_key": "landType",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "235",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "237",
+        "main_category": "أرض زراعية",
+        "field_key": "landDimensions",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "236",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "238",
+        "main_category": "أرض زراعية",
+        "field_key": "buildRatio",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "237",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "239",
+        "main_category": "أرض صناعية",
+        "field_key": "rooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "238",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "240",
+        "main_category": "أرض صناعية",
+        "field_key": "bathrooms",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "239",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "241",
+        "main_category": "أرض صناعية",
+        "field_key": "floor",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "240",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "242",
+        "main_category": "أرض صناعية",
+        "field_key": "totalFloors",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "241",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "243",
+        "main_category": "أرض صناعية",
+        "field_key": "buildYear",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "242",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "244",
+        "main_category": "أرض صناعية",
+        "field_key": "finishing",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "243",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "245",
+        "main_category": "أرض صناعية",
+        "field_key": "furnished",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "244",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "246",
+        "main_category": "أرض صناعية",
+        "field_key": "condition",
+        "is_visible": "f",
+        "label": null,
+        "sort_order": "245",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "247",
+        "main_category": "أرض صناعية",
+        "field_key": "direction",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "246",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "248",
+        "main_category": "أرض صناعية",
+        "field_key": "facade",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "247",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "249",
+        "main_category": "أرض صناعية",
+        "field_key": "paymentMethod",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "248",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "250",
+        "main_category": "أرض صناعية",
+        "field_key": "landType",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "249",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "251",
+        "main_category": "أرض صناعية",
+        "field_key": "landDimensions",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "250",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      },
+      {
+        "id": "252",
+        "main_category": "أرض صناعية",
+        "field_key": "buildRatio",
+        "is_visible": "t",
+        "label": null,
+        "sort_order": "251",
+        "updated_at": "2026-05-27 23:07:31.885853"
+      }
+    ]
+  }
+}

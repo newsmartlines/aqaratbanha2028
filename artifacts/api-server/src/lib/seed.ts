@@ -157,6 +157,7 @@ function tableKeyToDbName(key: string): string | null {
     billingPlans: "billing_plans",
     commissionRules: "commission_rules",
     packages: "packages",
+    propertyFieldConfigs: "property_field_configs",
     adminStaff: "admin_staff",
     users: "users",
   };
