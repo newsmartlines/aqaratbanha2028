@@ -353,14 +353,13 @@ export default function CompanyRegisterPage() {
   const set = (patch: Partial<typeof form>) => setForm(prev => ({ ...prev, ...patch }));
 
   const { data: allPlans = [], isLoading: pkgsLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billing-plans-company"],
-    queryFn: () => api.fetchJson<BillingPlan[]>("/billing/plans"),
-    staleTime: 5 * 60_000,
+    queryKey: ["billingPlans", "company"],
+    queryFn: () => api.billingPlans.publicListByType("company"),
+    staleTime: 0,
   });
 
-  // Filter: only active plans visible to companies (userType "company" or "all")
-  const companyPlans = allPlans
-    .filter(p => p.status === "active" && (p.userType === "company" || p.userType === "all"))
+  // الـ API يُعيد فقط الباقات النشطة المخصصة للشركات (company + all)
+  const companyPlans = [...allPlans]
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price));
 
   useEffect(() => {

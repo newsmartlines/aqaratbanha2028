@@ -335,9 +335,15 @@ export default function PackagesPage() {
     enabled: isProvider ? !!providerId : !!userId,
   });
 
+  // Map auth role → billing plan userType
+  // provider = شركة عقارية → "company", regular user → "user"
+  const billingUserType: "company" | "user" = isProvider ? "company" : "user";
+
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billingPlans", "all"],
-    queryFn: () => api.billingPlans.publicList(),
+    queryKey: ["billingPlans", billingUserType],
+    queryFn: () => api.billingPlans.publicListByType(billingUserType),
+    staleTime: 0, // يعكس أي تغيير من الأدمن فوراً
+    enabled: !authLoading,
   });
 
   // Unified current subscription object — normalises provider & user shapes
@@ -400,18 +406,10 @@ export default function PackagesPage() {
     ? Math.min(100, Math.round((sub.daysLeft / sub.durationDays) * 100))
     : 0;
 
-  const filteredPlans = useMemo(() => {
-    if (!plans.length) return plans;
-    if (isProvider) {
-      return plans.filter(p => p.userType !== "user");
-    } else {
-      return plans.filter(p => p.userType === "all" || p.userType === "user");
-    }
-  }, [plans, isProvider]);
-
+  // الباقات مُصفّاة مسبقاً من الـ API بناءً على نوع الحساب
   const sortedPlans = useMemo(
-    () => [...filteredPlans].sort((a, b) => a.sortOrder - b.sortOrder || parseFloat(a.price ?? "0") - parseFloat(b.price ?? "0")),
-    [filteredPlans]
+    () => [...plans].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price ?? "0") - parseFloat(b.price ?? "0")),
+    [plans]
   );
 
   const isCurrentPlan = (plan: BillingPlan) => {

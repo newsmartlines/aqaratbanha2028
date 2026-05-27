@@ -386,10 +386,12 @@ function PlanFeatures({
   billingPlanId: number | null;
   maxListings?: number | null;
 }) {
+  const { isProvider } = useRole();
+  const billingUserType: "company" | "user" = isProvider ? "company" : "user";
   const { data: plans = [] } = useQuery({
-    queryKey: ["billingPlans", "all"],
-    queryFn: api.billingPlans.publicList,
-    staleTime: 5 * 60_000,
+    queryKey: ["billingPlans", billingUserType],
+    queryFn: () => api.billingPlans.publicListByType(billingUserType),
+    staleTime: 0,
   });
 
   const plan = billingPlanId ? plans.find((p: any) => p.id === billingPlanId) : null;

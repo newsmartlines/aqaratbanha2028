@@ -156,27 +156,34 @@ export default function PlansCommissions() {
 
   // ── Mutations ─────────────────────────────────────────────────────────────────
 
+  // يُبطل جميع caches الباقات (أدمن + مستخدمين + شركات) فوراً عند أي تعديل
+  const invalidateAllPlanCaches = () => {
+    qc.invalidateQueries({ queryKey: ["billing-plans"] });
+    qc.invalidateQueries({ queryKey: ["billingPlans"] }); // يشمل ["billingPlans","company"] و ["billingPlans","user"]
+    qc.invalidateQueries({ queryKey: ["billing-plans-pricing"] });
+  };
+
   const createPlan = useMutation({
     mutationFn: (d: any) => api.fetchJson("/admin/billing/plans", { method: "POST", body: JSON.stringify(d) }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-plans"] }); toast.success("تمت إضافة الباقة"); setPlanModal(m => ({ ...m, open: false })); },
+    onSuccess: () => { invalidateAllPlanCaches(); toast.success("تمت إضافة الباقة"); setPlanModal(m => ({ ...m, open: false })); },
     onError: (e: Error) => toast.error(e.message),
   });
   const updatePlan = useMutation({
     mutationFn: ({ id, d }: { id: number; d: any }) => api.fetchJson(`/admin/billing/plans/${id}`, { method: "PUT", body: JSON.stringify(d) }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-plans"] }); toast.success("تم التحديث"); setPlanModal(m => ({ ...m, open: false })); },
+    onSuccess: () => { invalidateAllPlanCaches(); toast.success("تم التحديث"); setPlanModal(m => ({ ...m, open: false })); },
     onError: (e: Error) => toast.error(e.message),
   });
   const deletePlan = useMutation({
     mutationFn: (id: number) => api.fetchJson(`/admin/billing/plans/${id}`, { method: "DELETE" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-plans"] }); toast.success("تم الحذف"); setDeleteTarget(null); },
+    onSuccess: () => { invalidateAllPlanCaches(); toast.success("تم الحذف"); setDeleteTarget(null); },
   });
   const duplicatePlan = useMutation({
     mutationFn: (id: number) => api.fetchJson(`/admin/billing/plans/${id}/duplicate`, { method: "POST" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-plans"] }); toast.success("تم نسخ الباقة"); },
+    onSuccess: () => { invalidateAllPlanCaches(); toast.success("تم نسخ الباقة"); },
   });
   const togglePlan = useMutation({
     mutationFn: (id: number) => api.fetchJson(`/admin/billing/plans/${id}/toggle`, { method: "PATCH" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing-plans"] }),
+    onSuccess: () => invalidateAllPlanCaches(),
   });
 
   const createComm = useMutation({
@@ -211,7 +218,7 @@ export default function PlansCommissions() {
     setSeeding(true);
     try {
       const res = await api.fetchJson<{ addedPlans: number; addedCommissions: number }>("/admin/billing/seed", { method: "POST" });
-      qc.invalidateQueries({ queryKey: ["billing-plans"] });
+      invalidateAllPlanCaches();
       qc.invalidateQueries({ queryKey: ["billing-commissions"] });
       toast.success(`أضفنا ${res.addedPlans} باقة و${res.addedCommissions} قاعدة عمولة`);
     } catch (e: any) { toast.error(e.message); }

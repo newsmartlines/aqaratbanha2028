@@ -206,10 +206,18 @@ export default function PricingPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
+  // حدد نوع الحساب لجلب الباقات المناسبة فقط
+  // غير مسجّل → "all" (يُظهر كل الباقات), مستخدم عادي → "user", شركة/وسيط → "company"
+  const billingUserType: "user" | "company" | null = user
+    ? user.role === "provider" ? "company" : "user"
+    : null;
+
   const { data: plans = [], isLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billing-plans-pricing"],
-    queryFn: api.billingPlans.publicList,
-    staleTime: 5 * 60_000,
+    queryKey: ["billing-plans-pricing", billingUserType ?? "all"],
+    queryFn: billingUserType
+      ? () => api.billingPlans.publicListByType(billingUserType)
+      : api.billingPlans.publicList,
+    staleTime: 0, // يعكس أي تغيير من الأدمن فوراً
   });
 
   const sorted = [...plans]

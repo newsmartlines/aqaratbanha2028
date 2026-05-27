@@ -264,9 +264,9 @@ export default function RealEstateOnboarding() {
   const [draft, setDraft] = useState<Draft>(loadDraft);
 
   const { data: billingPlans = [] } = useQuery<BillingPlan[]>({
-    queryKey: ["billing-plans-onboarding"],
-    queryFn: api.billingPlans.publicList,
-    staleTime: 5 * 60_000,
+    queryKey: ["billingPlans", "company"],
+    queryFn: () => api.billingPlans.publicListByType("company"),
+    staleTime: 0,
   });
   const { data: regions = [] } = useQuery({ queryKey: ["regions"], queryFn: api.regions.list, staleTime: 5 * 60_000 });
 
