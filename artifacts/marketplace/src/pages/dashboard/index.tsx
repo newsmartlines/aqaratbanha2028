@@ -4,33 +4,29 @@
  * Architecture:
  * ─────────────────────────────────────────────────────────────
  * • ONE component tree, ONE DashboardLayout, ONE render path
- * • Shared components: DashboardHero, DashboardStatCard
- * • Role-specific DATA is passed as config arrays — not duplicate JSX
+ * • SubscriptionWidget is always the FIRST section — role-agnostic
  * • Role-specific SECTIONS use {isProvider && ...} / {isUser && ...}
  *
- * Adding a new card, button, or UI element to this page automatically
- * appears for both roles unless explicitly wrapped in a role guard.
+ * Adding a new card or section to this page automatically appears for
+ * both roles unless explicitly wrapped in a role guard.
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
-  Star, Heart, BellRing, Bell, Search, Building2,
-  Loader2, AlertCircle, Plus, Eye, Phone,
-  MessageCircle, Clock, CheckCircle2, Sparkles, TrendingUp,
+  Heart, BellRing, Bell, Search, Building2,
+  Loader2, AlertCircle, Plus, Eye,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
-import { DashboardStatCard, type StatCardConfig } from "@/components/dashboard/DashboardStatCard";
+import { SubscriptionWidget } from "@/components/dashboard/SubscriptionWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { useRole } from "@/lib/use-role";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
-import { api, type ProviderStats, type ProviderInteractions, type Notification } from "@/lib/api";
+import { api, type Notification } from "@/lib/api";
 
 export default function DashboardOverview() {
   const { isProvider, isUser, providerId } = useRole();
@@ -52,28 +48,6 @@ export default function DashboardOverview() {
     }, 200);
     return () => window.clearTimeout(t);
   }, [authLoading, isProvider, user?.providerId, hydrateAttempts, refetch]);
-
-  // ── Provider queries ───────────────────────────────────────────────────────
-  const {
-    data: stats,
-    isLoading: statsLoading,
-    isError: statsError,
-    error: statsErrorObj,
-  } = useQuery<ProviderStats>({
-    queryKey: ["providerStats", providerId],
-    queryFn: () => api.providers.stats(providerId!),
-    enabled: isProvider && !!providerId,
-    retry: 2,
-    refetchInterval: 30_000,
-    staleTime: 20_000,
-  });
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: _interactions } = useQuery<ProviderInteractions>({
-    queryKey: ["providerInteractions", providerId],
-    queryFn: () => api.providers.getInteractions(providerId!),
-    enabled: isProvider && !!providerId,
-  });
 
   // ── User queries ───────────────────────────────────────────────────────────
   const { data: myProperties = [] } = useQuery({
@@ -106,6 +80,9 @@ export default function DashboardOverview() {
     ? (notificationsRaw as Notification[]).slice(0, 5)
     : ((notificationsRaw as any)?.rows ?? []).slice(0, 5);
 
+  // suppress unused lint
+  void myProperties; void favorites; void savedSearches;
+
   // ── Guards ────────────────────────────────────────────────────────────────
   if (authLoading) {
     return (
@@ -128,141 +105,18 @@ export default function DashboardOverview() {
     );
   }
 
-  // ── Role-specific stat CONFIGS (data only — card UI is always DashboardStatCard) ──
-
-  const userStatCards: StatCardConfig[] = [
-    {
-      label:  "عقاراتي المعلنة",
-      value:  (myProperties as any[]).length,
-      icon:   Building2,
-      color:  "text-teal-600",
-      bg:     "bg-teal-500/10",
-      border: "border-teal-200/50 dark:border-teal-800/40",
-      accent: "from-teal-500/5",
-      href:   "/dashboard/properties",
-      suffix: "عقار",
-    },
-    {
-      label:  "المفضلة",
-      value:  (favorites as any[]).length,
-      icon:   Heart,
-      color:  "text-rose-500",
-      bg:     "bg-rose-500/10",
-      border: "border-rose-200/50 dark:border-rose-800/40",
-      accent: "from-rose-500/5",
-      href:   "/dashboard/favorites",
-      suffix: "عقار",
-    },
-    {
-      label:  "تنبيهات البحث",
-      value:  (savedSearches as any[]).length,
-      icon:   BellRing,
-      color:  "text-blue-500",
-      bg:     "bg-blue-500/10",
-      border: "border-blue-200/50 dark:border-blue-800/40",
-      accent: "from-blue-500/5",
-      href:   "/dashboard/saved-searches",
-      suffix: "تنبيه",
-    },
-    {
-      label:  "المشاهدات",
-      value:  (myProperties as any[]).reduce((s: number, p: any) => s + (p.viewCount ?? 0), 0),
-      icon:   Eye,
-      color:  "text-indigo-500",
-      bg:     "bg-indigo-500/10",
-      border: "border-indigo-200/50 dark:border-indigo-800/40",
-      accent: "from-indigo-500/5",
-      href:   "/dashboard/properties",
-      suffix: "مشاهدة",
-    },
-  ];
-
-  const providerStatCards: StatCardConfig[] = [
-    {
-      label:  "عدد عقاراتي",
-      value:  stats?.totalProperties ?? 0,
-      icon:   Building2,
-      color:  "text-blue-600",
-      bg:     "bg-blue-500/10",
-      border: "border-blue-200/60 dark:border-blue-800/40",
-      accent: "from-blue-500/5",
-      href:   "/dashboard/properties",
-      suffix: "عقار",
-    },
-    {
-      label:  "إجمالي المشاهدات",
-      value:  stats?.totalViews ?? 0,
-      icon:   Eye,
-      color:  "text-violet-600",
-      bg:     "bg-violet-500/10",
-      border: "border-violet-200/60 dark:border-violet-800/40",
-      accent: "from-violet-500/5",
-      href:   "/dashboard/properties",
-      suffix: "مشاهدة",
-    },
-    {
-      label:  "ضغطات الهاتف",
-      value:  stats?.totalPhoneClicks ?? 0,
-      icon:   Phone,
-      color:  "text-emerald-600",
-      bg:     "bg-emerald-500/10",
-      border: "border-emerald-200/60 dark:border-emerald-800/40",
-      accent: "from-emerald-500/5",
-      href:   "/dashboard/properties",
-      suffix: "ضغطة",
-    },
-    {
-      label:  "العقارات النشطة",
-      value:  stats?.activeProperties ?? 0,
-      icon:   CheckCircle2,
-      color:  "text-teal-600",
-      bg:     "bg-teal-500/10",
-      border: "border-teal-200/60 dark:border-teal-800/40",
-      accent: "from-teal-500/5",
-      href:   "/dashboard/properties",
-      suffix: "نشط",
-    },
-    {
-      label:  "العقارات المميزة",
-      value:  stats?.featuredProperties ?? 0,
-      icon:   Sparkles,
-      color:  "text-amber-600",
-      bg:     "bg-amber-500/10",
-      border: "border-amber-200/60 dark:border-amber-800/40",
-      accent: "from-amber-500/5",
-      href:   "/dashboard/properties",
-      suffix: "مميز",
-    },
-  ];
-
-  // Active cards depend on role — same card component either way
-  const activeStatCards  = isProvider ? providerStatCards : userStatCards;
-  const statsGridCols    = isProvider
-    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
-    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
-
-  // Subscription data (provider only)
-  const sub = stats?.subscription ?? null;
-
   // User quick-links config
   const quickLinks = [
-    { href: "/add-property",             icon: Plus,      iconCls: "bg-teal-600 text-white",                           cardCls: "bg-teal-500/10 border-teal-200/50 dark:border-teal-800/50",  label: "أضف عقارك مجاناً",    sub: "أعلن وابدأ في استقبال العروض" },
-    { href: "/properties",               icon: Search,    iconCls: "bg-blue-100 dark:bg-blue-900/30 text-blue-600",    cardCls: "hover:bg-secondary/50 border-border/50",                      label: "البحث عن عقار",        sub: "تصفح آلاف العقارات" },
-    { href: "/dashboard/properties",     icon: Building2, iconCls: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600", cardCls: "hover:bg-secondary/50 border-border/50",                  label: "عقاراتي المعلنة",       sub: "تابع حالة إعلاناتك" },
-    { href: "/dashboard/favorites",      icon: Heart,     iconCls: "bg-rose-100 dark:bg-rose-900/30 text-rose-600",    cardCls: "hover:bg-secondary/50 border-border/50",                      label: "المفضلة",               sub: "العقارات التي أعجبتك" },
-    { href: "/dashboard/saved-searches", icon: BellRing,  iconCls: "bg-amber-100 dark:bg-amber-900/30 text-amber-600", cardCls: "hover:bg-secondary/50 border-border/50",                     label: "تنبيهات البحث",         sub: "تنبيه عند وجود عقارات جديدة" },
+    { href: "/add-property",             icon: Plus,      iconCls: "bg-teal-600 text-white",                              cardCls: "bg-teal-500/10 border-teal-200/50 dark:border-teal-800/50",  label: "أضف عقارك مجاناً",    sub: "أعلن وابدأ في استقبال العروض" },
+    { href: "/properties",               icon: Search,    iconCls: "bg-blue-100 dark:bg-blue-900/30 text-blue-600",       cardCls: "hover:bg-secondary/50 border-border/50",                      label: "البحث عن عقار",        sub: "تصفح آلاف العقارات" },
+    { href: "/dashboard/properties",     icon: Building2, iconCls: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600", cardCls: "hover:bg-secondary/50 border-border/50",                      label: "عقاراتي المعلنة",       sub: "تابع حالة إعلاناتك" },
+    { href: "/dashboard/favorites",      icon: Heart,     iconCls: "bg-rose-100 dark:bg-rose-900/30 text-rose-600",       cardCls: "hover:bg-secondary/50 border-border/50",                      label: "المفضلة",               sub: "العقارات التي أعجبتك" },
+    { href: "/dashboard/saved-searches", icon: BellRing,  iconCls: "bg-amber-100 dark:bg-amber-900/30 text-amber-600",    cardCls: "hover:bg-secondary/50 border-border/50",                      label: "تنبيهات البحث",         sub: "تنبيه عند وجود عقارات جديدة" },
   ];
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500" dir="rtl">
-
-        {/* ── Error banner (provider only) ──────────────────────────────────── */}
-        {isProvider && statsError && (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            تعذر تحميل إحصائيات الحساب: {(statsErrorObj as Error)?.message ?? "خطأ غير معروف"}
-          </div>
-        )}
+      <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500" dir="rtl">
 
         {/* ── Provider ID hydration spinner ─────────────────────────────────── */}
         {isProvider && providerId == null && (
@@ -280,8 +134,6 @@ export default function DashboardOverview() {
 
         {/* ════════════════════════════════════════════════════════════════════
             HERO BANNER
-            ONE shared component — role-specific gradient & subtitle via props.
-            Change DashboardHero.tsx once → affects both roles.
         ════════════════════════════════════════════════════════════════════ */}
         <DashboardHero
           isProvider={isProvider}
@@ -290,177 +142,23 @@ export default function DashboardOverview() {
         />
 
         {/* ════════════════════════════════════════════════════════════════════
-            STATS GRID
-            ONE shared DashboardStatCard component for all roles.
-            Role-specific DATA is in the arrays above — not in the UI component.
-            Change DashboardStatCard.tsx once → affects both roles.
+            SUBSCRIPTION WIDGET — always first, shared for ALL roles.
+            Edit SubscriptionWidget.tsx once → applies to user + provider.
         ════════════════════════════════════════════════════════════════════ */}
-
-        {/* Provider: section header (user doesn't need one) */}
-        {isProvider && (
-          <div className="flex items-center justify-between">
+        <section>
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                إحصائياتك الآن
-              </h3>
-              <p className="text-muted-foreground text-sm mt-0.5">تُحدَّث تلقائياً كل 30 ثانية</p>
+              <h2 className="text-lg font-bold text-foreground">الباقة الحالية</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">حالة اشتراكك ومميزاتك</p>
             </div>
-            <Link href="/dashboard/properties">
-              <Button variant="outline" size="sm" className="rounded-xl text-xs gap-1.5">
-                <Building2 className="w-3.5 h-3.5" />
-                إدارة العقارات
+            <Link href="/dashboard/packages">
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground gap-1">
+                إدارة الباقات
               </Button>
             </Link>
           </div>
-        )}
-
-        {/* Stat cards — same DashboardStatCard component, different data per role */}
-        <div className={`grid ${statsGridCols} gap-4`}>
-          {activeStatCards.map((card) => (
-            <DashboardStatCard
-              key={card.label}
-              {...card}
-              loading={isProvider ? statsLoading : false}
-            />
-          ))}
-        </div>
-
-        {/* ════════════════════════════════════════════════════════════════════
-            PROVIDER-ONLY SECTIONS
-            Interactions breakdown + Subscription card
-        ════════════════════════════════════════════════════════════════════ */}
-        {isProvider && (
-          <>
-            {/* Interactions breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                {
-                  icon:  Phone,
-                  label: "ضغطات الهاتف",
-                  value: stats?.totalPhoneClicks ?? 0,
-                  sub:   "عدد مرات النقر على رقمك",
-                  cls:   "border-blue-200/60 dark:border-blue-800/40 from-blue-500/5",
-                  iCls:  "bg-blue-500/10 text-blue-600",
-                },
-                {
-                  icon:  MessageCircle,
-                  label: "ضغطات واتساب",
-                  value: stats?.totalWhatsappClicks ?? 0,
-                  sub:   "عدد مرات النقر على واتساب",
-                  cls:   "border-green-200/60 dark:border-green-800/40 from-green-500/5",
-                  iCls:  "bg-green-500/10 text-green-600",
-                },
-                {
-                  icon:  Star,
-                  label: "إجمالي التفاعل",
-                  value: (stats?.totalPhoneClicks ?? 0) + (stats?.totalWhatsappClicks ?? 0),
-                  sub:   "مجموع كل الضغطات",
-                  cls:   "border-violet-200/60 dark:border-violet-800/40 from-violet-500/5",
-                  iCls:  "bg-violet-500/10 text-violet-600",
-                },
-              ].map(({ icon: Icon, label, value, sub: subLabel, cls, iCls }) => (
-                <div
-                  key={label}
-                  className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br ${cls} to-transparent bg-card p-5`}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iCls}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">{label}</p>
-                  </div>
-                  {statsLoading ? (
-                    <div className="h-8 w-16 bg-secondary/60 rounded-lg animate-pulse" />
-                  ) : (
-                    <p className="text-3xl font-extrabold text-foreground">
-                      {value.toLocaleString("ar-EG")}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">{subLabel}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Subscription mini-card */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-1 border-primary/20 shadow-md bg-gradient-to-br from-background to-primary/5">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex justify-between items-center">
-                    <span>حالة الاشتراك</span>
-                    {sub ? (
-                      <Badge
-                        variant="outline"
-                        className={
-                          sub.isActive
-                            ? "bg-green-500/10 text-green-700 border-green-200"
-                            : "bg-red-500/10 text-red-700 border-red-200"
-                        }
-                      >
-                        {sub.packageNameAr ?? "اشتراك"}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-gray-500/10 text-gray-600 border-gray-200">
-                        {statsLoading ? "…" : "لا توجد باقة"}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {statsLoading ? (
-                    <div className="space-y-3">
-                      <div className="h-4 bg-secondary/50 rounded animate-pulse" />
-                      <div className="h-2 bg-secondary/50 rounded animate-pulse" />
-                    </div>
-                  ) : sub ? (
-                    <div className="space-y-4">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          <Clock className="w-4 h-4" /> الأيام المتبقية
-                        </span>
-                        <span className={`font-bold ${sub.isActive ? "text-primary" : "text-red-600"}`}>
-                          {sub.daysLeft !== null ? `${sub.daysLeft} يوم` : "—"}
-                        </span>
-                      </div>
-                      {sub.durationDays && sub.daysLeft !== null && (
-                        <Progress
-                          value={Math.round((sub.daysLeft / sub.durationDays) * 100)}
-                          className="h-2 [&>div]:bg-primary"
-                        />
-                      )}
-                      {!sub.isActive && (
-                        <div className="bg-red-500/10 text-red-700 p-3 rounded-lg text-sm font-medium flex items-start gap-2">
-                          <span className="text-lg leading-none mt-0.5">⚠️</span>
-                          <span>انتهى اشتراكك. جدد الآن للاستمرار.</span>
-                        </div>
-                      )}
-                      {sub.isActive && sub.daysLeft !== null && sub.daysLeft <= 7 && (
-                        <div className="bg-amber-500/10 text-amber-700 p-3 rounded-lg text-sm font-medium flex items-start gap-2">
-                          <span className="text-lg leading-none mt-0.5">⚠️</span>
-                          <span>اشتراكك على وشك الانتهاء. جدد الآن.</span>
-                        </div>
-                      )}
-                      <Link href="/dashboard/packages">
-                        <Button className="w-full mt-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
-                          إدارة الاشتراك
-                        </Button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">لم يتم العثور على باقة نشطة.</p>
-                      <Link href="/dashboard/packages">
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
-                          صفحة الاشتراكات
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        )}
+          <SubscriptionWidget />
+        </section>
 
         {/* ════════════════════════════════════════════════════════════════════
             USER-ONLY SECTIONS
@@ -545,6 +243,27 @@ export default function DashboardOverview() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════════════
+            PROVIDER-ONLY: Quick action strip
+        ════════════════════════════════════════════════════════════════════ */}
+        {isProvider && providerId != null && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { href: "/add-property",         icon: Plus,      label: "إضافة عقار",      cls: "bg-teal-500/10 border-teal-200/50 dark:border-teal-800/40 text-teal-700 dark:text-teal-300" },
+              { href: "/dashboard/properties", icon: Building2, label: "إدارة العقارات",   cls: "border-border/50 hover:bg-secondary/50 text-foreground" },
+              { href: "/dashboard/messages",   icon: BellRing,  label: "الرسائل",           cls: "border-border/50 hover:bg-secondary/50 text-foreground" },
+              { href: "/dashboard/packages",   icon: Eye,       label: "الباقات",           cls: "border-border/50 hover:bg-secondary/50 text-foreground" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href}>
+                <div className={`flex items-center gap-2.5 p-3.5 rounded-xl border transition-colors cursor-pointer ${item.cls}`}>
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-medium truncate">{item.label}</span>
+                </div>
+              </Link>
+            ))}
           </div>
         )}
 
