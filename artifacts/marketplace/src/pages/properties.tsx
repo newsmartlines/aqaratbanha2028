@@ -1098,15 +1098,6 @@ export default function PropertiesPage() {
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
-                            {/* ── Featured ribbon — right edge ── */}
-                            {p.featured && (
-                              <div className="absolute top-0 right-0 z-30 overflow-hidden w-16 h-16 pointer-events-none">
-                                <div className="absolute top-3 -right-4 bg-amber-400 text-amber-900 text-[9px] font-extrabold py-0.5 w-20 text-center shadow-sm rotate-45 origin-center">
-                                  مميز ✦
-                                </div>
-                              </div>
-                            )}
-
                             {/* ── Image ── */}
                             <PropertyImageGallery
                               images={p.imgs}
@@ -1114,15 +1105,6 @@ export default function PropertiesPage() {
                               fallback={FALLBACK}
                               className="shrink-0 w-60 sm:w-80 min-h-[280px]"
                             >
-                              <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40 pointer-events-none" />
-
-                              {/* Type badge + time */}
-                              <div className="absolute top-2.5 right-2.5 flex flex-col gap-1 z-20">
-                                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow text-white ${p.type === "للبيع" ? "bg-emerald-500" : "bg-blue-500"}`}>
-                                  {p.type}
-                                </span>
-                              </div>
-
                               {/* Like button */}
                               <button
                                 className={`absolute top-2.5 left-2.5 z-20 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
@@ -1130,11 +1112,6 @@ export default function PropertiesPage() {
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
-
-                              {/* Category label */}
-                              <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/60 to-transparent text-white text-[9px] font-medium px-2 pb-1.5 pt-3 text-center">
-                                {reCategories.find(c => (c.slug ?? String(c.id)) === p.kind)?.nameAr ?? p.kind}
-                              </div>
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
@@ -1321,20 +1298,6 @@ export default function PropertiesPage() {
                               fallback={FALLBACK}
                               className="h-52"
                             >
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                              <div className="absolute top-3 right-3 flex gap-1.5 z-20">
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-lg shadow ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
-                                  {p.type}
-                                </span>
-                                {p.featured && (
-                                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-amber-900 shadow">مميز</span>
-                                )}
-                              </div>
-                              <div className="absolute bottom-3 right-3 z-20">
-                                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm text-white border border-white/20">
-                                  {p.kind}
-                                </span>
-                              </div>
                               <button
                                 className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
                                 onClick={(e) => toggleLike(p.id, e)}
@@ -1345,15 +1308,15 @@ export default function PropertiesPage() {
 
                             {/* Body */}
                             <div>
-                              {/* Price banner */}
-                              <div className="bg-primary px-4 py-2.5 flex items-center justify-between">
+                              {/* Price */}
+                              <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100">
                                 <div>
-                                  <p className="text-white font-extrabold text-xl leading-none">{p.price}</p>
-                                  <p className="text-primary-foreground/70 text-[11px] mt-0.5">جنيه</p>
+                                  <p className="text-gray-900 font-extrabold text-xl leading-none">{p.price}</p>
+                                  <p className="text-gray-500 text-[11px] mt-0.5">جنيه</p>
                                 </div>
                                 {p.verified && (
-                                  <span className="flex items-center gap-0.5 bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/30">
-                                    <BadgeCheck className="w-3 h-3 text-teal-200" /> موثّق
+                                  <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200">
+                                    <BadgeCheck className="w-3 h-3 text-teal-500" /> موثّق
                                   </span>
                                 )}
                               </div>
