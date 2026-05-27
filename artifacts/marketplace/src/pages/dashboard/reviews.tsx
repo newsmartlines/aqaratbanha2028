@@ -8,13 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type Review } from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
+import { useRole } from "@/lib/use-role";
+// useAuth no longer imported — use useRole() for role-aware pages
 
 export default function ReviewsPage() {
-  const { user } = useAuth();
+  const { user, isProvider, providerId } = useRole();
   const qc = useQueryClient();
-  const providerId = user?.providerId;
-  const isProvider = user?.role === "provider";
 
   const [filter, setFilter] = useState("الكل");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);

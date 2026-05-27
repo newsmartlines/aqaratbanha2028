@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, mediaUrl } from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
+import { useRole } from "@/lib/use-role";
 import toast from "react-hot-toast";
 import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
 
@@ -82,9 +82,8 @@ function fmtDate(d?: string) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function PropertiesPage() {
-  const { user } = useAuth();
+  const { user, isProvider } = useRole();
   const queryClient = useQueryClient();
-  const isProvider = user?.role === "provider";
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

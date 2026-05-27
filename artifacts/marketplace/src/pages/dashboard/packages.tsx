@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/lib/auth-context";
+import { useRole } from "@/lib/use-role";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type ProviderStats, type BillingPlan } from "@/lib/api";
 import {
@@ -70,11 +70,10 @@ function PlanIcon({ plan }: { plan: BillingPlan }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function PackagesPage() {
-  const { user } = useAuth();
+  const { user, isProvider, providerId } = useRole();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
-  const providerId = user?.providerId;
 
   const [historyFilter, setHistoryFilter] = useState<"all" | "active" | "expired">("all");
   const [historySearch, setHistorySearch] = useState("");
@@ -171,8 +170,6 @@ export default function PackagesPage() {
 
   const totalPages = Math.ceil(filteredHistory.length / PAGE_SIZE);
   const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
-
-  const isProvider = user?.role === "provider";
 
   // ── Current plan status label ─────────────────────────────────────────────────
   const currentStatus = (() => {

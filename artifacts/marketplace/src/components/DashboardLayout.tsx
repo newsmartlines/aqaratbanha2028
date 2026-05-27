@@ -34,21 +34,55 @@ function getInitials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
-// ── Nav definitions ────────────────────────────────────────────────────────────
+// ── Nav configuration — Unified Dashboard Architecture ─────────────────────────
+//
+// Three tiers of nav items:
+//   SHARED_NAV    — visible to BOTH user and provider (change once → affects all)
+//   PROVIDER_NAV  — visible only when role === "provider"
+//   USER_NAV      — visible only when role === "user"
+//
+// To add a new nav item for all roles:   add to SHARED_NAV
+// To add a provider-only item:           add to PROVIDER_NAV
+// To add a user-only item:               add to USER_NAV
 
-function unifiedNav(unreadCount: number, msgUnread: number) {
+const SHARED_NAV = [
+  { name: "لوحة التحكم",      href: "/dashboard",                 icon: LayoutDashboard },
+  { name: "عقاراتي",           href: "/dashboard/properties",      icon: Building2 },
+  { name: "المفضلة",           href: "/dashboard/favorites",       icon: Heart },
+  { name: "تنبيهات البحث",    href: "/dashboard/saved-searches",  icon: BellRing },
+  { name: "المدفوعات",         href: "/dashboard/payments",        icon: CreditCard },
+  { name: "رسائلي",            href: "/dashboard/messages",        icon: MessageCircleIcon },
+  { name: "الإشعارات",         href: "/dashboard/notifications",   icon: Bell },
+  { name: "تذاكر الدعم",      href: "/dashboard/support",         icon: Ticket },
+  { name: "الإعدادات",         href: "/dashboard/settings",        icon: Settings },
+] as const;
+
+const PROVIDER_NAV = [
+  { name: "باقاتي",            href: "/dashboard/packages",        icon: Package },
+] as const;
+
+const USER_NAV = [
+  // (currently no user-only nav items)
+] as const;
+
+function buildNav(
+  isProvider: boolean,
+  unreadCount: number,
+  msgUnread: number,
+) {
+  const roleItems = isProvider ? PROVIDER_NAV : USER_NAV;
+
+  // Merge: shared items + role items, then inject live badges
   return [
-    { name: "لوحة التحكم الرئيسية", href: "/dashboard",                 icon: LayoutDashboard,   badge: 0 },
-    { name: "باقاتي",               href: "/dashboard/packages",        icon: Package,           badge: 0 },
-    { name: "عقاراتي",              href: "/dashboard/properties",      icon: Building2,         badge: 0 },
-    { name: "المفضلة",              href: "/dashboard/favorites",       icon: Heart,             badge: 0 },
-    { name: "تنبيهات البحث",        href: "/dashboard/saved-searches",  icon: BellRing,          badge: 0 },
-    { name: "المدفوعات",            href: "/dashboard/payments",        icon: CreditCard,        badge: 0 },
-    { name: "رسائلي",               href: "/dashboard/messages",        icon: MessageCircleIcon, badge: msgUnread },
-    { name: "الإشعارات",            href: "/dashboard/notifications",   icon: Bell,              badge: unreadCount },
-    { name: "تذاكر الدعم",          href: "/dashboard/support",         icon: Ticket,            badge: 0 },
-    { name: "الإعدادات",            href: "/dashboard/settings",        icon: Settings,          badge: 0 },
-  ];
+    ...SHARED_NAV,
+    ...roleItems,
+  ].map((item) => ({
+    ...item,
+    badge:
+      item.href === "/dashboard/notifications" ? unreadCount
+      : item.href === "/dashboard/messages"    ? msgUnread
+      : 0,
+  }));
 }
 
 // ── Role badge ─────────────────────────────────────────────────────────────────
@@ -123,7 +157,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const isProvider = user?.role === "provider";
-  const navItems = unifiedNav(unreadCount, msgUnread);
+  const navItems = buildNav(isProvider, unreadCount, msgUnread);
   const displayName = user?.name ?? (isProvider ? "الشركة العقارية" : "المستخدم");
 
   // ── Sidebar ──────────────────────────────────────────────────────────────────
@@ -182,9 +216,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <nav className="space-y-0.5">
           {navItems.map((item) => {
+            const href = item.href as string;
             const isActive =
-              location === item.href ||
-              (item.href !== "/" && item.href !== "/dashboard" && location.startsWith(item.href + "/"));
+              location === href ||
+              (href !== "/dashboard" && location.startsWith(href + "/"));
             return (
               <Link
                 key={item.href}

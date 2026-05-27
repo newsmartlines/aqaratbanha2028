@@ -14,16 +14,16 @@ import type { StatusFilter, SupportTicket, TicketCategory } from "@/components/s
 import { api, type SupportTicketDto } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { useRole } from "@/lib/use-role";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 6;
 const FILTERS: StatusFilter[] = ["All", "Replied", "Pending", "Closed"];
 
 export default function SupportTicketsPage() {
-  const { user, loading: authLoading, refetch: refetchAuth } = useAuth();
+  const { loading: authLoading, refetch: refetchAuth } = useAuth();
+  const { user, isProvider, providerId } = useRole();
   const queryClient = useQueryClient();
-  const isProvider = user?.role === "provider";
-  const providerId = user?.providerId;
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");

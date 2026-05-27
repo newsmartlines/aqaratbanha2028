@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useAuth } from "@/lib/auth-context";
+import { useRole } from "@/lib/use-role";
 import { useQuery } from "@tanstack/react-query";
 import { api, type ProviderStats } from "@/lib/api";
 
@@ -66,7 +66,7 @@ interface InvoiceRow {
 }
 
 function InvoiceModal({ row, open, onClose }: { row: InvoiceRow | null; open: boolean; onClose: () => void }) {
-  const { user } = useAuth();
+  const { user } = useRole();
   if (!row) return null;
   const cfg = STATUS_CFG[row.status] ?? STATUS_CFG.pending;
   return (
@@ -172,9 +172,7 @@ function PaymentRow({ row, onClick }: { row: any; onClick: () => void }) {
 
 // ── Main ────────────────────────────────────────────────────────────────────
 export default function PaymentsPage() {
-  const { user } = useAuth();
-  const isProvider = user?.role === "provider";
-  const providerId = user?.providerId;
+  const { user, isProvider, providerId } = useRole();
   const [selectedRow, setSelectedRow] = useState<InvoiceRow | null>(null);
 
   // Provider data
