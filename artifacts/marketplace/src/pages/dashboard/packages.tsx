@@ -160,17 +160,15 @@ export default function PackagesPage() {
 
   const subscribeMutation = useMutation({
     mutationFn: (plan: BillingPlan) => {
-      if (isProvider) {
-        if (!providerId || !Number.isFinite(providerId) || providerId < 1) {
-          return Promise.reject(new Error("لم يتم تحديد حساب الشركة العقارية. حاول تسجيل الخروج وإعادة الدخول."));
-        }
+      // Use provider flow only when explicitly a provider WITH a valid providerId
+      if (isProvider && providerId && Number.isFinite(providerId) && providerId > 0) {
         return api.subscriptions.subscribe(providerId, plan.id, true);
-      } else {
-        if (!userId || !Number.isFinite(userId) || userId < 1) {
-          return Promise.reject(new Error("لم يتم تحديد حساب المستخدم. حاول تسجيل الخروج وإعادة الدخول."));
-        }
-        return api.userSubscription.subscribe(userId, plan.id);
       }
+      // All other cases (regular user OR provider without providerId) → user flow
+      if (!userId || !Number.isFinite(userId) || userId < 1) {
+        return Promise.reject(new Error("يرجى تسجيل الخروج وإعادة الدخول مجدداً."));
+      }
+      return api.userSubscription.subscribe(userId, plan.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["providerStats", providerId] });
@@ -265,61 +263,10 @@ export default function PackagesPage() {
           </div>
         ) : (
           <>
-            {/* ── User current subscription info ──────────────────────────────────── */}
-            {!isProvider && userSub && userSub.isActive && (
-              <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 overflow-hidden shadow-sm">
-                <div className="h-1.5 w-full bg-gradient-to-l from-teal-500 via-emerald-500 to-green-500" />
-                <div className="p-6 sm:p-8">
-                  <div className="flex flex-wrap items-start gap-6">
-                    <div className="flex-1 min-w-[200px] space-y-3">
-                      <span className="text-xs font-semibold text-teal-600 uppercase tracking-wide">اشتراكك الحالي</span>
-                      <h2 className="text-2xl font-extrabold text-foreground">{userSub.packageNameAr ?? "اشتراك"}</h2>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          نشط
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {userSub.daysLeft} {userSub.daysLeft === 1 ? "يوم" : "أيام"} متبقية
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-left shrink-0">
-                      <p className="text-2xl font-bold text-teal-700">{fmtMoney(userSub.packagePrice ?? "0")} ج.م</p>
-                      <p className="text-sm text-muted-foreground">{userSub.durationDays ?? 30} يوم</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-1">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>المدة المتبقية</span>
-                      <span>{Math.min(100, Math.round(((userSub.daysLeft ?? 0) / (userSub.durationDays ?? 30)) * 100))}%</span>
-                    </div>
-                    <Progress value={Math.min(100, Math.round(((userSub.daysLeft ?? 0) / (userSub.durationDays ?? 30)) * 100))} className="h-2 bg-teal-100" />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    ينتهي في: <strong className="text-foreground">{fmtDate(userSub.endDate)}</strong>
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* ── User no subscription info ────────────────────────────────────────── */}
-            {!isProvider && !userSub && (
-              <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-6 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                  <Package className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">لا يوجد اشتراك نشط</h3>
-                  <p className="text-sm text-muted-foreground mt-1">اختر إحدى الباقات أدناه للحصول على مزايا إضافية عند نشر عقاراتك.</p>
-                </div>
-              </div>
-            )}
-
             {/* ══════════════════════════════════════════════════════════════════
-                SECTION 1 — Current Plan (providers only)
+                SECTION 1 — Current Plan (all users with active sub)
             ══════════════════════════════════════════════════════════════════ */}
-            {isProvider && sub ? (
+            {sub ? (
               <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
                 {/* Card top strip */}
                 <div className="h-1.5 w-full bg-gradient-to-l from-teal-500 via-blue-500 to-indigo-500" />
@@ -425,53 +372,69 @@ export default function PackagesPage() {
                       )}
                     </div>
 
-                    {/* Right: Properties usage + features */}
+                    {/* Right: Properties usage (providers only) or plan highlights (users) */}
                     <div className="space-y-4">
-                      {/* Properties usage */}
-                      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
-                        <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                          <Building2 className="w-4 h-4 text-muted-foreground" />
-                          استخدام العقارات
-                        </p>
-                        <div className="flex items-end gap-2">
-                          <span className="text-3xl font-extrabold text-foreground tabular-nums">
-                            {stats?.activeProperties ?? 0}
-                          </span>
-                          <span className="text-muted-foreground text-sm mb-1">
-                            / {sub.maxListings != null ? (sub.maxListings < 0 ? "∞" : sub.maxListings) : "—"}
-                          </span>
-                        </div>
-                        {sub.maxListings != null && sub.maxListings > 0 && (
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-blue-500 rounded-full transition-all"
-                              style={{ width: `${Math.min(100, ((stats?.activeProperties ?? 0) / sub.maxListings) * 100)}%` }}
-                            />
+                      {isProvider && providerId ? (
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
+                          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                            <Building2 className="w-4 h-4 text-muted-foreground" />
+                            استخدام العقارات
+                          </p>
+                          <div className="flex items-end gap-2">
+                            <span className="text-3xl font-extrabold text-foreground tabular-nums">
+                              {stats?.activeProperties ?? 0}
+                            </span>
+                            <span className="text-muted-foreground text-sm mb-1">
+                              / {sub.maxListings != null ? (sub.maxListings < 0 ? "∞" : sub.maxListings) : "—"}
+                            </span>
                           </div>
-                        )}
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>مستخدم: {stats?.activeProperties ?? 0}</span>
-                          <span>
-                            متبقي:{" "}
-                            {sub.maxListings != null && sub.maxListings >= 0
-                              ? Math.max(0, sub.maxListings - (stats?.activeProperties ?? 0))
-                              : "غير محدود"
-                            }
-                          </span>
+                          {sub.maxListings != null && sub.maxListings > 0 && (
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-500 rounded-full transition-all"
+                                style={{ width: `${Math.min(100, ((stats?.activeProperties ?? 0) / sub.maxListings) * 100)}%` }}
+                              />
+                            </div>
+                          )}
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>مستخدم: {stats?.activeProperties ?? 0}</span>
+                            <span>
+                              متبقي:{" "}
+                              {sub.maxListings != null && sub.maxListings >= 0
+                                ? Math.max(0, sub.maxListings - (stats?.activeProperties ?? 0))
+                                : "غير محدود"
+                              }
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      ) : sub.maxListings != null ? (
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
+                          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                            <Building2 className="w-4 h-4 text-muted-foreground" />
+                            حد الإعلانات
+                          </p>
+                          <p className="text-3xl font-extrabold text-foreground tabular-nums">
+                            {sub.maxListings < 0 ? "∞" : sub.maxListings}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {sub.maxListings < 0 ? "إعلانات غير محدودة" : `إعلان كحد أقصى`}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
               </div>
-            ) : isProvider ? (
+            ) : (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
                   <Package className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">لا توجد باقة نشطة</h3>
                 <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                  اشترك في إحدى الباقات أدناه لتفعيل حسابك وبدء استقبال الطلبات.
+                  {isProvider
+                    ? "اشترك في إحدى الباقات أدناه لتفعيل حسابك وبدء استقبال الطلبات."
+                    : "اختر إحدى الباقات أدناه للحصول على مزايا إضافية عند نشر عقاراتك."}
                 </p>
                 <a href="#upgrade">
                   <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl gap-2">
@@ -480,12 +443,12 @@ export default function PackagesPage() {
                   </Button>
                 </a>
               </div>
-            ) : null}
+            )}
 
             {/* ══════════════════════════════════════════════════════════════════
-                SECTION 2 — Subscription History (providers only)
+                SECTION 2 — Subscription History (all users)
             ══════════════════════════════════════════════════════════════════ */}
-            {isProvider && <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+            {<div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
               <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-foreground">سجل الاشتراكات</h2>
