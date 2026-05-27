@@ -46,6 +46,16 @@ async function requireAdmin(req: any): Promise<boolean> {
   return user?.role === "admin";
 }
 
+async function requireAdminUserId(req: any): Promise<number | null> {
+  const token = req.cookies?.session ?? req.headers.authorization?.replace("Bearer ", "");
+  if (!token) return null;
+  const session = await getSession(token);
+  const userId = (session as any)?.userId;
+  if (!userId) return null;
+  const [user] = await db.select({ role: usersTable.role }).from(usersTable).where(eq(usersTable.id, userId));
+  return user?.role === "admin" ? userId : null;
+}
+
 // ── GET /api/users/me/promotion-quotas ───────────────────────────────────────
 
 router.get("/users/me/promotion-quotas", async (req, res) => {
@@ -285,14 +295,14 @@ router.post("/admin/promotions/grant-addon", async (req, res) => {
 
 router.post("/admin/properties/:id/feature", async (req, res) => {
   try {
-    const isAdmin = await requireAdmin(req);
-    if (!isAdmin) return res.status(403).json({ success: false, error: "غير مصرح" });
+    const adminUserId = await requireAdminUserId(req);
+    if (!adminUserId) return res.status(403).json({ success: false, error: "غير مصرح" });
 
     const propertyId = parseInt(req.params.id, 10);
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, propertyId));
     if (!property) return res.status(404).json({ success: false, error: "العقار غير موجود" });
 
-    const ownerId = property.ownerUserId ?? 0;
+    const ownerId = property.ownerUserId ?? adminUserId;
     const result = await featureProperty(ownerId, propertyId, "manual");
     if (!result.ok) return res.status(500).json({ success: false, error: result.error.message });
 
@@ -306,14 +316,14 @@ router.post("/admin/properties/:id/feature", async (req, res) => {
 
 router.post("/admin/properties/:id/spotlight", async (req, res) => {
   try {
-    const isAdmin = await requireAdmin(req);
-    if (!isAdmin) return res.status(403).json({ success: false, error: "غير مصرح" });
+    const adminUserId = await requireAdminUserId(req);
+    if (!adminUserId) return res.status(403).json({ success: false, error: "غير مصرح" });
 
     const propertyId = parseInt(req.params.id, 10);
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, propertyId));
     if (!property) return res.status(404).json({ success: false, error: "العقار غير موجود" });
 
-    const ownerId = property.ownerUserId ?? 0;
+    const ownerId = property.ownerUserId ?? adminUserId;
     const result = await spotlightProperty(ownerId, propertyId, "manual");
     if (!result.ok) return res.status(500).json({ success: false, error: result.error.message });
 

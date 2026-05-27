@@ -324,6 +324,11 @@ export default function PropertyDetail() {
               <MapPin className="w-4 h-4 text-primary shrink-0" />
               <span>{property.address}</span>
             </div>
+            <div className="mt-1.5">
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-gray-100 rounded-full px-2.5 py-1 font-mono font-semibold">
+                رقم الإعلان: <span className="text-gray-700">#{property.id}</span>
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Compare button */}
@@ -839,6 +844,7 @@ export default function PropertyDetail() {
                   { icon: Eye, label: "المشاهدات", value: `${(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة` },
                   { icon: Phone, label: "ضغطات الاتصال", value: `${(property.phoneClickCount ?? 0).toLocaleString("ar-EG")} ضغطة` },
                   { icon: Clock, label: "تاريخ النشر", value: property.createdAt ? new Date(property.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—" },
+                  { icon: ShieldCheck, label: "رقم الإعلان", value: `#${property.id}` },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                     <item.icon className="w-4 h-4 text-primary shrink-0" />

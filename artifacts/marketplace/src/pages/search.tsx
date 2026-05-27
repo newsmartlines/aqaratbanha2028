@@ -1093,6 +1093,7 @@ export default function SearchPage() {
                     <Eye className="w-2.5 h-2.5" />{p.viewCount.toLocaleString("ar-EG")}
                   </span>
                 )}
+                <span className="text-[10px] text-zinc-400 font-mono shrink-0">#{p.id}</span>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
@@ -1169,7 +1170,10 @@ export default function SearchPage() {
             <span className="line-clamp-1 font-medium">{loc}</span>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5">
-            <span className="flex items-center gap-1 text-[11px] text-zinc-400"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 text-[11px] text-zinc-400"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
+              <span className="text-[10px] text-zinc-400 font-mono">#{p.id}</span>
+            </div>
             <span className="flex items-center gap-1 text-[11px] text-zinc-500 font-bold"><Eye className="w-2.5 h-2.5" />{(p.viewCount ?? 0).toLocaleString("ar-EG")}</span>
           </div>
         </div>
