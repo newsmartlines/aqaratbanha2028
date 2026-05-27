@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const rawPort = process.env.VITE_PORT ?? process.env.PORT ?? "5000";
 const port = Number(rawPort);
@@ -13,20 +12,23 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? "/";
 
+const API_SERVER = process.env.API_SERVER_URL ?? "http://localhost:8080";
+
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
-    runtimeErrorOverlay({
-      filter: (err: { stack?: string; message?: string }) => {
-        const blob = `${err?.message ?? ""} ${err?.stack ?? ""}`;
-        return !/postUserData|workspace_iframe/i.test(blob);
-      },
-    } as any),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+    ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
       ? [
+          await import("@replit/vite-plugin-runtime-error-modal").then((m) =>
+            m.default({
+              filter: (err: { stack?: string; message?: string }) => {
+                const blob = `${err?.message ?? ""} ${err?.stack ?? ""}`;
+                return !/postUserData|workspace_iframe/i.test(blob);
+              },
+            } as any),
+          ),
           await import("@replit/vite-plugin-cartographer").then((m) =>
             m.cartographer({
               root: path.resolve(import.meta.dirname, ".."),
@@ -61,7 +63,7 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: API_SERVER,
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
@@ -78,7 +80,7 @@ export default defineConfig({
         },
       },
       "/uploads": {
-        target: "http://localhost:8080",
+        target: API_SERVER,
         changeOrigin: true,
       },
     },

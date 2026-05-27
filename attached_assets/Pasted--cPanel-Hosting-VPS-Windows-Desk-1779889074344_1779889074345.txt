@@ -1,0 +1,159 @@
+أريد تجهيز المشروع بالكامل ليعمل بشكل احترافي ومستقر على:
+
+* cPanel Hosting
+* VPS
+* Windows Desktop
+* Localhost
+* أي Server عادي
+
+بدون الاعتماد على أي بيئة خاصة بـ:
+
+* Replit
+* Replit Proxy
+* Replit Ports
+* Replit Secrets
+* Replit Runtime
+* Replit Dev Config
+* أي Dependencies خاصة بريبلت
+
+---
+
+# المطلوب:
+
+قم بعمل:
+
+# Production Deployment Refactor
+
+وتأكد أن المشروع:
+
+* يعمل خارج Replit بشكل طبيعي 100%
+* يمكن تشغيله على:
+
+  * XAMPP
+  * Localhost
+  * cPanel Node.js App
+  * VPS Ubuntu
+  * Windows Server
+
+---
+
+# مهم جدًا:
+
+احذف أو استبدل أي:
+
+* Replit Config
+* Replit Environment
+* Replit Ports
+* artifact-router
+* workflows
+* hidden Replit dependencies
+* replit-specific scripts
+
+---
+
+# المطلوب أيضًا:
+
+اجعل المشروع يعتمد على:
+
+# Standard Production Architecture
+
+---
+
+# Backend:
+
+* Express Server ثابت
+* PORT من Environment Variables
+* Proper Build System
+* Proper Start Scripts
+* Production Ready APIs
+
+---
+
+# Frontend:
+
+* Build Production صحيح
+* Static Assets منظمة
+* Proper Routing
+* يعمل بعد Build بدون مشاكل
+
+---
+
+# المطلوب:
+
+تجهيز:
+
+* .env.example
+* Production .env Structure
+* Build Scripts
+* Start Scripts
+* Deployment Instructions
+
+---
+
+# أريد:
+
+* تشغيل المشروع محليًا بأمر واضح
+* Build واضح
+* Start واضح
+* Production Mode واضح
+
+---
+
+# راجع:
+
+* package.json
+* vite.config
+* server config
+* API URLs
+* WebSocket URLs
+* Upload Paths
+* Static Files
+* Database Connection
+
+وتأكد أنها لا تعتمد على Replit.
+
+---
+
+# مهم جدًا:
+
+أي شيء مربوط بـ:
+
+* localhost hardcoded
+* replit domains
+* temporary ports
+* internal proxies
+
+قم بتحويله إلى:
+
+# Dynamic Environment Variables
+
+---
+
+# المطلوب أيضًا:
+
+تأكد أن:
+
+* رفع الصور
+* Socket.io
+* Authentication
+* API Calls
+* Routing
+* File Uploads
+
+كلها تعمل خارج Replit بدون أي مشاكل.
+
+---
+
+# أريد:
+
+* Production Ready Project
+* Clean Deployment Structure
+* cPanel Compatible
+* VPS Compatible
+* Easy Local Development
+
+---
+
+# النتيجة:
+
+أريد المشروع يصبح منصة احترافية مستقلة تمامًا عن Replit، قابلة للتشغيل والنشر بسهولة على أي استضافة أو جهاز Desktop بدون أي مشاكل أو Dependencies مخفية.

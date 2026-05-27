@@ -12,8 +12,8 @@ import { permissionGate } from "./middleware/permissionGate";
 
 const app: Express = express();
 
-// Trust the upstream proxy (Replit's edge) so that req.protocol, req.ip and
-// X-Forwarded-* headers reflect the original browser-facing request.
+// Trust upstream reverse proxies (nginx, Apache, cPanel, Cloudflare, etc.)
+// so that req.protocol, req.ip and X-Forwarded-* headers reflect the real client request.
 app.set("trust proxy", true);
 
 app.use(
@@ -30,21 +30,36 @@ app.use(
   }),
 );
 app.use(compression());
-app.use(cors({ origin: true, credentials: true }));
+
+// CORS: configure allowed origins via CORS_ORIGIN env var.
+// In development, defaults to allowing all origins.
+// In production, set CORS_ORIGIN to your frontend domain, e.g. https://yourdomain.com
+// Multiple origins: comma-separated, e.g. https://yourdomain.com,https://www.yourdomain.com
+const rawCorsOrigin = process.env.CORS_ORIGIN;
+let corsOrigin: string | string[] | boolean = true;
+if (rawCorsOrigin) {
+  const origins = rawCorsOrigin.split(",").map((s) => s.trim()).filter(Boolean);
+  corsOrigin = origins.length === 1 ? origins[0] : origins;
+}
+
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files as static assets
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const uploadsDir = process.env.UPLOADS_DIR
+  ? path.resolve(process.env.UPLOADS_DIR)
+  : path.join(process.cwd(), "uploads");
+app.use("/uploads", express.static(uploadsDir));
 
 // API routes
 app.use("/api", permissionGate);
 app.use("/api", router);
 
-// ─── Dev: proxy everything else to Vite on port 5001 ───────────────────────
+// ─── Dev: proxy everything else to Vite dev server ───────────────────────────
 if (process.env.NODE_ENV !== "production") {
-  const VITE_PORT = process.env.VITE_PORT ? Number(process.env.VITE_PORT) : 5001;
+  const VITE_PORT = process.env.VITE_PORT ? Number(process.env.VITE_PORT) : 5000;
   const proxy = httpProxy.createProxyServer({
     target: `http://localhost:${VITE_PORT}`,
     ws: true,
@@ -59,17 +74,17 @@ if (process.env.NODE_ENV !== "production") {
     }
   });
 
-  // Proxy all non-API, non-uploads requests to Vite
   app.use((req: Request, res: Response) => {
     proxy.web(req, res);
   });
 }
 
-// ─── Production: serve built frontend ──────────────────────────────────────
+// ─── Production: serve built frontend ────────────────────────────────────────
 if (process.env.NODE_ENV === "production") {
   const candidates = [
     process.env.FRONTEND_DIST,
     path.resolve(process.cwd(), "artifacts/marketplace/dist/public"),
+    path.resolve(process.cwd(), "dist/public"),
     path.resolve(__dirname, "../../marketplace/dist/public"),
   ].filter(Boolean) as string[];
 
