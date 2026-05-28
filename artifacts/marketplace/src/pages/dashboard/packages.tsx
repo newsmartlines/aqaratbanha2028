@@ -20,6 +20,7 @@ import {
   parseLimits, parseFeatures, fmtLimit, fmtMoney, fmtDate,
   FEATURE_LABELS, LIMIT_LABELS,
 } from "@/lib/plan-helpers";
+import { PlanCard } from "@/components/property-form/shared/PlanCard";
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
 function subStatus(row: SubHistoryItem) {
@@ -327,6 +328,17 @@ export default function PackagesPage() {
     refetchInterval: 60_000,
   });
 
+  // Pending subscription payment (waiting for admin approval)
+  const { data: pendingPayment } = useQuery({
+    queryKey: ["pendingSubPayment", userId],
+    queryFn: async () => {
+      const result = await api.payments.myPayments();
+      return result.rows.find(r => r.status === "pending" && r.kind === "subscription") ?? null;
+    },
+    enabled: !!userId,
+    refetchInterval: 30_000,
+  });
+
   // Subscription history — provider or user
   const { data: history = [], isLoading: histLoading } = useQuery<SubHistoryItem[]>({
     queryKey: ["subscriptionHistory", isProvider ? providerId : userId, isProvider ? "provider" : "user"],
@@ -521,6 +533,27 @@ export default function PackagesPage() {
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
+
+        {/* ── Pending Payment Banner ────────────────────────────────────────── */}
+        {!isLoading && pendingPayment && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                <Clock className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-bold text-amber-900 text-sm">طلب الاشتراك قيد المراجعة</p>
+                <p className="text-sm text-amber-800 mt-0.5 leading-relaxed">
+                  اخترت باقة <strong>{pendingPayment.serviceTitle ?? "مدفوعة"}</strong> وأرفقت إيصال الدفع.
+                  سيقوم فريقنا بمراجعة الطلب وتفعيل الباقة خلال 24 ساعة.
+                </p>
+              </div>
+            </div>
+            <span className="bg-amber-200 text-amber-900 text-xs font-black px-4 py-1.5 rounded-full shrink-0 whitespace-nowrap">
+              ⏳ قيد المراجعة
+            </span>
+          </div>
+        )}
 
         {/* ── Expiry Alert (all users with expiring sub) ─────────────────────── */}
         {!isLoading && sub?.isActive && sub.daysLeft != null && sub.daysLeft <= 7 && !alertDismissed && (
@@ -798,122 +831,14 @@ export default function PackagesPage() {
                   sortedPlans.length === 2 ? "sm:grid-cols-2" :
                   sortedPlans.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
                 }`}>
-                  {sortedPlans.map((plan) => {
-                    const isCurrent = isCurrentPlan(plan);
-                    const price = parseFloat(plan.price ?? "0");
-                    const isFree = price === 0;
-                    const limits = parseLimits(plan.limits);
-                    const features = parseFeatures(plan.features);
-                    const enabledFeatures = Object.entries(features).filter(([, v]) => v);
-                    const isPopular = !isFree && sortedPlans.filter(p => parseFloat(p.price ?? "0") > 0).indexOf(plan) === 0;
-
-                    return (
-                      <div
-                        key={plan.id}
-                        className={`relative rounded-2xl border bg-white overflow-hidden transition-all duration-200 ${
-                          isCurrent
-                            ? "border-primary ring-2 ring-primary/20 shadow-md"
-                            : isPopular
-                            ? "border-blue-300 shadow-md"
-                            : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
-                        }`}
-                      >
-                        {/* Top badge */}
-                        {isCurrent && (
-                          <div className="bg-primary text-primary-foreground text-center py-1.5 text-xs font-bold tracking-wide">
-                            ✓ باقتك الحالية
-                          </div>
-                        )}
-                        {!isCurrent && isPopular && (
-                          <div className="bg-blue-600 text-white text-center py-1.5 text-xs font-bold tracking-wide">
-                            ⚡ الأكثر طلباً
-                          </div>
-                        )}
-
-                        <div className="p-6 space-y-5">
-                          {/* Plan header */}
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                                isFree ? "bg-gray-100" : isPopular ? "bg-blue-100" : "bg-amber-100"
-                              }`}>
-                                <PlanIcon plan={plan} />
-                              </div>
-                              <h3 className="text-lg font-bold text-foreground">
-                                {plan.nameAr ?? plan.name}
-                              </h3>
-                              {plan.descriptionAr && (
-                                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{plan.descriptionAr}</p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Pricing */}
-                          <div className="border-t border-gray-100 pt-4">
-                            {isFree ? (
-                              <div className="flex items-end gap-1">
-                                <span className="text-3xl font-extrabold text-foreground">مجاناً</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-end gap-1">
-                                <span className="text-3xl font-extrabold text-foreground tabular-nums">
-                                  {fmtMoney(plan.price)}
-                                </span>
-                                <span className="text-muted-foreground text-sm mb-1">{plan.currency ?? "EGP"}</span>
-                              </div>
-                            )}
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              لمدة {plan.durationDays} يوم
-                            </p>
-                          </div>
-
-                          {/* Limits */}
-                          <div className="space-y-2">
-                            {Object.entries(limits).slice(0, 4).map(([key, val]) => (
-                              <div key={key} className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">{LIMIT_LABELS[key] ?? key}</span>
-                                <span className="font-semibold text-foreground tabular-nums">{fmtLimit(val)}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Features */}
-                          {enabledFeatures.length > 0 && (
-                            <div className="border-t border-gray-100 pt-4 space-y-2">
-                              {enabledFeatures.slice(0, 5).map(([key]) => (
-                                <div key={key} className="flex items-center gap-2 text-sm text-foreground">
-                                  <Check className="w-3.5 h-3.5 text-teal-500 shrink-0" />
-                                  <span>{FEATURE_LABELS[key] ?? key}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* CTA */}
-                          <Button
-                            className={`w-full h-10 rounded-xl font-bold text-sm ${
-                              isCurrent
-                                ? "bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30"
-                                : isFree
-                                ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
-                                : isPopular
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                            }`}
-                            disabled={isCurrent && sub?.isActive}
-                            onClick={() => !isCurrent && handleSubscribeClick(plan)}
-                          >
-                            {isCurrent
-                              ? "باقتك الحالية"
-                              : isFree
-                              ? "تفعيل مجاناً"
-                              : `الترقية إلى ${plan.nameAr ?? plan.name}`
-                            }
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {sortedPlans.map((plan) => (
+                    <PlanCard
+                      key={plan.id}
+                      plan={plan}
+                      selected={isCurrentPlan(plan)}
+                      onSelect={() => handleSubscribeClick(plan)}
+                    />
+                  ))}
                 </div>
               )}
             </div>

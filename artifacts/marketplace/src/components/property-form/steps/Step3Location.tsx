@@ -26,58 +26,32 @@ export function Step3Location({ v, set, setValue }: Step3LocationProps) {
     staleTime: 10 * 60_000,
   });
 
-  const allCities: CityRow[] = regions.flatMap(reg => reg.cities ?? []);
-  const selectedCityObj = allCities.find(c => c.nameAr === v.city);
-  const areas = selectedCityObj?.areas ?? [];
+  const allAreas: AreaRow[] = regions.flatMap(reg =>
+    (reg.cities ?? []).flatMap(city => city.areas ?? [])
+  );
 
   return (
     <div className="space-y-5">
-      {/* اختيار المدينة */}
-      <div>
-        <Label className="text-base font-bold mb-4 block">
-          المدينة <span className="text-red-500">*</span>
-        </Label>
-        {allCities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">جارٍ تحميل المدن...</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {allCities.map((city) => (
-              <button
-                key={city.id} type="button"
-                onClick={() => { set("city", city.nameAr); set("district", ""); }}
-                className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                  v.city === city.nameAr
-                    ? "border-teal-600 bg-teal-50 text-teal-700"
-                    : "border-border hover:border-teal-300 hover:bg-secondary/40"
-                }`}
-              >
-                {city.nameAr}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* المنطقة */}
       <div>
-        <Label htmlFor="f-district" className="text-sm font-semibold mb-2 block">
-          المنطقة
+        <Label htmlFor="f-district" className="text-base font-bold mb-3 block">
+          المنطقة <span className="text-red-500">*</span>
         </Label>
-        <select
-          id="f-district"
-          value={v.district ?? ""}
-          onChange={(e) => set("district", e.target.value)}
-          className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-          dir="rtl"
-          disabled={!v.city || areas.length === 0}
-        >
-          <option value="">— اختر المنطقة —</option>
-          {areas.map((area) => (
-            <option key={area.id} value={area.nameAr}>{area.nameAr}</option>
-          ))}
-        </select>
-        {v.city && areas.length === 0 && (
-          <p className="text-xs text-muted-foreground mt-1">لا توجد مناطق مسجّلة لهذه المدينة</p>
+        {allAreas.length === 0 ? (
+          <p className="text-sm text-muted-foreground">جارٍ تحميل المناطق...</p>
+        ) : (
+          <select
+            id="f-district"
+            value={v.district ?? ""}
+            onChange={(e) => set("district", e.target.value)}
+            className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            dir="rtl"
+          >
+            <option value="">— اختر المنطقة —</option>
+            {allAreas.map((area) => (
+              <option key={area.id} value={area.nameAr}>{area.nameAr}</option>
+            ))}
+          </select>
         )}
       </div>
 

@@ -62,13 +62,11 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
     },
     staleTime: 10 * 60_000,
   });
-  const allCities: CityRow[] = regions.flatMap(reg => reg.cities ?? []);
-  const selectedCityObj = allCities.find(c => c.nameAr === v.city);
-  const locationAreas: AreaRow[] = selectedCityObj?.areas ?? [];
+  const locationAreas: AreaRow[] = regions.flatMap(reg => (reg.cities ?? []).flatMap(c => c.areas ?? []));
 
   const isFormUnlocked = !!v.propertyGroup && !!v.mainCategory && !!v.listingType;
 
-  const canSubmitForm = !!v.listingType && !!v.mainCategory && !!v.title && !!v.area && !!v.city && !!v.phone;
+  const canSubmitForm = !!v.listingType && !!v.mainCategory && !!v.title && !!v.area && !!v.phone;
 
 
   const handleFormNext = () => {
@@ -580,43 +578,23 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
         {/* ── 8. الموقع والخريطة — في الآخر ──────────────────────── */}
         <FormSection title="الموقع" required>
           <div className="space-y-4">
-            {/* اختيار المدينة من قاعدة البيانات */}
+            {/* اختيار المنطقة */}
             <div>
-              <Label htmlFor="f-city" className="text-sm font-semibold mb-1.5 block">
-                المدينة <span className="text-red-500">*</span>
+              <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">
+                المنطقة <span className="text-red-500">*</span>
               </Label>
-              <select
-                id="f-city"
-                value={v.city ?? ""}
-                onChange={(e) => { setValue("city", e.target.value); setValue("district", ""); }}
-                className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                dir="rtl"
-              >
-                <option value="">— اختر المدينة —</option>
-                {allCities.map((city) => (
-                  <option key={city.id} value={city.nameAr}>{city.nameAr}</option>
-                ))}
-              </select>
-            </div>
-            {/* اختيار المنطقة (تتحمّل من قاعدة البيانات بناءً على المدينة) */}
-            <div>
-              <Label htmlFor="f-district" className="text-sm font-semibold mb-1.5 block">المنطقة</Label>
               <select
                 id="f-district"
                 value={v.district ?? ""}
                 onChange={(e) => setValue("district", e.target.value)}
                 className="w-full h-11 rounded-xl border border-input bg-white px-3 text-sm font-medium text-right focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 dir="rtl"
-                disabled={!v.city || locationAreas.length === 0}
               >
                 <option value="">— اختر المنطقة —</option>
                 {locationAreas.map((area) => (
                   <option key={area.id} value={area.nameAr}>{area.nameAr}</option>
                 ))}
               </select>
-              {v.city && locationAreas.length === 0 && (
-                <p className="text-xs text-muted-foreground mt-1">لا توجد مناطق مسجّلة لهذه المدينة بعد</p>
-              )}
             </div>
             <div>
               <Label htmlFor="f-address" className="text-sm font-semibold mb-1.5 block">العنوان التفصيلي</Label>

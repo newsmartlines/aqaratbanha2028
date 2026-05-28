@@ -58,51 +58,51 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
       } : {}}
     >
       {/* Color strip */}
-      <div className="h-1 w-full shrink-0 transition-colors duration-200"
+      <div className="h-1.5 w-full shrink-0 transition-colors duration-200"
         style={{ background: selected ? accent : "#e5e7eb" }} />
 
       {/* Badge row */}
       {(plan.isRecommended || plan.isMostPopular || selected) && (
         <div
-          className="text-white text-[10px] font-black text-center py-1.5 uppercase tracking-wider"
+          className="text-white text-xs font-black text-center py-2 uppercase tracking-wider"
           style={{ background: selected ? accent : plan.isRecommended ? accent : "#f59e0b" }}
         >
           {selected ? "✓ الباقة المختارة" : plan.isRecommended ? "موصى به ⭐" : "⭐ الأكثر طلباً"}
         </div>
       )}
 
-      <div className="p-4 flex flex-col gap-3 flex-1">
+      <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Icon + name + price */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: `${accent}18` }}>
               {isFree
-                ? <Shield className="w-4 h-4" style={{ color: accent }} />
+                ? <Shield className="w-5 h-5" style={{ color: accent }} />
                 : (plan.sortOrder ?? 0) >= 3
-                ? <Crown className="w-4 h-4" style={{ color: accent }} />
-                : <Star className="w-4 h-4" style={{ color: accent }} />
+                ? <Crown className="w-5 h-5" style={{ color: accent }} />
+                : <Star className="w-5 h-5" style={{ color: accent }} />
               }
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-sm leading-tight truncate" style={{ color: accent }}>
+              <p className="font-bold text-base leading-tight truncate" style={{ color: accent }}>
                 {plan.nameAr ?? plan.name}
               </p>
               {plan.descriptionAr && (
-                <p className="text-[10px] text-gray-400 leading-snug line-clamp-2 mt-0.5">{plan.descriptionAr}</p>
+                <p className="text-xs text-gray-400 leading-snug line-clamp-2 mt-0.5">{plan.descriptionAr}</p>
               )}
             </div>
           </div>
           <div className="text-left shrink-0">
             {isFree ? (
-              <p className="text-lg font-black" style={{ color: accent }}>مجاني</p>
+              <p className="text-xl font-black" style={{ color: accent }}>مجاني</p>
             ) : (
               <>
-                <p className="text-lg font-black text-gray-900 leading-tight">
+                <p className="text-xl font-black text-gray-900 leading-tight">
                   {Number(plan.price).toLocaleString("ar-EG")}
-                  <span className="text-xs font-normal text-gray-400"> {plan.currency}</span>
+                  <span className="text-sm font-normal text-gray-500"> {plan.currency}</span>
                 </p>
-                <p className="text-[10px] text-gray-400">/{plan.durationDays} يوم</p>
+                <p className="text-xs text-gray-500 text-left">/{plan.durationDays} يوم</p>
               </>
             )}
           </div>
@@ -112,14 +112,14 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
         <div className="border-t border-gray-100" />
 
         {/* Limits */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           {Object.entries(LIMIT_LABELS).map(([key, label]) => {
             if (!Object.prototype.hasOwnProperty.call(limits, key)) return null;
             const val = limits[key];
             return (
-              <div key={key} className="flex items-center justify-between text-[11px]">
-                <span className="text-gray-400">{label}</span>
-                <span className={`font-bold ${val < 0 ? "text-green-600" : val === 0 ? "text-gray-300" : "text-gray-700"}`}>
+              <div key={key} className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">{label}</span>
+                <span className={`font-bold text-sm ${val < 0 ? "text-green-600" : val === 0 ? "text-gray-400" : "text-gray-900"}`}>
                   {fmt(val)}
                 </span>
               </div>
@@ -129,14 +129,14 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
 
         {/* Features */}
         {topFeats.length > 0 && (
-          <div className="space-y-1 flex-1">
+          <div className="space-y-1.5 flex-1">
             {topFeats.map(([key]) => (
-              <div key={key} className="flex items-center gap-1.5 text-[11px]">
-                <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0"
+              <div key={key} className="flex items-center gap-2 text-sm">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
                   style={{ background: `${accent}18` }}>
-                  <Check className="w-2 h-2" style={{ color: accent }} strokeWidth={3} />
+                  <Check className="w-2.5 h-2.5" style={{ color: accent }} strokeWidth={3} />
                 </div>
-                <span className="text-gray-600">{FEATURE_LABELS[key] ?? key}</span>
+                <span className="text-gray-700">{FEATURE_LABELS[key] ?? key}</span>
               </div>
             ))}
           </div>
@@ -144,9 +144,9 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
 
         {/* Trial */}
         {plan.trialDays > 0 && (
-          <div className="flex items-center gap-1.5 text-[11px]"
+          <div className="flex items-center gap-1.5 text-sm"
             style={{ color: accent }}>
-            <Zap className="w-3 h-3 shrink-0" />
+            <Zap className="w-3.5 h-3.5 shrink-0" />
             <span className="font-semibold">{plan.trialDays} أيام تجريبية مجاناً</span>
           </div>
         )}
@@ -154,7 +154,7 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
         {/* CTA */}
         <button
           type="button"
-          className="w-full py-2 rounded-xl font-bold text-sm transition-all duration-200 mt-1"
+          className="w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200 mt-1"
           style={selected
             ? { background: accent, color: "#fff" }
             : { background: "#f4f4f5", color: "#374151" }
