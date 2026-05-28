@@ -39,7 +39,7 @@ const LINKS = [
       { label: "تسجيل الدخول", path: "/login" },
       { label: "إنشاء حساب", path: "/register" },
       { label: "لوحة تحكم المعلن", path: "/dashboard" },
-      { label: "المفضلة", path: "/user/favorites" },
+      { label: "المفضلة", path: "/dashboard/favorites" },
     ],
   },
   {

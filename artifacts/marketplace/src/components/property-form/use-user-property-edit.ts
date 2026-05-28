@@ -189,7 +189,7 @@ export function useUserPropertyEdit(propertyId: number) {
     try {
       await api.properties.update(propertyId, buildPayload());
       toast.success("✅ تم حفظ التعديلات بنجاح");
-      setLocation("/user/my-properties");
+      setLocation("/dashboard/properties");
     } catch (e: any) {
       const msg = e?.message ?? "حدث خطأ أثناء الحفظ";
       setError(msg);

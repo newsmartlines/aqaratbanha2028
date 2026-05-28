@@ -448,7 +448,7 @@ export default function CompanyRegisterPage() {
   if (done) return (
     <AutoRedirectScreen
       name={form.companyName.trim() || form.name.trim()}
-      onRedirect={() => setLocation("/provider/dashboard")}
+      onRedirect={() => setLocation("/dashboard")}
     />
   );
 

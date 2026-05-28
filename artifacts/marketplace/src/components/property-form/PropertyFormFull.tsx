@@ -121,7 +121,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false, editProper
               <div className="flex flex-col sm:flex-row justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setLocation("/user/my-properties")}
+                  onClick={() => setLocation("/dashboard/properties")}
                   className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-11 px-6 font-semibold transition-colors"
                 >
                   <Building2 className="w-4 h-4" />

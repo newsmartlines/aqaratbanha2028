@@ -72,19 +72,18 @@ export function Header() {
   const getDashboardPath = () => {
     if (!user) return "/login";
     if (user.role === "admin") return "/admin/dashboard";
-    if (user.role === "provider") return "/provider/dashboard";
-    return "/user/dashboard";
+    return "/dashboard";
   };
 
   const getInitials = (name: string) =>
     name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
   const providerMenuItems = [
-    { icon: LayoutDashboard, label: "لوحة التحكم",  href: "/provider/dashboard" },
-    { icon: Package,         label: "باقتي",         href: "/dashboard/my-plan" },
-    { icon: Building2,       label: "عقاراتي",       href: "/dashboard/my-properties" },
+    { icon: LayoutDashboard, label: "لوحة التحكم",  href: "/dashboard" },
+    { icon: Package,         label: "باقتي",         href: "/dashboard/packages" },
+    { icon: Building2,       label: "عقاراتي",       href: "/dashboard/properties" },
     { icon: Bell,            label: "الإشعارات",     href: "/dashboard/notifications", badge: 0 },
-    { icon: MessageCircle,   label: "الرسائل",       href: "/dashboard/inbox",         badge: msgUnread > 0 ? msgUnread : 0 },
+    { icon: MessageCircle,   label: "الرسائل",       href: "/dashboard/messages",      badge: msgUnread > 0 ? msgUnread : 0 },
     { icon: Ticket,          label: "تذاكر الدعم",   href: "/dashboard/support-tickets" },
     { icon: CreditCard,      label: "المدفوعات",     href: "/dashboard/payments" },
     { icon: Settings,        label: "الإعدادات",     href: "/dashboard/settings" },
@@ -92,15 +91,15 @@ export function Header() {
   ];
 
   const userMenuItems = [
-    { icon: PlusCircle,      label: "أضف عقارك",     href: "/add-property",         highlight: true },
-    { icon: LayoutDashboard, label: "الرئيسية",       href: "/user/dashboard" },
-    { icon: Building2,       label: "عقاراتي",        href: "/user/my-properties" },
-    { icon: Heart,           label: "المفضلة",        href: "/user/favorites" },
-    { icon: BellRing,        label: "تنبيهات البحث", href: "/user/saved-searches" },
-    { icon: CreditCard,      label: "مدفوعاتي",       href: "/user/payments" },
-    { icon: MessageCircle,   label: "رسائلي",         href: "/user/inbox",           badge: msgUnread > 0 ? msgUnread : 0 },
-    { icon: Settings,        label: "الإعدادات",      href: "/user/settings" },
-    { icon: HelpCircle,      label: "المساعدة",       href: "/user/support" },
+    { icon: PlusCircle,      label: "أضف عقارك",     href: "/add-property",            highlight: true },
+    { icon: LayoutDashboard, label: "لوحة التحكم",   href: "/dashboard" },
+    { icon: Building2,       label: "عقاراتي",        href: "/dashboard/properties" },
+    { icon: Heart,           label: "المفضلة",        href: "/dashboard/favorites" },
+    { icon: BellRing,        label: "تنبيهات البحث", href: "/dashboard/saved-searches" },
+    { icon: CreditCard,      label: "مدفوعاتي",       href: "/dashboard/payments" },
+    { icon: MessageCircle,   label: "رسائلي",         href: "/dashboard/messages",      badge: msgUnread > 0 ? msgUnread : 0 },
+    { icon: Settings,        label: "الإعدادات",      href: "/dashboard/settings" },
+    { icon: HelpCircle,      label: "المساعدة",       href: "/dashboard/support" },
   ];
 
   const menuItems = user?.role === "provider" ? providerMenuItems :

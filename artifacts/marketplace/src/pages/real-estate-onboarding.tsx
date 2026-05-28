@@ -514,12 +514,12 @@ export default function RealEstateOnboarding() {
           <div className="space-y-3 pt-2">
             <Button
               className="w-full h-13 rounded-2xl font-bold text-base shadow-md shadow-teal-200"
-              onClick={() => setLocation("/dashboard/my-properties")}
+              onClick={() => setLocation("/dashboard/properties")}
             >
               عرض عقاراتي
             </Button>
             <Button variant="outline" className="w-full h-12 rounded-2xl font-semibold"
-              onClick={() => setLocation("/provider/dashboard")}
+              onClick={() => setLocation("/dashboard")}
             >
               لوحة التحكم
             </Button>

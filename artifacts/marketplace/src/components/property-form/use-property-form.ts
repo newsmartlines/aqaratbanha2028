@@ -197,7 +197,7 @@ export function usePropertyForm(
             price:    String(selectedPlan.price),
             duration: String(selectedPlan.durationDays),
             currency: selectedPlan.currency ?? "EGP",
-            returnTo: backPath || "/user/my-properties",
+            returnTo: backPath || "/dashboard/properties",
           }).toString();
           setLocation(`/pay/listing?${qs}`);
         } catch (e: any) {

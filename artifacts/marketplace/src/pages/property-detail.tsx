@@ -1300,7 +1300,7 @@ export default function PropertyDetail() {
                 <Button className="flex-1 rounded-xl" onClick={() => { setMsgOpen(false); setMsgSent(false); setMsgContent(""); }}>
                   حسناً
                 </Button>
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setLocation(`/user/inbox?otherId=${property?.ownerUserId}&propertyId=${property?.id}`)}>
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setLocation(`/dashboard/messages?otherId=${property?.ownerUserId}&propertyId=${property?.id}`)}>
                   فتح المحادثة
                 </Button>
               </div>

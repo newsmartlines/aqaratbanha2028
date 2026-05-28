@@ -29,15 +29,14 @@ type View = "login" | "register" | "forgot" | "reset";
 
 function getRedirectPath(role: string): string {
   if (role === "admin") return "/admin/dashboard";
-  if (role === "provider") return "/provider/dashboard";
-  return "/user/dashboard";
+  return "/dashboard";
 }
 
 function safeReturnTo(path: string | null, role: string): string | null {
   if (!path || !path.startsWith("/")) return null;
   if (path.startsWith("/login") || path.startsWith("/register") || path.startsWith("/admin/login")) return null;
-  if (role === "user" && (path.startsWith("/admin") || path.startsWith("/dashboard") || path.startsWith("/provider/dashboard"))) return null;
-  if (role === "provider" && (path.startsWith("/admin") || path.startsWith("/user/") || path.startsWith("/provider/register"))) return null;
+  if (role === "user" && path.startsWith("/admin")) return null;
+  if (role === "provider" && (path.startsWith("/admin") || path.startsWith("/provider/register"))) return null;
   if (role === "admin" && !path.startsWith("/admin")) return null;
   return path;
 }

@@ -105,7 +105,7 @@ export default function ListingPayPage() {
   const price     = params.get("price")     ?? "0";
   const duration  = params.get("duration")  ?? "30";
   const currency  = params.get("currency")  ?? "EGP";
-  const returnTo  = params.get("returnTo")  ?? "/user/my-properties";
+  const returnTo  = params.get("returnTo")  ?? "/dashboard/properties";
 
   const enabledGateways = ALL_GATEWAYS.filter(g => {
     const keyMap: Record<Gateway, string> = {
