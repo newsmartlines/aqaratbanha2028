@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api, type Category } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { PropertyDetailDrawer, type ExtendedProperty } from "@/components/admin/PropertyDetailDrawer";
 
 type DbProperty = {
   id: number;
@@ -115,6 +116,7 @@ export default function AdminProperties() {
   const [rejecting, setRejecting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [providers, setProviders] = useState<{ id: number; name: string }[]>([]);
+  const [selectedProp, setSelectedProp] = useState<ExtendedProperty | null>(null);
 
   const { data: reCategories = [] } = useQuery<Category[]>({
     queryKey: ["re-categories"],
@@ -235,6 +237,20 @@ export default function AdminProperties() {
       setDeleteConfirmId(id);
       setTimeout(() => setDeleteConfirmId(null), 3000);
     }
+  };
+
+  const handleStatusFromDrawer = (id: number, newStatus: string) => {
+    setProperties(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+    setSelectedProp(null);
+  };
+
+  const handleFeaturedFromDrawer = (id: number, featured: boolean) => {
+    setProperties(prev => prev.map(p => p.id === id ? { ...p, featured } : p));
+  };
+
+  const handleDeleteFromDrawer = (id: number) => {
+    setProperties(prev => prev.filter(p => p.id !== id));
+    setSelectedProp(null);
   };
 
   const handleAddSave = async () => {
@@ -546,7 +562,7 @@ export default function AdminProperties() {
                     </TableCell>
                   </TableRow>
                 ) : filtered.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-slate-50/60 transition-colors">
+                  <TableRow key={p.id} className="hover:bg-slate-50/60 transition-colors cursor-pointer" onClick={() => setSelectedProp(p as unknown as ExtendedProperty)}>
                     {/* Image */}
                     <TableCell>
                       <div className="w-12 h-10 rounded-lg overflow-hidden border border-slate-200 shrink-0">
@@ -595,7 +611,7 @@ export default function AdminProperties() {
                     <TableCell>
                       <button
                         title={p.featured ? "إلغاء التمييز" : "تمييز العقار"}
-                        onClick={() => handleToggleFeatured(p)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleFeatured(p); }}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${p.featured ? "bg-amber-100 text-amber-500 hover:bg-amber-200" : "bg-slate-100 text-slate-400 hover:bg-amber-50 hover:text-amber-400"}`}
                       >
                         {p.featured ? <Star className="w-4 h-4 fill-amber-400" /> : <StarOff className="w-4 h-4" />}
@@ -607,7 +623,7 @@ export default function AdminProperties() {
 
                     {/* Actions */}
                     <TableCell>
-                      <div className="flex items-center justify-end gap-1 flex-wrap">
+                      <div className="flex items-center justify-end gap-1 flex-wrap" onClick={e => e.stopPropagation()}>
 
                         {/* View in site — opens new tab */}
                         <Button
@@ -812,6 +828,15 @@ export default function AdminProperties() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* ── Property Detail Drawer ── */}
+      <PropertyDetailDrawer
+        property={selectedProp}
+        onClose={() => setSelectedProp(null)}
+        onStatusChange={handleStatusFromDrawer}
+        onToggleFeatured={handleFeaturedFromDrawer}
+        onDelete={handleDeleteFromDrawer}
+      />
+
     </AdminLayout>
   );
 }
