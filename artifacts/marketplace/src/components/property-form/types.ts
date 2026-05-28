@@ -4,6 +4,8 @@ export interface PropertyFormWizardProps {
   mode: FormMode;
   backPath: string;
   showPlans?: boolean;
+  editPropertyId?: number;
+  initialData?: Partial<FormValues>;
 }
 
 export interface FormValues {

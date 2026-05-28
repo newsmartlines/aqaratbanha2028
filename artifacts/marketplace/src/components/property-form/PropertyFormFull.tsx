@@ -29,13 +29,13 @@ interface AreaRow   { id: number; nameAr: string; enabled: boolean; cityId: numb
 interface CityRow   { id: number; nameAr: string; enabled: boolean; regionId: number; areas: AreaRow[] }
 interface RegionRow { id: number; nameAr: string; enabled: boolean; cities: CityRow[] }
 
-export function PropertyFormFull({ mode, backPath, showPlans = false }: PropertyFormWizardProps) {
+export function PropertyFormFull({ mode, backPath, showPlans = false, editPropertyId, initialData }: PropertyFormWizardProps) {
   const [, setLocation] = useLocation();
   const [view, setView] = useState<"form" | "plans" | "success">("form");
 
-  const form = usePropertyForm(mode, backPath, showPlans);
+  const form = usePropertyForm(mode, backPath, showPlans, editPropertyId, initialData);
   const {
-    isCompany, accountType,
+    isCompany, isEditMode, accountType,
     submitting, error,
     uploading, selectedPlan, setSelectedPlan,
     showPayment, setShowPayment,
@@ -88,33 +88,55 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           <div className="w-24 h-24 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-6 shadow-sm">
             <CheckCircle2 className="w-12 h-12 text-teal-600" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">تم إرسال إعلانك!</h2>
-          <p className="text-muted-foreground mb-1">
-            سيتم مراجعة إعلانك من قبل فريقنا وسيُنشر بعد الموافقة.
-          </p>
-          {showPlans && selectedPlan && parseFloat(selectedPlan.price) > 0 && (
-            <p className="text-sm text-teal-600 font-medium mb-1">
-              تم تفعيل باقة {selectedPlan.nameAr ?? selectedPlan.name} بنجاح.
-            </p>
+          {isEditMode ? (
+            <>
+              <h2 className="text-2xl font-bold mb-2">تم تحديث إعلانك!</h2>
+              <p className="text-muted-foreground mb-1">
+                سيُراجع إعلانك من قبل فريقنا إن لزم، ثم يُعاد نشره تلقائياً.
+              </p>
+              <p className="text-sm text-muted-foreground mb-8">ستصلك إشعار فور الموافقة على التعديلات.</p>
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLocation("/dashboard/properties")}
+                  className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-11 px-6 font-semibold transition-colors"
+                >
+                  <Building2 className="w-4 h-4" />
+                  عقاراتي
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold mb-2">تم إرسال إعلانك!</h2>
+              <p className="text-muted-foreground mb-1">
+                سيتم مراجعة إعلانك من قبل فريقنا وسيُنشر بعد الموافقة.
+              </p>
+              {showPlans && selectedPlan && parseFloat(selectedPlan.price) > 0 && (
+                <p className="text-sm text-teal-600 font-medium mb-1">
+                  تم تفعيل باقة {selectedPlan.nameAr ?? selectedPlan.name} بنجاح.
+                </p>
+              )}
+              <p className="text-sm text-muted-foreground mb-8">ستصلك إشعار فور الموافقة على إعلانك.</p>
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLocation("/user/my-properties")}
+                  className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-11 px-6 font-semibold transition-colors"
+                >
+                  <Building2 className="w-4 h-4" />
+                  عقاراتي
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { handleReset(); setView("form"); }}
+                  className="flex items-center justify-center gap-2 border border-border bg-white hover:bg-secondary/40 rounded-xl h-11 px-6 font-semibold transition-colors"
+                >
+                  إضافة عقار آخر
+                </button>
+              </div>
+            </>
           )}
-          <p className="text-sm text-muted-foreground mb-8">ستصلك إشعار فور الموافقة على إعلانك.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => setLocation("/user/my-properties")}
-              className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-11 px-6 font-semibold transition-colors"
-            >
-              <Building2 className="w-4 h-4" />
-              عقاراتي
-            </button>
-            <button
-              type="button"
-              onClick={() => { handleReset(); setView("form"); }}
-              className="flex items-center justify-center gap-2 border border-border bg-white hover:bg-secondary/40 rounded-xl h-11 px-6 font-semibold transition-colors"
-            >
-              إضافة عقار آخر
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -215,8 +237,8 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
           <ChevronLeft className="w-4 h-4" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold">أضف عقارك</h1>
-          <p className="text-sm text-muted-foreground">أنشر إعلانك ووصّل لآلاف الباحثين</p>
+          <h1 className="text-2xl font-bold">{isEditMode ? "تعديل إعلانك" : "أضف عقارك"}</h1>
+          <p className="text-sm text-muted-foreground">{isEditMode ? "عدّل بيانات العقار ثم احفظ التعديلات" : "أنشر إعلانك ووصّل لآلاف الباحثين"}</p>
         </div>
       </div>
 
@@ -726,7 +748,9 @@ export function PropertyFormFull({ mode, backPath, showPlans = false }: Property
             }}
           >
             {submitting ? (
-              <><Loader2 className="w-4 h-4 animate-spin" />جارٍ الإرسال...</>
+              <><Loader2 className="w-4 h-4 animate-spin" />{isEditMode ? "جارٍ الحفظ..." : "جارٍ الإرسال..."}</>
+            ) : isEditMode ? (
+              <>حفظ التعديلات</>
             ) : showPlans ? (
               <>التالي — اختر الباقة<ChevronLeft className="w-4 h-4 rotate-180" /></>
             ) : (

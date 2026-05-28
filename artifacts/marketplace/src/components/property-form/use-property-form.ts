@@ -8,12 +8,19 @@ import type { FormMode, FormValues, DynFeature } from "./types";
 import { STEPS_CONFIG, LAND_CATEGORIES } from "./constants";
 import { getPropertyTypeConfig } from "./property-type-config";
 
-export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boolean) {
+export function usePropertyForm(
+  mode: FormMode,
+  backPath: string,
+  showPlans: boolean,
+  editPropertyId?: number,
+  initialData?: Partial<FormValues>,
+) {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
   const isCompany = mode === "company";
   const STEPS = STEPS_CONFIG(showPlans);
+  const isEditMode = !!editPropertyId;
 
   const [step, setStep]             = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +31,7 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
   const [showPayment, setShowPayment]   = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const defaultValues: FormValues = {
+  const baseDefaults: FormValues = {
     listingType: "", propertyGroup: "", mainCategory: "",
     title: "", description: "", price: "", area: "",
     rooms: "", bathrooms: "", floor: "", totalFloors: "", buildYear: "",
@@ -39,6 +46,10 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     landType: "", landWidth: "", landDepth: "", buildRatio: "",
   };
 
+  const defaultValues: FormValues = initialData
+    ? { ...baseDefaults, ...initialData }
+    : baseDefaults;
+
   const { register, watch, setValue, getValues, reset } =
     useForm<FormValues>({ defaultValues });
 
@@ -52,11 +63,10 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
     queryKey: ["billingPlansPublic", accountType],
     queryFn:  () => api.billingPlans.publicListByType(accountType),
-    enabled:  showPlans,
+    enabled:  showPlans && !isEditMode,
     staleTime: 5 * 60_000,
   });
 
-  // Features & services filtered by selected property type from the API
   const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
     queryKey: ["property-features", "feature", v.mainCategory],
     queryFn:  () => api.propertyFeatures.listByType("feature", v.mainCategory),
@@ -71,11 +81,12 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
 
   const set = (key: keyof FormValues, val: any) => setValue(key, val);
 
-  // Special setter that clears features/services and land fields when type changes
   const setMainCategory = (cat: string) => {
     setValue("mainCategory", cat);
-    setValue("features", []);
-    setValue("nearbyServices", []);
+    if (!initialData) {
+      setValue("features", []);
+      setValue("nearbyServices", []);
+    }
     if (!LAND_CATEGORIES.includes(cat)) {
       setValue("landType", "");
       setValue("landWidth", "");
@@ -109,6 +120,7 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
   };
 
   const canProceed = (): boolean => {
+    if (isEditMode) return !!v.title && !!v.area && !!v.phone;
     if (step === 1) return !!v.listingType && !!v.mainCategory;
     if (step === 2) return !!v.title && !!v.area;
     if (step === 3) return !!v.city;
@@ -157,17 +169,23 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
                         ? JSON.stringify(f.nearbyServices) : undefined,
       images:         (f.images as string[]).length
                         ? JSON.stringify(f.images)         : undefined,
-      status: "pending" as const,
+      contactMethods: (f.contactMethod as string[]).length
+                        ? JSON.stringify(f.contactMethod)  : undefined,
+      ...(isEditMode ? {} : { status: "pending" as const }),
     };
   };
 
   const doCreate = async () => {
-    await api.userProperties.create(buildPayload());
+    if (isEditMode && editPropertyId) {
+      await api.properties.update(editPropertyId, buildPayload());
+    } else {
+      await api.userProperties.create(buildPayload());
+    }
     setSuccess(true);
   };
 
   const handleSubmit = async () => {
-    if (showPlans) {
+    if (!isEditMode && showPlans) {
       if (!selectedPlan) return;
       if (parseFloat(selectedPlan.price) > 0) {
         setSubmitting(true);
@@ -188,7 +206,6 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
         }
         return;
       }
-      // Free plan selected — create property then activate subscription immediately
       setSubmitting(true);
       setError(null);
       try {
@@ -224,15 +241,16 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
     setStep(1);
     setSelectedPlan(null);
     setError(null);
-    reset(defaultValues);
+    reset(baseDefaults);
   };
 
   const goBack  = () => (step > 1 ? setStep(step - 1) : setLocation(backPath));
   const goNext  = () => setStep(step + 1);
-  const isLastStep = step === STEPS.length;
+  const isLastStep = isEditMode ? true : step === STEPS.length;
 
   return {
     isCompany,
+    isEditMode,
     accountType,
     STEPS,
     step, setStep,

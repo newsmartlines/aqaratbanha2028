@@ -5,7 +5,7 @@ import { db } from "@workspace/db";
 import {
   propertiesTable, propertyFavoritesTable, savedSearchesTable,
   notificationsTable, usersTable, siteSettingsTable, providersTable,
-  userViewsTable,
+  userViewsTable, messagesTable,
 } from "@workspace/db";
 import { eq, desc, and, or, ilike, sql, getTableColumns, lt, gt, inArray } from "drizzle-orm";
 import { getSession } from "./auth";
@@ -562,7 +562,11 @@ router.get("/user/properties", async (req, res) => {
     }
 
     const rows = await db
-      .select()
+      .select({
+        ...getTableColumns(propertiesTable),
+        favoritesCount: sql<number>`(SELECT COUNT(*)::int FROM property_favorites WHERE property_id = ${propertiesTable.id})`,
+        messageCount: sql<number>`(SELECT COUNT(*)::int FROM messages WHERE property_id = ${propertiesTable.id})`,
+      })
       .from(propertiesTable)
       .where(
         providerIdForUser
