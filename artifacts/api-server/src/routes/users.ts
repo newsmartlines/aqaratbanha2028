@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { db } from "@workspace/db";
-import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable, paymentsTable } from "@workspace/db";
+import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable, paymentsTable, supportTicketsTable } from "@workspace/db";
 import { eq, ne, and, desc } from "drizzle-orm";
 import { getSession } from "./auth";
 
@@ -424,6 +424,74 @@ router.post("/payments/subscription-request", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, error: "فشل إرسال طلب الاشتراك" });
+  }
+});
+
+// ─── User Support Tickets ─────────────────────────────────────────────────────
+
+// GET /users/:userId/support-tickets
+router.get("/users/:userId/support-tickets", async (req, res) => {
+  try {
+    const userId = parseInt(String(req.params.userId), 10);
+    if (!Number.isFinite(userId)) return res.status(400).json({ success: false, error: "Invalid userId" });
+    const rows = await db
+      .select()
+      .from(supportTicketsTable)
+      .where(eq(supportTicketsTable.userId, userId))
+      .orderBy(desc(supportTicketsTable.createdAt));
+    res.json({ success: true, data: rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, error: "Failed to fetch tickets" });
+  }
+});
+
+// POST /users/:userId/support-tickets
+router.post("/users/:userId/support-tickets", async (req, res) => {
+  try {
+    const userId = parseInt(String(req.params.userId), 10);
+    if (!Number.isFinite(userId)) return res.status(400).json({ success: false, error: "Invalid userId" });
+    const { subject, category, message } = req.body as Record<string, string>;
+    if (!subject || !category || !message) return res.status(400).json({ success: false, error: "البيانات ناقصة" });
+    const publicId = `TK-${Date.now().toString(36).toUpperCase().slice(-5)}`;
+    const [ticket] = await db.insert(supportTicketsTable).values({
+      publicId,
+      userId,
+      subject,
+      category,
+      message,
+      status: "Pending",
+    }).returning();
+    await db.insert(notificationsTable).values({
+      userId: null as any,
+      title: "تذكرة دعم جديدة",
+      message: `مستخدم أرسل تذكرة دعم جديدة: ${subject}`,
+      type: "support",
+      link: "/admin/support-tickets",
+    }).catch(() => {});
+    res.json({ success: true, data: ticket });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, error: "Failed to create ticket" });
+  }
+});
+
+// PATCH /users/:userId/support-tickets/:publicId
+router.patch("/users/:userId/support-tickets/:publicId", async (req, res) => {
+  try {
+    const userId = parseInt(String(req.params.userId), 10);
+    const { publicId } = req.params;
+    const { status } = req.body as { status?: string };
+    const [updated] = await db
+      .update(supportTicketsTable)
+      .set({ status: status ?? "Closed", updatedAt: new Date() })
+      .where(and(eq(supportTicketsTable.publicId, publicId), eq(supportTicketsTable.userId, userId)))
+      .returning();
+    if (!updated) return res.status(404).json({ success: false, error: "Not found" });
+    res.json({ success: true, data: updated });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, error: "Failed to update ticket" });
   }
 });
 

@@ -40,9 +40,11 @@ export default function SupportTicketsPage() {
     error,
     refetch,
   } = useQuery<SupportTicketDto[]>({
-    queryKey: ["support-tickets", providerId],
-    queryFn: () => api.supportTickets.list(providerId!, user?.id),
-    enabled: isProvider && !!providerId,
+    queryKey: ["support-tickets", isProvider ? providerId : user?.id],
+    queryFn: () => isProvider
+      ? api.supportTickets.list(providerId!, user?.id)
+      : api.supportTickets.userList(user!.id),
+    enabled: isProvider ? !!providerId : !!user?.id,
     retry: 1,
   });
 
@@ -53,10 +55,13 @@ export default function SupportTicketsPage() {
   const tickets = useMemo(() => rawTickets.map(mapSupportTicketDto), [rawTickets]);
 
   const createMutation = useMutation({
-    mutationFn: (payload: { subject: string; category: TicketCategory; message: string }) =>
-      api.supportTickets.create(providerId!, payload, user?.id),
+    mutationFn: async (payload: { subject: string; category: TicketCategory; message: string }): Promise<SupportTicketDto> => {
+      if (isProvider) return api.supportTickets.create(providerId!, payload, user?.id);
+      const res = await api.supportTickets.userCreate(user!.id, payload);
+      return (res as any)?.data ?? res;
+    },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["support-tickets", providerId] });
+      await queryClient.invalidateQueries({ queryKey: ["support-tickets", isProvider ? providerId : user?.id] });
       toast.success("تم إرسال التذكرة بنجاح");
       setCreateOpen(false);
     },
@@ -121,31 +126,8 @@ export default function SupportTicketsPage() {
             </div>
           )}
 
-          {/* User role — provider-only feature message */}
-          {!authLoading && !isProvider && (
-            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-5 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                <HeadphonesIcon className="h-8 w-8 text-sky-600 dark:text-sky-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white">الدعم الفني للمعلنين</h2>
-                <p className="mt-2 text-slate-500 dark:text-slate-400 max-w-sm">
-                  تذاكر الدعم الفني متاحة للشركات العقارية والمعلنين المسجلين.
-                  إذا كنت مستخدماً، يمكنك التواصل معنا عبر صفحة الاتصال.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                className="rounded-xl border-sky-300 text-sky-600 hover:bg-sky-50"
-                onClick={() => window.location.href = "/contact"}
-              >
-                تواصل معنا
-              </Button>
-            </div>
-          )}
-
-          {/* Provider content — full support tickets UI */}
-          {!authLoading && isProvider && (
+          {/* Full support tickets UI — available for all users */}
+          {!authLoading && (
             <>
               {isError && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">

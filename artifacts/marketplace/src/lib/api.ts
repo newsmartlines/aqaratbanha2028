@@ -914,6 +914,20 @@ export const api = {
         body: JSON.stringify({ status }),
         headers: userId ? { "x-user-id": String(userId) } : undefined,
       }),
+    // Regular user endpoints
+    userList: (userId: number) =>
+      fetchJson<{ success: boolean; data: SupportTicketDto[] }>(`/users/${userId}/support-tickets`)
+        .then((r: any) => ensureArray<SupportTicketDto>(r?.data ?? r)),
+    userCreate: (userId: number, body: { subject: string; category: string; message: string }) =>
+      fetchJson<{ success: boolean; data: SupportTicketDto }>(`/users/${userId}/support-tickets`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    userUpdateStatus: (userId: number, publicId: string, status: string) =>
+      fetchJson(`/users/${userId}/support-tickets/${encodeURIComponent(publicId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
   },
   userProperties: {
     list: () =>

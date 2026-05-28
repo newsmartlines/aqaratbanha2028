@@ -518,6 +518,7 @@ router.get("/admin/support-tickets", async (_req, res) => {
       .select({
         id: supportTicketsTable.publicId,
         providerId: supportTicketsTable.providerId,
+        userId: supportTicketsTable.userId,
         providerName: usersTable.name,
         providerEmail: usersTable.email,
         subject: supportTicketsTable.subject,
@@ -529,8 +530,8 @@ router.get("/admin/support-tickets", async (_req, res) => {
         updatedAt: supportTicketsTable.updatedAt,
       })
       .from(supportTicketsTable)
-      .innerJoin(providersTable, eq(supportTicketsTable.providerId, providersTable.id))
-      .innerJoin(usersTable, eq(providersTable.userId, usersTable.id))
+      .leftJoin(providersTable, eq(supportTicketsTable.providerId, providersTable.id))
+      .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
       .orderBy(desc(supportTicketsTable.createdAt));
 
     const data = rows.map((r) => ({
@@ -596,11 +597,13 @@ router.patch("/admin/support-tickets/:publicId", async (req, res) => {
 
     if (!updated) return res.status(404).json({ success: false, error: "Ticket not found" });
 
-    const [provRow] = await db
-      .select({ name: usersTable.name, email: usersTable.email })
-      .from(providersTable)
-      .innerJoin(usersTable, eq(providersTable.userId, usersTable.id))
-      .where(eq(providersTable.id, updated.providerId));
+    const provRow = updated.providerId
+      ? (await db
+          .select({ name: usersTable.name, email: usersTable.email })
+          .from(providersTable)
+          .innerJoin(usersTable, eq(providersTable.userId, usersTable.id))
+          .where(eq(providersTable.id, updated.providerId)))[0]
+      : undefined;
 
     return res.json({
       success: true,
