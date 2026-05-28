@@ -105,11 +105,6 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
                 <p className="text-[10px] text-gray-400">/{plan.durationDays} يوم</p>
               </>
             )}
-            {plan.commissionPercent && plan.commissionPercent !== "0" && (
-              <p className="text-[10px] text-gray-400 mt-0.5">
-                عمولة <strong>{plan.commissionPercent}%</strong>
-              </p>
-            )}
           </div>
         </div>
 

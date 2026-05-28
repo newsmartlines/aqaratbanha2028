@@ -1022,15 +1022,11 @@ export default function AdminSettings() {
 
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">💰 إعدادات المالية والعمولة</CardTitle>
-                <CardDescription>نسبة العمولة العامة ورمز العملة والإعدادات المالية</CardDescription>
+                <CardTitle className="flex items-center gap-2">💰 إعدادات المالية</CardTitle>
+                <CardDescription>رمز العملة والإعدادات المالية</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>نسبة العمولة العامة (%)</Label>
-                    <Input type="number" min="0" max="100" step="0.5" value={form.commissionPercent ?? "10"} onChange={e => setForm(f => ({ ...f, commissionPercent: e.target.value }))} dir="ltr" />
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>رمز العملة</Label>
                     <Input dir="ltr" value={form.currencySymbol ?? "ج.م"} onChange={e => setForm(f => ({ ...f, currencySymbol: e.target.value }))} placeholder="ج.م" />
@@ -1051,7 +1047,6 @@ export default function AdminSettings() {
                   </div>
                 </div>
                 <Button onClick={() => handleSave({
-                  commissionPercent: form.commissionPercent,
                   currencySymbol: form.currencySymbol, currencyName: form.currencyName,
                   minOrderAmount: form.minOrderAmount, maxOrderAmount: form.maxOrderAmount,
                 })} disabled={saveMutation.isPending} className="bg-teal-600 hover:bg-teal-700">

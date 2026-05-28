@@ -15,8 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import {
   Plus, Pencil, Trash2, Loader2, Copy, Layers3, TrendingUp, Users, DollarSign,
-  RefreshCw, Star, Crown, CheckCircle2, XCircle, Sparkles, Ticket, Percent,
-  Package, Settings, ChevronDown, ChevronUp, ArrowUpDown, BarChart3, X,
+  Star, Crown, CheckCircle2, XCircle, Sparkles, Ticket,
+  Package, ChevronDown, ChevronUp, BarChart3, X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
@@ -31,12 +31,6 @@ type BillingPlan = {
   trialDays: number; sortOrder: number; color: string;
   limits: string; features: string; commissionPercent: string;
   createdAt: string;
-};
-
-type CommissionRule = {
-  id: number; name: string; type: string; value: string;
-  isPercentage: boolean; appliesTo: string; userType: string;
-  priority: number; isActive: boolean; notes?: string;
 };
 
 type Coupon = {
@@ -68,7 +62,6 @@ const USER_TYPES: Record<string, string> = {
   vip: "VIP / بريميوم",
 };
 const DURATION_TYPES: Record<string, string> = { monthly: "شهري", quarterly: "ربع سنوي", yearly: "سنوي", lifetime: "مدى الحياة" };
-const APPLIES_TO: Record<string, string> = { all: "الكل", sale: "بيع", rent: "إيجار", featured: "إعلان مميز", renewal: "تجديد", paid_ads: "إعلانات مدفوعة" };
 const LIMIT_LABELS: Record<keyof Limits, string> = {
   properties: "العقارات", photos: "الصور", videos: "الفيديوهات",
   featuredAds: "إعلانات مميزة / شهر", pinnedAds: "إعلانات مثبتة", messages: "الرسائل", leads: "الطلبات",
@@ -96,7 +89,7 @@ const defaultPlan = {
   name: "", nameAr: "", descriptionAr: "", price: "99", yearlyPrice: "",
   currency: "EGP", durationDays: 30, durationType: "monthly", userType: "all",
   status: "active", isRecommended: false, isMostPopular: false,
-  trialDays: 0, sortOrder: 0, color: "#0d9488", commissionPercent: "10",
+  trialDays: 0, sortOrder: 0, color: "#0d9488",
   limits: { ...defaultLimits }, features: { ...defaultFeatures },
 };
 
@@ -119,9 +112,6 @@ export default function PlansCommissions() {
   const [planModal, setPlanModal] = useState<{ open: boolean; mode: "add" | "edit"; data: any }>({ open: false, mode: "add", data: { ...defaultPlan } });
   const [planSection, setPlanSection] = useState<"info" | "limits" | "features">("info");
 
-  // Commission modal
-  const [commModal, setCommModal] = useState<{ open: boolean; mode: "add" | "edit"; data: any }>({ open: false, mode: "add", data: { name: "", type: "percentage", value: "5", isPercentage: true, appliesTo: "all", userType: "all", priority: 0, notes: "" } });
-
   // Coupon modal
   const [couponModal, setCouponModal] = useState<{ open: boolean; mode: "add" | "edit"; data: any }>({ open: false, mode: "add", data: { code: "", name: "", discountType: "percentage", discountValue: "10", maxUses: "", isActive: true } });
 
@@ -137,11 +127,6 @@ export default function PlansCommissions() {
   const { data: plans = [], isLoading: plansLoading } = useQuery<BillingPlan[]>({
     queryKey: ["billing-plans"],
     queryFn: () => api.fetchJson<BillingPlan[]>("/admin/billing/plans"),
-  });
-
-  const { data: commissions = [], isLoading: commLoading } = useQuery<CommissionRule[]>({
-    queryKey: ["billing-commissions"],
-    queryFn: () => api.fetchJson<CommissionRule[]>("/admin/billing/commissions"),
   });
 
   const { data: coupons = [], isLoading: couponsLoading } = useQuery<Coupon[]>({
@@ -184,19 +169,6 @@ export default function PlansCommissions() {
   const togglePlan = useMutation({
     mutationFn: (id: number) => api.fetchJson(`/admin/billing/plans/${id}/toggle`, { method: "PATCH" }),
     onSuccess: () => invalidateAllPlanCaches(),
-  });
-
-  const createComm = useMutation({
-    mutationFn: (d: any) => api.fetchJson("/admin/billing/commissions", { method: "POST", body: JSON.stringify(d) }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-commissions"] }); toast.success("تمت الإضافة"); setCommModal(m => ({ ...m, open: false })); },
-  });
-  const updateComm = useMutation({
-    mutationFn: ({ id, d }: { id: number; d: any }) => api.fetchJson(`/admin/billing/commissions/${id}`, { method: "PUT", body: JSON.stringify(d) }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-commissions"] }); toast.success("تم التحديث"); setCommModal(m => ({ ...m, open: false })); },
-  });
-  const deleteComm = useMutation({
-    mutationFn: (id: number) => api.fetchJson(`/admin/billing/commissions/${id}`, { method: "DELETE" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["billing-commissions"] }); setDeleteTarget(null); },
   });
 
   const createCoupon = useMutation({
@@ -252,7 +224,6 @@ export default function PlansCommissions() {
   const confirmDelete = () => {
     if (!deleteTarget) return;
     if (deleteTarget.type === "plan") deletePlan.mutate(deleteTarget.id);
-    else if (deleteTarget.type === "commission") deleteComm.mutate(deleteTarget.id);
     else deleteCoupon.mutate(deleteTarget.id);
   };
 
@@ -300,7 +271,7 @@ export default function PlansCommissions() {
             { label: "إجمالي الإيرادات", value: `${Number(dashboard?.totalRevenue ?? 0).toLocaleString("ar")} ج.م`, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
             { label: "إجمالي الاشتراكات", value: (dashboard?.subscriptionsCount ?? 0).toLocaleString("ar"), icon: Users, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
             { label: "الباقات النشطة", value: (dashboard?.activePlans ?? plans.filter(p => p.status === "active").length).toString(), icon: Package, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100" },
-            { label: "قواعد العمولة", value: commissions.filter(c => c.isActive).length.toString(), icon: Percent, color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100" },
+            { label: "الكوبونات النشطة", value: coupons.filter(c => c.isActive).length.toString(), icon: Ticket, color: "text-pink-600", bg: "bg-pink-50", border: "border-pink-100" },
           ].map(s => (
             <Card key={s.label} className={`border ${s.border} shadow-sm`}>
               <CardContent className="flex items-center gap-3 p-4">
@@ -318,9 +289,8 @@ export default function PlansCommissions() {
 
         {/* Main tabs */}
         <Tabs defaultValue="plans">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-3 w-full max-w-xl">
             <TabsTrigger value="plans" className="gap-1.5"><Package className="w-3.5 h-3.5" /> الباقات ({plans.length})</TabsTrigger>
-            <TabsTrigger value="commissions" className="gap-1.5"><Percent className="w-3.5 h-3.5" /> العمولات</TabsTrigger>
             <TabsTrigger value="coupons" className="gap-1.5"><Ticket className="w-3.5 h-3.5" /> الكوبونات</TabsTrigger>
             <TabsTrigger value="dashboard" className="gap-1.5"><BarChart3 className="w-3.5 h-3.5" /> لوحة الإيرادات</TabsTrigger>
           </TabsList>
@@ -399,12 +369,6 @@ export default function PlansCommissions() {
                           {plan.trialDays > 0 && <div className="mt-0.5 text-xs text-emerald-600 font-medium">تجربة مجانية {plan.trialDays} يوم</div>}
                         </div>
 
-                        {/* Commission */}
-                        <div className="bg-slate-50 rounded-lg px-2 py-1.5 mb-3 text-xs text-slate-600 flex justify-between">
-                          <span>نسبة العمولة</span>
-                          <span className="font-semibold text-slate-800">{plan.commissionPercent}%</span>
-                        </div>
-
                         {/* Features */}
                         <div className="space-y-1 mb-3">
                           {enabledFeatures.slice(0, 4).map(f => (
@@ -445,82 +409,6 @@ export default function PlansCommissions() {
                 })}
               </div>
             )}
-          </TabsContent>
-
-          {/* ── Commission Rules Tab ─────────────────────────────────── */}
-          <TabsContent value="commissions" className="mt-5">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
-                <div>
-                  <CardTitle>قواعد العمولة</CardTitle>
-                  <p className="text-sm text-slate-500 mt-1">محرك العمولات الذكي — {commissions.length} قاعدة</p>
-                </div>
-                <Button onClick={() => setCommModal({ open: true, mode: "add", data: { name: "", type: "percentage", value: "5", isPercentage: true, appliesTo: "all", userType: "all", priority: 0, notes: "" } })} className="bg-orange-600 hover:bg-orange-700">
-                  <Plus className="w-4 h-4 me-2" /> قاعدة جديدة
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {commLoading ? (
-                  <div className="flex justify-center h-32 items-center"><Loader2 className="w-5 h-5 animate-spin text-orange-500" /></div>
-                ) : commissions.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400">
-                    <Percent className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">لا توجد قواعد عمولة</p>
-                  </div>
-                ) : (
-                  <div className="rounded-lg border overflow-hidden">
-                    <Table>
-                      <TableHeader className="bg-slate-50">
-                        <TableRow>
-                          <TableHead>القاعدة</TableHead>
-                          <TableHead>النوع</TableHead>
-                          <TableHead>القيمة</TableHead>
-                          <TableHead>تطبق على</TableHead>
-                          <TableHead>نوع المستخدم</TableHead>
-                          <TableHead>الأولوية</TableHead>
-                          <TableHead>الحالة</TableHead>
-                          <TableHead className="text-end">إجراءات</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {commissions.map(rule => (
-                          <TableRow key={rule.id} className="hover:bg-slate-50/60">
-                            <TableCell>
-                              <div>
-                                <p className="font-medium text-slate-800 text-sm">{rule.name}</p>
-                                {rule.notes && <p className="text-xs text-slate-400">{rule.notes}</p>}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={rule.isPercentage ? "border-orange-200 text-orange-700 bg-orange-50" : "border-blue-200 text-blue-700 bg-blue-50"}>
-                                {rule.isPercentage ? "نسبة %" : "مبلغ ثابت"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-bold text-slate-800">{rule.value}{rule.isPercentage ? "%" : " ج.م"}</TableCell>
-                            <TableCell className="text-sm text-slate-600">{APPLIES_TO[rule.appliesTo] ?? rule.appliesTo}</TableCell>
-                            <TableCell className="text-sm text-slate-600">{USER_TYPES[rule.userType] ?? rule.userType}</TableCell>
-                            <TableCell className="text-sm text-center">{rule.priority}</TableCell>
-                            <TableCell>
-                              <Switch checked={rule.isActive} onCheckedChange={(v) => updateComm.mutate({ id: rule.id, d: { isActive: v } })} className="scale-75" />
-                            </TableCell>
-                            <TableCell className="text-end">
-                              <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="sm" onClick={() => setCommModal({ open: true, mode: "edit", data: { ...rule } })} className="h-7 w-7 p-0 text-teal-500 hover:bg-teal-50">
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => setDeleteTarget({ type: "commission", id: rule.id, name: rule.name })} className="h-7 w-7 p-0 text-slate-300 hover:text-red-500">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* ── Coupons Tab ──────────────────────────────────────────── */}
@@ -692,7 +580,6 @@ export default function PlansCommissions() {
                     {[
                       { label: "الباقة الأكثر شيوعاً", value: plans.find(p => p.isMostPopular)?.nameAr ?? "—" },
                       { label: "متوسط الاشتراك", value: plans.length > 0 ? `${(plans.reduce((s, p) => s + Number(p.price), 0) / plans.length).toFixed(0)} ج.م` : "—" },
-                      { label: "أعلى عمولة", value: commissions.length > 0 ? `${Math.max(...commissions.map(c => Number(c.value)))}${commissions[0]?.isPercentage ? "%" : " ج.م"}` : "—" },
                       { label: "الكوبونات النشطة", value: coupons.filter(c => c.isActive).length.toString() },
                     ].map(item => (
                       <div key={item.label} className="flex justify-between text-sm">
@@ -771,10 +658,6 @@ export default function PlansCommissions() {
                   <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background" value={planModal.data.userType ?? "all"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, userType: e.target.value } }))}>
                     {Object.entries(USER_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>نسبة العمولة %</Label>
-                  <Input type="number" placeholder="10" value={planModal.data.commissionPercent ?? "10"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, commissionPercent: e.target.value } }))} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -863,66 +746,6 @@ export default function PlansCommissions() {
             <Button onClick={submitPlan} disabled={createPlan.isPending || updatePlan.isPending} className="bg-violet-600 hover:bg-violet-700">
               {(createPlan.isPending || updatePlan.isPending) && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
               {planModal.mode === "add" ? "إضافة الباقة" : "حفظ التغييرات"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Commission Rule Modal ────────────────────────────────── */}
-      <Dialog open={commModal.open} onOpenChange={o => setCommModal(m => ({ ...m, open: o }))}>
-        <DialogContent dir="rtl" className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{commModal.mode === "add" ? "إضافة قاعدة عمولة" : "تعديل القاعدة"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-1">
-            <div className="space-y-1.5">
-              <Label>اسم القاعدة</Label>
-              <Input value={commModal.data.name ?? ""} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, name: e.target.value } }))} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>نوع العمولة</Label>
-                <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background"
-                  value={commModal.data.isPercentage ? "percentage" : "flat"}
-                  onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, isPercentage: e.target.value === "percentage" } }))}>
-                  <option value="percentage">نسبة مئوية %</option>
-                  <option value="flat">مبلغ ثابت</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>القيمة {commModal.data.isPercentage ? "(%)" : "(ج.م)"}</Label>
-                <Input type="number" value={commModal.data.value ?? ""} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, value: e.target.value } }))} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>تطبق على</Label>
-                <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background" value={commModal.data.appliesTo ?? "all"} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, appliesTo: e.target.value } }))}>
-                  {Object.entries(APPLIES_TO).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>نوع المستخدم</Label>
-                <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background" value={commModal.data.userType ?? "all"} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, userType: e.target.value } }))}>
-                  {Object.entries(USER_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>الأولوية</Label>
-              <Input type="number" value={commModal.data.priority ?? 0} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, priority: Number(e.target.value) } }))} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>ملاحظات</Label>
-              <Textarea rows={2} value={commModal.data.notes ?? ""} onChange={e => setCommModal(m => ({ ...m, data: { ...m.data, notes: e.target.value } }))} />
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setCommModal(m => ({ ...m, open: false }))}>إلغاء</Button>
-            <Button onClick={() => { if (!commModal.data.name) { toast.error("أدخل اسم القاعدة"); return; } commModal.mode === "add" ? createComm.mutate(commModal.data) : updateComm.mutate({ id: commModal.data.id, d: commModal.data }); }}
-              disabled={createComm.isPending || updateComm.isPending} className="bg-orange-600 hover:bg-orange-700">
-              {(createComm.isPending || updateComm.isPending) && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
-              {commModal.mode === "add" ? "إضافة" : "حفظ"}
             </Button>
           </DialogFooter>
         </DialogContent>

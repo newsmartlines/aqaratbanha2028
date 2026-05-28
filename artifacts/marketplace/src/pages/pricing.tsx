@@ -156,14 +156,6 @@ function PricingCard({ plan, onChoose, isLoggedIn }: PlanCardProps) {
               </div>
             );
           })}
-          {plan.commissionPercent && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">العمولة</span>
-              <span className="font-bold text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                {plan.commissionPercent}%
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Features */}

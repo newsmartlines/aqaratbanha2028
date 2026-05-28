@@ -25,7 +25,6 @@ import RegisterPage from "@/pages/register";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProviders from "@/pages/admin/providers";
-import AdminCommission from "@/pages/admin/commission";
 import AdminPayments from "@/pages/admin/payments";
 import AdminReports from "@/pages/admin/reports";
 import AdminComplaints from "@/pages/admin/complaints";
@@ -303,9 +302,6 @@ function Router() {
       </Route>
       <Route path="/admin/google-kit">
         {() => <AdminProtectedRoute component={AdminGoogleKit} />}
-      </Route>
-      <Route path="/admin/commission">
-        {() => <AdminProtectedRoute component={AdminCommission} />}
       </Route>
       <Route path="/admin/payments">
         {() => <AdminProtectedRoute component={AdminPayments} />}
