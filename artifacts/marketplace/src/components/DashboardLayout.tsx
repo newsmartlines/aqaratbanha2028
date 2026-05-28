@@ -55,7 +55,7 @@ const SHARED_NAV = [
   { name: "المدفوعات",         href: "/dashboard/payments",        icon: CreditCard },
   { name: "رسائلي",            href: "/dashboard/messages",        icon: MessageCircleIcon },
   { name: "الإشعارات",         href: "/dashboard/notifications",   icon: Bell },
-  { name: "تذاكر الدعم",      href: "/dashboard/support",         icon: Ticket },
+  { name: "تذاكر الدعم",      href: "/dashboard/support-tickets",  icon: Ticket },
   { name: "الإعدادات",         href: "/dashboard/settings",        icon: Settings },
 ] as const;
 
