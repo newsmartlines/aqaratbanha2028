@@ -44,15 +44,24 @@ interface PlanCardProps {
   plan: BillingPlan;
   onChoose: () => void;
   isLoggedIn: boolean;
+  isYearly: boolean;
 }
 
-function PricingCard({ plan, onChoose, isLoggedIn }: PlanCardProps) {
-  const price    = parseFloat(plan.price);
-  const isFree   = price === 0;
-  const accent   = plan.color || "#0d9488";
-  const limits   = parseLimits(plan.limits);
-  const features = parseFeatures(plan.features);
+function PricingCard({ plan, onChoose, isLoggedIn, isYearly }: PlanCardProps) {
+  const monthlyPrice = parseFloat(plan.price);
+  const yearlyPrice  = plan.yearlyPrice ? parseFloat(plan.yearlyPrice) : null;
+  const isFree       = monthlyPrice === 0;
+  const accent       = plan.color || "#0d9488";
+  const limits       = parseLimits(plan.limits);
+  const features     = parseFeatures(plan.features);
   const enabledFeatures = Object.entries(features).filter(([, v]) => v);
+
+  const displayPrice    = isYearly && yearlyPrice ? yearlyPrice / 12 : monthlyPrice;
+  const hasYearly       = !!yearlyPrice;
+
+  const savePct = hasYearly && !isFree
+    ? Math.round((1 - yearlyPrice! / (monthlyPrice * 12)) * 100)
+    : 0;
 
   return (
     <div
@@ -111,24 +120,42 @@ function PricingCard({ plan, onChoose, isLoggedIn }: PlanCardProps) {
           ) : (
             <div>
               <div className="flex items-end gap-2">
-                <span className="text-4xl font-black text-gray-900">
-                  {Number(price).toLocaleString("ar-EG")}
+                <span className="text-4xl font-black text-gray-900 transition-all duration-300">
+                  {Math.round(displayPrice).toLocaleString("ar-EG")}
                 </span>
                 <div className="text-sm text-gray-400 mb-1 leading-tight">
                   <div>{plan.currency ?? "EGP"}</div>
-                  <div>/ {plan.durationDays} يوم</div>
+                  <div>/ شهر</div>
                 </div>
               </div>
-              {plan.yearlyPrice && (
-                <p className="text-xs text-gray-400 mt-1">
-                  أو {Number(plan.yearlyPrice).toLocaleString("ar-EG")} {plan.currency ?? "EGP"} / سنوياً
+
+              {/* Yearly total */}
+              {isYearly && hasYearly ? (
+                <p className="text-xs text-gray-500 mt-1">
+                  يُحسب سنوياً —{" "}
+                  <span className="font-bold" style={{ color: accent }}>
+                    {yearlyPrice!.toLocaleString("ar-EG")} {plan.currency ?? "EGP"}
+                  </span>
                 </p>
-              )}
+              ) : hasYearly ? (
+                <p className="text-xs text-gray-400 mt-1">
+                  أو {yearlyPrice!.toLocaleString("ar-EG")} {plan.currency ?? "EGP"} / سنوياً
+                </p>
+              ) : null}
+
+              {/* Trial badge */}
               {plan.trialDays > 0 && (
                 <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2.5 py-1 rounded-full"
                   style={{ background: `${accent}15`, color: accent }}>
                   <Zap className="w-3 h-3" />
                   {plan.trialDays} أيام تجريبية مجاناً
+                </span>
+              )}
+
+              {/* Save badge — shown on yearly mode */}
+              {isYearly && savePct > 0 && (
+                <span className="inline-flex items-center gap-1 mt-2 ms-2 text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                  وفّر {savePct}%
                 </span>
               )}
             </div>
@@ -197,9 +224,8 @@ function PricingCard({ plan, onChoose, isLoggedIn }: PlanCardProps) {
 export default function PricingPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
+  const [isYearly, setIsYearly] = useState(false);
 
-  // حدد نوع الحساب لجلب الباقات المناسبة فقط
-  // غير مسجّل → "all" (يُظهر كل الباقات), مستخدم عادي → "user", شركة/وسيط → "company"
   const billingUserType: "user" | "company" | null = user
     ? user.role === "provider" ? "company" : "user"
     : null;
@@ -209,12 +235,14 @@ export default function PricingPage() {
     queryFn: billingUserType
       ? () => api.billingPlans.publicListByType(billingUserType)
       : api.billingPlans.publicList,
-    staleTime: 0, // يعكس أي تغيير من الأدمن فوراً
+    staleTime: 0,
   });
 
   const sorted = [...plans]
     .filter(p => p.status === "active")
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price));
+
+  const hasAnyYearly = sorted.some(p => !!p.yearlyPrice && parseFloat(p.price) > 0);
 
   const handleChoose = (plan: BillingPlan) => {
     const isFree = parseFloat(plan.price) === 0;
@@ -222,8 +250,8 @@ export default function PricingPage() {
       if (user.role === "provider" || user.role === "admin") {
         const qs = new URLSearchParams({
           planName: plan.nameAr ?? plan.name ?? "",
-          price: String(plan.price),
-          duration: String(plan.durationDays),
+          price: isYearly && plan.yearlyPrice ? plan.yearlyPrice : String(plan.price),
+          duration: isYearly && plan.yearlyPrice ? "365" : String(plan.durationDays),
           currency: plan.currency ?? "EGP",
           planId: String(plan.id),
         }).toString();
@@ -263,6 +291,42 @@ export default function PricingPage() {
           <p className="text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
             باقات مرنة تناسب الأفراد والشركات — أي تغيير من الإدارة يظهر هنا فوراً
           </p>
+
+          {/* Billing toggle — only shown if any plan has yearly pricing */}
+          {!isLoading && hasAnyYearly && (
+            <div className="mt-10 flex items-center justify-center gap-4">
+              <span className={`text-sm font-semibold transition-colors ${!isYearly ? "text-white" : "text-gray-400"}`}>
+                شهري
+              </span>
+
+              {/* Toggle switch */}
+              <button
+                onClick={() => setIsYearly(v => !v)}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none ${
+                  isYearly ? "bg-teal-500" : "bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                    isYearly ? "translate-x-2" : "translate-x-8"
+                  }`}
+                />
+              </button>
+
+              <span className={`text-sm font-semibold transition-colors ${isYearly ? "text-white" : "text-gray-400"}`}>
+                سنوي
+              </span>
+
+              {/* Save badge */}
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black transition-all duration-300 ${
+                isYearly
+                  ? "bg-emerald-500 text-white scale-105"
+                  : "bg-white/10 text-gray-400"
+              }`}>
+                {isYearly ? "✓" : ""} وفّر حتى 20%
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
@@ -290,6 +354,7 @@ export default function PricingPage() {
                 plan={plan}
                 onChoose={() => handleChoose(plan)}
                 isLoggedIn={!!user}
+                isYearly={isYearly}
               />
             ))}
           </div>
@@ -312,7 +377,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ / CTA */}
+      {/* CTA */}
       <section className="max-w-3xl mx-auto px-4 py-16 text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">هل تحتاج مساعدة في الاختيار؟</h2>
         <p className="text-gray-500 mb-8">فريقنا جاهز لمساعدتك في اختيار الباقة الأنسب لنشاطك</p>
