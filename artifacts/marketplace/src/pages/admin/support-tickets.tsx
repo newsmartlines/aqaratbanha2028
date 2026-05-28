@@ -29,7 +29,7 @@ import { useT, commonDict, useLanguage } from "@/lib/i18n";
 
 const dict = {
   pageTitle: { ar: "تذاكر الدعم", en: "Support Tickets" },
-  heading: { ar: "تذاكر دعم مقدمي الخدمات", en: "Provider Support Tickets" },
+  heading: { ar: "تذاكر دعم الوسطاء العقاريين", en: "Provider Support Tickets" },
   subtitle: { ar: "عرض التذاكر، الرد، وتغيير الحالة (مفتوحة / مغلقة)", en: "View tickets, reply, and change status (open / closed)" },
   ticketsList: { ar: "قائمة التذاكر", en: "Tickets List" },
   noTickets: { ar: "لا توجد تذاكر بعد", en: "No tickets yet" },

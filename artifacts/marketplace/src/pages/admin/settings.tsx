@@ -682,7 +682,7 @@ export default function AdminSettings() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>وصف الصفحة (Meta Description)</Label>
-                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة عقارات بنها تربطك بأفضل مزودي الخدمات المحلية الموثوقين في مصر." />
+                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة عقارات بنها تربطك بأفضل الوسطاء والشركات العقارية الموثوقة في بنها والقليوبية." />
                   <p className="text-xs text-slate-400">يُنصح بـ 150-160 حرفاً · الحالي: {(form.metaDescription ?? "").length}</p>
                 </div>
                 <div className="space-y-1.5">
@@ -914,10 +914,10 @@ export default function AdminSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-xl">🛠️</span>
-                  قسم الخدمات والمزودين
+                  قسم الشركات العقارية
                 </CardTitle>
                 <CardDescription>
-                  تشغيل أو إيقاف قسم الخدمات بالكامل — التسجيل كمزود، صفحات الخدمات، وملفات المزودين
+                  تشغيل أو إيقاف قسم الشركات العقارية بالكامل — التسجيل كشركة عقارية وصفحات الوسطاء
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -928,11 +928,11 @@ export default function AdminSettings() {
                     </div>
                     <div>
                       <p className={`font-bold text-base ${servicesEnabled ? "text-teal-800" : "text-rose-800"}`}>
-                        {servicesEnabled ? "قسم الخدمات مفعّل" : "قسم الخدمات مُوقَف"}
+                        {servicesEnabled ? "قسم الشركات العقارية مفعّل" : "قسم الشركات العقارية مُوقَف"}
                       </p>
                       <p className="text-xs text-slate-500 mt-1">
                         {servicesEnabled
-                          ? "الزوار يرون صفحات الخدمات وبإمكان المزودين التسجيل"
+                          ? "الزوار يرون صفحات الوسطاء العقاريين وبإمكانهم التسجيل"
                           : "صفحات الخدمات مخفية تماماً — لن يظهر أي شيء للزوار"}
                       </p>
                     </div>
@@ -957,7 +957,7 @@ export default function AdminSettings() {
                   disabled={saveMutation.isPending}
                   className={servicesEnabled ? "bg-teal-600 hover:bg-teal-700" : "bg-rose-500 hover:bg-rose-600"}>
                   {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
-                  حفظ إعداد قسم الخدمات
+                  حفظ إعداد قسم الشركات العقارية
                 </Button>
               </CardContent>
             </Card>
@@ -965,7 +965,7 @@ export default function AdminSettings() {
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-teal-600" /> إعدادات التسجيل والموافقة</CardTitle>
-                <CardDescription>التحكم في التسجيل وآلية قبول مزودي الخدمات</CardDescription>
+                <CardDescription>التحكم في التسجيل وآلية قبول الوسطاء العقاريين</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
@@ -980,8 +980,8 @@ export default function AdminSettings() {
                 </div>
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
                   <div>
-                    <p className="font-medium text-sm">مراجعة حسابات مزودي الخدمة</p>
-                    <p className="text-xs text-slate-500 mt-0.5">يحتاج مزودو الخدمة موافقة الأدمن قبل الظهور في القوائم</p>
+                    <p className="font-medium text-sm">مراجعة حسابات الوسطاء العقاريين</p>
+                    <p className="text-xs text-slate-500 mt-0.5">يحتاج الوسطاء العقاريون موافقة الأدمن قبل الظهور في القوائم</p>
                   </div>
                   <Switch
                     checked={requireApproval}

@@ -29,7 +29,7 @@ const dict = {
   catBeauty: { ar: "تجميل", en: "Beauty" },
   catHandmade: { ar: "حرف يدوية", en: "Handmade" },
   catDelivery: { ar: "توصيل", en: "Delivery" },
-  act1: { ar: "سجّل أحمد كمقدم خدمة جديد", en: "Ahmed registered as a new provider" },
+  act1: { ar: "سجّل أحمد كوسيط عقاري جديد", en: "Ahmed registered as a new provider" },
   act2: { ar: "تمت الموافقة على خدمة 'أعمال السباكة'", en: "New listing 'Plumbing Services' approved" },
   act3: { ar: "تمت معالجة دفعة بقيمة 500 ج.م", en: "Payment of 500 EGP processed" },
   act4: { ar: "حدّثت فاطمة اشتراكها إلى المميز", en: "Fatima updated subscription to Premium" },

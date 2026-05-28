@@ -697,7 +697,7 @@ export default function AdminSeo() {
                   {[
                     { label: "تضمين صفحات العقارات",    checked: true  },
                     { label: "تضمين صفحات الفئات",      checked: true  },
-                    { label: "تضمين صفحات المزودين",    checked: true  },
+                    { label: "تضمين صفحات الوسطاء العقاريين",    checked: true  },
                     { label: "تضمين صفحات البحث",       checked: false },
                     { label: "تحديث تلقائي عند إضافة عقار", checked: true },
                   ].map(s => (

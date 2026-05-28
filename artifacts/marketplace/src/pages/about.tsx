@@ -61,7 +61,7 @@ export default function AboutPage() {
               <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">قيمنا الأساسية</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                  { title: "الموثوقية", desc: "نتحقق من جميع مقدمي الخدمات لضمان تجربة آمنة وموثوقة لعملائنا.", icon: Shield },
+                  { title: "الموثوقية", desc: "نتحقق من جميع الوسطاء والشركات العقارية لضمان تجربة آمنة وموثوقة.", icon: Shield },
                   { title: "الشفافية", desc: "التقييمات حقيقية من عملاء حقيقيين، والأسعار واضحة بدون رسوم خفية.", icon: Star },
                   { title: "دعم المجتمع", desc: "نؤمن بقوة المجتمع المحلي ونساعد أصحاب المشاريع المنزلية على النمو.", icon: Users },
                 ].map(({ title, desc, icon: Icon }) => (

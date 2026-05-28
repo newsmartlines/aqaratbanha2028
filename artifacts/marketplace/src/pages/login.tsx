@@ -464,7 +464,7 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
                   {/* Selected account type badge */}
                   <div className={`flex items-center gap-2 mb-5 px-3 py-2 rounded-xl border ${accountType === "provider" ? "bg-primary/5 border-primary/20 text-primary" : accountType === "real_estate" ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-accent/5 border-accent/20 text-accent"}`}>
                     {accountType === "provider" ? <Briefcase className="h-4 w-4" /> : accountType === "real_estate" ? <Building2 className="h-4 w-4" /> : <User className="h-4 w-4" />}
-                    <span className="text-sm font-semibold">{accountType === "provider" ? "مقدم خدمة" : accountType === "real_estate" ? "شركة عقارية" : "مستخدم عادي"}</span>
+                    <span className="text-sm font-semibold">{accountType === "provider" ? "وسيط عقاري" : accountType === "real_estate" ? "شركة عقارية" : "مستخدم عادي"}</span>
                     <button className="mr-auto text-muted-foreground hover:text-foreground text-xs underline" onClick={() => setAccountType(null)}>تغيير</button>
                   </div>
 

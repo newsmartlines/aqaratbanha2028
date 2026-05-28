@@ -1078,7 +1078,7 @@ export default function AdminMessages() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">اسم القالب <span className="text-red-500">*</span></Label>
-              <Input value={newData.name} onChange={e => setNewData(d => ({ ...d, name: e.target.value }))} placeholder="مثال: بريد ترحيب المزودين" />
+              <Input value={newData.name} onChange={e => setNewData(d => ({ ...d, name: e.target.value }))} placeholder="مثال: بريد ترحيب الوسطاء العقاريين" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">المعرّف (Slug) <span className="text-red-500">*</span></Label>

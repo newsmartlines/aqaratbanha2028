@@ -7,7 +7,7 @@ const dict = {
   pageTitle: { ar: "التقارير والتحليلات", en: "Reports & Analytics" },
   revenueMonth: { ar: "الإيرادات (هذا الشهر)", en: "Revenue (This Month)" },
   conversion: { ar: "معدل التحويل (من البحث إلى الحجز)", en: "Conversion Rate (Search to Booking)" },
-  topProviders: { ar: "أعلى 5 مقدمي خدمة (حسب الأرباح)", en: "Top 5 Providers (By Earnings)" },
+  topProviders: { ar: "أعلى 5 وسطاء عقاريين (حسب الأرباح)", en: "Top 5 Providers (By Earnings)" },
   topCats: { ar: "أبرز التصنيفات (حسب عدد الخدمات)", en: "Top Categories (By Listings)" },
   week: { ar: "أسبوع", en: "Week" },
   sar: { ar: "ج.م", en: "EGP" },
