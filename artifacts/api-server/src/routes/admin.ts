@@ -6,8 +6,8 @@ import {
   categoriesTable,
   subcategoriesTable,
 } from "@workspace/db";
-import { supportTicketsTable, regionsTable, citiesTable, propertiesTable } from "@workspace/db/schema";
-import { eq, desc, and, sql, gte } from "drizzle-orm";
+import { supportTicketsTable, regionsTable, citiesTable, propertiesTable, requestsTable, walletTransactionsTable, providerBalancesTable, servicesTable } from "@workspace/db/schema";
+import { eq, desc, and, sql, gte, sum, isNull, ne } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
 import { autoExportGroup } from "../lib/auto-export";
 
@@ -624,6 +624,91 @@ router.patch("/admin/support-tickets/:publicId", async (req, res) => {
   } catch (e) {
     console.error(e);
     return res.status(500).json({ success: false, error: "Failed to update ticket" });
+  }
+});
+
+// ── GET /admin/orders — all service requests (admin view) ───────────────────
+router.get("/admin/orders", async (_req, res) => {
+  try {
+    const providerUsers = usersTable;
+    const rows = await db
+      .select({
+        id: requestsTable.id,
+        message: requestsTable.message,
+        notes: requestsTable.notes,
+        status: requestsTable.status,
+        createdAt: requestsTable.createdAt,
+        userId: requestsTable.userId,
+        providerId: requestsTable.providerId,
+        serviceId: requestsTable.serviceId,
+        userName: sql<string | null>`"users"."name"`,
+        userPhone: sql<string | null>`"users"."phone"`,
+        serviceTitle: servicesTable.title,
+        servicePrice: sql<string | null>`cast(${servicesTable.price} as text)`,
+        providerName: sql<string | null>`"provider_user"."name"`,
+      })
+      .from(requestsTable)
+      .leftJoin(usersTable, eq(requestsTable.userId, usersTable.id))
+      .leftJoin(providersTable, eq(requestsTable.providerId, providersTable.id))
+      .leftJoin(
+        sql`${usersTable} as "provider_user"`,
+        sql`"provider_user"."id" = ${providersTable.userId}`,
+      )
+      .leftJoin(servicesTable, eq(requestsTable.serviceId, servicesTable.id))
+      .orderBy(desc(requestsTable.createdAt))
+      .limit(200);
+
+    res.json({ success: true, data: rows });
+  } catch (e) {
+    console.error("admin orders error", e);
+    res.status(500).json({ success: false, error: "Failed to fetch orders" });
+  }
+});
+
+// ── PATCH /admin/orders/:id — update status/notes ───────────────────────────
+router.patch("/admin/orders/:id", async (req, res) => {
+  try {
+    const id = parseInt(String(req.params.id), 10);
+    if (!Number.isFinite(id)) return res.status(400).json({ success: false, error: "Invalid id" });
+    const { status, notes } = req.body ?? {};
+    const updates: Record<string, unknown> = {};
+    if (status) updates.status = status;
+    if (notes !== undefined) updates.notes = notes;
+    if (!Object.keys(updates).length) return res.status(400).json({ success: false, error: "Nothing to update" });
+    const [updated] = await db.update(requestsTable).set(updates).where(eq(requestsTable.id, id)).returning({ id: requestsTable.id, status: requestsTable.status });
+    if (!updated) return res.status(404).json({ success: false, error: "Order not found" });
+    res.json({ success: true, data: updated });
+  } catch (e) {
+    console.error("admin patch order error", e);
+    res.status(500).json({ success: false, error: "Failed to update order" });
+  }
+});
+
+// ── GET /admin/wallet — platform commission summary ──────────────────────────
+router.get("/admin/wallet", async (_req, res) => {
+  try {
+    const [totRow] = await db
+      .select({ total: sql<string>`COALESCE(SUM(CAST(amount AS NUMERIC)), 0)::text` })
+      .from(walletTransactionsTable)
+      .where(eq(walletTransactionsTable.type, "commission"));
+
+    const transactions = await db
+      .select()
+      .from(walletTransactionsTable)
+      .where(eq(walletTransactionsTable.type, "commission"))
+      .orderBy(desc(walletTransactionsTable.createdAt))
+      .limit(50);
+
+    res.json({
+      success: true,
+      data: {
+        totalCommission: parseFloat(totRow?.total ?? "0"),
+        transactions,
+      },
+    });
+  } catch (e) {
+    console.error("admin wallet error", e);
+    res.status(500).json({ success: false, error: "Failed to fetch wallet" });
   }
 });
 
