@@ -312,13 +312,13 @@ function SidebarGroup({
         className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 group ${
           isGroupActive && !isOpen
             ? "bg-teal-600/15 text-teal-300"
-            : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+            : "text-white/80 hover:bg-white/5 hover:text-white"
         }`}
       >
         <GroupIcon
           size={15}
           className={`shrink-0 transition-colors ${
-            isGroupActive && !isOpen ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"
+            isGroupActive && !isOpen ? "text-teal-400" : "text-slate-400 group-hover:text-white"
           }`}
         />
         <span className="flex-1 text-start truncate">{group.label}</span>
@@ -330,7 +330,7 @@ function SidebarGroup({
         )}
         <ChevronDown
           size={13}
-          className={`shrink-0 text-slate-600 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`shrink-0 text-slate-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -339,7 +339,7 @@ function SidebarGroup({
         className="overflow-hidden transition-all duration-200 ease-in-out"
         style={{ maxHeight: isOpen ? `${visibleItems.length * 38}px` : "0px", opacity: isOpen ? 1 : 0 }}
       >
-        <div className="ms-3 mt-0.5 mb-1 border-s border-white/8 ps-3 space-y-0.5">
+        <div className="ms-3 mt-0.5 mb-1 border-s border-white/10 ps-3 space-y-0.5">
           {visibleItems.map(item => {
             const base = item.href.split("?")[0];
             const isActive = location === item.href || location === base || location.startsWith(base + "/");
@@ -352,12 +352,12 @@ function SidebarGroup({
                   className={`group flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all duration-150 ${
                     isActive
                       ? "bg-teal-600/20 text-teal-300"
-                      : "text-slate-500 hover:bg-white/5 hover:text-slate-200"
+                      : "text-white/60 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   <ItemIcon
                     size={13}
-                    className={`shrink-0 ${isActive ? "text-teal-400" : "text-slate-600 group-hover:text-slate-400"}`}
+                    className={`shrink-0 ${isActive ? "text-teal-400" : "text-slate-500 group-hover:text-white"}`}
                   />
                   <span className="flex-1 truncate">{item.label}</span>
                   {badge > 0 && (
@@ -406,6 +406,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   }
 
   const [openGroup, setOpenGroup] = useState<string | null>(getActiveGroup);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Keep open group in sync with navigation
   useEffect(() => {
@@ -416,6 +417,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const handleGroupToggle = (id: string) => {
     setOpenGroup(prev => (prev === id ? null : id));
   };
+
+  // Flat list of all visible items for search
+  const allVisibleItems = MENU_GROUPS.flatMap(group =>
+    group.items.filter(item => {
+      if (!item.perm) return true;
+      if (isSuper) return true;
+      return perms[item.perm] === true;
+    }).map(item => ({ ...item, groupLabel: group.label }))
+  );
+
+  const searchResults = searchQuery.trim()
+    ? allVisibleItems.filter(item =>
+        item.label.includes(searchQuery) || item.groupLabel.includes(searchQuery)
+      )
+    : [];
 
   const handleLogout = async () => {
     await logout();
@@ -450,46 +466,113 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
+      {/* Search bar */}
+      <div className="px-3 pt-3 pb-2">
+        <div className="relative">
+          <Search
+            size={13}
+            className="absolute top-1/2 -translate-y-1/2 start-3 text-slate-500 pointer-events-none"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="ابحث في القائمة..."
+            className="w-full bg-white/6 border border-white/10 rounded-lg py-1.5 ps-8 pe-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50 focus:bg-white/8 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute top-1/2 -translate-y-1/2 end-2.5 text-slate-500 hover:text-white transition-colors"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Dashboard — standalone link */}
-      <div className="px-3 pt-3 pb-1">
+      <div className="px-3 pb-1">
         <Link href="/admin/dashboard">
           <span
             onClick={onNavigate}
             className={`group flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-150 ${
               location === "/admin/dashboard" || location === "/admin"
                 ? "bg-teal-600/20 text-teal-300"
-                : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                : "text-white/80 hover:bg-white/5 hover:text-white"
             }`}
           >
             <LayoutDashboard
               size={15}
-              className={`shrink-0 ${location === "/admin/dashboard" || location === "/admin" ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"}`}
+              className={`shrink-0 ${location === "/admin/dashboard" || location === "/admin" ? "text-teal-400" : "text-slate-400 group-hover:text-white"}`}
             />
             <span>{t("dashboard")}</span>
           </span>
         </Link>
       </div>
 
-      {/* Divider + label */}
-      <div className="px-6 py-1.5">
-        <div className="border-t border-white/6" />
+      {/* Divider */}
+      <div className="px-4 pb-1">
+        <div className="border-t border-white/8" />
       </div>
 
-      {/* Scrollable groups */}
+      {/* Scrollable groups OR search results */}
       <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-0 scrollbar-none">
-        {MENU_GROUPS.map(group => (
-          <SidebarGroup
-            key={group.id}
-            group={group}
-            isOpen={openGroup === group.id}
-            onToggle={() => handleGroupToggle(group.id)}
-            location={location}
-            sidebarCounts={sidebarCounts}
-            isSuper={isSuper}
-            perms={perms}
-            onNavigate={onNavigate}
-          />
-        ))}
+        {searchQuery.trim() ? (
+          /* ── Search results flat list ── */
+          searchResults.length === 0 ? (
+            <div className="px-3 py-6 text-center text-xs text-slate-500">
+              لا توجد نتائج لـ "{searchQuery}"
+            </div>
+          ) : (
+            <div className="space-y-0.5 pt-1">
+              {searchResults.map(item => {
+                const base = item.href.split("?")[0];
+                const isActive = location === item.href || location === base || location.startsWith(base + "/");
+                const badge = pendingForHref(item.href, sidebarCounts);
+                const ItemIcon = item.icon;
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <span
+                      onClick={() => { setSearchQuery(""); onNavigate?.(); }}
+                      className={`group flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all duration-150 ${
+                        isActive
+                          ? "bg-teal-600/20 text-teal-300"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      <ItemIcon size={13} className={`shrink-0 ${isActive ? "text-teal-400" : "text-slate-400 group-hover:text-white"}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{item.label}</div>
+                        <div className="text-[10px] text-slate-600 truncate">{item.groupLabel}</div>
+                      </div>
+                      {badge > 0 && (
+                        <span className="shrink-0 min-w-[1.25rem] h-4 px-1 rounded-full bg-amber-500 text-slate-900 text-[9px] font-bold flex items-center justify-center">
+                          {badge > 99 ? "99+" : badge}
+                        </span>
+                      )}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )
+        ) : (
+          /* ── Normal accordion groups ── */
+          MENU_GROUPS.map(group => (
+            <SidebarGroup
+              key={group.id}
+              group={group}
+              isOpen={openGroup === group.id}
+              onToggle={() => handleGroupToggle(group.id)}
+              location={location}
+              sidebarCounts={sidebarCounts}
+              isSuper={isSuper}
+              perms={perms}
+              onNavigate={onNavigate}
+            />
+          ))
+        )}
       </nav>
 
       {/* Footer actions */}
@@ -497,17 +580,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Link href="/">
           <span
             onClick={onNavigate}
-            className="group flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-white/5 hover:text-slate-300 transition-colors cursor-pointer"
+            className="group flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-white/50 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
           >
-            <Chevron size={14} className="shrink-0 text-slate-600 group-hover:text-slate-400" />
+            <Chevron size={14} className="shrink-0 text-slate-500 group-hover:text-white" />
             {tc("backToSite")}
           </span>
         </Link>
         <button
           onClick={handleLogout}
-          className="group flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-red-500/70 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          className="group flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-red-400/60 hover:bg-red-500/10 hover:text-red-400 transition-colors"
         >
-          <LogOut size={14} className="shrink-0 text-red-600/50 group-hover:text-red-400" />
+          <LogOut size={14} className="shrink-0 text-red-500/40 group-hover:text-red-400" />
           {tc("signOut")}
         </button>
       </div>
