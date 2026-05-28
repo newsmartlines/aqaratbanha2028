@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useRole } from "@/lib/use-role";
 import { useQuery } from "@tanstack/react-query";
-import { api, type ProviderStats } from "@/lib/api";
+import { api, type ProviderStats, type UserCurrentSub } from "@/lib/api";
 import { parseLimits, parseFeatures, fmtDate, FEATURE_LABELS } from "@/lib/plan-helpers";
 import { useAuth } from "@/lib/auth-context";
 
@@ -158,7 +158,7 @@ export function SubscriptionWidget() {
   const { isProvider, providerId } = useRole();
   const { user } = useAuth();
 
-  const { data: stats, isLoading } = useQuery<ProviderStats>({
+  const { data: stats, isLoading: statsLoading } = useQuery<ProviderStats>({
     queryKey: ["providerStats", providerId],
     queryFn: () => api.providers.stats(providerId!),
     enabled: isProvider && !!providerId,
@@ -166,12 +166,36 @@ export function SubscriptionWidget() {
     staleTime: 30_000,
   });
 
-  const packagesHref = isProvider ? "/dashboard/packages" : "/dashboard/packages";
+  const { data: userSub, isLoading: userSubLoading } = useQuery<UserCurrentSub | null>({
+    queryKey: ["userCurrentSubscription", user?.id],
+    queryFn: () => api.userSubscription.current(user!.id),
+    enabled: !isProvider && !!user?.id,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
 
-  if (isLoading && isProvider) return <SkeletonLoader />;
+  const isLoading = isProvider ? statsLoading : userSubLoading;
 
-  const sub: SubscriptionData | null = isProvider ? (stats?.subscription ?? null) : null;
-  const totalProperties = isProvider ? (stats?.totalProperties ?? 0) : (0);
+  const packagesHref = "/dashboard/packages";
+
+  if (isLoading) return <SkeletonLoader />;
+
+  // For providers: use stats.subscription; for users: use userSub from current-subscription endpoint
+  const rawUserSub: SubscriptionData | null = userSub
+    ? {
+        packageNameAr: userSub.packageNameAr,
+        startDate: userSub.startDate,
+        endDate: userSub.endDate,
+        daysLeft: userSub.daysLeft,
+        durationDays: userSub.durationDays,
+        isActive: userSub.isActive,
+        maxListings: userSub.limits?.properties ?? null,
+        billingPlanId: userSub.billingPlanId,
+      }
+    : null;
+
+  const sub: SubscriptionData | null = isProvider ? (stats?.subscription ?? null) : rawUserSub;
+  const totalProperties = isProvider ? (stats?.totalProperties ?? 0) : 0;
   const maxListings = sub?.maxListings ?? null;
   const usedListings = totalProperties;
   const remainingListings = maxListings !== null && maxListings >= 0
