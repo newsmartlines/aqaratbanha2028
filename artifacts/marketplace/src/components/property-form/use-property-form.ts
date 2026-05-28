@@ -188,6 +188,20 @@ export function usePropertyForm(mode: FormMode, backPath: string, showPlans: boo
         }
         return;
       }
+      // Free plan selected — create property then activate subscription immediately
+      setSubmitting(true);
+      setError(null);
+      try {
+        await doCreate();
+        if (user?.id && selectedPlan?.id) {
+          await api.userSubscription.subscribe(user.id, selectedPlan.id).catch(() => {});
+        }
+      } catch (e: any) {
+        setError(e?.message ?? "حدث خطأ أثناء إرسال الطلب");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
     }
     setSubmitting(true);
     setError(null);
