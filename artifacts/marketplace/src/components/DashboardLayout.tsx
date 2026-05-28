@@ -54,7 +54,6 @@ const SHARED_NAV = [
   { name: "تنبيهات البحث",    href: "/dashboard/saved-searches",  icon: BellRing },
   { name: "المدفوعات",         href: "/dashboard/payments",        icon: CreditCard },
   { name: "رسائلي",            href: "/dashboard/messages",        icon: MessageCircleIcon },
-  { name: "الإشعارات",         href: "/dashboard/notifications",   icon: Bell },
   { name: "تذاكر الدعم",      href: "/dashboard/support-tickets",  icon: Ticket },
   { name: "الإعدادات",         href: "/dashboard/settings",        icon: Settings },
 ] as const;
@@ -77,8 +76,7 @@ function buildNav(
   ].map((item) => ({
     ...item,
     badge:
-      item.href === "/dashboard/notifications" ? unreadCount
-      : item.href === "/dashboard/messages"    ? msgUnread
+      item.href === "/dashboard/messages" ? msgUnread
       : 0,
   }));
 }

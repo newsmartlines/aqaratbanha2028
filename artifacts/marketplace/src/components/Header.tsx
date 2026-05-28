@@ -33,6 +33,14 @@ export function Header() {
     enabled: !!user,
   });
 
+  const { data: notifUnread = 0 } = useQuery({
+    queryKey: ["notifications-unread"],
+    queryFn: api.notifications.unreadCount,
+    refetchInterval: 30000,
+    enabled: !!user,
+  });
+  const notifCount = typeof notifUnread === "number" ? notifUnread : 0;
+
   const siteName = settings?.siteName ?? "عقارات بنها";
   const logoUrl = settings?.logoUrl;
 
@@ -134,6 +142,19 @@ export function Header() {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-2">
           {user ? (
+            <>
+              {/* Notification Bell */}
+              <Link href="/dashboard/notifications">
+                <button className="relative p-2 rounded-full hover:bg-secondary/60 transition-colors">
+                  <Bell className="w-5 h-5 text-muted-foreground" />
+                  {notifCount > 0 && (
+                    <span className="absolute top-0.5 left-0.5 min-w-[1.1rem] h-[1.1rem] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                      {notifCount > 99 ? "99+" : notifCount}
+                    </span>
+                  )}
+                </button>
+              </Link>
+
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(o => !o)}
@@ -193,6 +214,7 @@ export function Header() {
                 </div>
               )}
             </div>
+            </>
           ) : (
             <div className="flex items-center gap-1 text-sm font-medium">
               <User className="w-5 h-5 text-muted-foreground" />
