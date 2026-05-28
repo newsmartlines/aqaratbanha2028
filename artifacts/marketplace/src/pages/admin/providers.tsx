@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
   Search, MoreVertical, CheckCircle2, XCircle, Eye, Ban, Loader2, RefreshCw,
-  Star, MapPin, Phone, Plus, Pencil, Crown, TrendingUp, CalendarCheck, Sparkles,
+  MapPin, Phone, Plus, Pencil, Crown, TrendingUp, CalendarCheck, Sparkles,
   Check, Package, Zap,
 } from "lucide-react";
 import {
@@ -69,7 +69,6 @@ const dict = {
   region: { ar: "المنطقة", en: "Region" },
   city: { ar: "المدينة", en: "City" },
   category: { ar: "التصنيف", en: "Category" },
-  rating: { ar: "التقييم", en: "Rating" },
   joined: { ar: "تاريخ الانضمام", en: "Joined" },
   noProviders: { ar: "لا توجد شركات عقارية", en: "No companies found" },
   viewProfile: { ar: "عرض الملف", en: "View Profile" },
@@ -81,7 +80,6 @@ const dict = {
   providerProfile: { ar: "ملف الشركة العقارية", en: "Company Profile" },
   verified: { ar: "موثّق", en: "Verified" },
   bio: { ar: "نبذة", en: "Bio" },
-  reviews: { ar: "تقييمات", en: "reviews" },
   categoryLbl: { ar: "التصنيف:", en: "Category:" },
   subscription: { ar: "الاشتراك", en: "Subscription" },
   sarPerMo: { ar: "ج.م/شهر", en: "EGP/mo" },
@@ -396,7 +394,6 @@ export default function AdminProviders() {
                     <TableHead className="font-semibold text-slate-700">{t("region")}</TableHead>
                     <TableHead className="font-semibold text-slate-700">{t("city")}</TableHead>
                     <TableHead className="font-semibold text-slate-700">{t("category")}</TableHead>
-                    <TableHead className="font-semibold text-slate-700">{t("rating")}</TableHead>
                     <TableHead className="font-semibold text-slate-700">{tc("status")}</TableHead>
                     <TableHead className="font-semibold text-slate-700">{t("joined")}</TableHead>
                     <TableHead className="text-end font-semibold text-slate-700">{tc("actions")}</TableHead>
@@ -404,7 +401,7 @@ export default function AdminProviders() {
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={11} className="text-center py-8 text-slate-500">{t("noProviders")}</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={10} className="text-center py-8 text-slate-500">{t("noProviders")}</TableCell></TableRow>
                   ) : filtered.map((p) => {
                     const statusKey = providerStatusKey(p);
                     return (
@@ -416,12 +413,6 @@ export default function AdminProviders() {
                         <TableCell className="text-slate-600 text-sm">{p.regionNameAr ?? "—"}</TableCell>
                         <TableCell className="text-slate-600 text-sm">{p.city ?? "—"}</TableCell>
                         <TableCell>{p.categoryNameAr ?? "—"}</TableCell>
-                        <TableCell>
-                          <span className="flex items-center gap-1 text-sm">
-                            <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                            {p.rating} ({p.reviewsCount})
-                          </span>
-                        </TableCell>
                         <TableCell>
                           <Badge variant="default" className={STATUS_STYLE[statusKey] ?? ""}>{t(statusKey)}</Badge>
                         </TableCell>
@@ -528,9 +519,6 @@ export default function AdminProviders() {
                     <Phone className="w-4 h-4 text-slate-400" /> {detail.phone}
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" /> {detail.rating} ({detail.reviewsCount} {t("reviews")})
-                </div>
                 {detail.categoryNameAr && (
                   <div className="text-sm text-slate-600">{t("categoryLbl")} {detail.categoryNameAr}</div>
                 )}
