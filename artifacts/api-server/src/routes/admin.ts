@@ -10,6 +10,8 @@ import { supportTicketsTable, regionsTable, citiesTable, propertiesTable, reques
 import { eq, desc, and, sql, gte, sum, isNull, ne } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
 import { autoExportGroup } from "../lib/auto-export";
+import { readRecentAuditLog } from "../lib/auditLog";
+import { getBruteForceStats } from "../lib/bruteForce";
 
 const router = Router();
 
@@ -709,6 +711,34 @@ router.get("/admin/wallet", async (_req, res) => {
   } catch (e) {
     console.error("admin wallet error", e);
     res.status(500).json({ success: false, error: "Failed to fetch wallet" });
+  }
+});
+
+// ── GET /admin/security/audit-log — recent admin mutations ────────────────────
+router.get("/admin/security/audit-log", adminOnly, (req, res) => {
+  try {
+    const limitParam = parseInt(String(req.query.limit ?? "200"), 10);
+    const limit = Math.min(Math.max(limitParam, 1), 500);
+    const entries = readRecentAuditLog(limit);
+    res.json({ success: true, data: entries });
+  } catch {
+    res.status(500).json({ success: false, error: "فشل تحميل سجل التدقيق" });
+  }
+});
+
+// ── GET /admin/security/stats — brute-force protection stats ─────────────────
+router.get("/admin/security/stats", adminOnly, (_req, res) => {
+  try {
+    const bf = getBruteForceStats();
+    res.json({
+      success: true,
+      data: {
+        bruteForce: bf,
+        serverTime: new Date().toISOString(),
+      },
+    });
+  } catch {
+    res.status(500).json({ success: false, error: "فشل تحميل الإحصائيات" });
   }
 });
 

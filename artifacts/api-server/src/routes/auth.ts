@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { getEffectivePermissions } from "../middleware/requirePermission";
+import { isLocked, recordFailed, clearAttempts, getBruteForceStats } from "../lib/bruteForce";
 import { events } from "../lib/event-service";
 
 const router = Router();
@@ -81,25 +82,23 @@ function setSessionCookie(res: Response, token: string) {
   });
 }
 
-// ── Rate limiting (production only) ─────────────────────────────────────────
-
+// ── Rate limiters (always active — no skip in dev) ───────────────────────────
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+  windowMs:       15 * 60 * 1_000,
+  max:            10,                 // 10 attempts per 15 min per IP
   standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: "محاولات كثيرة، يرجى الانتظار 15 دقيقة والمحاولة مجدداً" },
-  skip: () => process.env.NODE_ENV !== "production",
+  legacyHeaders:  false,
+  message:        { success: false, error: "محاولات كثيرة، يرجى الانتظار 15 دقيقة والمحاولة مجدداً" },
 });
 
 const forgotLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
+  windowMs:       60 * 60 * 1_000,
+  max:            5,
   standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: "محاولات كثيرة، يرجى الانتظار ساعة والمحاولة مجدداً" },
-  skip: () => process.env.NODE_ENV !== "production",
+  legacyHeaders:  false,
+  message:        { success: false, error: "محاولات كثيرة، يرجى الانتظار ساعة والمحاولة مجدداً" },
 });
+
 
 // ── Provider helper ──────────────────────────────────────────────────────────
 
@@ -181,13 +180,27 @@ router.post("/auth/login", authLimiter, async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ success: false, error: "البريد الإلكتروني وكلمة المرور مطلوبان" });
 
+    // ── Brute-force / lockout check ──────────────────────────────────────────
+    const clientIp = String(req.ip ?? req.socket?.remoteAddress ?? "unknown");
+    const lockState = isLocked(clientIp, String(email));
+    if (lockState.locked) {
+      const mins = Math.ceil((lockState.remainingSecs ?? 60) / 60);
+      return res.status(429).json({
+        success: false,
+        error: `تم إيقاف تسجيل الدخول مؤقتاً بسبب محاولات متعددة. حاول مرة أخرى بعد ${mins} دقيقة`,
+      });
+    }
+
     let [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
 
     if (!user) {
       const [staff] = await db.select().from(adminStaffTable).where(eq(adminStaffTable.email, email));
       if (staff && staff.status === "active") {
         const validStaff = await bcrypt.compare(password, staff.passwordHash);
-        if (!validStaff) return res.status(401).json({ success: false, error: "بيانات الدخول غير صحيحة" });
+        if (!validStaff) {
+          recordFailed(clientIp, String(email), true); // Admin-level strictness for staff
+          return res.status(401).json({ success: false, error: "بيانات الدخول غير صحيحة" });
+        }
         const [existingMirror] = await db.select().from(usersTable).where(eq(usersTable.email, staff.email));
         if (existingMirror) {
           user = existingMirror;
@@ -205,10 +218,25 @@ router.post("/auth/login", authLimiter, async (req, res) => {
       }
     }
 
-    if (!user) return res.status(401).json({ success: false, error: "بيانات الدخول غير صحيحة" });
+    if (!user) {
+      recordFailed(clientIp, String(email), false);
+      return res.status(401).json({ success: false, error: "بيانات الدخول غير صحيحة" });
+    }
 
+    const isAdminAccount = user.role === "admin";
     const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) return res.status(401).json({ success: false, error: "بيانات الدخول غير صحيحة" });
+    if (!valid) {
+      recordFailed(clientIp, String(email), isAdminAccount);
+      return res.status(401).json({ success: false, error: "بيانات الدخول غير صحيحة" });
+    }
+
+    // Check if user is suspended
+    if (user.status === "suspended") {
+      return res.status(403).json({ success: false, error: "هذا الحساب موقوف. تواصل مع الدعم" });
+    }
+
+    // ── Success: clear brute-force counters ──────────────────────────────────
+    clearAttempts(clientIp, String(email));
 
     const providerId = user.role === "provider" ? await getProviderId(user.id) : undefined;
     const token = await createSession(user.id, user.role, providerId);
