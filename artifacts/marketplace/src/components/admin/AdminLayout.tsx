@@ -102,7 +102,7 @@ const MENU_GROUPS: MenuGroup[] = [
     label: "الاشتراكات والباقات",
     items: [
       { icon: Package,    label: "الاشتراكات",          href: "/admin/subscriptions",     perm: "subscriptions" },
-      { icon: Layers3,    label: "الباقات",              href: "/admin/plans-commissions", perm: "commission" },
+      { icon: Layers3,    label: "الباقات",              href: "/admin/plans-commissions", perm: null },
       { icon: TrendingUp, label: "الترقيات والبوستات",  href: "/admin/promotions",        perm: null },
       { icon: CreditCard, label: "المدفوعات",           href: "/admin/payments",          perm: "payments" },
       { icon: Wallet,     label: "الكوبونات",           href: "/admin/plans-commissions", perm: null },

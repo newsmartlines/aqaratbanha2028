@@ -29,7 +29,7 @@ type BillingPlan = {
   durationDays: number; durationType: string; userType: string;
   status: string; isRecommended: boolean; isMostPopular: boolean;
   trialDays: number; sortOrder: number; color: string;
-  limits: string; features: string; commissionPercent: string;
+  limits: string; features: string;
   createdAt: string;
 };
 
@@ -116,7 +116,7 @@ export default function PlansCommissions() {
   const [couponModal, setCouponModal] = useState<{ open: boolean; mode: "add" | "edit"; data: any }>({ open: false, mode: "add", data: { code: "", name: "", discountType: "percentage", discountValue: "10", maxUses: "", isActive: true } });
 
   // Delete
-  const [deleteTarget, setDeleteTarget] = useState<{ type: "plan" | "commission" | "coupon"; id: number; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "plan" | "coupon"; id: number; name: string } | null>(null);
 
   // Seed
   const [seeding, setSeeding] = useState(false);
@@ -189,10 +189,9 @@ export default function PlansCommissions() {
   const handleSeed = async () => {
     setSeeding(true);
     try {
-      const res = await api.fetchJson<{ addedPlans: number; addedCommissions: number }>("/admin/billing/seed", { method: "POST" });
+      const res = await api.fetchJson<{ addedPlans: number }>("/admin/billing/seed", { method: "POST" });
       invalidateAllPlanCaches();
-      qc.invalidateQueries({ queryKey: ["billing-commissions"] });
-      toast.success(`أضفنا ${res.addedPlans} باقة و${res.addedCommissions} قاعدة عمولة`);
+      toast.success(`أضفنا ${res.addedPlans} باقة`);
     } catch (e: any) { toast.error(e.message); }
     finally { setSeeding(false); }
   };
@@ -244,7 +243,7 @@ export default function PlansCommissions() {
   }));
 
   return (
-    <AdminLayout title="إدارة الباقات والعمولات">
+    <AdminLayout title="إدارة الباقات والاشتراكات">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 flex-wrap">
@@ -252,8 +251,8 @@ export default function PlansCommissions() {
             <Layers3 className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">Plans & Commissions Manager</h2>
-            <p className="text-sm text-slate-500">إدارة الباقات والعمولات والكوبونات وتحليل الإيرادات</p>
+            <h2 className="text-xl font-bold text-slate-800">إدارة الباقات والاشتراكات</h2>
+            <p className="text-sm text-slate-500">إدارة باقات الاشتراك والكوبونات وتحليل الإيرادات</p>
           </div>
           <div className="ms-auto flex gap-2">
             {plans.length === 0 && (

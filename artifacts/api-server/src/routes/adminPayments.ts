@@ -195,16 +195,13 @@ router.get("/admin/payments", async (req, res) => {
       pendingAmount: 0,
       failedAmount: 0,
       totalAmount: 0,
-      commissionTotal: 0,
     };
     for (const r of rows) {
       const amt = parseFloat(String(r.amount ?? "0"));
-      const com = parseFloat(String(r.commissionAmount ?? "0"));
       totals.totalAmount += amt;
       if (r.status === "paid") {
         totals.paid += 1;
         totals.paidAmount += amt;
-        totals.commissionTotal += com;
       } else if (r.status === "pending") {
         totals.pending += 1;
         totals.pendingAmount += amt;
@@ -241,7 +238,7 @@ router.get("/admin/payments/export", async (req, res) => {
     const header = [
       "Payment ID", "Invoice ID / Ref", "Type", "Subscriber Type",
       "Name", "Email", "Phone", "Plan",
-      "Amount (EGP)", "Commission (EGP)", "Status", "Gateway", "Date",
+      "Amount (EGP)", "Status", "Gateway", "Date",
     ];
 
     const lines = [header.map(csvEscape).join(",")];
@@ -252,7 +249,6 @@ router.get("/admin/payments/export", async (req, res) => {
           r.providerName ?? "", r.providerEmail ?? "", r.providerPhone ?? "",
           r.planName ?? "",
           parseFloat(String(r.amount ?? "0")).toFixed(2),
-          parseFloat(String(r.commissionAmount ?? "0")).toFixed(2),
           r.status, r.gateway ?? "", new Date(r.createdAt).toISOString(),
         ].map(csvEscape).join(","),
       );

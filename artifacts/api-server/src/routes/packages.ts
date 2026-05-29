@@ -17,8 +17,8 @@ router.get("/packages", async (_req, res) => {
 
 router.post("/packages", adminOnly, async (req, res) => {
   try {
-    const { nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank } = req.body;
-    const [pkg] = await db.insert(packagesTable).values({ nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank }).returning();
+    const { nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank } = req.body;
+    const [pkg] = await db.insert(packagesTable).values({ nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank }).returning();
     res.json({ success: true, data: pkg });
   } catch (err) {
     res.status(500).json({ success: false, error: "Failed to create package" });
@@ -28,8 +28,8 @@ router.post("/packages", adminOnly, async (req, res) => {
 router.put("/packages/:id", adminOnly, async (req, res) => {
   try {
     const id = parseInt(String(req.params.id));
-    const { nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank } = req.body;
-    const [pkg] = await db.update(packagesTable).set({ nameAr, nameEn, price, durationDays, maxListings, commissionRate, featuredAllowed, topBadge, priorityRank }).where(eq(packagesTable.id, id)).returning();
+    const { nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank } = req.body;
+    const [pkg] = await db.update(packagesTable).set({ nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank }).where(eq(packagesTable.id, id)).returning();
     res.json({ success: true, data: pkg });
   } catch (err) {
     res.status(500).json({ success: false, error: "Failed to update package" });

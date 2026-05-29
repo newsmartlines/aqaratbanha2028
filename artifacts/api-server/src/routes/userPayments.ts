@@ -253,7 +253,7 @@ router.get("/providers/me/payments", async (req, res) => {
     const baseTotals = calcTotals(allRows);
     const netEarnings = allRows
       .filter((r) => r.status === "paid")
-      .reduce((s, r) => s + (parseFloat(String(r.amount)) || 0) - (parseFloat(String(r.commissionAmount)) || 0), 0);
+      .reduce((s, r) => s + (parseFloat(String(r.amount)) || 0), 0);
 
     res.json({ success: true, rows: allRows, totals: { ...baseTotals, netEarnings } });
   } catch (e) {

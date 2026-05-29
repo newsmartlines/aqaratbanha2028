@@ -369,7 +369,6 @@ router.get("/providers/:id/stats", async (req, res) => {
           planNameAr: subscriptionsTable.planNameAr,
           planPrice: subscriptionsTable.planPrice,
           bpDurationDays: billingPlansTable.durationDays,
-          bpCommissionPercent: billingPlansTable.commissionPercent,
           bpLimits: billingPlansTable.limits,
           bpFeatures: billingPlansTable.features,
           bpColor: billingPlansTable.color,

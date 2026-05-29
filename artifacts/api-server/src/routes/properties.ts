@@ -498,16 +498,23 @@ router.put("/properties/:id", async (req, res) => {
     delete updateData.createdAt;
     delete updateData.id;
 
-    // Non-admin editing an active/approved property → reset to pending for re-review
+    // Non-admin editing any non-pending property → reset to pending for re-review
     const sessionRole = (session as any).role;
-    if (sessionRole !== "admin" && (existing.status === "approved" || existing.status === "active")) {
+    const wasRejected = sessionRole !== "admin" && existing.status === "rejected";
+    if (sessionRole !== "admin" && existing.status && ["approved", "active", "rejected"].includes(existing.status)) {
       updateData.status = "pending";
+      updateData.rejectionReason = null; // Clear rejection reason on resubmit
     }
 
     const [updated] = await db.update(propertiesTable).set(updateData).where(eq(propertiesTable.id, id)).returning();
 
-    // Fire edit event (SSE broadcast so admin panel refreshes)
-    events.onPropertyEdited(updated ?? existing).catch(() => {});
+    // Fire appropriate event
+    if (wasRejected) {
+      // Resubmitted after rejection → trigger submitted event so admin gets notification
+      events.onPropertySubmitted(updated ?? existing).catch(() => {});
+    } else {
+      events.onPropertyEdited(updated ?? existing).catch(() => {});
+    }
 
     // Invalidate market cache
     import("../lib/market-engine").then(({ invalidateMarketCache }) =>

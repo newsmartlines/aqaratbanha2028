@@ -62,7 +62,6 @@ function parseReceipt(planName: string | null | undefined): { label: string; rec
 const TYPE_META: Record<string, { label: string; cls: string }> = {
   subscription:    { label: "اشتراك",     cls: "bg-purple-50 text-purple-700 border-purple-200" },
   service_request: { label: "خدمة",       cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  commission:      { label: "عمولة",      cls: "bg-amber-50 text-amber-700 border-amber-200" },
   featured:        { label: "ترقية",      cls: "bg-orange-50 text-orange-700 border-orange-200" },
 };
 
@@ -247,9 +246,9 @@ export default function AdminPayments() {
           valueColor="text-red-500"
         />
         <StatCard
-          label="عمولات المنصة"
-          value={`${fmtMoney((totals as any).commissionTotal ?? 0)} ج.م`}
-          sub="من المعاملات المكتملة"
+          label="إجمالي المعاملات"
+          value={`${fmtMoney(totals.totalAmount)} ج.م`}
+          sub={`${rows.length} معاملة`}
           icon={Banknote}
           valueColor="text-violet-600"
         />
@@ -439,11 +438,6 @@ export default function AdminPayments() {
                         }`}>
                           {amount === 0 ? "مجاني" : `${fmtMoney(amount)} ج.م`}
                         </p>
-                        {parseFloat(String(r.commissionAmount ?? "0")) > 0 && (
-                          <p className="text-xs text-slate-400">
-                            عمولة: {fmtMoney(r.commissionAmount)} ج.م
-                          </p>
-                        )}
                       </TableCell>
 
                       {/* Status */}

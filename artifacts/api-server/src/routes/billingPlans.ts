@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import {
-  billingPlansTable, commissionRulesTable, couponsTable,
+  billingPlansTable, couponsTable,
   subscriptionsTable, paymentTransactionsTable,
 } from "@workspace/db";
 import { eq, desc, sum, count, or, and } from "drizzle-orm";
@@ -117,35 +117,6 @@ router.patch("/admin/billing/plans/:id/toggle", async (req, res) => {
   } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
 });
 
-// ── Commission Rules ──────────────────────────────────────────────────────────
-
-router.get("/admin/billing/commissions", async (_req, res) => {
-  try {
-    const rules = await db.select().from(commissionRulesTable).orderBy(commissionRulesTable.priority);
-    res.json({ success: true, data: rules });
-  } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
-});
-
-router.post("/admin/billing/commissions", async (req, res) => {
-  try {
-    const [rule] = await db.insert(commissionRulesTable).values(req.body).returning();
-    res.json({ success: true, data: rule });
-  } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
-});
-
-router.put("/admin/billing/commissions/:id", async (req, res) => {
-  try {
-    const [rule] = await db.update(commissionRulesTable).set({ ...req.body, updatedAt: new Date() }).where(eq(commissionRulesTable.id, Number(req.params.id))).returning();
-    res.json({ success: true, data: rule });
-  } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
-});
-
-router.delete("/admin/billing/commissions/:id", async (req, res) => {
-  try {
-    await db.delete(commissionRulesTable).where(eq(commissionRulesTable.id, Number(req.params.id)));
-    res.json({ success: true });
-  } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
-});
 
 // ── Coupons ───────────────────────────────────────────────────────────────────
 
@@ -206,32 +177,21 @@ router.get("/admin/billing/dashboard", async (_req, res) => {
 // ── Seed defaults ──────────────────────────────────────────────────────────────
 
 const DEFAULT_PLANS = [
-  { name: "Free", nameAr: "مجاني", price: "0", yearlyPrice: "0", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "all", status: "active", isRecommended: false, isMostPopular: false, trialDays: 0, sortOrder: 0, color: "#64748b", commissionPercent: "10", descriptionAr: "الباقة المجانية - ابدأ مجاناً", limits: JSON.stringify({ properties: 3, photos: 10, videos: 0, featuredAds: 0, pinnedAds: 0, messages: 20, leads: 10 }), features: JSON.stringify({ homepageDisplay: false, topSearch: false, verifiedBadge: false, premiumBadge: false, prioritySupport: false, analytics: false, seo: false, aiTools: false, autoBoost: false }) },
-  { name: "Bronze", nameAr: "برونز", price: "99", yearlyPrice: "999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "all", status: "active", isRecommended: false, isMostPopular: true, trialDays: 7, sortOrder: 1, color: "#b45309", commissionPercent: "7", descriptionAr: "باقة البرونز للمبتدئين", limits: JSON.stringify({ properties: 10, photos: 20, videos: 2, featuredAds: 3, pinnedAds: 1, messages: 100, leads: 50 }), features: JSON.stringify({ homepageDisplay: true, topSearch: false, verifiedBadge: false, premiumBadge: false, prioritySupport: false, analytics: true, seo: false, aiTools: false, autoBoost: false }) },
-  { name: "Silver", nameAr: "فضي", price: "199", yearlyPrice: "1999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "broker", status: "active", isRecommended: true, isMostPopular: false, trialDays: 7, sortOrder: 2, color: "#475569", commissionPercent: "5", descriptionAr: "الباقة الفضية للسماسرة", limits: JSON.stringify({ properties: 30, photos: 30, videos: 5, featuredAds: 10, pinnedAds: 3, messages: 500, leads: 200 }), features: JSON.stringify({ homepageDisplay: true, topSearch: true, verifiedBadge: true, premiumBadge: false, prioritySupport: false, analytics: true, seo: true, aiTools: false, autoBoost: false }) },
-  { name: "Gold", nameAr: "ذهبي", price: "399", yearlyPrice: "3999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "company", status: "active", isRecommended: false, isMostPopular: false, trialDays: 14, sortOrder: 3, color: "#ca8a04", commissionPercent: "3", descriptionAr: "الباقة الذهبية للشركات", limits: JSON.stringify({ properties: 100, photos: 50, videos: 10, featuredAds: 30, pinnedAds: 10, messages: -1, leads: -1 }), features: JSON.stringify({ homepageDisplay: true, topSearch: true, verifiedBadge: true, premiumBadge: true, prioritySupport: true, analytics: true, seo: true, aiTools: true, autoBoost: false }) },
-  { name: "VIP", nameAr: "VIP", price: "799", yearlyPrice: "7999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "vip", status: "active", isRecommended: false, isMostPopular: false, trialDays: 14, sortOrder: 4, color: "#7c3aed", commissionPercent: "2", descriptionAr: "باقة VIP - صلاحيات غير محدودة", limits: JSON.stringify({ properties: -1, photos: -1, videos: -1, featuredAds: -1, pinnedAds: -1, messages: -1, leads: -1 }), features: JSON.stringify({ homepageDisplay: true, topSearch: true, verifiedBadge: true, premiumBadge: true, prioritySupport: true, analytics: true, seo: true, aiTools: true, autoBoost: true }) },
-];
-
-const DEFAULT_COMMISSIONS = [
-  { name: "عمولة البيع", type: "percentage", value: "5", isPercentage: true, appliesTo: "sale", userType: "all", priority: 1, isActive: true, notes: "عمولة على صفقات البيع" },
-  { name: "عمولة الإيجار", type: "percentage", value: "3", isPercentage: true, appliesTo: "rent", userType: "all", priority: 2, isActive: true, notes: "عمولة على صفقات الإيجار" },
-  { name: "عمولة الإعلانات المميزة", type: "percentage", value: "2", isPercentage: true, appliesTo: "featured", userType: "all", priority: 3, isActive: true, notes: "عمولة الإعلانات المدفوعة" },
-  { name: "عمولة السمسار", type: "percentage", value: "3", isPercentage: true, appliesTo: "all", userType: "broker", priority: 0, isActive: true, notes: "عمولة مخفضة للسماسرة" },
+  { name: "Free", nameAr: "مجاني", price: "0", yearlyPrice: "0", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "all", status: "active", isRecommended: false, isMostPopular: false, trialDays: 0, sortOrder: 0, color: "#64748b", commissionPercent: "0", descriptionAr: "الباقة المجانية - ابدأ مجاناً", limits: JSON.stringify({ properties: 3, photos: 10, videos: 0, featuredAds: 0, pinnedAds: 0, messages: 20, leads: 10 }), features: JSON.stringify({ homepageDisplay: false, topSearch: false, verifiedBadge: false, premiumBadge: false, prioritySupport: false, analytics: false, seo: false, aiTools: false, autoBoost: false }) },
+  { name: "Bronze", nameAr: "برونز", price: "99", yearlyPrice: "999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "all", status: "active", isRecommended: false, isMostPopular: true, trialDays: 7, sortOrder: 1, color: "#b45309", commissionPercent: "0", descriptionAr: "باقة البرونز للمبتدئين", limits: JSON.stringify({ properties: 10, photos: 20, videos: 2, featuredAds: 3, pinnedAds: 1, messages: 100, leads: 50 }), features: JSON.stringify({ homepageDisplay: true, topSearch: false, verifiedBadge: false, premiumBadge: false, prioritySupport: false, analytics: true, seo: false, aiTools: false, autoBoost: false }) },
+  { name: "Silver", nameAr: "فضي", price: "199", yearlyPrice: "1999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "broker", status: "active", isRecommended: true, isMostPopular: false, trialDays: 7, sortOrder: 2, color: "#475569", commissionPercent: "0", descriptionAr: "الباقة الفضية للسماسرة", limits: JSON.stringify({ properties: 30, photos: 30, videos: 5, featuredAds: 10, pinnedAds: 3, messages: 500, leads: 200 }), features: JSON.stringify({ homepageDisplay: true, topSearch: true, verifiedBadge: true, premiumBadge: false, prioritySupport: false, analytics: true, seo: true, aiTools: false, autoBoost: false }) },
+  { name: "Gold", nameAr: "ذهبي", price: "399", yearlyPrice: "3999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "company", status: "active", isRecommended: false, isMostPopular: false, trialDays: 14, sortOrder: 3, color: "#ca8a04", commissionPercent: "0", descriptionAr: "الباقة الذهبية للشركات", limits: JSON.stringify({ properties: 100, photos: 50, videos: 10, featuredAds: 30, pinnedAds: 10, messages: -1, leads: -1 }), features: JSON.stringify({ homepageDisplay: true, topSearch: true, verifiedBadge: true, premiumBadge: true, prioritySupport: true, analytics: true, seo: true, aiTools: true, autoBoost: false }) },
+  { name: "VIP", nameAr: "VIP", price: "799", yearlyPrice: "7999", currency: "EGP", durationDays: 30, durationType: "monthly", userType: "vip", status: "active", isRecommended: false, isMostPopular: false, trialDays: 14, sortOrder: 4, color: "#7c3aed", commissionPercent: "0", descriptionAr: "باقة VIP - صلاحيات غير محدودة", limits: JSON.stringify({ properties: -1, photos: -1, videos: -1, featuredAds: -1, pinnedAds: -1, messages: -1, leads: -1 }), features: JSON.stringify({ homepageDisplay: true, topSearch: true, verifiedBadge: true, premiumBadge: true, prioritySupport: true, analytics: true, seo: true, aiTools: true, autoBoost: true }) },
 ];
 
 router.post("/admin/billing/seed", async (_req, res) => {
   try {
-    let addedPlans = 0, addedCommissions = 0;
+    let addedPlans = 0;
     for (const p of DEFAULT_PLANS) {
       const [ex] = await db.select({ id: billingPlansTable.id }).from(billingPlansTable).where(eq(billingPlansTable.name, p.name));
       if (!ex) { await db.insert(billingPlansTable).values(p as any); addedPlans++; }
     }
-    for (const c of DEFAULT_COMMISSIONS) {
-      const [ex] = await db.select({ id: commissionRulesTable.id }).from(commissionRulesTable).where(eq(commissionRulesTable.name, c.name));
-      if (!ex) { await db.insert(commissionRulesTable).values(c as any); addedCommissions++; }
-    }
-    res.json({ success: true, addedPlans, addedCommissions });
+    res.json({ success: true, addedPlans });
   } catch (e: any) { res.status(500).json({ success: false, error: e.message }); }
 });
 

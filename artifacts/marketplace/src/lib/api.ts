@@ -1117,7 +1117,6 @@ export type BillingPlan = {
   color: string;
   limits: string;
   features: string;
-  commissionPercent: string;
   createdAt: string;
 };
 
