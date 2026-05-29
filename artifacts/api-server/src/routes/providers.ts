@@ -820,4 +820,39 @@ router.patch("/providers/:id/suspend", async (req, res) => {
   }
 });
 
+// ── DELETE /providers/:id — full provider + user deletion (admin only) ────────
+router.delete("/providers/:id", adminOnly, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (!Number.isFinite(id)) {
+      return res.status(400).json({ success: false, error: "Invalid provider id" });
+    }
+
+    // Fetch the provider to get the linked userId before deletion
+    const [provider] = await db
+      .select({ id: providersTable.id, userId: providersTable.userId })
+      .from(providersTable)
+      .where(eq(providersTable.id, id))
+      .limit(1);
+
+    if (!provider) {
+      return res.status(404).json({ success: false, error: "Provider not found" });
+    }
+
+    // Delete provider row — DB cascade handles:
+    // properties, services, subscriptions, reviews, favorites,
+    // interactions, paymentTransactions, walletTransactions,
+    // supportTickets, companyPricing
+    await db.delete(providersTable).where(eq(providersTable.id, id));
+
+    // Delete the linked user account (cascade handles provider if not yet deleted)
+    await db.delete(usersTable).where(eq(usersTable.id, provider.userId));
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("delete provider error", err);
+    return res.status(500).json({ success: false, error: "Failed to delete provider" });
+  }
+});
+
 export default router;

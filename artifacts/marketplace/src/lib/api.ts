@@ -610,6 +610,7 @@ export const api = {
       approve: (id: number) => fetchJson(`/providers/${id}/approve`, { method: "PATCH" }),
       reject: (id: number) => fetchJson(`/providers/${id}/reject`, { method: "PATCH" }),
       suspend: (id: number) => fetchJson(`/providers/${id}/suspend`, { method: "PATCH" }),
+      delete: (id: number) => fetchJson(`/providers/${id}`, { method: "DELETE" }),
     },
     orders: {
       list: async () => ensureArray<Order>(await fetchJson(`/admin/orders`)),

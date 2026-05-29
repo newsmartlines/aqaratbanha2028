@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   Search, MoreVertical, CheckCircle2, XCircle, Eye, Ban, Loader2, RefreshCw,
   MapPin, Phone, Plus, Pencil, Crown, TrendingUp, CalendarCheck, Sparkles,
-  Check, Package, Zap,
+  Check, Package, Zap, Trash2,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
@@ -128,6 +128,12 @@ const dict = {
   confirmSuspendAr: { ar: "هل أنت متأكد من إيقاف", en: "Are you sure you want to suspend" },
   qmark: { ar: "؟", en: "?" },
   confirm: { ar: "تأكيد", en: "Confirm" },
+  deleteAct: { ar: "حذف نهائي", en: "Permanently Delete" },
+  confirmDeleteTitle: { ar: "حذف مزود الخدمة نهائياً", en: "Permanently Delete Provider" },
+  confirmDeleteDesc: { ar: "سيتم حذف الشركة وجميع بياناتها (العقارات، الباقات، المراجعات، المعاملات) بشكل نهائي ولا يمكن التراجع عن هذا الإجراء.", en: "This will permanently delete the company and all its data (properties, subscriptions, reviews, transactions). This action cannot be undone." },
+  deleteConfirmBtn: { ar: "نعم، احذف نهائياً", en: "Yes, Delete Permanently" },
+  providerDeleted: { ar: "تم حذف مزود الخدمة", en: "Provider deleted" },
+  providerDeletedDesc: { ar: "تم حذف الشركة وجميع بياناتها بنجاح", en: "Company and all its data have been deleted" },
 };
 
 export default function AdminProviders() {
@@ -151,6 +157,7 @@ export default function AdminProviders() {
   const [upgradeTarget, setUpgradeTarget] = useState<AdminProvider | null>(null);
   const [upgradePlanId, setUpgradePlanId] = useState<number | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   void editingProvider;
 
   const { data: regionsAdmin = [] } = useQuery({
@@ -285,6 +292,20 @@ export default function AdminProviders() {
       const titleKey = action === "approve" ? "providerApproved" : action === "reject" ? "providerRejected" : "providerSuspended";
       toast({ title: t(titleKey) });
       setActionTarget(null);
+    },
+    onError: (e: Error) => toast({ title: tc("error"), description: e.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.admin.providers.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-providers"] });
+      queryClient.invalidateQueries({ queryKey: ["providers"] });
+      queryClient.invalidateQueries({ queryKey: ["providerDetail", id] });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+      toast({ title: t("providerDeleted"), description: t("providerDeletedDesc") });
+      setDeleteTarget(null);
+      if (detail && (detail as { id?: number }).id === id) setDetail(null);
     },
     onError: (e: Error) => toast({ title: tc("error"), description: e.message, variant: "destructive" }),
   });
@@ -461,6 +482,13 @@ export default function AdminProviders() {
                                   <CheckCircle2 className="me-2 h-4 w-4" /> {t("restoreAct")}
                                 </DropdownMenuItem>
                               )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600 font-semibold focus:bg-red-50 focus:text-red-700"
+                                onClick={() => setDeleteTarget({ id: p.id, name: p.userName })}
+                              >
+                                <Trash2 className="me-2 h-4 w-4" /> {t("deleteAct")}
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -855,6 +883,40 @@ export default function AdminProviders() {
             >
               {doAction.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
               {t("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Delete Provider Confirmation ─────────────────────────── */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={o => !o && !deleteMutation.isPending && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              {t("confirmDeleteTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                {lang === "ar" ? "أنت على وشك حذف:" : "You are about to delete:"}{" "}
+                <strong className="text-foreground">{deleteTarget?.name}</strong>
+              </span>
+              <span className="block text-red-600 font-medium text-xs bg-red-50 border border-red-200 rounded-lg p-3">
+                ⚠️ {t("confirmDeleteDesc")}
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>{tc("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+            >
+              {deleteMutation.isPending
+                ? <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                : <Trash2 className="w-4 h-4 me-2" />}
+              {t("deleteConfirmBtn")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
