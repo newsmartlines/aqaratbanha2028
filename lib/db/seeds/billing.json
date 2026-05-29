@@ -2,11 +2,11 @@
   "version": "1.0",
   "group": "billing",
   "label": "الفواتير والاشتراكات",
-  "exportedAt": "2026-05-28T18:43:47.732Z",
+  "exportedAt": "2026-05-29T22:59:17.500Z",
   "tables": {
     "billingPlans": [
       {
-        "id": 1,
+        "id": 2,
         "name": "Free",
         "nameAr": "مجاني",
         "description": null,
@@ -23,14 +23,14 @@
         "trialDays": 0,
         "sortOrder": 0,
         "color": "#64748b",
-        "limits": "{\"properties\":3,\"photos\":10,\"videos\":0,\"featuredAds\":0,\"pinnedAds\":0,\"messages\":20,\"leads\":10}",
-        "features": "{\"homepageDisplay\":false,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":false,\"seo\":false,\"aiTools\":false,\"autoBoost\":false}",
+        "limits": "{\"properties\":1,\"photos\":2,\"videos\":1,\"featuredAds\":0,\"pinnedAds\":0,\"messages\":20,\"leads\":10,\"bumpUpsPerMonth\":0,\"spotlightAds\":0,\"boostDurationDays\":7,\"priorityScore\":0}",
+        "features": "{\"homepageDisplay\":false,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":false,\"seo\":false,\"aiTools\":false,\"autoBoost\":false,\"bumpUp\":false,\"spotlightAd\":false,\"extraBoostPurchase\":false}",
         "commissionPercent": "10.00",
-        "createdAt": "2026-05-28T18:03:14.350Z",
-        "updatedAt": "2026-05-28T18:03:14.350Z"
+        "createdAt": "2026-05-28T23:24:59.018Z",
+        "updatedAt": "2026-05-29T22:59:17.480Z"
       },
       {
-        "id": 2,
+        "id": 3,
         "name": "Bronze",
         "nameAr": "برونز",
         "description": null,
@@ -50,11 +50,11 @@
         "limits": "{\"properties\":10,\"photos\":20,\"videos\":2,\"featuredAds\":3,\"pinnedAds\":1,\"messages\":100,\"leads\":50}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":false,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "7.00",
-        "createdAt": "2026-05-28T18:03:14.356Z",
-        "updatedAt": "2026-05-28T18:03:14.356Z"
+        "createdAt": "2026-05-28T23:24:59.024Z",
+        "updatedAt": "2026-05-28T23:24:59.024Z"
       },
       {
-        "id": 3,
+        "id": 4,
         "name": "Silver",
         "nameAr": "فضي",
         "description": null,
@@ -64,21 +64,21 @@
         "currency": "EGP",
         "durationDays": 30,
         "durationType": "monthly",
-        "userType": "company",
+        "userType": "all",
         "status": "active",
         "isRecommended": true,
         "isMostPopular": false,
         "trialDays": 7,
         "sortOrder": 2,
         "color": "#475569",
-        "limits": "{\"properties\":30,\"photos\":30,\"videos\":5,\"featuredAds\":10,\"pinnedAds\":3,\"messages\":500,\"leads\":200,\"bumpUpsPerMonth\":0,\"spotlightAds\":0,\"boostDurationDays\":7,\"priorityScore\":0}",
-        "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":true,\"aiTools\":false,\"autoBoost\":false,\"bumpUp\":false,\"spotlightAd\":false,\"extraBoostPurchase\":false}",
+        "limits": "{\"properties\":30,\"photos\":30,\"videos\":5,\"featuredAds\":10,\"pinnedAds\":3,\"messages\":500,\"leads\":200}",
+        "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":true,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "5.00",
-        "createdAt": "2026-05-28T18:03:14.359Z",
-        "updatedAt": "2026-05-28T18:43:34.580Z"
+        "createdAt": "2026-05-28T23:24:59.032Z",
+        "updatedAt": "2026-05-28T23:24:59.032Z"
       },
       {
-        "id": 4,
+        "id": 5,
         "name": "Gold",
         "nameAr": "ذهبي",
         "description": null,
@@ -88,21 +88,21 @@
         "currency": "EGP",
         "durationDays": 30,
         "durationType": "monthly",
-        "userType": "company",
+        "userType": "all",
         "status": "active",
         "isRecommended": false,
         "isMostPopular": false,
         "trialDays": 14,
         "sortOrder": 3,
         "color": "#ca8a04",
-        "limits": "{\"properties\":100,\"photos\":50,\"videos\":10,\"featuredAds\":30,\"pinnedAds\":10,\"messages\":-1,\"leads\":-1,\"bumpUpsPerMonth\":0,\"spotlightAds\":0,\"boostDurationDays\":7,\"priorityScore\":0}",
-        "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":false,\"bumpUp\":false,\"spotlightAd\":false,\"extraBoostPurchase\":false}",
+        "limits": "{\"properties\":100,\"photos\":50,\"videos\":10,\"featuredAds\":30,\"pinnedAds\":10,\"messages\":-1,\"leads\":-1}",
+        "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":false}",
         "commissionPercent": "3.00",
-        "createdAt": "2026-05-28T18:03:14.362Z",
-        "updatedAt": "2026-05-28T18:43:47.711Z"
+        "createdAt": "2026-05-28T23:24:59.036Z",
+        "updatedAt": "2026-05-28T23:24:59.036Z"
       },
       {
-        "id": 5,
+        "id": 6,
         "name": "VIP",
         "nameAr": "VIP",
         "description": null,
@@ -122,13 +122,13 @@
         "limits": "{\"properties\":-1,\"photos\":-1,\"videos\":-1,\"featuredAds\":-1,\"pinnedAds\":-1,\"messages\":-1,\"leads\":-1}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":true}",
         "commissionPercent": "2.00",
-        "createdAt": "2026-05-28T18:03:14.365Z",
-        "updatedAt": "2026-05-28T18:03:14.365Z"
+        "createdAt": "2026-05-28T23:24:59.040Z",
+        "updatedAt": "2026-05-28T23:24:59.040Z"
       }
     ],
     "commissionRules": [
       {
-        "id": 1,
+        "id": 2,
         "name": "عمولة البيع",
         "type": "percentage",
         "value": "5.00",
@@ -139,11 +139,11 @@
         "priority": 1,
         "isActive": true,
         "notes": "عمولة على صفقات البيع",
-        "createdAt": "2026-05-28T18:03:14.369Z",
-        "updatedAt": "2026-05-28T18:03:14.369Z"
+        "createdAt": "2026-05-28T23:24:59.043Z",
+        "updatedAt": "2026-05-28T23:24:59.043Z"
       },
       {
-        "id": 2,
+        "id": 3,
         "name": "عمولة الإيجار",
         "type": "percentage",
         "value": "3.00",
@@ -154,11 +154,11 @@
         "priority": 2,
         "isActive": true,
         "notes": "عمولة على صفقات الإيجار",
-        "createdAt": "2026-05-28T18:03:14.372Z",
-        "updatedAt": "2026-05-28T18:03:14.372Z"
+        "createdAt": "2026-05-28T23:24:59.047Z",
+        "updatedAt": "2026-05-28T23:24:59.047Z"
       },
       {
-        "id": 3,
+        "id": 4,
         "name": "عمولة الإعلانات المميزة",
         "type": "percentage",
         "value": "2.00",
@@ -169,13 +169,13 @@
         "priority": 3,
         "isActive": true,
         "notes": "عمولة الإعلانات المدفوعة",
-        "createdAt": "2026-05-28T18:03:14.375Z",
-        "updatedAt": "2026-05-28T18:03:14.375Z"
+        "createdAt": "2026-05-28T23:24:59.051Z",
+        "updatedAt": "2026-05-28T23:24:59.051Z"
       }
     ],
     "packages": [
       {
-        "id": 1,
+        "id": 2,
         "nameAr": "مجاني",
         "nameEn": "Free",
         "price": "0.00",
@@ -185,10 +185,10 @@
         "featuredAllowed": 0,
         "topBadge": false,
         "priorityRank": 0,
-        "createdAt": "2026-05-28T18:03:14.385Z"
+        "createdAt": "2026-05-28T23:24:59.064Z"
       },
       {
-        "id": 2,
+        "id": 3,
         "nameAr": "برونزي",
         "nameEn": "Bronze",
         "price": "99.00",
@@ -198,10 +198,10 @@
         "featuredAllowed": 3,
         "topBadge": false,
         "priorityRank": 1,
-        "createdAt": "2026-05-28T18:03:14.385Z"
+        "createdAt": "2026-05-28T23:24:59.064Z"
       },
       {
-        "id": 3,
+        "id": 4,
         "nameAr": "بريميوم",
         "nameEn": "Premium",
         "price": "249.00",
@@ -211,7 +211,7 @@
         "featuredAllowed": null,
         "topBadge": true,
         "priorityRank": 2,
-        "createdAt": "2026-05-28T18:03:14.385Z"
+        "createdAt": "2026-05-28T23:24:59.064Z"
       }
     ]
   }
