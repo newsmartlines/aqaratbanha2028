@@ -50,26 +50,26 @@ const STATUS_MAP: Record<string, {
 }> = {
   approved: {
     label: "منشور",
-    badgeCls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40",
-    borderCls: "border-zinc-800",
+    badgeCls: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+    borderCls: "border-border",
     icon: <CheckCircle2 className="w-3 h-3" />,
   },
   pending: {
     label: "قيد المراجعة",
-    badgeCls: "bg-amber-500/20 text-amber-400 border border-amber-500/40",
-    borderCls: "border-amber-900/40",
+    badgeCls: "bg-amber-100 text-amber-700 border border-amber-200",
+    borderCls: "border-amber-200",
     icon: <Clock className="w-3 h-3" />,
   },
   rejected: {
     label: "مرفوض",
-    badgeCls: "bg-red-500/20 text-red-400 border border-red-500/40",
-    borderCls: "border-red-900/40",
+    badgeCls: "bg-red-100 text-red-700 border border-red-200",
+    borderCls: "border-red-200",
     icon: <XCircle className="w-3 h-3" />,
   },
   draft: {
     label: "مسودة",
-    badgeCls: "bg-zinc-700 text-zinc-300 border border-zinc-600",
-    borderCls: "border-zinc-800",
+    badgeCls: "bg-gray-100 text-gray-600 border border-gray-200",
+    borderCls: "border-border",
     icon: <Edit3 className="w-3 h-3" />,
   },
 };
@@ -98,9 +98,9 @@ function fmtPrice(price: string | number | undefined): string | null {
 
 function StatPill({ icon, value, label }: { icon: React.ReactNode; value: number | undefined; label: string }) {
   return (
-    <span className="flex items-center gap-1 text-xs text-zinc-500 shrink-0" title={label}>
+    <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0" title={label}>
       {icon}
-      <span className="font-bold text-zinc-300">{(value ?? 0).toLocaleString("ar-EG")}</span>
+      <span className="font-bold text-foreground">{(value ?? 0).toLocaleString("ar-EG")}</span>
     </span>
   );
 }
@@ -116,7 +116,7 @@ function ListCard({ prop, onEdit, onDelete }: {
   const totalCalls = (prop.phoneClickCount ?? 0) + (prop.whatsappClickCount ?? 0);
 
   return (
-    <div className={`bg-zinc-900 rounded-2xl border overflow-hidden flex flex-row group shadow-sm hover:shadow-lg hover:brightness-110 transition-all duration-300 ${st.borderCls}`}>
+    <div className={`bg-white dark:bg-card rounded-2xl border overflow-hidden flex flex-row group shadow-sm hover:shadow-lg transition-all duration-300 ${st.borderCls}`}>
 
       {/* Image — fixed width, full height */}
       <div className="relative w-36 sm:w-44 md:w-52 shrink-0 overflow-hidden">
@@ -129,7 +129,7 @@ function ListCard({ prop, onEdit, onDelete }: {
             onError={e => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-zinc-600 gap-1">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400 gap-1">
             <Building2 className="w-8 h-8" />
           </div>
         )}
@@ -152,7 +152,7 @@ function ListCard({ prop, onEdit, onDelete }: {
 
         {/* Top row: title + status */}
         <div className="flex items-start gap-2">
-          <h3 className="text-white font-bold text-sm leading-snug line-clamp-2 flex-1">{prop.title}</h3>
+          <h3 className="text-foreground font-bold text-sm leading-snug line-clamp-2 flex-1">{prop.title}</h3>
           <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${st.badgeCls}`}>
             {st.icon} {st.label}
           </span>
@@ -160,7 +160,7 @@ function ListCard({ prop, onEdit, onDelete }: {
 
         {/* Location */}
         {loc && (
-          <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="w-3 h-3 text-teal-500 shrink-0" />
             <span className="truncate">{loc}</span>
           </div>
@@ -168,14 +168,14 @@ function ListCard({ prop, onEdit, onDelete }: {
 
         {/* Price + specs */}
         <div className="flex items-center gap-3 flex-wrap">
-          {price && <span className="text-teal-400 font-bold text-sm">{price}</span>}
+          {price && <span className="text-teal-600 font-bold text-sm">{price}</span>}
           {prop.area && (
-            <span className="flex items-center gap-0.5 text-xs text-zinc-500">
+            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
               <Maximize2 className="w-3 h-3" /> {prop.area} م²
             </span>
           )}
           {prop.rooms != null && Number(prop.rooms) > 0 && (
-            <span className="flex items-center gap-0.5 text-xs text-zinc-500">
+            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
               <BedDouble className="w-3 h-3" /> {prop.rooms} غرف
             </span>
           )}
@@ -183,16 +183,16 @@ function ListCard({ prop, onEdit, onDelete }: {
 
         {/* Rejection reason */}
         {prop.status === "rejected" && (
-          <div className="rounded-xl border border-red-900/50 bg-red-950/50 p-2.5 mt-0.5">
-            <p className="text-xs font-bold text-red-400 mb-1 flex items-center gap-1">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-2.5 mt-0.5">
+            <p className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" /> سبب الرفض:
             </p>
-            <p className="text-xs text-red-400/80 leading-relaxed line-clamp-2">
+            <p className="text-xs text-red-500 leading-relaxed line-clamp-2">
               {prop.rejectionReason || "لا يتوافق مع شروط النشر. راجع الإعلان وأعد التقديم."}
             </p>
             <button
               onClick={() => onEdit(prop.id)}
-              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-red-700 hover:bg-red-600 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
             >
               <Edit3 className="w-3 h-3" /> تعديل وإعادة التقديم
             </button>
@@ -202,29 +202,29 @@ function ListCard({ prop, onEdit, onDelete }: {
         <div className="flex-1" />
 
         {/* Stats + Actions */}
-        <div className="flex items-center gap-2.5 pt-2 border-t border-zinc-800 flex-wrap">
-          <StatPill icon={<Eye className="w-3.5 h-3.5 text-blue-400" />}          value={prop.viewCount}      label="مشاهدات" />
-          <StatPill icon={<Phone className="w-3.5 h-3.5 text-green-400" />}       value={totalCalls}           label="اتصالات" />
-          <StatPill icon={<Heart className="w-3.5 h-3.5 text-pink-500" />}        value={prop.favoritesCount}  label="مفضلة" />
-          <StatPill icon={<MessageSquare className="w-3.5 h-3.5 text-violet-400" />} value={prop.messageCount}  label="رسائل" />
+        <div className="flex items-center gap-2.5 pt-2 border-t border-border flex-wrap">
+          <StatPill icon={<Eye className="w-3.5 h-3.5 text-blue-500" />}             value={prop.viewCount}     label="مشاهدات" />
+          <StatPill icon={<Phone className="w-3.5 h-3.5 text-emerald-500" />}        value={totalCalls}          label="اتصالات" />
+          <StatPill icon={<Heart className="w-3.5 h-3.5 text-pink-500" />}           value={prop.favoritesCount} label="مفضلة" />
+          <StatPill icon={<MessageSquare className="w-3.5 h-3.5 text-violet-500" />} value={prop.messageCount}   label="رسائل" />
           <div className="flex-1" />
           <a
             href={`/property/${prop.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-teal-400 border border-zinc-700 hover:border-teal-600 bg-zinc-800 hover:bg-zinc-700 rounded-lg py-1.5 px-2.5 transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-teal-600 border border-border hover:border-teal-300 bg-gray-50 hover:bg-teal-50 rounded-lg py-1.5 px-2.5 transition-colors"
           >
             <Eye className="w-3 h-3" /> عرض
           </a>
           <button
             onClick={() => onEdit(prop.id)}
-            className="flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-blue-400 border border-zinc-700 hover:border-blue-600 bg-zinc-800 hover:bg-zinc-700 rounded-lg py-1.5 px-2.5 transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-blue-600 border border-border hover:border-blue-300 bg-gray-50 hover:bg-blue-50 rounded-lg py-1.5 px-2.5 transition-colors"
           >
             <Edit3 className="w-3 h-3" /> تعديل
           </button>
           <button
             onClick={() => onDelete(prop.id, prop.title)}
-            className="flex items-center gap-1 text-xs text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-900 hover:bg-red-950/40 rounded-lg py-1.5 px-2 transition-colors"
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 border border-transparent hover:border-red-200 hover:bg-red-50 rounded-lg py-1.5 px-2 transition-colors"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -245,10 +245,10 @@ function GridCard({ prop, onEdit, onDelete }: {
   const totalCalls = (prop.phoneClickCount ?? 0) + (prop.whatsappClickCount ?? 0);
 
   return (
-    <div className={`bg-zinc-900 rounded-2xl border overflow-hidden flex flex-col group shadow-sm hover:shadow-xl hover:brightness-110 transition-all duration-300 ${st.borderCls}`}>
+    <div className={`bg-white dark:bg-card rounded-2xl border overflow-hidden flex flex-col group shadow-sm hover:shadow-xl transition-all duration-300 ${st.borderCls}`}>
 
       {/* Image */}
-      <div className="relative aspect-[16/9] bg-zinc-800 overflow-hidden shrink-0">
+      <div className="relative aspect-[16/9] bg-gray-100 overflow-hidden shrink-0">
         {imgSrc ? (
           <img
             src={mediaUrl(imgSrc)}
@@ -258,7 +258,7 @@ function GridCard({ prop, onEdit, onDelete }: {
             onError={e => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-zinc-700">
+          <div className="w-full h-full flex items-center justify-center text-gray-300">
             <Building2 className="w-10 h-10" />
           </div>
         )}
@@ -279,30 +279,30 @@ function GridCard({ prop, onEdit, onDelete }: {
 
       {/* Body */}
       <div className="p-3.5 flex flex-col gap-2 flex-1">
-        <h3 className="text-white font-bold text-sm leading-snug line-clamp-2">{prop.title}</h3>
+        <h3 className="text-foreground font-bold text-sm leading-snug line-clamp-2">{prop.title}</h3>
         {loc && (
-          <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="w-3 h-3 text-teal-500 shrink-0" />
             <span className="truncate">{loc}</span>
           </div>
         )}
         <div className="flex items-center gap-2.5 flex-wrap">
-          {price && <span className="text-teal-400 font-bold text-sm">{price}</span>}
-          {prop.area && <span className="text-xs text-zinc-500 flex items-center gap-0.5"><Maximize2 className="w-3 h-3" /> {prop.area} م²</span>}
-          {prop.rooms != null && Number(prop.rooms) > 0 && <span className="text-xs text-zinc-500 flex items-center gap-0.5"><BedDouble className="w-3 h-3" /> {prop.rooms}</span>}
+          {price && <span className="text-teal-600 font-bold text-sm">{price}</span>}
+          {prop.area && <span className="text-xs text-muted-foreground flex items-center gap-0.5"><Maximize2 className="w-3 h-3" /> {prop.area} م²</span>}
+          {prop.rooms != null && Number(prop.rooms) > 0 && <span className="text-xs text-muted-foreground flex items-center gap-0.5"><BedDouble className="w-3 h-3" /> {prop.rooms}</span>}
         </div>
 
         {prop.status === "rejected" && (
-          <div className="rounded-xl border border-red-900/50 bg-red-950/50 p-2.5">
-            <p className="text-xs font-bold text-red-400 mb-1 flex items-center gap-1">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-2.5">
+            <p className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" /> سبب الرفض:
             </p>
-            <p className="text-xs text-red-400/80 leading-relaxed line-clamp-2">
+            <p className="text-xs text-red-500 leading-relaxed line-clamp-2">
               {prop.rejectionReason || "لا يتوافق مع شروط النشر."}
             </p>
             <button
               onClick={() => onEdit(prop.id)}
-              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-red-700 hover:bg-red-600 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
             >
               <Edit3 className="w-3 h-3" /> تعديل وإعادة التقديم
             </button>
@@ -312,11 +312,11 @@ function GridCard({ prop, onEdit, onDelete }: {
         <div className="flex-1" />
 
         {/* Stats */}
-        <div className="flex items-center gap-2.5 pt-2 border-t border-zinc-800 flex-wrap">
-          <StatPill icon={<Eye className="w-3 h-3 text-blue-400" />}              value={prop.viewCount}      label="مشاهدات" />
-          <StatPill icon={<Phone className="w-3 h-3 text-green-400" />}           value={totalCalls}           label="اتصالات" />
-          <StatPill icon={<Heart className="w-3 h-3 text-pink-500" />}            value={prop.favoritesCount}  label="مفضلة" />
-          <StatPill icon={<MessageSquare className="w-3 h-3 text-violet-400" />}  value={prop.messageCount}    label="رسائل" />
+        <div className="flex items-center gap-2.5 pt-2 border-t border-border flex-wrap">
+          <StatPill icon={<Eye className="w-3 h-3 text-blue-500" />}             value={prop.viewCount}     label="مشاهدات" />
+          <StatPill icon={<Phone className="w-3 h-3 text-emerald-500" />}        value={totalCalls}          label="اتصالات" />
+          <StatPill icon={<Heart className="w-3 h-3 text-pink-500" />}           value={prop.favoritesCount} label="مفضلة" />
+          <StatPill icon={<MessageSquare className="w-3 h-3 text-violet-500" />} value={prop.messageCount}   label="رسائل" />
         </div>
 
         {/* Actions */}
@@ -325,19 +325,19 @@ function GridCard({ prop, onEdit, onDelete }: {
             href={`/property/${prop.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-zinc-400 hover:text-teal-400 border border-zinc-700 hover:border-teal-600 bg-zinc-800 hover:bg-zinc-700 rounded-lg py-1.5 px-2 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-gray-600 hover:text-teal-600 border border-border hover:border-teal-300 bg-gray-50 hover:bg-teal-50 rounded-lg py-1.5 px-2 transition-colors"
           >
             <Eye className="w-3 h-3" /> عرض
           </a>
           <button
             onClick={() => onEdit(prop.id)}
-            className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-zinc-400 hover:text-blue-400 border border-zinc-700 hover:border-blue-600 bg-zinc-800 hover:bg-zinc-700 rounded-lg py-1.5 px-2 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-gray-600 hover:text-blue-600 border border-border hover:border-blue-300 bg-gray-50 hover:bg-blue-50 rounded-lg py-1.5 px-2 transition-colors"
           >
             <Edit3 className="w-3 h-3" /> تعديل
           </button>
           <button
             onClick={() => onDelete(prop.id, prop.title)}
-            className="flex items-center justify-center text-xs text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-900 hover:bg-red-950/40 rounded-lg p-1.5 transition-colors"
+            className="flex items-center justify-center text-xs text-gray-400 hover:text-red-500 border border-transparent hover:border-red-200 hover:bg-red-50 rounded-lg p-1.5 transition-colors"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -496,14 +496,14 @@ export default function MyPropertiesPage() {
             <button
               onClick={() => setViewMode("list")}
               title="عرض قائمة"
-              className={`flex items-center justify-center p-2 transition-colors ${viewMode === "list" ? "bg-zinc-900 text-white" : "bg-white text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50"}`}
+              className={`flex items-center justify-center p-2 transition-colors ${viewMode === "list" ? "bg-teal-600 text-white" : "bg-white text-gray-400 hover:text-gray-700 hover:bg-gray-50"}`}
             >
               <LayoutList className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("grid")}
               title="عرض شبكة"
-              className={`flex items-center justify-center p-2 transition-colors border-r border-l border-border ${viewMode === "grid" ? "bg-zinc-900 text-white" : "bg-white text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50"}`}
+              className={`flex items-center justify-center p-2 transition-colors border-r border-l border-border ${viewMode === "grid" ? "bg-teal-600 text-white" : "bg-white text-gray-400 hover:text-gray-700 hover:bg-gray-50"}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
