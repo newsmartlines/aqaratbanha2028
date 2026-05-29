@@ -1,9 +1,8 @@
-import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { Link, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
-import { api, mediaUrl, type BillingPlan } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +13,11 @@ import {
   Building2, User, Mail, Phone, Lock, Eye, EyeOff,
   Check, ChevronLeft, Upload, X, Loader2, CheckCircle2,
   ArrowLeft, Image as ImageIcon, Shield, AlertCircle,
-  Star, Zap, Crown, Package as PkgIcon,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 2;
+void TOTAL_STEPS;
 
 /* ─── Auto-redirect welcome screen ─── */
 function AutoRedirectScreen({ name, onRedirect }: { name: string; onRedirect: () => void }) {
@@ -151,183 +150,6 @@ function DragDropZone({ label, hint, preview, onFile, onClear, aspectRatio = "as
   );
 }
 
-type PlanFeatures = {
-  homepageDisplay?: boolean; topSearch?: boolean; verifiedBadge?: boolean;
-  premiumBadge?: boolean; prioritySupport?: boolean; analytics?: boolean;
-  seo?: boolean; aiTools?: boolean; autoBoost?: boolean;
-};
-
-type PlanLimits = {
-  properties?: number; photos?: number; videos?: number;
-  featuredAds?: number; pinnedAds?: number; messages?: number; leads?: number;
-};
-
-const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
-  homepageDisplay: "ظهور في الصفحة الرئيسية",
-  topSearch: "أعلى نتائج البحث",
-  verifiedBadge: "شارة موثق",
-  premiumBadge: "شارة Premium",
-  prioritySupport: "دعم فني بأولوية",
-  analytics: "إحصائيات متقدمة",
-  seo: "تحسين SEO",
-  aiTools: "أدوات الذكاء الاصطناعي",
-  autoBoost: "رفع تلقائي للإعلان",
-};
-
-function parsePlanFeatures(raw: string): string[] {
-  try {
-    const obj: PlanFeatures = JSON.parse(raw);
-    return (Object.entries(obj) as [keyof PlanFeatures, boolean][])
-      .filter(([, v]) => v)
-      .map(([k]) => FEATURE_LABELS[k])
-      .filter(Boolean);
-  } catch { return []; }
-}
-
-function parsePlanLimits(raw: string): PlanLimits {
-  try { return JSON.parse(raw); } catch { return {}; }
-}
-
-function buildPlanBullets(plan: BillingPlan): string[] {
-  const bullets: string[] = [];
-  const limits = parsePlanLimits(plan.limits);
-  const price = parseFloat(plan.price);
-
-  if (price === 0) bullets.push("نشر مجاني بدون رسوم");
-  else bullets.push(`نشر لمدة ${plan.durationDays} يوماً`);
-
-  if (limits.properties === -1 || !limits.properties) bullets.push("عدد إعلانات غير محدود");
-  else bullets.push(`حتى ${limits.properties} إعلان نشط`);
-
-  if (limits.photos && limits.photos > 0) bullets.push(`حتى ${limits.photos} صورة لكل إعلان`);
-  if (limits.featuredAds && limits.featuredAds > 0) bullets.push(`${limits.featuredAds} إعلان مميز`);
-
-  const comm = parseFloat(plan.commissionPercent ?? "0");
-  if (comm > 0) bullets.push(`عمولة ${comm}% فقط`);
-  else bullets.push("بدون عمولة على المبيعات");
-
-  const featureBullets = parsePlanFeatures(plan.features);
-  bullets.push(...featureBullets.slice(0, 4));
-
-  if (plan.trialDays > 0) bullets.push(`تجربة مجانية ${plan.trialDays} يوم`);
-
-  return bullets;
-}
-
-/* ─── Premium Package card ─── */
-function PackageCard({
-  plan, selected, onSelect,
-}: {
-  plan: BillingPlan; selected: boolean; onSelect: () => void;
-}) {
-  const price  = parseFloat(plan.price);
-  const isFree = price === 0;
-  const bullets = buildPlanBullets(plan);
-  const accent = plan.color || "#0d9488";
-
-  const isPopular    = plan.isMostPopular;
-  const isRecommended = plan.isRecommended;
-  const badge = isPopular ? "الأكثر شيوعاً" : isRecommended ? "موصى به" : null;
-
-  return (
-    <div
-      onClick={onSelect}
-      className={`relative rounded-2xl bg-white flex flex-col overflow-hidden cursor-pointer
-        transition-all duration-250 group
-        ${selected
-          ? "shadow-2xl -translate-y-2 ring-2 ring-offset-2"
-          : "border border-zinc-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 hover:border-transparent"
-        }`}
-      style={selected ? { ringColor: accent, borderColor: accent } as React.CSSProperties : {}}
-    >
-      {/* Top color bar */}
-      <div className="h-1.5 w-full shrink-0" style={{ background: accent }} />
-
-      {/* Popular badge */}
-      {badge && (
-        <div className="absolute top-3 right-3 z-10">
-          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm"
-            style={{ background: accent, color: "#fff" }}>
-            {isPopular ? <Star className="w-2.5 h-2.5" /> : <Crown className="w-2.5 h-2.5" />}
-            {badge}
-          </span>
-        </div>
-      )}
-
-      {/* Selected checkmark */}
-      {selected && (
-        <div className="absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center z-10 shadow"
-          style={{ background: accent }}>
-          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="px-5 pt-6 pb-5 border-b border-zinc-100">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">
-          {plan.name}
-        </p>
-        <h3 className="text-lg font-extrabold text-zinc-800 mb-1 leading-tight">
-          {plan.nameAr ?? plan.name}
-        </h3>
-        {plan.descriptionAr && (
-          <p className="text-xs text-zinc-400 mb-3 leading-relaxed">{plan.descriptionAr}</p>
-        )}
-        <div className="flex items-end gap-1 mt-3">
-          {isFree ? (
-            <span className="text-3xl font-black text-emerald-600">مجاني</span>
-          ) : (
-            <>
-              <span className="text-3xl font-black text-zinc-900">
-                {Number(price).toLocaleString("ar")}
-              </span>
-              <span className="text-sm text-zinc-400 mb-1 mr-1">
-                {plan.currency} / {plan.durationDays}ي
-              </span>
-            </>
-          )}
-        </div>
-        {plan.trialDays > 0 && (
-          <p className="text-xs font-medium text-emerald-600 mt-1">
-            تجربة مجانية {plan.trialDays} يوم
-          </p>
-        )}
-      </div>
-
-      {/* Features list */}
-      <div className="px-5 py-4 flex-1 space-y-2">
-        {bullets.map((b, i) => (
-          <div key={i} className="flex items-start gap-2.5">
-            <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors bg-zinc-100"
-              style={{ background: selected ? `${accent}22` : undefined }}>
-              <Check className="w-2.5 h-2.5" strokeWidth={3}
-                style={{ color: selected ? accent : "#a1a1aa" }} />
-            </div>
-            <span className="text-sm text-zinc-600 leading-tight">{b}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* CTA button */}
-      <div className="px-5 pb-5 pt-2">
-        <button
-          type="button"
-          onClick={e => { e.stopPropagation(); onSelect(); }}
-          className="w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200"
-          style={selected
-            ? { background: accent, color: "#fff" }
-            : { background: "#f4f4f5", color: "#3f3f46" }
-          }
-          onMouseEnter={e => { if (!selected) { (e.currentTarget as HTMLButtonElement).style.background = accent; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
-          onMouseLeave={e => { if (!selected) { (e.currentTarget as HTMLButtonElement).style.background = "#f4f4f5"; (e.currentTarget as HTMLButtonElement).style.color = "#3f3f46"; } }}
-        >
-          {selected ? "تم الاختيار ✓" : "اختر هذه الباقة"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 /* ══════════════════════════════════════════════════
     Main Page
 ══════════════════════════════════════════════════ */
@@ -340,7 +162,6 @@ export default function CompanyRegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done,  setDone]   = useState(false);
-  const [selectedPkg, setSelectedPkg] = useState<number | null>(null);
 
   const logoFileRef   = useRef<File | null>(null);
   const bannerFileRef = useRef<File | null>(null);
@@ -351,16 +172,6 @@ export default function CompanyRegisterPage() {
     acceptPrivacy: false, acceptTerms: false,
   });
   const set = (patch: Partial<typeof form>) => setForm(prev => ({ ...prev, ...patch }));
-
-  const { data: allPlans = [], isLoading: pkgsLoading } = useQuery<BillingPlan[]>({
-    queryKey: ["billingPlans", "company"],
-    queryFn: () => api.billingPlans.publicListByType("company"),
-    staleTime: 0,
-  });
-
-  // الـ API يُعيد فقط الباقات النشطة المخصصة للشركات (company + all)
-  const companyPlans = [...allPlans]
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || parseFloat(a.price) - parseFloat(b.price));
 
   useEffect(() => {
     if (user) {
@@ -393,11 +204,11 @@ export default function CompanyRegisterPage() {
 
   const handleNext = () => {
     if (step === 1 && validateStep1()) setStep(2);
-    else if (step === 2 && validateStep2()) setStep(3);
   };
 
-  /* ── Submit ── */
+  /* ── Submit — called directly from step 2 ── */
   const handleSubmit = async () => {
+    if (!validateStep2()) return;
     setSubmitting(true);
     try {
       const registered = await api.auth.register({
@@ -427,14 +238,10 @@ export default function CompanyRegisterPage() {
         await api.users.update((registered as any).id, {
           name: form.companyName.trim() || form.name.trim(),
         });
-        if (selectedPkg !== null) {
-          try { await api.subscriptions.subscribe(providerId, selectedPkg); } catch {}
-        }
       }
 
       const me = await api.auth.me();
       setUser(me as any);
-      // Mark as new user so dashboard shows welcome message
       localStorage.setItem("newUserWelcome", (me as any).name || form.companyName.trim() || form.name.trim());
       setDone(true);
     } catch (err: any) {
@@ -453,16 +260,13 @@ export default function CompanyRegisterPage() {
   );
 
   /* ── Step labels ── */
-  const stepLabels = ["معلومات الحساب", "بيانات الشركة", "الباقة"];
-
-  /* ── Width: wider on step 3 for grid ── */
-  const containerWidth = step === 3 ? "max-w-4xl" : "max-w-lg";
+  const stepLabels = ["معلومات الحساب", "بيانات الشركة"];
 
   return (
     <div className="min-h-screen bg-zinc-50" dir="rtl">
       <Header />
 
-      <div className={`${containerWidth} mx-auto px-4 py-10 transition-all duration-300`}>
+      <div className="max-w-lg mx-auto px-4 py-10">
 
         {/* Page header */}
         <div className="text-center mb-8">
@@ -478,19 +282,19 @@ export default function CompanyRegisterPage() {
           {stepLabels.map((label, i) => {
             const n = i + 1;
             const active = step === n;
-            const done   = step > n;
+            const isDone = step > n;
             return (
               <div key={n} className="flex items-center gap-2 flex-1">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all duration-300
-                  ${done ? "bg-primary text-white" : active ? "bg-primary text-white shadow-lg shadow-primary/30 scale-110" : "bg-zinc-200 text-zinc-500"}`}>
-                  {done ? <Check className="w-4 h-4" /> : n}
+                  ${isDone ? "bg-primary text-white" : active ? "bg-primary text-white shadow-lg shadow-primary/30 scale-110" : "bg-zinc-200 text-zinc-500"}`}>
+                  {isDone ? <Check className="w-4 h-4" /> : n}
                 </div>
                 <span className={`text-sm font-semibold hidden sm:block transition-colors shrink-0
-                  ${active ? "text-primary" : done ? "text-zinc-600" : "text-zinc-400"}`}>
+                  ${active ? "text-primary" : isDone ? "text-zinc-600" : "text-zinc-400"}`}>
                   {label}
                 </span>
                 {i < stepLabels.length - 1 && (
-                  <div className={`flex-1 h-0.5 rounded-full transition-all duration-500 ${done ? "bg-primary" : "bg-zinc-200"}`} />
+                  <div className={`flex-1 h-0.5 rounded-full transition-all duration-500 ${isDone ? "bg-primary" : "bg-zinc-200"}`} />
                 )}
               </div>
             );
@@ -712,114 +516,22 @@ export default function CompanyRegisterPage() {
                 <span>بياناتك محمية بتشفير SSL — لن تُشارك مع أي طرف ثالث</span>
               </div>
 
-              <Button onClick={handleNext} size="lg" disabled={submitting}
-                className="w-full h-14 rounded-2xl font-bold text-base shadow-lg shadow-primary/20">
-                التالي — اختيار الباقة <ChevronLeft className="w-5 h-5 mr-2" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════ STEP 3 — PACKAGES ═══════════ */}
-        {step === 3 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-400 space-y-8">
-            <div className="text-center">
-              <button type="button" onClick={() => setStep(2)}
-                className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-primary transition-colors mx-auto mb-5">
-                <ArrowLeft className="w-4 h-4 rotate-180" />العودة
-              </button>
-              <h2 className="text-2xl font-extrabold text-zinc-800 mb-2">اختر باقتك</h2>
-              <p className="text-zinc-500 text-sm max-w-lg mx-auto">
-                اختر الباقة المناسبة لنشاطك العقاري. يمكنك الترقية في أي وقت من لوحة التحكم.
-              </p>
-            </div>
-
-            {pkgsLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <span className="mr-3 text-zinc-500 font-medium">جاري تحميل الباقات…</span>
-              </div>
-            ) : companyPlans.length === 0 ? (
-              <div className="text-center py-16 text-zinc-400">
-                <PkgIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="font-semibold">لا توجد باقات متاحة للشركات حالياً</p>
-                <p className="text-xs mt-1">يمكنك المتابعة والاشتراك لاحقاً من لوحة التحكم</p>
-              </div>
-            ) : (
-              <>
-                {/* Premium 4-per-row grid — wraps automatically when more than 4 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                  {companyPlans.map(plan => (
-                    <PackageCard
-                      key={plan.id}
-                      plan={plan}
-                      selected={selectedPkg === plan.id}
-                      onSelect={() => setSelectedPkg(prev => prev === plan.id ? null : plan.id)}
-                    />
-                  ))}
-                </div>
-
-                {/* Selected summary banner */}
-                {selectedPkg !== null && (() => {
-                  const p = companyPlans.find(x => x.id === selectedPkg);
-                  if (!p) return null;
-                  const isFree = parseFloat(p.price) === 0;
-                  const accent = p.color || "#0d9488";
-                  return (
-                    <div className="rounded-2xl px-5 py-4 flex items-center justify-between border"
-                      style={{ background: `${accent}0f`, borderColor: `${accent}40` }}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm"
-                          style={{ background: accent }}>
-                          <Check className="w-5 h-5 text-white" strokeWidth={3} />
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm" style={{ color: accent }}>
-                            الباقة المختارة: {p.nameAr ?? p.name}
-                          </p>
-                          <p className="text-xs text-zinc-500">
-                            {p.durationDays} يوم ·{" "}
-                            {isFree ? "مجانية" : `${Number(p.price).toLocaleString("ar")} ${p.currency}`}
-                          </p>
-                        </div>
-                      </div>
-                      <button type="button" onClick={() => setSelectedPkg(null)}
-                        className="text-xs font-semibold underline shrink-0" style={{ color: accent }}>
-                        تغيير
-                      </button>
-                    </div>
-                  );
-                })()}
-
-                {/* Skip note */}
-                <p className="text-center text-xs text-zinc-400">
-                  يمكنك تخطي هذه الخطوة الآن والاشتراك لاحقاً من لوحة التحكم
-                </p>
-              </>
-            )}
-
-            {/* Submit */}
-            <div className="max-w-lg mx-auto space-y-3">
+              {/* Submit — goes straight to dashboard, no package step */}
               <Button onClick={handleSubmit} size="lg" disabled={submitting}
                 className="w-full h-14 rounded-2xl font-bold text-base shadow-lg shadow-primary/20">
                 {submitting
                   ? <><Loader2 className="w-5 h-5 ml-2 animate-spin" />جاري إنشاء الحساب…</>
-                  : <><CheckCircle2 className="w-5 h-5 ml-2" />إنشاء حساب الشركة{selectedPkg !== null ? " والاشتراك" : ""}</>}
+                  : <><CheckCircle2 className="w-5 h-5 ml-2" />إنشاء حساب الشركة</>}
               </Button>
-              {selectedPkg === null && (
-                <p className="text-center text-xs text-zinc-400">ستنشئ حساباً بالباقة المجانية</p>
-              )}
             </div>
           </div>
         )}
 
-        {/* Login link (steps 1 & 2) */}
-        {step < 3 && (
-          <p className="text-center text-sm text-zinc-500 mt-6">
-            لديك حساب بالفعل؟{" "}
-            <Link href="/login" className="text-primary font-semibold hover:underline">تسجيل الدخول</Link>
-          </p>
-        )}
+        {/* Login link */}
+        <p className="text-center text-sm text-zinc-500 mt-6">
+          لديك حساب بالفعل؟{" "}
+          <Link href="/login" className="text-primary font-semibold hover:underline">تسجيل الدخول</Link>
+        </p>
       </div>
       <RealEstateFooter />
     </div>
