@@ -35,7 +35,7 @@ import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
   Heart, Map, Grid3X3, X, ChevronDown, ChevronUp,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
-  LayoutList, Scale, GitCompare, Eye, Clock, Flag, Layers, Phone, BadgeCheck,
+  LayoutList, Scale, GitCompare, Eye, Clock, Flag, Layers, Phone, BadgeCheck, Crown,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -77,6 +77,7 @@ type DbProp = {
   furnished: string | null;
   paymentMethod: string | null;
   features: string | null;
+  contactMethods: string | null;
   floor: number | null;
   createdAt: string | null;
   approvedAt: string | null;
@@ -105,12 +106,14 @@ type DisplayProp = {
   area: number;
   lat: number;
   lng: number;
+  hasCoords: boolean;
   price: string;
   priceNum: number;
   finishing: string;
   furnished: string;
   paymentMethod: string;
   features: string[];
+  contactMethods: string[];
   floor: number | null;
   createdAt: string | null;
   approvedAt: string | null;
@@ -156,9 +159,11 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     verified: row.verified ?? false,
     phone: (row as any).phone ?? row.providerPhone ?? "",
     whatsapp: (row as any).whatsapp ?? row.providerWhatsapp ?? "",
+    contactMethods: tryJsonArr((row as any).contactMethods),
     area: row.area ? parseFloat(row.area) : 0,
-    lat: row.latitude ? parseFloat(row.latitude) : 24.7136,
-    lng: row.longitude ? parseFloat(row.longitude) : 46.6753,
+    hasCoords: !!(row.latitude && row.longitude),
+    lat: row.latitude ? parseFloat(row.latitude) : NaN,
+    lng: row.longitude ? parseFloat(row.longitude) : NaN,
     price: row.price ? Number(row.price).toLocaleString("ar-EG") + " ج.م" : "السعر عند الطلب",
     priceNum: row.price ? parseFloat(row.price) : 0,
     finishing: row.finishing ?? "",
@@ -1112,15 +1117,32 @@ export default function PropertiesPage() {
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
+                              {/* Premium featured badge */}
+                              {p.featured && (
+                                <div className="absolute bottom-2.5 left-2.5 z-20 pointer-events-none">
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
+                                    style={{
+                                      background: "linear-gradient(135deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%)",
+                                      color: "#fff",
+                                      boxShadow: "0 3px 10px rgba(245,158,11,0.5), 0 1px 3px rgba(0,0,0,0.2)",
+                                      textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                                      border: "1.5px solid rgba(255,255,255,0.35)",
+                                    }}
+                                  >
+                                    <Crown className="w-3 h-3 shrink-0" /> مميز
+                                  </span>
+                                </div>
+                              )}
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
                             <div className="flex-1 flex flex-col p-6 gap-0 min-w-0">
                               {/* Price */}
                               <div className="flex items-baseline gap-1.5 mb-2">
-                                <span className="text-[22px] sm:text-2xl font-black text-gray-900 leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
-                                <span className="text-sm font-semibold text-gray-800">ج.م</span>
-                                {p.type === "للإيجار" && <span className="text-xs text-gray-700">/ شهر</span>}
+                                <span className="text-[22px] sm:text-2xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
+                                <span className="text-sm font-bold text-gray-700">ج.م</span>
+                                {p.type === "للإيجار" && <span className="text-xs text-gray-600">/ شهر</span>}
                               </div>
 
                               {/* Title */}
@@ -1231,31 +1253,47 @@ export default function PropertiesPage() {
                               </div>
 
                               {/* تواصل مع المعلن */}
-                              {(p.whatsapp || p.phone) && (
-                                <div className="mt-3 pt-3 border-t border-gray-100">
-                                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-right">تواصل مع المعلن</p>
-                                  <div className="flex items-center gap-2">
-                                    {p.whatsapp && (
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
-                                        className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md"
-                                      >
-                                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
-                                        واتساب
-                                      </button>
-                                    )}
-                                    {p.phone && (
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
-                                        className={`flex items-center justify-center gap-1.5 h-10 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${p.whatsapp ? "px-5" : "flex-1"}`}
-                                      >
-                                        <Phone className="w-4 h-4 shrink-0" />
-                                        اتصال
-                                      </button>
-                                    )}
+                              {(() => {
+                                const cm = p.contactMethods;
+                                const showWA  = p.whatsapp && (cm.length === 0 || cm.includes("whatsapp"));
+                                const showCall = p.phone  && (cm.length === 0 || cm.includes("call"));
+                                const showEmail = cm.includes("email");
+                                if (!showWA && !showCall && !showEmail) return null;
+                                return (
+                                  <div className="mt-3 pt-3 border-t border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-right">تواصل مع المعلن</p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {showWA && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                          className="flex-1 min-w-0 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md"
+                                        >
+                                          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                          واتساب
+                                        </button>
+                                      )}
+                                      {showCall && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                                          className={`flex items-center justify-center gap-1.5 h-10 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${showWA ? "px-5" : "flex-1"}`}
+                                        >
+                                          <Phone className="w-4 h-4 shrink-0" />
+                                          اتصال
+                                        </button>
+                                      )}
+                                      {showEmail && (
+                                        <a
+                                          href="mailto:?"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold transition-all"
+                                        >
+                                          ✉ إيميل
+                                        </a>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                             </div>
                           </div>
                         </motion.div>
@@ -1304,6 +1342,23 @@ export default function PropertiesPage() {
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
+                              {/* Premium featured badge */}
+                              {p.featured && (
+                                <div className="absolute bottom-2.5 left-2.5 z-20 pointer-events-none">
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
+                                    style={{
+                                      background: "linear-gradient(135deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%)",
+                                      color: "#fff",
+                                      boxShadow: "0 3px 10px rgba(245,158,11,0.5), 0 1px 3px rgba(0,0,0,0.2)",
+                                      textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                                      border: "1.5px solid rgba(255,255,255,0.35)",
+                                    }}
+                                  >
+                                    <Crown className="w-3 h-3 shrink-0" /> مميز
+                                  </span>
+                                </div>
+                              )}
                             </PropertyImageGallery>
 
                             {/* Body */}
@@ -1311,7 +1366,7 @@ export default function PropertiesPage() {
                               {/* Price */}
                               <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100">
                                 <div>
-                                  <p className="text-gray-900 font-extrabold text-xl leading-none">{p.price}</p>
+                                  <p className="text-black font-black text-xl leading-none">{p.price}</p>
                                   <p className="text-gray-500 text-[11px] mt-0.5">جنيه</p>
                                 </div>
                                 {p.verified && (
@@ -1360,31 +1415,43 @@ export default function PropertiesPage() {
                               </div>
 
                               {/* تواصل مع المعلن */}
-                              {(p.whatsapp || p.phone) && (
-                                <div className="mt-2 pt-2 border-t border-gray-100">
-                                  <p className="text-[10px] font-bold text-gray-400 mb-1.5 text-right">تواصل مع المعلن</p>
-                                  <div className="flex gap-2">
-                                    {p.whatsapp && (
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
-                                        className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm"
-                                      >
-                                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
-                                        واتساب
-                                      </button>
-                                    )}
-                                    {p.phone && (
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
-                                        className={`flex items-center justify-center gap-1.5 h-9 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${p.whatsapp ? "px-4" : "flex-1"}`}
-                                      >
-                                        <Phone className="w-3.5 h-3.5 shrink-0" />
-                                        اتصال
-                                      </button>
-                                    )}
+                              {(() => {
+                                const cm = p.contactMethods;
+                                const showWA   = !!(p.whatsapp && (cm.length === 0 || cm.includes("whatsapp")));
+                                const showCall = !!(p.phone    && (cm.length === 0 || cm.includes("call")));
+                                const showEmail = cm.includes("email");
+                                if (!showWA && !showCall && !showEmail) return null;
+                                return (
+                                  <div className="mt-2 pt-2 border-t border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 mb-1.5 text-right">تواصل مع المعلن</p>
+                                    <div className="flex gap-2 flex-wrap">
+                                      {showWA && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                          className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm"
+                                        >
+                                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                          واتساب
+                                        </button>
+                                      )}
+                                      {showCall && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                                          className={`flex items-center justify-center gap-1.5 h-9 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${showWA ? "px-4" : "flex-1"}`}
+                                        >
+                                          <Phone className="w-3.5 h-3.5 shrink-0" />
+                                          اتصال
+                                        </button>
+                                      )}
+                                      {showEmail && (
+                                        <a href="mailto:?" onClick={(e) => e.stopPropagation()} className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold transition-all">
+                                          ✉
+                                        </a>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                               </div>
                             </div>
                           </div>
@@ -1443,7 +1510,7 @@ export default function PropertiesPage() {
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         />
-                        {filtered.map((p) => (
+                        {filtered.filter(p => p.hasCoords && !isNaN(p.lat) && !isNaN(p.lng)).map((p) => (
                           <Marker
                             key={p.id}
                             position={[p.lat, p.lng]}

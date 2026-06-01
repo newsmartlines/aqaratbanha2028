@@ -126,8 +126,8 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     year: (p.buildYear as number) ?? 0,
     gallery,
     videoId: extractYouTubeId((p.videoUrl as string) ?? ""),
-    lat: parseFloat((p.latitude as string) ?? "30.0444") || 30.0444,
-    lng: parseFloat((p.longitude as string) ?? "31.2357") || 31.2357,
+    lat: p.latitude ? parseFloat(p.latitude as string) : NaN,
+    lng: p.longitude ? parseFloat(p.longitude as string) : NaN,
     description: (p.description as string) ?? "",
     amenities: Array.isArray(features) ? features : [],
     nearbyServices: Array.isArray(nearbyServices) ? nearbyServices : [],
@@ -702,53 +702,62 @@ export default function PropertyDetail() {
                   <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
                 </div>
               </div>
-              <div className="relative h-72 md:h-96" style={{ isolation: "isolate" }}>
-                {/* Always render the map underneath */}
-                <MapContainer
-                  center={[property.lat, property.lng]}
-                  zoom={14}
-                  className="h-full w-full"
-                  zoomControl={mapRevealed}
-                  dragging={mapRevealed}
-                  scrollWheelZoom={mapRevealed}
-                  doubleClickZoom={mapRevealed}
-                  touchZoom={mapRevealed}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  />
-                  <Marker position={[property.lat, property.lng]}>
-                    <Popup>
-                      <div className="text-right min-w-[160px] font-sans" dir="rtl">
-                        <p className="font-bold text-sm mb-1">{property.title}</p>
-                        <p className="text-xs text-gray-500">{property.location}</p>
-                        <p className="text-xs font-bold text-gray-900 mt-1">{property.price} ج.م</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                </MapContainer>
-
-                {/* Reveal overlay — shown until user clicks */}
-                {!mapRevealed && (
-                  <div
-                    className="absolute inset-0 z-[1000] flex flex-col items-center justify-center cursor-pointer"
-                    style={{ backdropFilter: "blur(6px)", backgroundColor: "rgba(255,255,255,0.18)" }}
-                    onClick={() => setMapRevealed(true)}
+              {(!isNaN(property.lat) && !isNaN(property.lng)) ? (
+                <div className="relative h-72 md:h-96" style={{ isolation: "isolate" }}>
+                  <MapContainer
+                    center={[property.lat, property.lng]}
+                    zoom={14}
+                    className="h-full w-full"
+                    zoomControl={mapRevealed}
+                    dragging={mapRevealed}
+                    scrollWheelZoom={mapRevealed}
+                    doubleClickZoom={mapRevealed}
+                    touchZoom={mapRevealed}
                   >
-                    <button
-                      className="flex items-center gap-2.5 bg-white text-gray-800 font-bold text-sm px-5 py-3 rounded-full shadow-lg border border-gray-200 hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 group"
-                      onClick={(e) => { e.stopPropagation(); setMapRevealed(true); }}
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    />
+                    <Marker position={[property.lat, property.lng]}>
+                      <Popup>
+                        <div className="text-right min-w-[160px] font-sans" dir="rtl">
+                          <p className="font-bold text-sm mb-1">{property.title}</p>
+                          <p className="text-xs text-gray-500">{property.location}</p>
+                          <p className="text-xs font-bold text-gray-900 mt-1">{property.price} ج.م</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+
+                  {/* Reveal overlay — shown until user clicks */}
+                  {!mapRevealed && (
+                    <div
+                      className="absolute inset-0 z-[1000] flex flex-col items-center justify-center cursor-pointer"
+                      style={{ backdropFilter: "blur(6px)", backgroundColor: "rgba(255,255,255,0.18)" }}
+                      onClick={() => setMapRevealed(true)}
                     >
-                      <MapPin className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
-                      عرض الخريطة
-                    </button>
-                    <p className="mt-2.5 text-xs text-gray-500 bg-white/80 px-3 py-1 rounded-full">
-                      {property.location}
-                    </p>
-                  </div>
-                )}
-              </div>
+                      <button
+                        className="flex items-center gap-2.5 bg-white text-gray-800 font-bold text-sm px-5 py-3 rounded-full shadow-lg border border-gray-200 hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 group"
+                        onClick={(e) => { e.stopPropagation(); setMapRevealed(true); }}
+                      >
+                        <MapPin className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+                        عرض الخريطة
+                      </button>
+                      <p className="mt-2.5 text-xs text-gray-500 bg-white/80 px-3 py-1 rounded-full">
+                        {property.location}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-36 flex flex-col items-center justify-center gap-2 text-gray-400 bg-gray-50">
+                  <MapPin className="w-7 h-7 text-gray-300" />
+                  <p className="text-sm font-medium">لم يتم تحديد موقع هذا العقار على الخريطة</p>
+                  {property.address && (
+                    <p className="text-xs text-gray-400">{property.address}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

@@ -984,13 +984,23 @@ export default function SearchPage() {
           className="shrink-0 w-60 sm:w-80"
         >
           <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/15 pointer-events-none" />
-          <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-20">
-            {p.featured && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-amber-500 text-white">
-                <Crown className="w-2.5 h-2.5" /> مميز
+          {/* Premium featured badge */}
+          {p.featured && (
+            <div className="absolute bottom-3 right-3 z-20 pointer-events-none">
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
+                style={{
+                  background: "linear-gradient(135deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%)",
+                  color: "#fff",
+                  boxShadow: "0 3px 10px rgba(245,158,11,0.5), 0 1px 3px rgba(0,0,0,0.2)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                  border: "1.5px solid rgba(255,255,255,0.35)",
+                }}
+              >
+                <Crown className="w-3 h-3 shrink-0" /> مميز
               </span>
-            )}
-          </div>
+            </div>
+          )}
           <button
             onClick={e => toggleSave(p.id, e)}
             className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all shadow-sm
@@ -1008,9 +1018,9 @@ export default function SearchPage() {
             <div className="flex items-baseline gap-1.5">
               {priceStr ? (
                 <>
-                  <span className="text-2xl font-black text-zinc-900 leading-none">{priceStr}</span>
-                  <span className="text-base font-semibold text-zinc-400">ج.م</span>
-                  {p.listingType === "rent" && <span className="text-xs text-zinc-400">/ {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : "/"}</span>}
+                  <span className="text-2xl font-black text-black leading-none">{priceStr}</span>
+                  <span className="text-base font-bold text-gray-600">ج.م</span>
+                  {p.listingType === "rent" && <span className="text-xs text-gray-500">/ {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : "/"}</span>}
                 </>
               ) : (
                 <span className="text-sm font-semibold text-zinc-400">السعر عند التواصل</span>
@@ -1138,21 +1148,36 @@ export default function SearchPage() {
       >
         <PropertyImageGallery images={imgs} alt={p.title} fallback={DEFAULT_IMG} className="h-48">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
-          <div className="absolute top-3 right-3 flex flex-col gap-1 z-20">
-            {p.featured && <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-amber-500 text-white"><Crown className="w-2.5 h-2.5" /> مميز</span>}
-          </div>
+          {/* Premium featured badge */}
+          {p.featured && (
+            <div className="absolute top-3 right-3 z-20 pointer-events-none">
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
+                style={{
+                  background: "linear-gradient(135deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%)",
+                  color: "#fff",
+                  boxShadow: "0 3px 10px rgba(245,158,11,0.5), 0 1px 3px rgba(0,0,0,0.2)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                  border: "1.5px solid rgba(255,255,255,0.35)",
+                }}
+              >
+                <Crown className="w-3 h-3 shrink-0" /> مميز
+              </span>
+            </div>
+          )}
           <button onClick={e => toggleSave(p.id, e)}
             className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all
               ${saved.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/90 border-white/60 text-zinc-500 hover:text-rose-500"}`}>
             <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-white" : ""}`} />
           </button>
-          <div className="absolute bottom-3 right-3 z-20">
-            {priceStr
-              ? <span className="bg-white/96 backdrop-blur-sm text-zinc-900 font-black text-lg px-3 py-1.5 rounded-xl shadow-sm">{priceStr} <span className="text-sm font-semibold text-zinc-500">ج.م</span></span>
-              : <span className="bg-white/96 backdrop-blur-sm text-zinc-500 font-semibold text-sm px-3 py-1.5 rounded-xl">السعر عند التواصل</span>}
-          </div>
         </PropertyImageGallery>
         <div className="p-3.5">
+          {/* Price — clean black, no background */}
+          <div className="mb-2">
+            {priceStr
+              ? <span className="block text-black font-black text-xl leading-none">{priceStr} <span className="text-sm font-bold text-gray-600">ج.م</span></span>
+              : <span className="text-sm font-semibold text-zinc-400">السعر عند التواصل</span>}
+          </div>
           <h2 className="font-bold text-sm text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">{p.title}</h2>
           <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2 flex-wrap">
             {p.rooms != null && <span className="flex items-center gap-1 font-semibold"><BedDouble className="w-3 h-3 text-zinc-400" />{p.rooms} غرف</span>}

@@ -178,7 +178,8 @@ export function FeaturedPropertiesSection({ settings }: Props) {
   const { data: allProps = [], isLoading: propsLoading } = useQuery<any[]>({
     queryKey: ["featured-section-properties"],
     queryFn: () => api.properties.list({}),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: homeFavIds = [] } = useQuery<number[]>({
@@ -382,25 +383,28 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                           </span>
                         </div>
 
-                        {/* Featured diagonal ribbon */}
+                        {/* Premium "مميز" badge — Modern pill at bottom-left */}
                         {isFeatured && (
-                          <div className="absolute top-0 left-0 z-20 overflow-hidden w-24 h-24 pointer-events-none">
-                            <div
-                              className="absolute flex items-center justify-center"
-                              style={{ transform: "rotate(-45deg) translate(-28%, 55%)", width: "112px", top: 0, left: "-4px" }}
+                          <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
+                            <span
+                              className="inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg tracking-wide"
+                              style={{
+                                background: "linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%)",
+                                color: "#fff",
+                                boxShadow: "0 4px 14px rgba(245,158,11,0.55), 0 1px 3px rgba(0,0,0,0.25)",
+                                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                                border: "1.5px solid rgba(255,255,255,0.35)",
+                              }}
                             >
-                              <span className="bg-amber-500 text-white text-[9px] font-extrabold tracking-wider py-1 w-full text-center shadow-md flex items-center justify-center gap-0.5">
-                                <Crown className="w-2.5 h-2.5 shrink-0" /> مميز
-                              </span>
-                            </div>
+                              <Crown className="w-3.5 h-3.5 shrink-0 drop-shadow" />
+                              مميز
+                            </span>
                           </div>
                         )}
 
                         {/* Fav button */}
                         <button
-                          className={`absolute top-3 z-20 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${
-                            isFeatured ? "left-14" : "left-3"
-                          } ${
+                          className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${
                             isFav ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500 hover:border-rose-400"
                           }`}
                           onClick={e => { e.stopPropagation(); toggleFavMut.mutate({ id: property.id, add: !isFav }); }}
@@ -413,9 +417,9 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                     {/* ── Content ── */}
                     <div className="p-4">
 
-                      {/* Price — clean humanized */}
+                      {/* Price — clean, bold, black */}
                       <div className="mb-2">
-                        <span className="inline-block bg-primary/8 text-primary font-extrabold text-base px-3 py-1 rounded-lg border border-primary/15 leading-tight">
+                        <span className="block text-black font-black text-xl leading-tight tracking-tight">
                           {formatPrice(property.price, listType)}
                         </span>
                       </div>
