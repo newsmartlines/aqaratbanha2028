@@ -498,20 +498,30 @@ router.put("/properties/:id", async (req, res) => {
     delete updateData.createdAt;
     delete updateData.id;
 
-    // Non-admin editing any non-pending property → reset to pending for re-review
+    // Non-admin editing any non-pending property → reset to pending / updated_after_rejection
     const sessionRole = (session as any).role;
-    const wasRejected = sessionRole !== "admin" && existing.status === "rejected";
-    if (sessionRole !== "admin" && existing.status && ["approved", "active", "rejected"].includes(existing.status)) {
-      updateData.status = "pending";
-      updateData.rejectionReason = null; // Clear rejection reason on resubmit
+    const wasRejected   = sessionRole !== "admin" && existing.status === "rejected";
+    const wasResubmit   = sessionRole !== "admin" && existing.status === "updated_after_rejection";
+
+    if (sessionRole !== "admin") {
+      if (existing.status === "rejected") {
+        // Distinct status so admin can see this was previously rejected
+        updateData.status = "updated_after_rejection";
+        updateData.rejectionReason = null;
+      } else if (["approved", "active", "updated_after_rejection"].includes(existing.status ?? "")) {
+        updateData.status = "pending";
+        updateData.rejectionReason = null;
+      }
     }
+    // Always track edit timestamp
+    updateData.updatedAt = new Date();
 
     const [updated] = await db.update(propertiesTable).set(updateData).where(eq(propertiesTable.id, id)).returning();
 
     // Fire appropriate event
-    if (wasRejected) {
-      // Resubmitted after rejection → trigger submitted event so admin gets notification
-      events.onPropertySubmitted(updated ?? existing).catch(() => {});
+    if (wasRejected || wasResubmit) {
+      // Resubmitted after rejection → distinct admin notification
+      events.onPropertyUpdatedAfterRejection(updated ?? existing).catch(() => {});
     } else {
       events.onPropertyEdited(updated ?? existing).catch(() => {});
     }
@@ -598,12 +608,21 @@ router.patch("/properties/:id/status", async (req, res) => {
 
     const isApproving = status === "approved" || status === "active";
     const isRejecting = status === "rejected";
+    const isExpiring  = status === "expired";
+
+    // Default listing lifetime: 30 days from approval
+    const LISTING_DAYS = 30;
+    const expiresAt = isApproving
+      ? new Date(Date.now() + LISTING_DAYS * 24 * 60 * 60 * 1000)
+      : undefined;
 
     const [updated] = await db.update(propertiesTable)
       .set({
         status,
-        ...(isApproving ? { approvedAt: new Date() } : {}),
+        updatedAt: new Date(),
+        ...(isApproving ? { approvedAt: new Date(), expiresAt, rejectionReason: null } : {}),
         ...(isRejecting ? { rejectionReason: rejectionReason ?? null } : {}),
+        ...(isExpiring  ? { expiresAt: new Date() } : {}),
       })
       .where(eq(propertiesTable.id, id))
       .returning();
@@ -620,11 +639,52 @@ router.patch("/properties/:id/status", async (req, res) => {
       events.onPropertyApproved(property).catch(() => {});
     } else if (isRejecting) {
       events.onPropertyRejected(property, rejectionReason ?? "").catch(() => {});
+    } else if (isExpiring) {
+      events.onPropertyExpired(property).catch(() => {});
     }
 
     res.json({ success: true, data: updated });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to update status" });
+  }
+});
+
+// ── PATCH /api/properties/:id/renew — renew an expired listing ────────────
+router.patch("/properties/:id/renew", async (req, res) => {
+  try {
+    const session = await requireAuth(req);
+    if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
+
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
+
+    const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
+    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+
+    // Owner or admin can renew
+    const sessionRole = (session as any).role;
+    const isAdmin = sessionRole === "admin" || sessionRole === "moderator";
+    if (!isAdmin && property.ownerUserId !== session.userId) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
+    if (property.status !== "expired") {
+      return res.status(400).json({ success: false, error: "Only expired listings can be renewed" });
+    }
+
+    const LISTING_DAYS = 30;
+    const expiresAt = new Date(Date.now() + LISTING_DAYS * 24 * 60 * 60 * 1000);
+
+    const [updated] = await db.update(propertiesTable)
+      .set({ status: "approved", approvedAt: new Date(), expiresAt, updatedAt: new Date() })
+      .where(eq(propertiesTable.id, id))
+      .returning();
+
+    events.onPropertyApproved(property).catch(() => {});
+
+    res.json({ success: true, data: updated });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message ?? "Failed to renew property" });
   }
 });
 

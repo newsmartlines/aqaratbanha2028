@@ -174,7 +174,7 @@ export default function PropertyDetail() {
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
-  const [compareMsg, setCompareMsg] = useState<"added" | "already" | "full" | null>(null);
+  const [compareMsg, setCompareMsg] = useState<"added" | "already" | "full" | "type_mismatch" | null>(null);
   const [mapRevealed, setMapRevealed] = useState(false);
 
   const [reportOpen, setReportOpen] = useState(false);

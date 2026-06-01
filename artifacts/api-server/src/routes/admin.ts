@@ -39,7 +39,7 @@ router.get("/admin/sidebar-counts", async (_req, res) => {
     const [{ pendingProperties } = { pendingProperties: 0 }] = await db
       .select({ pendingProperties: sql<number>`count(*)::int` })
       .from(propertiesTable)
-      .where(eq(propertiesTable.status, "pending"));
+      .where(sql`${propertiesTable.status} IN ('pending', 'updated_after_rejection')`);
     res.json({
       success: true,
       data: {

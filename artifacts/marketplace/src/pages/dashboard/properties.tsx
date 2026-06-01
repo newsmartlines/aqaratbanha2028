@@ -36,6 +36,8 @@ interface Property {
   messageCount?: number;
   images?: string | string[];
   createdAt?: string;
+  updatedAt?: string;
+  expiresAt?: string;
   rooms?: number;
   bathrooms?: number;
 }
@@ -54,10 +56,22 @@ const STATUS_MAP: Record<string, {
     borderCls: "border-border",
     icon: <CheckCircle2 className="w-3 h-3" />,
   },
+  active: {
+    label: "منشور",
+    badgeCls: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+    borderCls: "border-border",
+    icon: <CheckCircle2 className="w-3 h-3" />,
+  },
   pending: {
     label: "قيد المراجعة",
     badgeCls: "bg-amber-100 text-amber-700 border border-amber-200",
     borderCls: "border-amber-200",
+    icon: <Clock className="w-3 h-3" />,
+  },
+  updated_after_rejection: {
+    label: "أُعيد إرساله",
+    badgeCls: "bg-violet-100 text-violet-700 border border-violet-200",
+    borderCls: "border-violet-200",
     icon: <Clock className="w-3 h-3" />,
   },
   rejected: {
@@ -65,6 +79,12 @@ const STATUS_MAP: Record<string, {
     badgeCls: "bg-red-100 text-red-700 border border-red-200",
     borderCls: "border-red-200",
     icon: <XCircle className="w-3 h-3" />,
+  },
+  expired: {
+    label: "انتهت الصلاحية",
+    badgeCls: "bg-gray-100 text-gray-600 border border-gray-200",
+    borderCls: "border-gray-200",
+    icon: <AlertTriangle className="w-3 h-3" />,
   },
   draft: {
     label: "مسودة",
@@ -106,8 +126,9 @@ function StatPill({ icon, value, label }: { icon: React.ReactNode; value: number
 }
 
 /* ─── LIST CARD ─────────────────────────────────────────────── */
-function ListCard({ prop, onEdit, onDelete }: {
+function ListCard({ prop, onEdit, onDelete, onRenew, isRenewing }: {
   prop: Property; onEdit: (id: number) => void; onDelete: (id: number, title: string) => void;
+  onRenew?: (id: number) => void; isRenewing?: boolean;
 }) {
   const imgSrc = getFirstImage(prop.images);
   const st = STATUS_MAP[prop.status] ?? STATUS_MAP.pending;
@@ -198,6 +219,35 @@ function ListCard({ prop, onEdit, onDelete }: {
             </button>
           </div>
         )}
+        {/* Updated after rejection — awaiting re-review */}
+        {prop.status === "updated_after_rejection" && (
+          <div className="rounded-xl border border-violet-200 bg-violet-50 p-2.5 mt-0.5">
+            <p className="text-xs font-bold text-violet-700 mb-1 flex items-center gap-1">
+              <Clock className="w-3 h-3" /> أُعيد إرساله — قيد المراجعة
+            </p>
+            <p className="text-xs text-violet-600 leading-relaxed">
+              إعلانك المُعدَّل بعد الرفض قيد المراجعة الآن. سنُخطرك عند الموافقة.
+            </p>
+          </div>
+        )}
+        {/* Expired listing — offer renewal */}
+        {prop.status === "expired" && (
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-2.5 mt-0.5">
+            <p className="text-xs font-bold text-gray-600 mb-1 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" /> انتهت صلاحية الإعلان
+            </p>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              انتهت مدة نشر إعلانك. جدِّده لإعادة ظهوره في نتائج البحث.
+            </p>
+            <button
+              onClick={() => onRenew?.(prop.id)}
+              disabled={isRenewing}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+            >
+              <RefreshCw className={`w-3 h-3 ${isRenewing ? "animate-spin" : ""}`} /> تجديد الإعلان (30 يوم)
+            </button>
+          </div>
+        )}
 
         <div className="flex-1" />
 
@@ -235,8 +285,9 @@ function ListCard({ prop, onEdit, onDelete }: {
 }
 
 /* ─── GRID CARD ─────────────────────────────────────────────── */
-function GridCard({ prop, onEdit, onDelete }: {
+function GridCard({ prop, onEdit, onDelete, onRenew, isRenewing }: {
   prop: Property; onEdit: (id: number) => void; onDelete: (id: number, title: string) => void;
+  onRenew?: (id: number) => void; isRenewing?: boolean;
 }) {
   const imgSrc = getFirstImage(prop.images);
   const st = STATUS_MAP[prop.status] ?? STATUS_MAP.pending;
@@ -305,6 +356,30 @@ function GridCard({ prop, onEdit, onDelete }: {
               className="mt-2 w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
             >
               <Edit3 className="w-3 h-3" /> تعديل وإعادة التقديم
+            </button>
+          </div>
+        )}
+        {prop.status === "updated_after_rejection" && (
+          <div className="rounded-xl border border-violet-200 bg-violet-50 p-2.5">
+            <p className="text-xs font-bold text-violet-700 mb-1 flex items-center gap-1">
+              <Clock className="w-3 h-3" /> أُعيد إرساله — قيد المراجعة
+            </p>
+            <p className="text-xs text-violet-600 leading-relaxed">
+              إعلانك المُعدَّل قيد المراجعة. سنُخطرك عند الموافقة.
+            </p>
+          </div>
+        )}
+        {prop.status === "expired" && (
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-2.5">
+            <p className="text-xs font-bold text-gray-600 mb-1 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" /> انتهت صلاحية الإعلان
+            </p>
+            <button
+              onClick={() => onRenew?.(prop.id)}
+              disabled={isRenewing}
+              className="mt-1.5 w-full flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+            >
+              <RefreshCw className={`w-3 h-3 ${isRenewing ? "animate-spin" : ""}`} /> تجديد (30 يوم)
             </button>
           </div>
         )}
@@ -391,6 +466,15 @@ export default function MyPropertiesPage() {
     onError: () => toast.error("فشل الحذف"),
   });
 
+  const renewMutation = useMutation({
+    mutationFn: (id: number) => api.properties.renew(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-properties-cards"] });
+      toast.success("✅ تم تجديد الإعلان بنجاح — سيظهر في نتائج البحث مجدداً");
+    },
+    onError: () => toast.error("فشل تجديد الإعلان"),
+  });
+
   const filtered = properties.filter((p) => {
     const matchQ  = !searchQ || p.title.toLowerCase().includes(searchQ.toLowerCase());
     const matchSt = filterStatus === "all" || p.status === filterStatus;
@@ -398,9 +482,10 @@ export default function MyPropertiesPage() {
     return matchQ && matchSt && matchTy;
   });
 
-  const approved   = properties.filter(p => p.status === "approved").length;
-  const pending    = properties.filter(p => p.status === "pending").length;
+  const approved   = properties.filter(p => p.status === "approved" || p.status === "active").length;
+  const pending    = properties.filter(p => p.status === "pending" || p.status === "updated_after_rejection").length;
   const rejected   = properties.filter(p => p.status === "rejected").length;
+  const expired    = properties.filter(p => p.status === "expired").length;
   const totalViews = properties.reduce((s, p) => s + (p.viewCount ?? 0), 0);
 
   if (!user) return null;
@@ -442,7 +527,9 @@ export default function MyPropertiesPage() {
           <StatCard icon={<Building2 className="w-4 h-4 text-teal-600" />}       label="إجمالي الإعلانات" value={properties.length} colorClass="bg-teal-50 border-teal-100" />
           <StatCard icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}  label="منشور"            value={approved}         colorClass="bg-emerald-50 border-emerald-100" />
           <StatCard icon={<Clock className="w-4 h-4 text-amber-600" />}           label="قيد المراجعة"     value={pending}          colorClass="bg-amber-50 border-amber-100" />
-          {rejected > 0
+          {expired > 0
+            ? <StatCard icon={<AlertTriangle className="w-4 h-4 text-gray-500" />} label="انتهت الصلاحية"  value={expired}          colorClass="bg-gray-50 border-gray-200" />
+            : rejected > 0
             ? <StatCard icon={<XCircle className="w-4 h-4 text-red-600" />}       label="مرفوض"            value={rejected}         colorClass="bg-red-50 border-red-100" />
             : <StatCard icon={<BarChart2 className="w-4 h-4 text-blue-500" />}    label="إجمالي المشاهدات" value={totalViews}        colorClass="bg-blue-50 border-blue-100" />
           }
@@ -455,6 +542,17 @@ export default function MyPropertiesPage() {
             <div>
               <p className="font-bold text-sm">لديك {rejected} إعلان{rejected > 1 ? "ات" : ""} مرفوضة</p>
               <p className="text-xs text-red-600 mt-0.5">راجع سبب الرفض في كل إعلان وعدّله لإعادة التقديم.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Expired alert */}
+        {expired > 0 && (
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-200 text-gray-700">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-gray-500" />
+            <div>
+              <p className="font-bold text-sm">⏰ لديك {expired} إعلان{expired > 1 ? "ات" : ""} انتهت صلاحيتها</p>
+              <p className="text-xs text-gray-500 mt-0.5">جدِّد إعلاناتك المنتهية لإعادة ظهورها في نتائج البحث.</p>
             </div>
           </div>
         )}
@@ -476,10 +574,12 @@ export default function MyPropertiesPage() {
             className="border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-400 bg-white"
           >
             <option value="all">كل الحالات</option>
-            <option value="approved">منشور</option>
-            <option value="pending">قيد المراجعة</option>
-            <option value="rejected">مرفوض</option>
-            <option value="draft">مسودة</option>
+            <option value="approved">✅ منشور</option>
+            <option value="pending">⏳ قيد المراجعة</option>
+            <option value="updated_after_rejection">✏️ أُعيد إرساله</option>
+            <option value="rejected">❌ مرفوض</option>
+            <option value="expired">⏰ انتهت الصلاحية</option>
+            <option value="draft">📝 مسودة</option>
           </select>
           <select
             value={filterType}
@@ -553,6 +653,8 @@ export default function MyPropertiesPage() {
                   prop={prop}
                   onEdit={id => navigate(`/dashboard/edit-property/${id}`)}
                   onDelete={(id, title) => setDeleteTarget({ id, title })}
+                  onRenew={id => renewMutation.mutate(id)}
+                  isRenewing={renewMutation.isPending}
                 />
               ))}
             </div>
@@ -564,6 +666,8 @@ export default function MyPropertiesPage() {
                   prop={prop}
                   onEdit={id => navigate(`/dashboard/edit-property/${id}`)}
                   onDelete={(id, title) => setDeleteTarget({ id, title })}
+                  onRenew={id => renewMutation.mutate(id)}
+                  isRenewing={renewMutation.isPending}
                 />
               ))}
             </div>

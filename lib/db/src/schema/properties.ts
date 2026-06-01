@@ -57,7 +57,9 @@ export const propertiesTable = pgTable("properties", {
   phoneClickCount: integer("phone_click_count").default(0).notNull(),
   whatsappClickCount: integer("whatsapp_click_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
   approvedAt: timestamp("approved_at"),
+  expiresAt: timestamp("expires_at"),
 }, (t) => [
   index("properties_provider_id_idx").on(t.providerId),
   index("properties_owner_user_id_idx").on(t.ownerUserId),

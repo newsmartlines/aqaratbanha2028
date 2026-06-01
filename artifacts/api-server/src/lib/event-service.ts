@@ -1,11 +1,11 @@
 /**
  * event-service.ts — Unified Event Orchestration
- * 
+ *
  * Central hub for all platform events:
  * - Sends professional emails via mailer.ts
- * - Creates in-app notifications  
+ * - Creates in-app notifications
  * - Broadcasts real-time SSE events
- * 
+ *
  * All methods are fire-and-forget (never throw).
  */
 
@@ -48,14 +48,9 @@ async function createNotif(opts: {
 
 export const events = {
 
-  /**
-   * User registered (normal or Google)
-   */
+  /** User registered (normal or Google) */
   async onUserRegistered(user: { id: number; name: string; email: string; role: string }) {
-    // Welcome email
     mailer.welcome(user.email, user.name).catch(() => {});
-
-    // Admin notification (userId=null = global admin notification)
     const roleLabel = user.role === "provider" ? "شركة عقارية" : "مستخدم عادي";
     createNotif({
       userId: null,
@@ -64,36 +59,26 @@ export const events = {
       type: "info",
       link: "/admin/users",
     });
-
-    // SSE: notify all admins
     sseManager.sendToAdmins("user.registered", {
       id: user.id, name: user.name, role: user.role, timestamp: Date.now(),
     });
   },
 
-  /**
-   * User requested password reset
-   */
+  /** User requested password reset */
   async onForgotPassword(email: string, name: string, resetToken: string) {
     mailer.forgotPassword(email, name, resetToken).catch(() => {});
   },
 
-  /**
-   * Property created (submitted for review)
-   */
+  /** Property created (submitted for review) */
   async onPropertySubmitted(property: {
     id: number; title: string; ownerUserId?: number | null; providerId?: number | null;
     mainCategory?: string | null; listingType?: string | null; price?: string | null;
   }) {
-    // Find owner
     const ownerId = property.ownerUserId;
     if (ownerId) {
       const owner = await getUser(ownerId);
       if (owner) {
-        // Email to owner
         mailer.propertySubmitted(owner.email, owner.name, property.title, property.id).catch(() => {});
-
-        // In-app notification to owner
         createNotif({
           userId: ownerId,
           title: "📋 تم استلام إعلانك",
@@ -103,8 +88,6 @@ export const events = {
         });
       }
     }
-
-    // Admin notification
     createNotif({
       userId: null,
       title: "🏠 عقار جديد يحتاج مراجعة",
@@ -112,8 +95,6 @@ export const events = {
       type: "info",
       link: "/admin/properties",
     });
-
-    // SSE: notify all admins
     sseManager.sendToAdmins("property.submitted", {
       id: property.id,
       title: property.title,
@@ -124,8 +105,50 @@ export const events = {
   },
 
   /**
-   * Property approved by admin
+   * Property edited after rejection and resubmitted — distinct from a fresh submission.
+   * Creates a special admin notification distinguishing it from new properties.
    */
+  async onPropertyUpdatedAfterRejection(property: {
+    id: number; title: string; ownerUserId?: number | null; providerId?: number | null;
+  }) {
+    const ownerId = property.ownerUserId;
+
+    if (ownerId) {
+      const owner = await getUser(ownerId);
+      if (owner) {
+        mailer.propertySubmitted(owner.email, owner.name, property.title, property.id).catch(() => {});
+      }
+      // In-app notification to owner confirming resubmission
+      createNotif({
+        userId: ownerId,
+        title: "🔄 تم إعادة إرسال إعلانك",
+        message: `إعلانك المعدَّل "${property.title}" أُعيد إرساله وهو الآن قيد المراجعة من جديد.`,
+        type: "info",
+        link: "/user/my-properties",
+      });
+    }
+
+    // Admin notification — visually distinct from fresh submissions
+    createNotif({
+      userId: null,
+      title: "✏️ عقار معدَّل بعد الرفض — يحتاج مراجعة",
+      message: `"${property.title}" — تم تعديله بعد الرفض وإعادة الإرسال للمراجعة`,
+      type: "warning",
+      link: "/admin/properties",
+    });
+
+    // SSE to admins — different event type so UI can highlight it
+    sseManager.sendToAdmins("property.resubmitted", {
+      id: property.id,
+      title: property.title,
+      timestamp: Date.now(),
+    });
+    sseManager.broadcast("listings.updated", {
+      action: "resubmitted", propertyId: property.id, timestamp: Date.now(),
+    });
+  },
+
+  /** Property approved by admin */
   async onPropertyApproved(property: {
     id: number; title: string; ownerUserId?: number | null;
   }) {
@@ -133,11 +156,8 @@ export const events = {
     if (ownerId) {
       const owner = await getUser(ownerId);
       if (owner) {
-        // Email to owner
         mailer.propertyApproved(owner.email, owner.name, property.title, property.id).catch(() => {});
       }
-
-      // In-app notification to owner
       createNotif({
         userId: ownerId,
         title: "✅ تمت الموافقة على إعلانك!",
@@ -145,22 +165,16 @@ export const events = {
         type: "success",
         link: `/property/${property.id}`,
       });
-
-      // SSE: notify owner
       sseManager.sendToUser(ownerId, "property.approved", {
         id: property.id, title: property.title, timestamp: Date.now(),
       });
     }
-
-    // SSE: broadcast to all (frontend can refresh listings)
     sseManager.broadcast("listings.updated", {
       action: "approved", propertyId: property.id, timestamp: Date.now(),
     });
   },
 
-  /**
-   * Property rejected by admin
-   */
+  /** Property rejected by admin */
   async onPropertyRejected(property: {
     id: number; title: string; ownerUserId?: number | null;
   }, rejectionReason: string) {
@@ -168,11 +182,8 @@ export const events = {
     if (ownerId) {
       const owner = await getUser(ownerId);
       if (owner) {
-        // Email to owner with rejection reason
         mailer.propertyRejected(owner.email, owner.name, property.title, rejectionReason).catch(() => {});
       }
-
-      // In-app notification to owner
       createNotif({
         userId: ownerId,
         title: "❌ تم رفض إعلانك",
@@ -180,29 +191,58 @@ export const events = {
         type: "warning",
         link: "/user/my-properties",
       });
-
-      // SSE: notify owner
-      if (ownerId) {
-        sseManager.sendToUser(ownerId, "property.rejected", {
-          id: property.id, title: property.title, reason: rejectionReason, timestamp: Date.now(),
-        });
-      }
+      sseManager.sendToUser(ownerId, "property.rejected", {
+        id: property.id, title: property.title, reason: rejectionReason, timestamp: Date.now(),
+      });
     }
-
-    // SSE: broadcast (frontend removes from listings)
     sseManager.broadcast("listings.updated", {
       action: "rejected", propertyId: property.id, timestamp: Date.now(),
     });
   },
 
-  /**
-   * Property deleted
-   */
+  /** Property expired (listing period ended) */
+  async onPropertyExpired(property: {
+    id: number; title: string; ownerUserId?: number | null;
+  }) {
+    const ownerId = property.ownerUserId;
+    if (ownerId) {
+      const owner = await getUser(ownerId);
+      if (owner) {
+        // Email notification about expiry
+        mailer.propertyRejected(
+          owner.email, owner.name, property.title,
+          "انتهت مدة إعلانك. يمكنك تجديده من لوحة التحكم."
+        ).catch(() => {});
+      }
+      createNotif({
+        userId: ownerId,
+        title: "⏰ انتهت صلاحية إعلانك",
+        message: `إعلانك "${property.title}" انتهت مدة نشره. ادخل للوحة التحكم لتجديده.`,
+        type: "warning",
+        link: "/user/my-properties",
+      });
+      sseManager.sendToUser(ownerId, "property.expired", {
+        id: property.id, title: property.title, timestamp: Date.now(),
+      });
+    }
+    // Admin notification
+    createNotif({
+      userId: null,
+      title: "⏰ عقار انتهت صلاحيته",
+      message: `إعلان "${property.title}" انتهت مدة نشره تلقائياً.`,
+      type: "info",
+      link: "/admin/properties",
+    });
+    sseManager.broadcast("listings.updated", {
+      action: "expired", propertyId: property.id, timestamp: Date.now(),
+    });
+  },
+
+  /** Property deleted */
   async onPropertyDeleted(property: {
     id: number; title: string; ownerUserId?: number | null;
   }, deletedByAdmin = false) {
     const ownerId = property.ownerUserId;
-
     if (ownerId && deletedByAdmin) {
       createNotif({
         userId: ownerId,
@@ -215,47 +255,35 @@ export const events = {
         id: property.id, timestamp: Date.now(),
       });
     }
-
-    // SSE: broadcast (frontend removes from listings)
     sseManager.broadcast("listings.updated", {
       action: "deleted", propertyId: property.id, timestamp: Date.now(),
     });
   },
 
-  /**
-   * Property edited (reset to pending)
-   */
+  /** Property edited (reset to pending — non-rejected case) */
   async onPropertyEdited(property: {
     id: number; title: string; ownerUserId?: number | null;
   }) {
-    // SSE: notify admins (new pending item)
     sseManager.sendToAdmins("property.edited", {
       id: property.id, title: property.title, timestamp: Date.now(),
     });
-
-    // SSE: broadcast (frontend updates listing state)
     sseManager.broadcast("listings.updated", {
       action: "edited", propertyId: property.id, timestamp: Date.now(),
     });
   },
 
-  /**
-   * New message received
-   */
+  /** New message received */
   async onNewMessage(toUserId: number, fromName: string, messagePreview: string) {
     const user = await getUser(toUserId);
     if (user) {
       mailer.newMessage(user.email, user.name, fromName, messagePreview).catch(() => {});
     }
-    // SSE: notify recipient
     sseManager.sendToUser(toUserId, "message.new", {
       from: fromName, preview: messagePreview, timestamp: Date.now(),
     });
   },
 
-  /**
-   * New notification created — push via SSE
-   */
+  /** New notification created — push via SSE */
   async onNewNotification(userId: number, notification: {
     title: string; message: string; type?: string; link?: string;
   }) {
@@ -265,9 +293,7 @@ export const events = {
     });
   },
 
-  /**
-   * Package purchased
-   */
+  /** Package purchased */
   async onPackagePurchased(userId: number, packageName: string, expiryDate: string) {
     const user = await getUser(userId);
     if (user) {
@@ -285,9 +311,7 @@ export const events = {
     });
   },
 
-  /**
-   * Sidebar counts changed — push to admins
-   */
+  /** Sidebar counts changed — push to admins */
   async notifyAdminSidebarUpdate() {
     sseManager.sendToAdmins("admin.sidebar_update", { timestamp: Date.now() });
   },

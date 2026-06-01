@@ -700,6 +700,7 @@ export const api = {
     update: (id: number, data: unknown) => fetchJson<Record<string, unknown>>(`/properties/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     delete: (id: number) => fetchJson(`/properties/${id}`, { method: "DELETE" }),
     patchStatus: (id: number, status: string, rejectionReason?: string) => fetchJson(`/properties/${id}/status`, { method: "PATCH", body: JSON.stringify({ status, rejectionReason }) }),
+    renew: (id: number) => fetchJson(`/properties/${id}/renew`, { method: "PATCH" }),
   },
 
   subscriptions: {
@@ -1117,6 +1118,7 @@ export type BillingPlan = {
   color: string;
   limits: string;
   features: string;
+  commissionPercent?: string | null;
   createdAt: string;
 };
 

@@ -24,6 +24,7 @@ import { PropertyDetailDrawer, type ExtendedProperty } from "@/components/admin/
 type DbProperty = {
   id: number;
   providerId: number;
+  ownerUserId: number | null;
   title: string;
   description: string | null;
   mainCategory: string;
@@ -38,6 +39,7 @@ type DbProperty = {
   buildYear: number | null;
   featured: boolean;
   status: string;
+  rejectionReason: string | null;
   address: string | null;
   images: string | null;
   phone: string | null;
@@ -45,6 +47,8 @@ type DbProperty = {
   latitude: string | null;
   longitude: string | null;
   createdAt: string;
+  updatedAt: string | null;
+  expiresAt: string | null;
 };
 
 const FALLBACK = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=200&q=60";
@@ -77,10 +81,21 @@ function fmtPrice(price: string | null): string {
 }
 
 function statusBadge(status: string) {
-  if (status === "approved" || status === "active") return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">منشور</Badge>;
-  if (status === "pending")  return <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">قيد المراجعة</Badge>;
-  if (status === "inactive") return <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">غير نشط</Badge>;
-  return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">مرفوض</Badge>;
+  if (status === "approved" || status === "active")
+    return <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50">منشور</Badge>;
+  if (status === "pending")
+    return <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">قيد المراجعة</Badge>;
+  if (status === "updated_after_rejection")
+    return <Badge variant="outline" className="text-violet-700 border-violet-200 bg-violet-50 gap-1"><span>✏️</span> أُعيد إرساله</Badge>;
+  if (status === "rejected")
+    return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">مرفوض</Badge>;
+  if (status === "expired")
+    return <Badge variant="outline" className="text-gray-500 border-gray-200 bg-gray-50">⏰ انتهت الصلاحية</Badge>;
+  if (status === "draft")
+    return <Badge variant="outline" className="text-gray-500 border-gray-200 bg-gray-50">مسودة</Badge>;
+  if (status === "inactive")
+    return <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">غير نشط</Badge>;
+  return <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">{status}</Badge>;
 }
 
 const emptyForm = {
@@ -160,6 +175,9 @@ export default function AdminProperties() {
     total: properties.length,
     published: properties.filter(p => p.status === "approved" || p.status === "active").length,
     pending: properties.filter(p => p.status === "pending").length,
+    updatedAfterRejection: properties.filter(p => p.status === "updated_after_rejection").length,
+    rejected: properties.filter(p => p.status === "rejected").length,
+    expired: properties.filter(p => p.status === "expired").length,
     featured: properties.filter(p => p.featured).length,
     forSale: properties.filter(p => p.listingType === "sale").length,
     forRent: properties.filter(p => p.listingType === "rent").length,
@@ -369,7 +387,9 @@ export default function AdminProperties() {
     </div>
   );
 
-  const pendingProps = useMemo(() => properties.filter(p => p.status === "pending"), [properties]);
+  const pendingProps = useMemo(() =>
+    properties.filter(p => p.status === "pending" || p.status === "updated_after_rejection"),
+  [properties]);
 
   return (
     <AdminLayout title="إدارة العقارات">
@@ -384,9 +404,12 @@ export default function AdminProperties() {
               </div>
               <div>
                 <h3 className="font-bold text-amber-900 text-sm">
-                  العقارات المعلقة — تحتاج إلى مراجعة
+                  عقارات تحتاج مراجعة
                 </h3>
-                <p className="text-xs text-amber-700">{pendingProps.length} عقار ينتظر الموافقة أو الرفض</p>
+                <p className="text-xs text-amber-700">
+                  {properties.filter(p => p.status === "pending").length} جديد
+                  {stats.updatedAfterRejection > 0 && ` • ${stats.updatedAfterRejection} مُعدَّل بعد الرفض`}
+                </p>
               </div>
             </div>
             <button
@@ -398,8 +421,11 @@ export default function AdminProperties() {
           </div>
 
           <div className="divide-y divide-amber-200 max-h-72 overflow-y-auto">
-            {pendingProps.slice(0, 5).map((p) => (
-              <div key={p.id} className="flex items-center gap-3 px-5 py-3 hover:bg-amber-50/80 transition-colors">
+            {pendingProps.slice(0, 6).map((p) => (
+              <div
+                key={p.id}
+                className={`flex items-center gap-3 px-5 py-3 hover:bg-amber-50/80 transition-colors ${p.status === "updated_after_rejection" ? "bg-violet-50/40 border-r-2 border-r-violet-400" : ""}`}
+              >
                 <div className="w-10 h-9 rounded-lg overflow-hidden border border-amber-200 shrink-0">
                   <img
                     src={getFirstImage(p.images)}
@@ -409,7 +435,12 @@ export default function AdminProperties() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 truncate" dir="rtl">{p.title}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold text-slate-900 truncate" dir="rtl">{p.title}</p>
+                    {p.status === "updated_after_rejection" && (
+                      <span className="shrink-0 text-[10px] font-bold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">✏️ مُعدَّل</span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">{p.address ?? "—"} • {fmtPrice(p.price)}</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -433,13 +464,13 @@ export default function AdminProperties() {
                 </div>
               </div>
             ))}
-            {pendingProps.length > 5 && (
+            {pendingProps.length > 6 && (
               <div className="px-5 py-2.5 text-center">
                 <button
                   onClick={() => setFilterStatus("pending")}
                   className="text-xs text-amber-700 font-medium hover:underline"
                 >
-                  + {pendingProps.length - 5} عقارات أخرى — عرض الكل
+                  + {pendingProps.length - 6} عقارات أخرى — عرض الكل
                 </button>
               </div>
             )}
@@ -450,14 +481,14 @@ export default function AdminProperties() {
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         {[
-          { label: "إجمالي العقارات", value: stats.total, icon: Building2, color: "text-slate-700 bg-slate-100" },
-          { label: "معتمد", value: stats.published, icon: CheckCircle2, color: "text-emerald-700 bg-emerald-50" },
-          { label: "قيد المراجعة", value: stats.pending, icon: AlertCircle, color: "text-amber-700 bg-amber-50" },
-          { label: "مميز", value: stats.featured, icon: Star, color: "text-yellow-700 bg-yellow-50" },
-          { label: "للبيع", value: stats.forSale, icon: Home, color: "text-blue-700 bg-blue-50" },
-          { label: "للإيجار", value: stats.forRent, icon: TrendingUp, color: "text-purple-700 bg-purple-50" },
+          { label: "إجمالي العقارات",   value: stats.total,                 icon: Building2,     color: "text-slate-700 bg-slate-100",   onClick: () => setFilterStatus("all") },
+          { label: "منشور",             value: stats.published,             icon: CheckCircle2,  color: "text-emerald-700 bg-emerald-50", onClick: () => setFilterStatus("approved") },
+          { label: "قيد المراجعة",      value: stats.pending + stats.updatedAfterRejection, icon: AlertCircle, color: "text-amber-700 bg-amber-50", onClick: () => setFilterStatus("pending") },
+          { label: "أُعيد إرساله",      value: stats.updatedAfterRejection, icon: MessageSquareWarning, color: "text-violet-700 bg-violet-50", onClick: () => setFilterStatus("updated_after_rejection") },
+          { label: "انتهت الصلاحية",    value: stats.expired,               icon: AlertCircle,   color: "text-gray-600 bg-gray-100",      onClick: () => setFilterStatus("expired") },
+          { label: "للبيع",             value: stats.forSale,               icon: Home,          color: "text-blue-700 bg-blue-50",       onClick: () => setFilterStatus("all") },
         ].map((s) => (
-          <Card key={s.label} className="border-slate-200 shadow-sm">
+          <Card key={s.label} className="border-slate-200 shadow-sm cursor-pointer hover:border-teal-300 transition-colors" onClick={s.onClick}>
             <CardContent className="p-4 flex items-center gap-3">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
                 <s.icon className="w-4 h-4" />
@@ -503,14 +534,16 @@ export default function AdminProperties() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-36"><SelectValue placeholder="الحالة" /></SelectTrigger>
+                <SelectTrigger className="w-44"><SelectValue placeholder="الحالة" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">كل الحالات</SelectItem>
-                  <SelectItem value="active">منشور (active)</SelectItem>
-                  <SelectItem value="approved">منشور (approved)</SelectItem>
-                  <SelectItem value="pending">قيد المراجعة</SelectItem>
-                  <SelectItem value="rejected">مرفوض</SelectItem>
-                  <SelectItem value="inactive">غير نشط</SelectItem>
+                  <SelectItem value="approved">✅ منشور</SelectItem>
+                  <SelectItem value="pending">⏳ قيد المراجعة</SelectItem>
+                  <SelectItem value="updated_after_rejection">✏️ أُعيد إرساله</SelectItem>
+                  <SelectItem value="rejected">❌ مرفوض</SelectItem>
+                  <SelectItem value="expired">⏰ انتهت الصلاحية</SelectItem>
+                  <SelectItem value="draft">📝 مسودة</SelectItem>
+                  <SelectItem value="inactive">🔇 غير نشط</SelectItem>
                 </SelectContent>
               </Select>
             </div>
