@@ -51,9 +51,15 @@ function getCoords(p: Property): [number, number] {
   const lat = parseFloat(String(p.latitude ?? ""));
   const lng = parseFloat(String(p.longitude ?? ""));
   if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) return [lat, lng];
-  const jLat = (seededRandom(p.id * 3) - 0.5) * 0.1;
-  const jLng = (seededRandom(p.id * 7) - 0.5) * 0.1;
-  return [BANHA_LAT + jLat, BANHA_LNG + jLng];
+  // Safe seed: guard against undefined/null/NaN id
+  const seed = (typeof p.id === "number" && !isNaN(p.id)) ? p.id : 42;
+  const jLat = (seededRandom(seed * 3) - 0.5) * 0.1;
+  const jLng = (seededRandom(seed * 7) - 0.5) * 0.1;
+  const resultLat = BANHA_LAT + jLat;
+  const resultLng = BANHA_LNG + jLng;
+  // Final safety: if somehow still NaN, return Banha center
+  if (isNaN(resultLat) || isNaN(resultLng)) return [BANHA_LAT, BANHA_LNG];
+  return [resultLat, resultLng];
 }
 
 function firstImg(p: Property): string {
@@ -85,7 +91,9 @@ function clusterProperties(props: Property[], zoom: number): ClusterGroup[] {
     cells[key].ids.push(p.id);
     cells[key].props.push(p);
   }
-  return Object.values(cells).map(c => ({ ...c, lat: c.lat / c.count, lng: c.lng / c.count }));
+  return Object.values(cells)
+    .map(c => ({ ...c, lat: c.lat / c.count, lng: c.lng / c.count }))
+    .filter(c => !isNaN(c.lat) && !isNaN(c.lng));
 }
 
 // ─── Custom Icons ─────────────────────────────────────────────────────────────

@@ -1,12 +1,9 @@
 {
   "version": "1.0",
   "platform": "عقارات بنها",
-  "exportedAt": "2026-06-01T23:37:49.423Z",
+  "exportedAt": "2026-06-01T23:49:33.654Z",
   "files": [
-    "billing.json",
-    "categories.json",
-    "locations.json",
-    "settings.json"
+    "locations.json"
   ],
   "description": "Auto-updated by write-through export. Do not edit manually."
 }
