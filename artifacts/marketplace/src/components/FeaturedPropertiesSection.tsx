@@ -26,7 +26,7 @@ function timeAgo(dateStr: string | null | undefined): string {
 }
 
 const FILTER_TABS = [
-  { key: "all",         label: "الكل",    mainCat: null,         subCat: null },
+  { key: "all",         label: "الكل",    mainCat: null,          subCat: null },
   { key: "residential", label: "سكني",    mainCat: "residential", subCat: null },
   { key: "commercial",  label: "تجاري",   mainCat: "commercial",  subCat: null },
   { key: "villa",       label: "فلل",     mainCat: "residential", subCat: "villa" },
@@ -232,6 +232,7 @@ export function FeaturedPropertiesSection({ settings }: Props) {
               const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "—";
               const listType = property.listingType ?? "";
               const isFav = homeFavIds.includes(property.id);
+              const isFeatured = !!property.featured;
 
               return (
                 <motion.div
@@ -245,47 +246,64 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                     className="group relative bg-white border border-border/70 rounded-2xl overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-200 cursor-pointer"
                     onClick={() => setLocation(`/property/${property.id}`)}
                   >
-                    <PropertyImageGallery
-                      images={imgs}
-                      alt={property.title}
-                      fallback={DEFAULT_IMG}
-                      className="h-52"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
-
-                      {/* Listing type badge */}
-                      <div className="absolute top-3 right-3 flex gap-1.5 z-20">
-                        <span className={`inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md ${
-                          listType === "rent" ? "bg-blue-500 text-white" : "bg-emerald-500 text-white"
-                        }`}>
-                          {listType === "rent" ? "للإيجار" : "للبيع"}
-                        </span>
-                        {property.featured && (
-                          <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md">
-                            <Crown className="w-3 h-3" /> مميز
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Fav button */}
-                      <button
-                        className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${
-                          isFav ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500 hover:border-rose-400"
-                        }`}
-                        onClick={e => { e.stopPropagation(); toggleFavMut.mutate({ id: property.id, add: !isFav }); }}
+                    {/* ── Image ── */}
+                    <div className="relative">
+                      <PropertyImageGallery
+                        images={imgs}
+                        alt={property.title}
+                        fallback={DEFAULT_IMG}
+                        className="h-52"
                       >
-                        <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-white" : ""}`} />
-                      </button>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent pointer-events-none" />
 
-                      {/* Price badge on image */}
-                      <div className="absolute bottom-3 right-3 z-20">
-                        <span className="bg-white/95 backdrop-blur-sm text-gray-900 font-extrabold text-sm px-3 py-1 rounded-lg shadow-md">
-                          {priceStr} <span className="text-xs font-medium text-gray-600">ج.م{listType === "rent" ? "/شهر" : ""}</span>
+                        {/* Listing type badge — top right */}
+                        <div className="absolute top-3 right-3 z-20">
+                          <span className={`inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md ${
+                            listType === "rent" ? "bg-blue-500 text-white" : "bg-emerald-500 text-white"
+                          }`}>
+                            {listType === "rent" ? "للإيجار" : "للبيع"}
+                          </span>
+                        </div>
+
+                        {/* ── Featured diagonal ribbon — left side ── */}
+                        {isFeatured && (
+                          <div className="absolute top-0 left-0 z-20 overflow-hidden w-24 h-24 pointer-events-none">
+                            <div className="absolute -top-1 -left-1 w-28 flex items-center justify-center"
+                              style={{ transform: "rotate(-45deg) translate(-28%, 55%)" }}>
+                              <span className="bg-amber-500 text-white text-[9px] font-extrabold tracking-wider py-1 w-full text-center shadow-md flex items-center justify-center gap-0.5">
+                                <Crown className="w-2.5 h-2.5 shrink-0" /> مميز
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Fav button — top left (pushed right of ribbon when featured) */}
+                        <button
+                          className={`absolute top-3 z-20 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${
+                            isFeatured ? "left-14" : "left-3"
+                          } ${
+                            isFav ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500 hover:border-rose-400"
+                          }`}
+                          onClick={e => { e.stopPropagation(); toggleFavMut.mutate({ id: property.id, add: !isFav }); }}
+                        >
+                          <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-white" : ""}`} />
+                        </button>
+                      </PropertyImageGallery>
+                    </div>
+
+                    {/* ── Content ── */}
+                    <div className="p-4">
+
+                      {/* Price — below image */}
+                      <div className="flex items-baseline gap-1.5 mb-2">
+                        <p className="text-primary font-extrabold text-xl leading-none">
+                          {priceStr}
+                        </p>
+                        <span className="text-gray-600 text-xs font-medium">
+                          ج.م{listType === "rent" ? "/شهر" : ""}
                         </span>
                       </div>
-                    </PropertyImageGallery>
 
-                    <div className="p-4">
                       <h3 className="font-bold text-gray-900 text-sm leading-snug mb-1.5 line-clamp-1">
                         {property.title}
                       </h3>
@@ -296,7 +314,7 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                       </div>
 
                       {/* Specs */}
-                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                      <div className="flex items-center gap-3 flex-wrap mb-3">
                         {(property.rooms ?? 0) > 0 && (
                           <span className="flex items-center gap-1 text-gray-600 text-xs">
                             <BedDouble className="w-3 h-3" /> {property.rooms} غرف
@@ -333,7 +351,21 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                             onClick={e => {
                               e.stopPropagation();
                               const imgs2: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-                              const r = addToCompare({ id: property.id, title: property.title, price: property.price?.toString() ?? "", priceNum: Number(property.price), image: imgs2[0] ?? "", location: [property.district, property.city].filter(Boolean).join("، ") || "بنها", beds: property.rooms ?? 0, baths: property.bathrooms ?? 0, area: property.area ?? 0, type: property.listingType ?? "", kind: property.propertyType ?? "", year: property.yearBuilt ?? 0, finishing: "" });
+                              const r = addToCompare({
+                                id: property.id,
+                                title: property.title,
+                                price: property.price?.toString() ?? "",
+                                priceNum: Number(property.price),
+                                image: imgs2[0] ?? "",
+                                location: [property.district, property.city].filter(Boolean).join("، ") || "بنها",
+                                beds: property.rooms ?? 0,
+                                baths: property.bathrooms ?? 0,
+                                area: property.area ?? 0,
+                                type: property.listingType ?? "",
+                                kind: property.propertyType ?? "",
+                                year: property.yearBuilt ?? 0,
+                                finishing: "",
+                              });
                               if (r === "added") toast.success("أُضيف للمقارنة ✓");
                               else if (r === "already") toast("موجود بالفعل في المقارنة");
                               else toast.error("المقارنة ممتلئة (٤ عقارات)");

@@ -2,206 +2,164 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-05-28T23:35:13.307Z",
+  "exportedAt": "2026-06-01T14:43:55.181Z",
   "tables": {
     "siteSettings": [
       {
         "id": 1,
         "key": "siteName",
         "value": "عقارات بنها",
-        "updatedAt": "2026-05-28T23:24:59.479Z"
+        "updatedAt": "2026-06-01T09:04:01.450Z"
       },
       {
         "id": 2,
         "key": "siteNameEn",
         "value": "Aqarat Banha",
-        "updatedAt": "2026-05-28T23:24:59.483Z"
+        "updatedAt": "2026-06-01T09:04:01.452Z"
       },
       {
         "id": 3,
         "key": "logoUrl",
         "value": "",
-        "updatedAt": "2026-05-28T23:24:59.486Z"
+        "updatedAt": "2026-06-01T09:04:01.455Z"
       },
       {
         "id": 4,
         "key": "faviconUrl",
         "value": "",
-        "updatedAt": "2026-05-28T23:24:59.489Z"
+        "updatedAt": "2026-06-01T09:04:01.457Z"
       },
       {
         "id": 5,
         "key": "heroImage",
         "value": "https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80",
-        "updatedAt": "2026-05-28T23:24:59.491Z"
+        "updatedAt": "2026-06-01T09:04:01.460Z"
       },
       {
         "id": 6,
         "key": "heroTitle",
         "value": "اعثر على عقارك المثالي في بنها",
-        "updatedAt": "2026-05-28T23:24:59.494Z"
+        "updatedAt": "2026-06-01T09:04:01.463Z"
       },
       {
         "id": 7,
         "key": "heroSubtitle",
         "value": "بيع وإيجار وشراء العقارات في بنها والقليوبية — أسرع وأوثق",
-        "updatedAt": "2026-05-28T23:24:59.497Z"
+        "updatedAt": "2026-06-01T09:04:01.465Z"
       },
       {
         "id": 8,
         "key": "ctaText",
         "value": "نضمن لك أفضل العقارات بأفضل الأسعار في بنها والقليوبية",
-        "updatedAt": "2026-05-28T23:24:59.501Z"
+        "updatedAt": "2026-06-01T09:04:01.467Z"
       },
       {
         "id": 9,
         "key": "ctaButtonText",
         "value": "تصفح العقارات الآن",
-        "updatedAt": "2026-05-28T23:24:59.504Z"
+        "updatedAt": "2026-06-01T09:04:01.470Z"
       },
       {
         "id": 10,
         "key": "primaryColor",
         "value": "#0d9488",
-        "updatedAt": "2026-05-28T23:24:59.507Z"
+        "updatedAt": "2026-06-01T09:04:01.472Z"
       },
       {
         "id": 11,
         "key": "themePreset",
         "value": "teal-sand",
-        "updatedAt": "2026-05-28T23:24:59.511Z"
+        "updatedAt": "2026-06-01T09:04:01.475Z"
       },
       {
         "id": 12,
         "key": "aboutContent",
         "value": "نحن منصة عقارات بنها، الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية. نربطك بأفضل العروض العقارية بسرعة وأمان وشفافية تامة.",
-        "updatedAt": "2026-05-28T23:24:59.513Z"
+        "updatedAt": "2026-06-01T09:04:01.478Z"
       },
       {
         "id": 13,
         "key": "contactEmail",
         "value": "info@aqaratbanha.com",
-        "updatedAt": "2026-05-28T23:24:59.518Z"
+        "updatedAt": "2026-06-01T09:04:01.481Z"
       },
       {
         "id": 14,
         "key": "contactPhone",
         "value": "+201000000000",
-        "updatedAt": "2026-05-28T23:24:59.521Z"
+        "updatedAt": "2026-06-01T09:04:01.483Z"
       },
       {
         "id": 15,
         "key": "contactWhatsapp",
         "value": "+201000000000",
-        "updatedAt": "2026-05-28T23:24:59.524Z"
+        "updatedAt": "2026-06-01T09:04:01.486Z"
       },
       {
         "id": 16,
         "key": "contactAddress",
         "value": "بنها، محافظة القليوبية، جمهورية مصر العربية",
-        "updatedAt": "2026-05-28T23:24:59.527Z"
+        "updatedAt": "2026-06-01T09:04:01.488Z"
       },
       {
         "id": 17,
         "key": "workingHours",
         "value": "السبت — الخميس، من 9 صباحاً حتى 9 مساءً",
-        "updatedAt": "2026-05-28T23:24:59.533Z"
+        "updatedAt": "2026-06-01T09:04:01.490Z"
       },
       {
         "id": 18,
         "key": "faqContent",
         "value": "[{\"q\":\"كيف أعرض عقاري على الموقع؟\",\"a\":\"سجّل كمزود، ثم أضف بيانات عقارك من لوحة التحكم — الأمر يستغرق دقائق فقط.\"},{\"q\":\"هل التسجيل مجاني؟\",\"a\":\"نعم، التسجيل الأساسي مجاني تماماً. تتوفر باقات مدفوعة لمزايا إضافية.\"},{\"q\":\"ما المناطق التي يغطيها الموقع؟\",\"a\":\"نغطي بنها وجميع مراكز القليوبية (طوخ، قليوب، الخانكة، القناطر، شبرا الخيمة...) بالإضافة إلى القاهرة الكبرى.\"},{\"q\":\"كيف أتواصل مع المالك أو السمسار؟\",\"a\":\"يمكنك الاتصال مباشرة عبر الهاتف أو واتساب الظاهر في إعلان العقار.\"},{\"q\":\"هل الأسعار المعروضة قابلة للتفاوض؟\",\"a\":\"نعم، معظم الأسعار قابلة للتفاوض. تواصل مع المالك للاستفسار.\"},{\"q\":\"ما الفرق بين الإعلان العادي والمميز؟\",\"a\":\"الإعلان المميز يظهر في أعلى نتائج البحث وعلى الصفحة الرئيسية بشارة 'مميز'.\"}]",
-        "updatedAt": "2026-05-28T23:24:59.537Z"
+        "updatedAt": "2026-06-01T09:04:01.493Z"
       },
       {
         "id": 19,
         "key": "servicesModuleEnabled",
         "value": "true",
-        "updatedAt": "2026-05-28T23:24:59.540Z"
+        "updatedAt": "2026-06-01T09:04:01.496Z"
       },
       {
         "id": 20,
-        "key": "chatbotEnabled",
-        "value": "false",
-        "updatedAt": "2026-05-28T23:35:13.249Z"
+        "key": "featuredSectionTitle",
+        "value": "اكتشف أفضل العقارات في بنها",
+        "updatedAt": "2026-06-01T14:43:54.819Z"
       },
       {
         "id": 21,
-        "key": "chatbotBotName",
-        "value": "مساعد عقارات بنها",
-        "updatedAt": "2026-05-28T23:35:13.254Z"
+        "key": "featuredSectionSubtitle",
+        "value": "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.",
+        "updatedAt": "2026-06-01T14:43:55.093Z"
       },
       {
         "id": 22,
-        "key": "chatbotWelcomeMessage",
-        "value": "أهلاً! أنا مساعدك الذكي لعقارات بنها 🏠\nأخبرني إيه اللي بتدور عليه — أو استخدم الأسئلة السريعة أدناه.",
-        "updatedAt": "2026-05-28T23:35:13.257Z"
+        "key": "featuredSectionTypes",
+        "value": "[\"all\"]",
+        "updatedAt": "2026-06-01T14:43:55.157Z"
       },
       {
         "id": 23,
-        "key": "chatbotQuickReplies",
-        "value": "[]",
-        "updatedAt": "2026-05-28T23:35:13.261Z"
+        "key": "featuredSectionCount",
+        "value": "12",
+        "updatedAt": "2026-06-01T14:43:55.162Z"
       },
       {
         "id": 24,
-        "key": "chatbotWhatsapp",
-        "value": "",
-        "updatedAt": "2026-05-28T23:35:13.264Z"
+        "key": "featuredSectionCustomCount",
+        "value": "12",
+        "updatedAt": "2026-06-01T14:43:55.167Z"
       },
       {
         "id": 25,
-        "key": "chatbotFallbackMsg",
-        "value": "",
-        "updatedAt": "2026-05-28T23:35:13.270Z"
+        "key": "featuredSectionColumns",
+        "value": "3",
+        "updatedAt": "2026-06-01T14:43:55.171Z"
       },
       {
         "id": 26,
-        "key": "chatbotWorkingHours",
-        "value": "",
-        "updatedAt": "2026-05-28T23:35:13.274Z"
-      },
-      {
-        "id": 27,
-        "key": "chatbotAiEnabled",
-        "value": "false",
-        "updatedAt": "2026-05-28T23:35:13.278Z"
-      },
-      {
-        "id": 28,
-        "key": "chatbotAiProvider",
-        "value": "openai",
-        "updatedAt": "2026-05-28T23:35:13.281Z"
-      },
-      {
-        "id": 29,
-        "key": "chatbotAiApiKey",
-        "value": "",
-        "updatedAt": "2026-05-28T23:35:13.285Z"
-      },
-      {
-        "id": 30,
-        "key": "chatbotAiModel",
-        "value": "gpt-4o-mini",
-        "updatedAt": "2026-05-28T23:35:13.289Z"
-      },
-      {
-        "id": 31,
-        "key": "chatbotAiBaseUrl",
-        "value": "",
-        "updatedAt": "2026-05-28T23:35:13.293Z"
-      },
-      {
-        "id": 32,
-        "key": "chatbotAiSystemPrompt",
-        "value": "",
-        "updatedAt": "2026-05-28T23:35:13.297Z"
-      },
-      {
-        "id": 33,
-        "key": "chatbotAiTemperature",
-        "value": "0.7",
-        "updatedAt": "2026-05-28T23:35:13.302Z"
+        "key": "featuredSectionSort",
+        "value": "newest",
+        "updatedAt": "2026-06-01T14:43:55.176Z"
       }
     ]
   }

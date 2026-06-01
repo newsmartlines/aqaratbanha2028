@@ -2031,8 +2031,7 @@ function FeaturedSectionSettings({
                   key={opt.key}
                   type="button"
                   onClick={() => toggleType(opt.key)}
-                  disabled={allSelected}
-                  className={`flex items-center gap-2.5 p-3 rounded-xl border text-right transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`flex items-center gap-2.5 p-3 rounded-xl border text-right transition-all ${
                     isSelected
                       ? "bg-teal-50 border-teal-400 text-teal-700 shadow-sm"
                       : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
