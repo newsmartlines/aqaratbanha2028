@@ -16,7 +16,8 @@ import { adminAuditMiddleware } from "./middleware/adminAudit";
 const app: Express = express();
 
 // ── Trust proxy (Replit edge / Cloudflare / nginx) ───────────────────────────
-app.set("trust proxy", true);
+// Use hop count of 1 (not `true`) to satisfy express-rate-limit's proxy validation
+app.set("trust proxy", 1);
 
 // ── Structured request logging ────────────────────────────────────────────────
 app.use(
