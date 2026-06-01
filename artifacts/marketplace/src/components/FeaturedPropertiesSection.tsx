@@ -352,22 +352,15 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: idx * 0.05 }}
                   className="relative"
-                  onMouseEnter={() => handleMouseEnter(property.id)}
-                  onMouseLeave={handleMouseLeave}
                 >
-                  {/* ── Hover mini-card (floats above) ── */}
-                  <HoverCard
-                    property={property}
-                    visible={isHovered}
-                    onNavigate={() => setLocation(`/property/${property.id}`)}
-                  />
-
                   <div
                     className={`group bg-white border rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer ${
                       isHovered
-                        ? "shadow-xl border-primary/30 -translate-y-1"
-                        : "border-border/70 hover:shadow-lg hover:border-primary/20"
+                        ? "border-primary/40 -translate-y-0.5"
+                        : "border-border/70 hover:border-primary/30"
                     }`}
+                    onMouseEnter={() => setHoveredId(property.id)}
+                    onMouseLeave={() => setHoveredId(null)}
                     onClick={() => setLocation(`/property/${property.id}`)}
                   >
                     {/* ── Image ── */}

@@ -1093,7 +1093,7 @@ export default function PropertiesPage() {
                           transition={{ duration: 0.3, delay: idx * 0.03 }}
                         >
                           <div
-                            className={`group bg-white rounded-2xl border overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-row relative ${p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-gray-200"}`}
+                            className={`group bg-white rounded-2xl border overflow-hidden hover:border-primary/30 transition-all duration-300 cursor-pointer flex flex-row relative ${p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-gray-200"}`}
                             onClick={() => setLocation(`/property/${p.id}`)}
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
@@ -1286,7 +1286,7 @@ export default function PropertiesPage() {
                           transition={{ duration: 0.35, delay: idx * 0.04 }}
                         >
                           <div
-                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer"
+                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary/30 transition-all duration-300 cursor-pointer"
                             onClick={() => setLocation(`/property/${p.id}`)}
                             onMouseEnter={() => setHoveredId(p.id)}
                             onMouseLeave={() => setHoveredId(null)}
