@@ -315,6 +315,9 @@ export default function AdminSettings() {
           <TabsTrigger value="market" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold text-violet-700 data-[state=active]:text-violet-800">
             <TrendingUp className="w-4 h-4 me-1.5" />مؤشرات السوق
           </TabsTrigger>
+          <TabsTrigger value="featured-section" className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold text-teal-700 data-[state=active]:text-teal-800">
+            <BankIcon className="w-4 h-4 me-1.5" />قسم العقارات
+          </TabsTrigger>
         </TabsList>
 
         {/* ── General ─────────────────────────────────────────────── */}
@@ -1844,6 +1847,359 @@ function MarketAnalyticsSettingsTab() {
           </Card>
         </>
       )}
+
+      {/* ── Featured Properties Section ─────────────────────────────────── */}
+      <TabsContent value="featured-section">
+        <FeaturedSectionSettings
+          form={form}
+          setForm={setForm}
+          handleSave={handleSave}
+          saving={saveMutation.isPending}
+        />
+      </TabsContent>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Featured Properties Section Settings Component
+   ═══════════════════════════════════════════════════════════════════ */
+
+const PROPERTY_TYPE_OPTIONS = [
+  { key: "residential", label: "عقارات سكنية",   icon: "🏘️" },
+  { key: "apartment",   label: "شقق",             icon: "🏢" },
+  { key: "villa",       label: "فلل",             icon: "🏡" },
+  { key: "duplex",      label: "دوبلكس",          icon: "🏠" },
+  { key: "commercial",  label: "عقارات تجارية",   icon: "🏪" },
+  { key: "office",      label: "مكاتب إدارية",    icon: "💼" },
+  { key: "shop",        label: "محلات تجارية",    icon: "🏬" },
+  { key: "land",        label: "أراضي",            icon: "🌍" },
+  { key: "luxury",      label: "عقارات فاخرة",    icon: "👑" },
+];
+
+const COUNT_OPTIONS = [
+  { value: "4",      label: "4 عقارات" },
+  { value: "8",      label: "8 عقارات" },
+  { value: "12",     label: "12 عقار" },
+  { value: "16",     label: "16 عقار" },
+  { value: "custom", label: "عدد مخصص" },
+];
+
+const COLUMN_OPTIONS = [
+  { value: "2", label: "عمودين" },
+  { value: "3", label: "3 أعمدة" },
+  { value: "4", label: "4 أعمدة" },
+  { value: "5", label: "5 أعمدة" },
+  { value: "6", label: "6 أعمدة" },
+];
+
+const SORT_OPTIONS = [
+  { value: "newest",     label: "الأحدث",         icon: "🕐" },
+  { value: "price_high", label: "الأعلى سعراً",   icon: "💰" },
+  { value: "price_low",  label: "الأقل سعراً",    icon: "🏷️" },
+  { value: "featured",   label: "المميزة أولاً",  icon: "⭐" },
+  { value: "most_viewed",label: "الأكثر مشاهدة", icon: "👁️" },
+];
+
+function FeaturedSectionSettings({
+  form, setForm, handleSave, saving,
+}: {
+  form: Partial<any>;
+  setForm: React.Dispatch<React.SetStateAction<Partial<any>>>;
+  handleSave: (data: Partial<any>) => void;
+  saving: boolean;
+}) {
+  const title       = form.featuredSectionTitle    ?? "اكتشف أفضل العقارات في بنها";
+  const subtitle    = form.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.";
+  const countSetting = form.featuredSectionCount   ?? "8";
+  const customCount  = form.featuredSectionCustomCount ?? "12";
+  const columns      = form.featuredSectionColumns ?? "3";
+  const sort         = form.featuredSectionSort    ?? "newest";
+
+  let selectedTypes: string[] = [];
+  try {
+    const raw = form.featuredSectionTypes;
+    if (raw) selectedTypes = JSON.parse(raw as string);
+  } catch { /* */ }
+  if (!selectedTypes.length) selectedTypes = ["all"];
+
+  const toggleType = (key: string) => {
+    if (key === "all") {
+      setForm(f => ({ ...f, featuredSectionTypes: JSON.stringify(["all"]) }));
+      return;
+    }
+    let next = selectedTypes.filter(k => k !== "all");
+    if (next.includes(key)) {
+      next = next.filter(k => k !== key);
+    } else {
+      next = [...next, key];
+    }
+    if (!next.length) next = ["all"];
+    setForm(f => ({ ...f, featuredSectionTypes: JSON.stringify(next) }));
+  };
+
+  const allSelected = selectedTypes.includes("all");
+
+  const saveAll = () => {
+    handleSave({
+      featuredSectionTitle:       title,
+      featuredSectionSubtitle:    subtitle,
+      featuredSectionTypes:       form.featuredSectionTypes ?? JSON.stringify(["all"]),
+      featuredSectionCount:       countSetting,
+      featuredSectionCustomCount: customCount,
+      featuredSectionColumns:     columns,
+      featuredSectionSort:        sort,
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+
+      {/* Title / Subtitle */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <BankIcon className="w-5 h-5 text-teal-600" />
+            عنوان قسم العقارات المميزة
+          </CardTitle>
+          <CardDescription>
+            يظهر في الصفحة الرئيسية فوق شبكة العقارات
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">العنوان الرئيسي</Label>
+            <Input
+              value={title}
+              onChange={e => setForm(f => ({ ...f, featuredSectionTitle: e.target.value }))}
+              placeholder="اكتشف أفضل العقارات في بنها"
+              className="text-right"
+              dir="rtl"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">الوصف الفرعي</Label>
+            <Input
+              value={subtitle}
+              onChange={e => setForm(f => ({ ...f, featuredSectionSubtitle: e.target.value }))}
+              placeholder="استعرض أحدث العقارات السكنية والتجارية..."
+              className="text-right"
+              dir="rtl"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Property Types */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="w-5 h-5 text-amber-500" />
+            أنواع العقارات المعروضة
+          </CardTitle>
+          <CardDescription>
+            اختر أنواع العقارات التي تظهر في هذا القسم — يمكن اختيار أكثر من نوع
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* All button */}
+            <button
+              type="button"
+              onClick={() => toggleType("all")}
+              className={`flex items-center gap-2.5 p-3 rounded-xl border text-right transition-all ${
+                allSelected
+                  ? "bg-teal-50 border-teal-400 text-teal-700 shadow-sm"
+                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+              }`}
+            >
+              <span className="text-xl">🏠</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">كل العقارات</p>
+                <p className="text-[11px] text-muted-foreground">عرض جميع الأنواع</p>
+              </div>
+              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${allSelected ? "border-teal-500 bg-teal-500" : "border-slate-300"}`}>
+                {allSelected && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+            </button>
+
+            {PROPERTY_TYPE_OPTIONS.map(opt => {
+              const isSelected = !allSelected && selectedTypes.includes(opt.key);
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => toggleType(opt.key)}
+                  disabled={allSelected}
+                  className={`flex items-center gap-2.5 p-3 rounded-xl border text-right transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isSelected
+                      ? "bg-teal-50 border-teal-400 text-teal-700 shadow-sm"
+                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                  }`}
+                >
+                  <span className="text-xl">{opt.icon}</span>
+                  <p className="font-semibold text-sm flex-1">{opt.label}</p>
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-teal-500 bg-teal-500" : "border-slate-300"}`}>
+                    {isSelected && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            المختار: {allSelected ? "كل العقارات" : selectedTypes.map(k => PROPERTY_TYPE_OPTIONS.find(o => o.key === k)?.label ?? k).join("، ") || "لا يوجد"}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Count + Columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* Count */}
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Eye className="w-5 h-5 text-blue-500" />
+              عدد العقارات المعروضة
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {COUNT_OPTIONS.map(opt => (
+              <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                countSetting === opt.value ? "bg-blue-50 border-blue-400" : "bg-white border-slate-200 hover:border-slate-300"
+              }`}>
+                <input
+                  type="radio"
+                  name="featuredCount"
+                  value={opt.value}
+                  checked={countSetting === opt.value}
+                  onChange={() => setForm(f => ({ ...f, featuredSectionCount: opt.value }))}
+                  className="accent-blue-600"
+                />
+                <span className={`font-semibold text-sm ${countSetting === opt.value ? "text-blue-700" : "text-slate-700"}`}>
+                  {opt.label}
+                </span>
+              </label>
+            ))}
+            {countSetting === "custom" && (
+              <div className="pt-2 space-y-1.5">
+                <Label className="text-sm font-semibold text-slate-600">العدد المخصص</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={e => setForm(f => ({ ...f, featuredSectionCustomCount: e.target.value }))}
+                  className="w-32"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Columns */}
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart2 className="w-5 h-5 text-purple-500" />
+              عدد الأعمدة في الصف
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {COLUMN_OPTIONS.map(opt => (
+              <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                columns === opt.value ? "bg-purple-50 border-purple-400" : "bg-white border-slate-200 hover:border-slate-300"
+              }`}>
+                <input
+                  type="radio"
+                  name="featuredColumns"
+                  value={opt.value}
+                  checked={columns === opt.value}
+                  onChange={() => setForm(f => ({ ...f, featuredSectionColumns: opt.value }))}
+                  className="accent-purple-600"
+                />
+                <span className={`font-semibold text-sm ${columns === opt.value ? "text-purple-700" : "text-slate-700"}`}>
+                  {opt.label}
+                </span>
+                <div className={`mr-auto flex gap-0.5 ${columns === opt.value ? "opacity-100" : "opacity-30"}`}>
+                  {Array.from({ length: parseInt(opt.value) }).map((_, i) => (
+                    <div key={i} className="w-3 h-5 rounded-sm bg-purple-400" />
+                  ))}
+                </div>
+              </label>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sort */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-rose-500" />
+            ترتيب العقارات
+          </CardTitle>
+          <CardDescription>
+            كيفية ترتيب العقارات المعروضة في هذا القسم
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {SORT_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setForm(f => ({ ...f, featuredSectionSort: opt.value }))}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border text-center transition-all ${
+                  sort === opt.value
+                    ? "bg-rose-50 border-rose-400 text-rose-700 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                <span className="text-2xl">{opt.icon}</span>
+                <span className="font-semibold text-xs leading-tight">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preview card */}
+      <Card className="border-teal-200 bg-teal-50/40 shadow-sm">
+        <CardContent className="pt-5">
+          <p className="text-sm font-semibold text-teal-800 mb-3 flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            ملخص الإعدادات الحالية
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div className="bg-white rounded-xl p-3 border border-teal-100 text-center">
+              <p className="text-xs text-muted-foreground mb-1">الأنواع</p>
+              <p className="font-bold text-teal-700 text-xs leading-tight">
+                {allSelected ? "كل الأنواع" : `${selectedTypes.length} ${selectedTypes.length === 1 ? "نوع" : "أنواع"}`}
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-3 border border-teal-100 text-center">
+              <p className="text-xs text-muted-foreground mb-1">العدد</p>
+              <p className="font-bold text-teal-700">
+                {countSetting === "custom" ? customCount : countSetting} عقار
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-3 border border-teal-100 text-center">
+              <p className="text-xs text-muted-foreground mb-1">الأعمدة</p>
+              <p className="font-bold text-teal-700">{COLUMN_OPTIONS.find(c => c.value === columns)?.label ?? columns}</p>
+            </div>
+            <div className="bg-white rounded-xl p-3 border border-teal-100 text-center">
+              <p className="text-xs text-muted-foreground mb-1">الترتيب</p>
+              <p className="font-bold text-teal-700 text-xs">{SORT_OPTIONS.find(s => s.value === sort)?.label ?? sort}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Button onClick={saveAll} disabled={saving} className="bg-teal-600 hover:bg-teal-700 text-white gap-2 w-full sm:w-auto">
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        حفظ إعدادات القسم
+      </Button>
     </div>
   );
 }
