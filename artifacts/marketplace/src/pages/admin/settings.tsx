@@ -1602,6 +1602,16 @@ export default function AdminSettings() {
         <TabsContent value="market">
           <MarketAnalyticsSettingsTab />
         </TabsContent>
+
+        {/* ── Featured Properties Section ──────────────────────── */}
+        <TabsContent value="featured-section">
+          <FeaturedSectionSettings
+            form={form}
+            setForm={setForm}
+            handleSave={handleSave}
+            saving={saveMutation.isPending}
+          />
+        </TabsContent>
       </Tabs>
     </AdminLayout>
   );
@@ -1848,15 +1858,6 @@ function MarketAnalyticsSettingsTab() {
         </>
       )}
 
-      {/* ── Featured Properties Section ─────────────────────────────────── */}
-      <TabsContent value="featured-section">
-        <FeaturedSectionSettings
-          form={form}
-          setForm={setForm}
-          handleSave={handleSave}
-          saving={saveMutation.isPending}
-        />
-      </TabsContent>
     </div>
   );
 }
