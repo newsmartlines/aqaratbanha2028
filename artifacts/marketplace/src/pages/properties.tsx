@@ -1214,7 +1214,7 @@ export default function PropertiesPage() {
                                 )}
                                 <div className="flex items-center gap-1 shrink-0">
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
+                                    onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else if (r === "type_mismatch") toast.error("لا يمكن مقارنة بيع مع إيجار"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
                                     className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-600 hover:border-primary/30 hover:text-primary"}`}
                                     title="أضف للمقارنة"
                                   >
@@ -1353,7 +1353,7 @@ export default function PropertiesPage() {
                                   <button className="p-1 rounded-lg border border-rose-200 text-rose-400 hover:bg-rose-50 transition-all" title="إبلاغ" onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}>
                                     <Flag className="w-3 h-3" />
                                   </button>
-                                  <button className={`p-1 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-700 hover:border-primary/30 hover:text-primary"}`} title="قارن" onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}>
+                                  <button className={`p-1 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-700 hover:border-primary/30 hover:text-primary"}`} title="قارن" onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else if (r === "type_mismatch") toast.error("لا يمكن مقارنة بيع مع إيجار"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}>
                                     <GitCompare className="w-3.5 h-3.5" />
                                   </button>
                                 </div>

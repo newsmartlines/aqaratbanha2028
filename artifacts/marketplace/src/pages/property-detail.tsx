@@ -388,6 +388,7 @@ export default function PropertyDetail() {
                     {compareMsg === "added" && "✓ أُضيف للمقارنة"}
                     {compareMsg === "already" && "موجود بالفعل"}
                     {compareMsg === "full" && "الحد الأقصى 4 عقارات"}
+                    {compareMsg === "type_mismatch" && "لا يمكن مقارنة بيع مع إيجار"}
                   </motion.div>
                 )}
               </AnimatePresence>

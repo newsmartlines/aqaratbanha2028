@@ -10,7 +10,7 @@ export interface CompareItem {
   beds: number;
   baths: number;
   area: number;
-  type: string;
+  type: string;   // "sale" | "rent"
   kind: string;
   year: number;
   finishing: string;
@@ -29,10 +29,15 @@ function save(items: CompareItem[]) {
   window.dispatchEvent(new Event("compare-change"));
 }
 
-export function addToCompare(item: CompareItem): "added" | "already" | "full" {
+export function addToCompare(item: CompareItem): "added" | "already" | "full" | "type_mismatch" {
   const items = load();
   if (items.find(i => i.id === item.id)) return "already";
   if (items.length >= MAX) return "full";
+  // Block mixing sale and rent
+  if (items.length > 0) {
+    const existingType = items[0].type;
+    if (existingType && item.type && existingType !== item.type) return "type_mismatch";
+  }
   save([...items, item]);
   return "added";
 }

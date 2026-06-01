@@ -491,6 +491,7 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                               });
                               if (r === "added") toast.success("أُضيف للمقارنة ✓");
                               else if (r === "already") toast("موجود بالفعل في المقارنة");
+                              else if (r === "type_mismatch") toast.error("لا يمكن مقارنة بيع مع إيجار");
                               else toast.error("المقارنة ممتلئة (٤ عقارات)");
                             }}
                             title="قارن"
