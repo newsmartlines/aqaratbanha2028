@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -9,7 +9,7 @@ import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { Button } from "@/components/ui/button";
 import {
   Loader2, Building2, MapPin, BedDouble, Bath, Maximize2,
-  ArrowLeft, Heart, Eye, Clock, Crown, GitCompare,
+  ArrowLeft, Heart, Eye, Clock, Crown, GitCompare, ExternalLink,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -23,6 +23,23 @@ function timeAgo(dateStr: string | null | undefined): string {
   if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
   if (diff < 604800) return `منذ ${Math.floor(diff / 86400)} ${Math.floor(diff / 86400) === 1 ? "يوم" : "أيام"}`;
   return `منذ ${Math.floor(diff / 2592000)} شهر`;
+}
+
+/** Humanize price: 1,500,000 → "1.5 مليون"  850,000 → "850 ألف" */
+function formatPrice(price: number | string | null | undefined, listType?: string): string {
+  const n = Number(price);
+  if (!price || isNaN(n) || n === 0) return "—";
+  let str: string;
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    str = m % 1 === 0 ? `${m} مليون` : `${m.toFixed(1)} مليون`;
+  } else if (n >= 1_000) {
+    const k = n / 1_000;
+    str = k % 1 === 0 ? `${k} ألف` : `${k.toFixed(0)} ألف`;
+  } else {
+    str = n.toLocaleString("ar-EG");
+  }
+  return `${str} ج.م${listType === "rent" ? "/شهر" : ""}`;
 }
 
 const FILTER_TABS = [
@@ -48,6 +65,89 @@ interface Props {
   settings?: Record<string, string>;
 }
 
+/* ── Hover Mini-Card ──────────────────────────────────────────────────────── */
+function HoverCard({ property, visible, onNavigate }: {
+  property: any;
+  visible: boolean;
+  onNavigate: () => void;
+}) {
+  const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
+  const thumb = imgs[0] ?? DEFAULT_IMG;
+  const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
+  const listType = property.listingType ?? "";
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8, scale: 0.96 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="absolute bottom-[calc(100%+8px)] left-0 right-0 z-50 bg-white rounded-2xl shadow-2xl border border-border/60 overflow-hidden pointer-events-none"
+          style={{ minWidth: 220 }}
+        >
+          {/* Image */}
+          <div className="relative h-32 overflow-hidden">
+            <img
+              src={thumb}
+              alt={property.title}
+              className="w-full h-full object-cover"
+              onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMG; }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              listType === "rent" ? "bg-blue-500 text-white" : "bg-emerald-500 text-white"
+            }`}>
+              {listType === "rent" ? "للإيجار" : "للبيع"}
+            </span>
+            {property.featured && (
+              <span className="absolute top-2 left-2 flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <Crown className="w-2.5 h-2.5" /> مميز
+              </span>
+            )}
+          </div>
+          {/* Details */}
+          <div className="p-3" dir="rtl">
+            <p className="font-bold text-gray-900 text-xs leading-snug line-clamp-1 mb-1">
+              {property.title}
+            </p>
+            <p className="text-primary font-extrabold text-base leading-none mb-2">
+              {formatPrice(property.price, listType)}
+            </p>
+            <div className="flex items-center gap-3 text-[11px] text-gray-600 mb-2">
+              {(property.rooms ?? 0) > 0 && (
+                <span className="flex items-center gap-0.5">
+                  <BedDouble className="w-3 h-3" /> {property.rooms} غرف
+                </span>
+              )}
+              {(property.bathrooms ?? 0) > 0 && (
+                <span className="flex items-center gap-0.5">
+                  <Bath className="w-3 h-3" /> {property.bathrooms}
+                </span>
+              )}
+              {(property.area ?? 0) > 0 && (
+                <span className="flex items-center gap-0.5">
+                  <Maximize2 className="w-3 h-3" /> {Number(property.area).toLocaleString("ar-EG")} م²
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-3">
+              <MapPin className="w-3 h-3 text-primary shrink-0" />
+              <span className="truncate">{location}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-primary font-semibold">
+              <ExternalLink className="w-3 h-3" />
+              اضغط لعرض التفاصيل الكاملة
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ── Main Component ─────────────────────────────────────────────────────────── */
 export function FeaturedPropertiesSection({ settings }: Props) {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
@@ -55,6 +155,8 @@ export function FeaturedPropertiesSection({ settings }: Props) {
   const { isIn: isInCompare } = useCompare();
 
   const [activeTab, setActiveTab] = useState("all");
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sectionTitle    = settings?.featuredSectionTitle    ?? "اكتشف أفضل العقارات في بنها";
   const sectionSubtitle = settings?.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.";
@@ -150,6 +252,15 @@ export function FeaturedPropertiesSection({ settings }: Props) {
     }).length;
   };
 
+  const handleMouseEnter = (id: number) => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => setHoveredId(id), 180);
+  };
+  const handleMouseLeave = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => setHoveredId(null), 120);
+  };
+
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -228,11 +339,10 @@ export function FeaturedPropertiesSection({ settings }: Props) {
             {displayed.map((property: any, idx: number) => {
               const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
               const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
-              const priceNum = Number(property.price);
-              const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "—";
               const listType = property.listingType ?? "";
               const isFav = homeFavIds.includes(property.id);
               const isFeatured = !!property.featured;
+              const isHovered = hoveredId === property.id;
 
               return (
                 <motion.div
@@ -241,9 +351,23 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: idx * 0.05 }}
+                  className="relative"
+                  onMouseEnter={() => handleMouseEnter(property.id)}
+                  onMouseLeave={handleMouseLeave}
                 >
+                  {/* ── Hover mini-card (floats above) ── */}
+                  <HoverCard
+                    property={property}
+                    visible={isHovered}
+                    onNavigate={() => setLocation(`/property/${property.id}`)}
+                  />
+
                   <div
-                    className="group relative bg-white border border-border/70 rounded-2xl overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-200 cursor-pointer"
+                    className={`group bg-white border rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer ${
+                      isHovered
+                        ? "shadow-xl border-primary/30 -translate-y-1"
+                        : "border-border/70 hover:shadow-lg hover:border-primary/20"
+                    }`}
                     onClick={() => setLocation(`/property/${property.id}`)}
                   >
                     {/* ── Image ── */}
@@ -256,7 +380,7 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                       >
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent pointer-events-none" />
 
-                        {/* Listing type badge — top right */}
+                        {/* Listing type badge */}
                         <div className="absolute top-3 right-3 z-20">
                           <span className={`inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md ${
                             listType === "rent" ? "bg-blue-500 text-white" : "bg-emerald-500 text-white"
@@ -265,11 +389,13 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                           </span>
                         </div>
 
-                        {/* ── Featured diagonal ribbon — left side ── */}
+                        {/* Featured diagonal ribbon */}
                         {isFeatured && (
                           <div className="absolute top-0 left-0 z-20 overflow-hidden w-24 h-24 pointer-events-none">
-                            <div className="absolute -top-1 -left-1 w-28 flex items-center justify-center"
-                              style={{ transform: "rotate(-45deg) translate(-28%, 55%)" }}>
+                            <div
+                              className="absolute flex items-center justify-center"
+                              style={{ transform: "rotate(-45deg) translate(-28%, 55%)", width: "112px", top: 0, left: "-4px" }}
+                            >
                               <span className="bg-amber-500 text-white text-[9px] font-extrabold tracking-wider py-1 w-full text-center shadow-md flex items-center justify-center gap-0.5">
                                 <Crown className="w-2.5 h-2.5 shrink-0" /> مميز
                               </span>
@@ -277,7 +403,7 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                           </div>
                         )}
 
-                        {/* Fav button — top left (pushed right of ribbon when featured) */}
+                        {/* Fav button */}
                         <button
                           className={`absolute top-3 z-20 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all ${
                             isFeatured ? "left-14" : "left-3"
@@ -294,13 +420,10 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                     {/* ── Content ── */}
                     <div className="p-4">
 
-                      {/* Price — below image */}
-                      <div className="flex items-baseline gap-1.5 mb-2">
-                        <p className="text-primary font-extrabold text-xl leading-none">
-                          {priceStr}
-                        </p>
-                        <span className="text-gray-600 text-xs font-medium">
-                          ج.م{listType === "rent" ? "/شهر" : ""}
+                      {/* Price — clean humanized */}
+                      <div className="mb-2">
+                        <span className="inline-block bg-primary/8 text-primary font-extrabold text-base px-3 py-1 rounded-lg border border-primary/15 leading-tight">
+                          {formatPrice(property.price, listType)}
                         </span>
                       </div>
 

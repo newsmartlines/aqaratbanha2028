@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-06-01T14:43:55.181Z",
+  "exportedAt": "2026-06-01T15:10:07.828Z",
   "tables": {
     "siteSettings": [
       {
@@ -123,43 +123,127 @@
         "id": 20,
         "key": "featuredSectionTitle",
         "value": "اكتشف أفضل العقارات في بنها",
-        "updatedAt": "2026-06-01T14:43:54.819Z"
+        "updatedAt": "2026-06-01T14:56:00.792Z"
       },
       {
         "id": 21,
         "key": "featuredSectionSubtitle",
         "value": "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.",
-        "updatedAt": "2026-06-01T14:43:55.093Z"
+        "updatedAt": "2026-06-01T14:56:01.017Z"
       },
       {
         "id": 22,
         "key": "featuredSectionTypes",
-        "value": "[\"all\"]",
-        "updatedAt": "2026-06-01T14:43:55.157Z"
+        "value": "[\"residential\",\"apartment\",\"commercial\",\"villa\",\"office\"]",
+        "updatedAt": "2026-06-01T14:56:01.106Z"
       },
       {
         "id": 23,
         "key": "featuredSectionCount",
         "value": "12",
-        "updatedAt": "2026-06-01T14:43:55.162Z"
+        "updatedAt": "2026-06-01T14:56:01.110Z"
       },
       {
         "id": 24,
         "key": "featuredSectionCustomCount",
         "value": "12",
-        "updatedAt": "2026-06-01T14:43:55.167Z"
+        "updatedAt": "2026-06-01T14:56:01.114Z"
       },
       {
         "id": 25,
         "key": "featuredSectionColumns",
-        "value": "3",
-        "updatedAt": "2026-06-01T14:43:55.171Z"
+        "value": "4",
+        "updatedAt": "2026-06-01T14:56:01.118Z"
       },
       {
         "id": 26,
         "key": "featuredSectionSort",
         "value": "newest",
-        "updatedAt": "2026-06-01T14:43:55.176Z"
+        "updatedAt": "2026-06-01T14:56:01.123Z"
+      },
+      {
+        "id": 27,
+        "key": "chatbotEnabled",
+        "value": "false",
+        "updatedAt": "2026-06-01T15:10:07.616Z"
+      },
+      {
+        "id": 28,
+        "key": "chatbotBotName",
+        "value": "مساعد عقارات بنها",
+        "updatedAt": "2026-06-01T15:10:07.767Z"
+      },
+      {
+        "id": 29,
+        "key": "chatbotWelcomeMessage",
+        "value": "أهلاً! أنا مساعدك الذكي لعقارات بنها 🏠\nأخبرني إيه اللي بتدور عليه — أو استخدم الأسئلة السريعة أدناه.",
+        "updatedAt": "2026-06-01T15:10:07.780Z"
+      },
+      {
+        "id": 30,
+        "key": "chatbotQuickReplies",
+        "value": "[]",
+        "updatedAt": "2026-06-01T15:10:07.784Z"
+      },
+      {
+        "id": 31,
+        "key": "chatbotWhatsapp",
+        "value": "",
+        "updatedAt": "2026-06-01T15:10:07.789Z"
+      },
+      {
+        "id": 32,
+        "key": "chatbotFallbackMsg",
+        "value": "",
+        "updatedAt": "2026-06-01T15:10:07.793Z"
+      },
+      {
+        "id": 33,
+        "key": "chatbotWorkingHours",
+        "value": "",
+        "updatedAt": "2026-06-01T15:10:07.797Z"
+      },
+      {
+        "id": 34,
+        "key": "chatbotAiEnabled",
+        "value": "false",
+        "updatedAt": "2026-06-01T15:10:07.801Z"
+      },
+      {
+        "id": 35,
+        "key": "chatbotAiProvider",
+        "value": "openai",
+        "updatedAt": "2026-06-01T15:10:07.805Z"
+      },
+      {
+        "id": 36,
+        "key": "chatbotAiApiKey",
+        "value": "",
+        "updatedAt": "2026-06-01T15:10:07.809Z"
+      },
+      {
+        "id": 37,
+        "key": "chatbotAiModel",
+        "value": "gpt-4o-mini",
+        "updatedAt": "2026-06-01T15:10:07.813Z"
+      },
+      {
+        "id": 38,
+        "key": "chatbotAiBaseUrl",
+        "value": "",
+        "updatedAt": "2026-06-01T15:10:07.816Z"
+      },
+      {
+        "id": 39,
+        "key": "chatbotAiSystemPrompt",
+        "value": "",
+        "updatedAt": "2026-06-01T15:10:07.820Z"
+      },
+      {
+        "id": 40,
+        "key": "chatbotAiTemperature",
+        "value": "0.7",
+        "updatedAt": "2026-06-01T15:10:07.824Z"
       }
     ]
   }

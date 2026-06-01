@@ -48,7 +48,9 @@ function seededRandom(seed: number) {
 }
 
 function getCoords(p: Property): [number, number] {
-  if (p.latitude && p.longitude) return [Number(p.latitude), Number(p.longitude)];
+  const lat = parseFloat(String(p.latitude ?? ""));
+  const lng = parseFloat(String(p.longitude ?? ""));
+  if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) return [lat, lng];
   const jLat = (seededRandom(p.id * 3) - 0.5) * 0.1;
   const jLng = (seededRandom(p.id * 7) - 0.5) * 0.1;
   return [BANHA_LAT + jLat, BANHA_LNG + jLng];
