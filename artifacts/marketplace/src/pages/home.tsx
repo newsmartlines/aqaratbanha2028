@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { PropertyTooltip } from "@/components/PropertyTooltip";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { motion, AnimatePresence } from "framer-motion";
@@ -147,9 +148,10 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
   const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
   const thumb = imgs[0] ?? DEFAULT_IMG;
   const priceNum = Number(p.price);
-  const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") + " ج.م" : "السعر عند التواصل";
+  const priceStr = priceNum ? priceNum.toLocaleString("en-US") + " ج.م" : "السعر عند التواصل";
   const typeAr = p.listingType === "rent" ? "للإيجار" : "للبيع";
   return (
+    <PropertyTooltip property={{ id: p.id, title: p.title, price: p.price, listingType: p.listingType, district: p.district, rooms: p.rooms, area: p.area ? String(p.area) : undefined, images: p.images, mainCategory: p.mainCategory ?? undefined }}>
     <div
       onClick={onClick}
       className="w-56 shrink-0 bg-white rounded-lg border border-slate-200/80 overflow-hidden cursor-pointer transition-colors duration-150 hover:border-slate-300"
@@ -163,7 +165,7 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
           ${p.listingType === "rent" ? "bg-blue-500" : "bg-emerald-500"}`}>
           {typeAr}
         </span>
-        <span className="absolute bottom-2 right-2 text-white text-sm font-black drop-shadow-md">{priceStr}</span>
+        <span dir="ltr" className="absolute bottom-2 right-2 text-white text-sm font-black drop-shadow-md">{priceStr}</span>
       </div>
       <div className="p-3">
         <p className="font-bold text-slate-800 text-sm line-clamp-1">{p.title}</p>
@@ -174,6 +176,7 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
         )}
       </div>
     </div>
+    </PropertyTooltip>
   );
 }
 
@@ -791,7 +794,7 @@ export default function Home() {
           const imgs: string[] = (() => { try { return JSON.parse(sp.images ?? "[]"); } catch { return []; } })();
           const thumb = imgs[0] ?? DEFAULT_IMG;
           const priceNum = Number(sp.price);
-          const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "";
+          const priceStr = priceNum ? priceNum.toLocaleString("en-US") : "";
           const location = [sp.district, sp.city].filter(Boolean).join("، ") || "بنها";
           const beds = Number(sp.bedrooms ?? 0);
           const baths = Number(sp.bathrooms ?? 0);
@@ -949,9 +952,10 @@ export default function Home() {
             const thumb = imgs[0] ?? DEFAULT_IMG;
             const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
             const priceNum = Number(property.price);
-            const priceStr = priceNum ? priceNum.toLocaleString("ar-EG") : "غير محدد";
+            const priceStr = priceNum ? priceNum.toLocaleString("en-US") : "غير محدد";
             const listType = property.listingType ?? "";
             return (
+              <PropertyTooltip property={{ id: property.id, title: property.title, price: property.price, listingType: listType, district: property.district, area: property.area ? String(property.area) : undefined, images: property.images, mainCategory: property.mainCategory }}>
               <div
                 className="group shrink-0 w-64 bg-white border border-border/70 rounded-xl overflow-hidden hover:border-border transition-colors duration-150 cursor-pointer"
                 onClick={() => setLocation(`/property/${property.id}`)}
@@ -967,7 +971,7 @@ export default function Home() {
                   )}
                 </div>
                 <div className="p-3.5">
-                  <p className="text-gray-900 font-extrabold text-base leading-none">{priceStr} <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
+                  <p dir="ltr" className="text-gray-900 font-extrabold text-base leading-none">{priceStr} <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
                   <h3 className="font-semibold text-gray-900 text-sm mt-1 mb-1.5 line-clamp-1 group-hover:text-primary transition-colors">{property.title}</h3>
                   <div className="flex items-center gap-1 text-muted-foreground text-xs">
                     <MapPin className="w-3 h-3 text-primary shrink-0" />
@@ -975,6 +979,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+              </PropertyTooltip>
             );
           };
 

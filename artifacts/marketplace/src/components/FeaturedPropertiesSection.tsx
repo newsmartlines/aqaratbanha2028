@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { PropertyTooltip } from "@/components/PropertyTooltip";
 import { useCompare, addToCompare } from "@/lib/compare-store";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,10 @@ function timeAgo(dateStr: string | null | undefined): string {
   return `منذ ${Math.floor(diff / 2592000)} شهر`;
 }
 
-/** Humanize price: 1,500,000 → "1.5 مليون"  850,000 → "850 ألف" */
 function formatPrice(price: number | string | null | undefined, listType?: string): string {
   const n = Number(price);
   if (!price || isNaN(n) || n === 0) return "—";
-  return `${n.toLocaleString("ar-EG")} ج.م${listType === "rent" ? "/شهر" : ""}`;
+  return `${n.toLocaleString("en-US")} ج.م${listType === "rent" ? "/شهر" : ""}`;
 }
 
 const FILTER_TABS = [
@@ -102,7 +102,7 @@ function HoverCard({ property, visible, onNavigate }: {
             <p className="font-bold text-gray-900 text-xs leading-snug line-clamp-1 mb-1">
               {property.title}
             </p>
-            <p className="text-primary font-extrabold text-base leading-none mb-2">
+            <p dir="ltr" className="text-primary font-extrabold text-base leading-none mb-2">
               {formatPrice(property.price, listType)}
             </p>
             <div className="flex items-center gap-3 text-[11px] text-gray-600 mb-2">
@@ -409,7 +409,7 @@ export function FeaturedPropertiesSection({ settings }: Props) {
 
                       {/* Price — clean, bold, black */}
                       <div className="mb-2">
-                        <span className="block text-black font-black text-xl leading-tight tracking-tight">
+                        <span dir="ltr" className="block text-black font-black text-xl leading-tight tracking-tight">
                           {formatPrice(property.price, listType)}
                         </span>
                       </div>

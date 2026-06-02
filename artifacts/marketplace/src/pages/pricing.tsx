@@ -120,8 +120,8 @@ function PricingCard({ plan, onChoose, isLoggedIn, isYearly }: PlanCardProps) {
           ) : (
             <div>
               <div className="flex items-end gap-2">
-                <span className="text-4xl font-black text-gray-900 transition-all duration-300">
-                  {Math.round(displayPrice).toLocaleString("ar-EG")}
+                <span dir="ltr" className="text-4xl font-black text-gray-900 transition-all duration-300">
+                  {Math.round(displayPrice).toLocaleString("en-US")}
                 </span>
                 <div className="text-sm text-gray-400 mb-1 leading-tight">
                   <div>{plan.currency ?? "EGP"}</div>
@@ -134,12 +134,12 @@ function PricingCard({ plan, onChoose, isLoggedIn, isYearly }: PlanCardProps) {
                 <p className="text-xs text-gray-500 mt-1">
                   يُحسب سنوياً —{" "}
                   <span className="font-bold" style={{ color: accent }}>
-                    {yearlyPrice!.toLocaleString("ar-EG")} {plan.currency ?? "EGP"}
+                    {yearlyPrice!.toLocaleString("en-US")} {plan.currency ?? "EGP"}
                   </span>
                 </p>
               ) : hasYearly ? (
                 <p className="text-xs text-gray-400 mt-1">
-                  أو {yearlyPrice!.toLocaleString("ar-EG")} {plan.currency ?? "EGP"} / سنوياً
+                  أو {yearlyPrice!.toLocaleString("en-US")} {plan.currency ?? "EGP"} / سنوياً
                 </p>
               ) : null}
 

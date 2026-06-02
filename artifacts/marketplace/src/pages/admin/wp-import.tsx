@@ -290,7 +290,7 @@ export default function WpImport() {
                               <tr key={i}>
                                 <td className="px-3 py-2 font-medium text-slate-800 max-w-[150px] truncate">{p.title}</td>
                                 <td className="px-3 py-2 text-slate-500 text-[10px]">{p.userEmail || "—"}</td>
-                                <td className="px-3 py-2 text-slate-700 font-semibold">{p.price ? p.price.toLocaleString("ar-EG") : "—"}</td>
+                                <td className="px-3 py-2 text-slate-700 font-semibold" dir="ltr">{p.price ? p.price.toLocaleString("en-US") : "—"}</td>
                                 <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full ${p.type === "sale" || p.type === "للبيع" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>{p.type === "sale" ? "للبيع" : p.type === "rent" ? "للإيجار" : p.type || "—"}</span></td>
                               </tr>
                             ))}

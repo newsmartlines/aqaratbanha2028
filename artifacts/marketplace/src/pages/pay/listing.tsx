@@ -130,7 +130,7 @@ export default function ListingPayPage() {
   }, [enabledGateways.length]);
 
   const gw = ALL_GATEWAYS.find(g => g.id === selected);
-  const amount = parseFloat(price).toLocaleString("ar-EG");
+  const amount = parseFloat(price).toLocaleString("en-US");
 
   const handleUpload = async (files: FileList | null) => {
     if (!files?.[0]) return;

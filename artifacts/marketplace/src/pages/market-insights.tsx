@@ -67,12 +67,12 @@ function fmtK(n: number | null): string {
   if (n == null) return "—";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
-  return n.toLocaleString("ar-EG");
+  return n.toLocaleString("en-US");
 }
 
 function fmtFull(n: number | null): string {
   if (n == null) return "—";
-  return n.toLocaleString("ar-EG") + " ج.م/م²";
+  return n.toLocaleString("en-US") + " ج.م/م²";
 }
 
 /** Map a ppm2 value to a heatmap color between cool and hot */

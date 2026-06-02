@@ -22,7 +22,7 @@ function fmtDate(iso: string | null | undefined) {
 
 function fmtMoney(v: string | number | null | undefined) {
   const n = parseFloat(String(v ?? "0"));
-  return n === 0 ? "مجاني" : `${n.toLocaleString("ar-EG")} ج.م`;
+  return n === 0 ? "مجاني" : `${n.toLocaleString("en-US")} ج.م`;
 }
 
 function PlanBadge({ nameAr, price }: { nameAr?: string | null; price?: string | null }) {
@@ -168,7 +168,7 @@ export default function AdminSubscriptions() {
         <StatCard label="شركات" value={totals.companyActive} sub="اشتراك نشط" icon={Building2} color="bg-violet-500" />
         <StatCard
           label="الإيراد الشهري"
-          value={`${Math.round(totals.monthlyRecurring).toLocaleString("ar-EG")} ج.م`}
+          value={`${Math.round(totals.monthlyRecurring).toLocaleString("en-US")} ج.م`}
           sub={`${totals.premiumActive} مميز · ${totals.bronzeActive} أساسي · ${totals.freeActive} مجاني`}
           icon={TrendingUp}
           color="bg-teal-500"

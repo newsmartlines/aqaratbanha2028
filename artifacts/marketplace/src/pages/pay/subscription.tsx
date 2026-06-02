@@ -158,7 +158,7 @@ export default function SubscriptionPayPage() {
   }, []);
 
   const gw = GATEWAYS.find(g => g.id === activeGateway);
-  const amount = parseFloat(price).toLocaleString("ar-EG");
+  const amount = parseFloat(price).toLocaleString("en-US");
   const isPaid = parseFloat(price) > 0;
 
   const stopTimer = useCallback(() => {

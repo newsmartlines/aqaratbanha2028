@@ -73,7 +73,7 @@ function formatPrice(price?: string) {
   if (!price) return "السعر عند الطلب";
   const n = Number(price);
   if (isNaN(n) || n === 0) return "السعر عند الطلب";
-  return `${n.toLocaleString("ar-EG")} ج.م`;
+  return `${n.toLocaleString("en-US")} ج.م`;
 }
 
 // ─── Clustering ───────────────────────────────────────────────────────────────
@@ -117,13 +117,13 @@ function clusterIcon(count: number, isActive: boolean) {
 
 function priceIcon(price: string | undefined, isActive: boolean) {
   const n = Number(price ?? 0);
-  const label = n > 0 ? n.toLocaleString("ar-EG") : "—";
+  const label = n > 0 ? n.toLocaleString("en-US") : "—";
   const bg = isActive ? "#0D9488" : "#fff";
   const color = isActive ? "#fff" : "#134E4A";
   const border = isActive ? "transparent" : "#0D9488";
   return L.divIcon({
     className: "",
-    html: `<div style="
+    html: `<div dir="ltr" style="
       padding:5px 12px;border-radius:20px;
       background:${bg};color:${color};
       font-size:12px;font-weight:800;font-family:sans-serif;
@@ -132,7 +132,7 @@ function priceIcon(price: string | undefined, isActive: boolean) {
       white-space:nowrap;cursor:pointer;
       transition:all 0.15s;
     ">
-      <span style="font-size:9px;opacity:0.7;">ج.م </span>${label}
+      ${label}<span style="font-size:9px;opacity:0.7;"> ج.م</span>
       <div style="
         position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
         width:0;height:0;

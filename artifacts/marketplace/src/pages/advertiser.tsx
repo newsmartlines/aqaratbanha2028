@@ -49,7 +49,7 @@ function mapProp(p: Record<string, unknown>): PropItem {
     id: p.id as number,
     title: (p.title as string) ?? "",
     price: parseFloat((p.price as string) ?? "0") > 0
-      ? Number(p.price).toLocaleString("ar-EG") + " ج.م"
+      ? Number(p.price).toLocaleString("en-US") + " ج.م"
       : "السعر عند الطلب",
     priceNum: parseFloat((p.price as string) ?? "0") || 0,
     address: (p.address as string) ?? "",

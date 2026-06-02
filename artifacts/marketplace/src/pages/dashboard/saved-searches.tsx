@@ -61,7 +61,7 @@ function SearchCard({ s, onDelete }: { s: SavedSearch; onDelete: (id: number) =>
   if (filters.mainCategory) pills.push({ label: "النوع", value: CATEGORY_LABELS[filters.mainCategory] ?? filters.mainCategory });
   if (filters.listingType) pills.push({ label: "الصفقة", value: LISTING_TYPE_LABELS[filters.listingType] ?? filters.listingType });
   if (filters.city) pills.push({ label: "المدينة", value: filters.city });
-  if (filters.maxPrice) pills.push({ label: "أقصى سعر", value: `${Number(filters.maxPrice).toLocaleString("ar-EG")} ج.م` });
+  if (filters.maxPrice) pills.push({ label: "أقصى سعر", value: `${Number(filters.maxPrice).toLocaleString("en-US")} ج.م` });
   if (filters.minArea) pills.push({ label: "أدنى مساحة", value: `${filters.minArea} م²` });
 
   const hasFilters = pills.length > 0;

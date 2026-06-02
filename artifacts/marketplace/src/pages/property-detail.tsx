@@ -133,7 +133,7 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     nearbyServices: Array.isArray(nearbyServices) ? nearbyServices : [],
     contactMethods: Array.isArray(contactMethods) ? contactMethods : [],
     phoneClickCount: (p.phoneClickCount as number) ?? 0,
-    price: priceNum > 0 ? priceNum.toLocaleString("ar-EG") : "غير محدد",
+    price: priceNum > 0 ? priceNum.toLocaleString("en-US") : "غير محدد",
     priceNum,
     agentPhone: (p.phone as string) ?? "",
     agentWhatsapp: (p.whatsapp as string) ?? "",
@@ -723,7 +723,7 @@ export default function PropertyDetail() {
                         <div className="text-right min-w-[160px] font-sans" dir="rtl">
                           <p className="font-bold text-sm mb-1">{property.title}</p>
                           <p className="text-xs text-gray-500">{property.location}</p>
-                          <p className="text-xs font-bold text-gray-900 mt-1">{property.price} ج.م</p>
+                          <p dir="ltr" className="text-xs font-bold text-gray-900 mt-1">{Number(property.price).toLocaleString("en-US")} ج.م</p>
                         </div>
                       </Popup>
                     </Marker>
@@ -848,11 +848,11 @@ export default function PropertyDetail() {
             <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
               <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-1">السعر</p>
-                <p className="text-3xl font-extrabold text-gray-900">{property.price}</p>
+                <p dir="ltr" className="text-3xl font-extrabold text-gray-900">{property.price}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">جنيه مصري</p>
                 {property.area > 0 && property.priceNum > 0 && (
                   <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
-                    ≈ {Math.round(property.priceNum / property.area).toLocaleString("ar-EG")} ج.م / م²
+                    ≈ <span dir="ltr">{Math.round(property.priceNum / property.area).toLocaleString("en-US")} ج.م / م²</span>
                   </p>
                 )}
               </div>
@@ -1066,7 +1066,7 @@ export default function PropertyDetail() {
                     <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{p.type}</span>
                   </div>
                   <div className="p-4">
-                    <p className="text-gray-900 font-extrabold text-lg">{p.price} <span className="text-xs text-muted-foreground font-normal">ج.م</span></p>
+                    <p dir="ltr" className="text-gray-900 font-extrabold text-lg">{Number(p.price) ? Number(p.price).toLocaleString("en-US") : p.price} <span className="text-xs text-muted-foreground font-normal">ج.م</span></p>
                     <h3 className="font-bold text-gray-900 mt-1 mb-1 truncate group-hover:text-primary transition-colors">{p.title}</h3>
                     <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
                       <MapPin className="w-3 h-3 text-primary" />
@@ -1343,7 +1343,7 @@ export default function PropertyDetail() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold truncate">{property.title}</p>
                     <p className="text-xs text-primary font-semibold">
-                      {property.priceNum > 0 ? `${property.priceNum.toLocaleString("ar-EG")} ج.م` : "السعر غير محدد"}
+                      {property.priceNum > 0 ? <span dir="ltr">{property.priceNum.toLocaleString("en-US")} ج.م</span> : "السعر غير محدد"}
                     </p>
                   </div>
                 </div>

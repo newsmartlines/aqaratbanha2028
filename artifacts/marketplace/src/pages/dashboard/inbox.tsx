@@ -269,7 +269,7 @@ export default function ProviderInbox() {
                         {propertyPrice && (
                           <p className="text-xs text-primary font-semibold">
                             {parseFloat(String(propertyPrice)) > 0
-                              ? `${Number(propertyPrice).toLocaleString("ar-EG")} ج.م`
+                              ? `${Number(propertyPrice).toLocaleString("en-US")} ج.م`
                               : "السعر غير محدد"}
                           </p>
                         )}

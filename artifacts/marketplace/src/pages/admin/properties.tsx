@@ -78,7 +78,7 @@ function fmtPrice(price: string | null): string {
   if (!price) return "—";
   const n = parseFloat(price);
   if (isNaN(n)) return price;
-  return n.toLocaleString("ar-EG") + " ج.م";
+  return n.toLocaleString("en-US") + " ج.م";
 }
 
 function statusBadge(status: string) {

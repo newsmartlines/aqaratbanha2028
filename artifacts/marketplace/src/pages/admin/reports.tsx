@@ -125,8 +125,8 @@ export default function AdminReports() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <KpiCard icon={Building2}  label="عقارات نشطة"     value={(stats.activeProperties ?? 0).toLocaleString("ar-EG")}  color="bg-teal-50 text-teal-600" />
             <KpiCard icon={Users}      label="مستخدمون"         value={(stats.totalUsers ?? 0).toLocaleString("ar-EG")}         color="bg-sky-50 text-sky-600" />
-            <KpiCard icon={DollarSign} label="إجمالي الإيرادات" value={`${(stats.totalRevenue ?? 0).toLocaleString("ar-EG")} ج.م`} color="bg-emerald-50 text-emerald-600" sub="من اشتراكات مدفوعة" />
-            <KpiCard icon={Package}    label="اشتراكات نشطة"   value={(subTotals.totalActive ?? 0).toLocaleString("ar-EG")}    color="bg-violet-50 text-violet-600" sub={`${subTotals.monthlyRecurring ? parseFloat(String(subTotals.monthlyRecurring)).toLocaleString("ar-EG") : 0} ج.م/شهر`} />
+            <KpiCard icon={DollarSign} label="إجمالي الإيرادات" value={`${(stats.totalRevenue ?? 0).toLocaleString("en-US")} ج.م`} color="bg-emerald-50 text-emerald-600" sub="من اشتراكات مدفوعة" />
+            <KpiCard icon={Package}    label="اشتراكات نشطة"   value={(subTotals.totalActive ?? 0).toLocaleString("ar-EG")}    color="bg-violet-50 text-violet-600" sub={`${subTotals.monthlyRecurring ? parseFloat(String(subTotals.monthlyRecurring)).toLocaleString("en-US") : 0} ج.م/شهر`} />
           </div>
         )}
 
@@ -201,7 +201,7 @@ export default function AdminReports() {
                       </div>
                     </div>
                     <span className="font-bold text-teal-600 text-sm">
-                      {parseFloat(String(s.packagePrice ?? "0")).toLocaleString("ar-EG")} ج.م
+                      <span dir="ltr">{parseFloat(String(s.packagePrice ?? "0")).toLocaleString("en-US")} ج.م</span>
                     </span>
                   </div>
                 ))}
@@ -246,7 +246,7 @@ export default function AdminReports() {
                       إجمالي الإيراد الشهري المتكرر
                     </span>
                     <span className="font-extrabold text-emerald-600">
-                      {parseFloat(String(subTotals.monthlyRecurring ?? "0")).toLocaleString("ar-EG")} ج.م
+                      <span dir="ltr">{parseFloat(String(subTotals.monthlyRecurring ?? "0")).toLocaleString("en-US")} ج.م</span>
                     </span>
                   </div>
                 </div>

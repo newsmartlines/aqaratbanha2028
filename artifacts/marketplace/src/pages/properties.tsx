@@ -164,7 +164,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     hasCoords: !!(row.latitude && row.longitude),
     lat: row.latitude ? parseFloat(row.latitude) : NaN,
     lng: row.longitude ? parseFloat(row.longitude) : NaN,
-    price: row.price ? Number(row.price).toLocaleString("ar-EG") + " ج.م" : "السعر عند الطلب",
+    price: row.price ? Number(row.price).toLocaleString("en-US") + " ج.م" : "السعر عند الطلب",
     priceNum: row.price ? parseFloat(row.price) : 0,
     finishing: row.finishing ?? "",
     furnished: row.furnished ?? "",

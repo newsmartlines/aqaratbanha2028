@@ -23,7 +23,7 @@ function formatPrice(n: number): string {
     const k = n / 1_000;
     return `${k % 1 === 0 ? k : k.toFixed(0)} ألف ج.م`;
   }
-  return `${n.toLocaleString("ar-EG")} ج.م`;
+  return `${n.toLocaleString("en-US")} ج.م`;
 }
 
 function typeLabel(t: string) {
@@ -308,7 +308,7 @@ export default function ComparePage() {
                       </span>
                       {item.area > 0 && item.priceNum > 0 && (
                         <span className="text-[11px] text-muted-foreground">
-                          {Math.round(item.priceNum / item.area).toLocaleString("ar-EG")} ج.م/م²
+                          <span dir="ltr">{Math.round(item.priceNum / item.area).toLocaleString("en-US")} ج.م/م²</span>
                         </span>
                       )}
                       <div className="flex flex-wrap gap-1 mt-0.5">

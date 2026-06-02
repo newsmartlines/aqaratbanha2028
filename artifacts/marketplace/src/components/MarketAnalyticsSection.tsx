@@ -122,7 +122,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <div key={i} className="flex items-center justify-between gap-4">
           <span className="text-xs text-gray-500">متوسط المتر</span>
           <span className="text-sm font-extrabold" style={{ color: p.color }}>
-            {p.value?.toLocaleString("ar-EG")} <span className="text-xs font-normal text-gray-400">ج.م</span>
+            <span dir="ltr">{p.value?.toLocaleString("en-US")} <span className="text-xs font-normal text-gray-400">ج.م</span></span>
           </span>
         </div>
       ))}

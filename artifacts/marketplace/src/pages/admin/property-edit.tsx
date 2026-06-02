@@ -235,7 +235,7 @@ export default function AdminPropertyEdit() {
                   {v.listingType === "sale" ? "للبيع" : v.listingType === "rent" ? "للإيجار" : "—"}
                   {v.mainCategory && ` · ${v.mainCategory}`}
                 </p>
-                {v.price && <p className="text-sm font-semibold text-teal-700">{Number(v.price).toLocaleString("ar-EG")} ج.م</p>}
+                {v.price && <p dir="ltr" className="text-sm font-semibold text-teal-700">{Number(v.price).toLocaleString("en-US")} ج.م</p>}
                 {v.area && <p className="text-sm text-slate-500">{v.area} م²</p>}
               </div>
 

@@ -94,7 +94,7 @@ function fmtPrice(price: string | null | undefined): string | null {
   if (isNaN(n)) return null;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} م ج.م`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)} ألف ج.م`;
-  return `${n.toLocaleString("ar-EG")} ج.م`;
+  return `${n.toLocaleString("en-US")} ج.م`;
 }
 
 function fmtDate(d: string | undefined): string {

@@ -39,6 +39,8 @@ import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { resolveMainCategory, getFieldRules, type FieldConfigRow } from "@/lib/property-field-rules";
 import { DynamicFilterPanel } from "@/components/property-form/DynamicFilterPanel";
+import { PropertyTooltip } from "@/components/PropertyTooltip";
+import { formatPrice } from "@/lib/format";
 
 /* ─── WhatsApp Icon ─────────────────────────────────────────────── */
 const WaIcon = () => (
@@ -960,12 +962,13 @@ export default function SearchPage() {
   /* ── List Card ────────────────────────────────────────────────── */
   const ListCard = ({ p, idx }: { p: PropertyResult; idx: number }) => {
     const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
-    const priceStr = Number(p.price) ? Number(p.price).toLocaleString("ar-EG") : null;
+    const priceStr = Number(p.price) ? Number(p.price).toLocaleString("en-US") : null;
     const typeAr = LISTING_TYPE_MAP[p.listingType] ?? p.listingType;
     const loc = [p.district, p.address].filter(Boolean).join("، ") || "بنها";
     const wa = (p.whatsapp ?? p.phone ?? "").replace(/\D/g, "");
 
     return (
+      <PropertyTooltip property={{ id: p.id, title: p.title, description: p.description, price: p.price, listingType: p.listingType, district: p.district, address: p.address, mainCategory: CATEGORY_MAP[p.mainCategory] ?? p.mainCategory, rooms: p.rooms, bathrooms: p.bathrooms, area: p.area, images: p.images }}>
       <motion.article
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1015,7 +1018,7 @@ export default function SearchPage() {
 
         <div className="flex-1 flex flex-col p-4 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex items-baseline gap-1.5">
+            <div className="flex items-baseline gap-1.5" dir="ltr">
               {priceStr ? (
                 <>
                   <span className="text-2xl font-black text-black leading-none">{priceStr}</span>
@@ -1023,7 +1026,7 @@ export default function SearchPage() {
                   {p.listingType === "rent" && <span className="text-xs text-gray-500">/ {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : "/"}</span>}
                 </>
               ) : (
-                <span className="text-sm font-semibold text-zinc-400">السعر عند التواصل</span>
+                <span className="text-sm font-semibold text-zinc-400" dir="rtl">السعر عند التواصل</span>
               )}
             </div>
             {p.advertiserType && (
@@ -1126,16 +1129,18 @@ export default function SearchPage() {
           </div>
         </div>
       </motion.article>
+      </PropertyTooltip>
     );
   };
 
   /* ── Grid Card ─────────────────────────────────────────────────── */
   const GridCard = ({ p, idx }: { p: PropertyResult; idx: number }) => {
     const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
-    const priceStr = Number(p.price) ? Number(p.price).toLocaleString("ar-EG") : null;
+    const priceStr = Number(p.price) ? Number(p.price).toLocaleString("en-US") : null;
     const loc = [p.district, p.address].filter(Boolean).join("، ") || "بنها";
 
     return (
+      <PropertyTooltip property={{ id: p.id, title: p.title, description: p.description, price: p.price, listingType: p.listingType, district: p.district, address: p.address, mainCategory: CATEGORY_MAP[p.mainCategory] ?? p.mainCategory, rooms: p.rooms, bathrooms: p.bathrooms, area: p.area, images: p.images }}>
       <motion.article
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -1175,7 +1180,7 @@ export default function SearchPage() {
           {/* Price — clean black, no background */}
           <div className="mb-2">
             {priceStr
-              ? <span className="block text-black font-black text-xl leading-none">{priceStr} <span className="text-sm font-bold text-gray-600">ج.م</span></span>
+              ? <span dir="ltr" className="block text-black font-black text-xl leading-none">{priceStr} <span className="text-sm font-bold text-gray-600">ج.م</span></span>
               : <span className="text-sm font-semibold text-zinc-400">السعر عند التواصل</span>}
           </div>
           <h2 className="font-bold text-sm text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">{p.title}</h2>
@@ -1203,6 +1208,7 @@ export default function SearchPage() {
           </div>
         </div>
       </motion.article>
+      </PropertyTooltip>
     );
   };
 

@@ -929,7 +929,7 @@ export default function RealEstateOnboarding() {
                         <span className="text-3xl font-black" style={{ color: accent }}>مجاني</span>
                       ) : (
                         <>
-                          <span className="text-3xl font-black text-gray-900">{Number(price).toLocaleString("ar-EG")}</span>
+                          <span dir="ltr" className="text-3xl font-black text-gray-900">{Number(price).toLocaleString("en-US")}</span>
                           <div className="text-xs text-gray-400 leading-tight">
                             <div>{plan.currency}</div>
                             <div>/{plan.durationDays} يوم</div>
@@ -1043,7 +1043,7 @@ export default function RealEstateOnboarding() {
                 ["النوع",    `${MAIN_TYPES.find(t => t.id === draft.mainType)?.label ?? "—"}`],
                 ["الصفقة",  LISTING_TYPES.find(t => t.id === draft.listingType)?.label ?? "—"],
                 ["الموقع",  draft.cityName ?? "—"],
-                ["السعر",   draft.price ? `${Number(draft.price).toLocaleString("ar-EG")} ج.م` : "—"],
+                ["السعر",   draft.price ? `${Number(draft.price).toLocaleString("en-US")} ج.م` : "—"],
                 ["المساحة", draft.area ? `${draft.area} م²` : "—"],
                 ["الصور",   `${draft.images.length} صورة`],
               ].map(([k, v]) => (
@@ -1128,7 +1128,7 @@ export default function RealEstateOnboarding() {
           bank_transfer:  { label: "تحويل بنكي",    color: "text-green-700",  bg: "bg-green-50",  border: "border-green-200",  emoji: "🏦" },
         };
         const meta = GATEWAY_META[gateway] ?? GATEWAY_META.vodafone_cash;
-        const amount = selectedBillingPlan ? Number(selectedBillingPlan.price).toLocaleString("ar-EG") : "";
+        const amount = selectedBillingPlan ? Number(selectedBillingPlan.price).toLocaleString("en-US") : "";
         const currency = selectedBillingPlan?.currency ?? "EGP";
 
         return (

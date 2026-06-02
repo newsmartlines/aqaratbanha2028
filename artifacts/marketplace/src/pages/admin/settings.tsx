@@ -1291,7 +1291,7 @@ export default function AdminSettings() {
                           <p className="font-bold text-sm text-gray-900 truncate">{p.title}</p>
                           <p className="text-xs text-gray-500 mt-0.5">{p.listingType} · {p.mainCategory}</p>
                           <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" />{[p.district, p.city].filter(Boolean).join("، ")}</p>
-                          {priceNum > 0 && <p className="text-sm font-bold text-primary mt-1">{priceNum.toLocaleString("ar-EG")} جنيه</p>}
+                          {priceNum > 0 && <p dir="ltr" className="text-sm font-bold text-primary mt-1">{priceNum.toLocaleString("en-US")} جنيه</p>}
                         </div>
                       </div>
                     </div>
@@ -1812,7 +1812,7 @@ function MarketAnalyticsSettingsTab() {
                         <span className="font-semibold text-gray-800 truncate">{s.mainCategory}{s.subCategory ? ` / ${s.subCategory}` : ""}</span>
                         <span className="text-gray-500 truncate">{s.district ?? `مدينة ${s.cityId ?? s.regionId ?? "—"}`}</span>
                         <span className="text-gray-500">{s.sampleCount} عقار</span>
-                        <span className="font-bold text-violet-700">{s.avgPricePerM2 ? `${parseFloat(s.avgPricePerM2).toLocaleString("ar-EG")} ج.م` : "—"}</span>
+                        <span dir="ltr" className="font-bold text-violet-700">{s.avgPricePerM2 ? `${parseFloat(s.avgPricePerM2).toLocaleString("en-US")} ج.م` : "—"}</span>
                       </div>
                     ))}
                   </div>

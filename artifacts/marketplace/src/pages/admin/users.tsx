@@ -598,7 +598,7 @@ export default function AdminUsers() {
                           <p className={`font-black text-xl leading-none ${isSelected ? "text-teal-600" : "text-gray-700"}`}>
                             {isFree
                               ? <span className="text-emerald-600">مجاني</span>
-                              : <>{Number(plan.price).toLocaleString("ar-EG")}<span className="text-xs font-normal text-gray-400 mr-1">{plan.currency}</span></>
+                              : <span dir="ltr">{Number(plan.price).toLocaleString("en-US")}<span className="text-xs font-normal text-gray-400 mr-1">{plan.currency}</span></span>
                             }
                           </p>
                         </button>
