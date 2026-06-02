@@ -265,6 +265,43 @@ router.delete("/admin/areas/:id", async (req, res) => {
   }
 });
 
+// ── Admin: reset all areas for Banha city with the official list ─────────────
+router.post("/admin/reset-banha-areas", async (_req, res) => {
+  try {
+    const BANHA_NEW_AREAS = [
+      "أتريب", "الأهرام", "محيط كلية الحقوق", "كفر الجزار", "الآثار", "العلوم",
+      "بطا", "شارع أبو حشيش", "وسط البلد", "الحرس الوطني", "المنشية", "النجدة",
+      "الرملة", "عزبة المربع", "محيط النادي الرياضي", "مناطق أخرى", "التمثال",
+      "بنها القديمة", "سندنهور", "شرق الاستاد", "طوخ", "عزبة الزراعة", "عزبة البرنس",
+      "عزبة السوق", "كفر بطا", "كفر شكر", "محيط كلية التربية", "مدخل بنها", "مرصفا",
+      "منشأة بنها", "منشية النور", "ميت عاصم", "الشدية", "الشموت", "الفيومي",
+      "الكوبري", "الموالح", "بتمدة", "جزيرة بلى", "جمجرة", "دملو", "شبلنجة",
+      "عزبة ذكي", "فرسيس", "كفر أبو زهرة", "كفر الأربعين", "كفر الحصة",
+      "كفر الحمام", "كفر السرايا", "كفر الشموت", "كفر الشيخ إبراهيم", "كفر سعد",
+      "كفر طحلة", "كفر عطا الله", "كفر مناقر", "كفر مويس", "مجول",
+      "محيط كلية التربية الرياضية", "محيط مستشفى الأميري", "محيط نادي المعلمين",
+      "منشأة أبو دياب", "منية السباع", "ميت العطار", "ميت راضي", "نقباس", "ورورة",
+    ];
+
+    // Find Banha city
+    const cities = await db.select().from(citiesTable).orderBy(citiesTable.nameAr);
+    const banha = cities.find(c => c.nameAr === "بنها" || c.nameEn === "Banha");
+    if (!banha) return res.status(404).json({ success: false, error: "Banha city not found" });
+
+    // Delete all existing areas for Banha
+    await db.delete(areasTable).where(eq(areasTable.cityId, banha.id));
+
+    // Insert new areas
+    const inserted = await db.insert(areasTable).values(
+      BANHA_NEW_AREAS.map(name => ({ cityId: banha.id, nameAr: name, nameEn: name, enabled: true }))
+    ).returning();
+
+    res.json({ success: true, data: { cityId: banha.id, cityName: banha.nameAr, deleted: "all", inserted: inserted.length } });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e?.message ?? "Failed to reset areas" });
+  }
+});
+
 // ── Provider service areas ─────────────────────────────────────────────────
 router.get("/providers/:id/service-areas", async (req, res) => {
   try {

@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Search, RefreshCw, Pencil, Trash2, Eye, Star, StarOff,
-  CheckCircle2, XCircle, Building2, TrendingUp, Home, Loader2,
-  Plus, BedDouble, Bath, Maximize2, AlertCircle, ExternalLink,
+  Search, RefreshCw, Pencil, Trash2, Eye,
+  CheckCircle2, XCircle, Building2, Home, Loader2,
+  Plus, AlertCircle,
   MessageSquareWarning, Check,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +25,7 @@ type DbProperty = {
   id: number;
   providerId: number;
   ownerUserId: number | null;
+  agentName?: string | null;
   title: string;
   description: string | null;
   mainCategory: string;
@@ -564,156 +565,187 @@ export default function AdminProperties() {
           </div>
         </CardHeader>
 
-        <CardContent>
-          <div className="rounded-lg border border-slate-200 overflow-hidden overflow-x-auto">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-slate-50">
-                <TableRow>
-                  <TableHead className="w-14">صورة</TableHead>
-                  <TableHead>العقار</TableHead>
-                  <TableHead>النوع</TableHead>
-                  <TableHead>التفاصيل</TableHead>
-                  <TableHead>السعر</TableHead>
-                  <TableHead>مميز</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="text-end">الإجراءات</TableHead>
+              <TableHeader>
+                <TableRow className="bg-slate-50 border-b-2 border-slate-200 hover:bg-slate-50">
+                  <TableHead className="w-14 text-center text-slate-500 text-xs font-bold py-3 ps-4">#</TableHead>
+                  <TableHead className="min-w-[280px] text-slate-600 text-xs font-bold">العقار</TableHead>
+                  <TableHead className="min-w-[130px] text-slate-600 text-xs font-bold">المالك</TableHead>
+                  <TableHead className="min-w-[130px] text-slate-600 text-xs font-bold">نوع العقار</TableHead>
+                  <TableHead className="min-w-[150px] text-slate-600 text-xs font-bold">السعر</TableHead>
+                  <TableHead className="min-w-[110px] text-slate-600 text-xs font-bold">المنطقة</TableHead>
+                  <TableHead className="min-w-[110px] text-slate-600 text-xs font-bold">تاريخ الإضافة</TableHead>
+                  <TableHead className="min-w-[110px] text-slate-600 text-xs font-bold">آخر تعديل</TableHead>
+                  <TableHead className="min-w-[130px] text-slate-600 text-xs font-bold">الحالة</TableHead>
+                  <TableHead className="min-w-[240px] text-slate-600 text-xs font-bold text-end pe-4">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-slate-400">
+                    <TableCell colSpan={10} className="text-center py-16 text-slate-400">
                       <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin text-teal-500" />
                       جارٍ التحميل...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-slate-400">
-                      <Building2 className="w-10 h-10 mx-auto mb-2 text-slate-200" />
-                      لا توجد عقارات مطابقة
+                    <TableCell colSpan={10} className="text-center py-16 text-slate-400">
+                      <Building2 className="w-10 h-10 mx-auto mb-3 text-slate-200" />
+                      <p className="font-semibold text-slate-500">لا توجد عقارات مطابقة</p>
+                      <p className="text-xs mt-1 text-slate-400">جرّب تغيير معايير البحث أو الفلتر</p>
                     </TableCell>
                   </TableRow>
-                ) : filtered.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-slate-50/60 transition-colors cursor-pointer" onClick={() => setSelectedProp(p as unknown as ExtendedProperty)}>
-                    {/* Image */}
-                    <TableCell>
-                      <div className="w-12 h-10 rounded-lg overflow-hidden border border-slate-200 shrink-0">
-                        <img
-                          src={getFirstImage(p.images)}
-                          alt={p.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.src = FALLBACK; }}
-                        />
-                      </div>
-                    </TableCell>
+                ) : filtered.map((p) => {
+                  const ownerName = providers.find(pr => pr.id === p.providerId)?.name
+                    ?? p.agentName
+                    ?? `#${p.providerId}`;
+                  const fmtDate = (d: string | null | undefined) => {
+                    if (!d) return "—";
+                    return new Date(d).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" });
+                  };
+                  const categoryLabel = p.mainCategory === "residential" ? "سكني"
+                    : p.mainCategory === "commercial" ? "تجاري"
+                    : p.mainCategory === "land" ? "أراضي"
+                    : p.mainCategory;
+                  return (
+                    <TableRow
+                      key={p.id}
+                      className="hover:bg-teal-50/30 transition-colors border-b border-slate-100 group"
+                    >
+                      {/* ID */}
+                      <TableCell className="text-center ps-4">
+                        <span className="text-xs font-mono font-bold text-slate-400">#{p.id}</span>
+                      </TableCell>
 
-                    {/* Title + Location */}
-                    <TableCell>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-900 text-sm truncate max-w-[180px]" dir="rtl">{p.title}</p>
-                        <p className="text-xs text-slate-400 truncate max-w-[180px]">{p.address ?? "—"}</p>
-                      </div>
-                    </TableCell>
-
-                    {/* Type + Kind */}
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <Badge variant="outline" className={`text-xs w-fit ${p.listingType === "sale" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-blue-700 border-blue-200 bg-blue-50"}`}>
-                          {p.listingType === "sale" ? "للبيع" : p.listingType === "rent" ? "للإيجار" : p.listingType}
-                        </Badge>
-                        <span className="text-xs text-slate-500">{p.mainCategory}</span>
-                      </div>
-                    </TableCell>
-
-                    {/* Specs */}
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        {(p.rooms ?? 0) > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" />{p.rooms}</span>}
-                        {(p.bathrooms ?? 0) > 0 && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{p.bathrooms}</span>}
-                        {p.area && <span className="flex items-center gap-0.5"><Maximize2 className="w-3 h-3" />{parseFloat(p.area)}م²</span>}
-                      </div>
-                    </TableCell>
-
-                    {/* Price */}
-                    <TableCell>
-                      <span className="text-sm font-bold text-teal-700">{fmtPrice(p.price)}</span>
-                    </TableCell>
-
-                    {/* Featured toggle */}
-                    <TableCell>
-                      <button
-                        title={p.featured ? "إلغاء التمييز" : "تمييز العقار"}
-                        onClick={(e) => { e.stopPropagation(); handleToggleFeatured(p); }}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${p.featured ? "bg-amber-100 text-amber-500 hover:bg-amber-200" : "bg-slate-100 text-slate-400 hover:bg-amber-50 hover:text-amber-400"}`}
-                      >
-                        {p.featured ? <Star className="w-4 h-4 fill-amber-400" /> : <StarOff className="w-4 h-4" />}
-                      </button>
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell>{statusBadge(p.status)}</TableCell>
-
-                    {/* Actions */}
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-1 flex-wrap" onClick={e => e.stopPropagation()}>
-
-                        {/* View in site — opens new tab */}
-                        <Button
-                          variant="ghost" size="sm"
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
-                          onClick={() => window.open(`/property/${p.id}`, "_blank")}
-                          title="معاينة الإعلان في صفحة جديدة"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </Button>
-
-                        {/* Edit — opens admin edit page in new tab */}
-                        <Button
-                          variant="ghost" size="sm"
-                          className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 h-8 px-2"
-                          onClick={() => window.open(`/admin/properties/${p.id}/edit`, "_blank")}
-                          title="تعديل في صفحة جديدة"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-
-                        {/* Publish */}
-                        {p.status !== "approved" && (
-                          <Button
-                            variant="ghost" size="sm"
-                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-8 px-2"
-                            onClick={() => handleStatus(p, "approved")}
-                            title="اعتماد"
+                      {/* Image + Title */}
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-14 h-12 rounded-xl overflow-hidden border border-slate-200 shrink-0 cursor-pointer hover:ring-2 hover:ring-teal-400 transition-all"
+                            onClick={() => setSelectedProp(p as unknown as ExtendedProperty)}
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          </Button>
-                        )}
-                        {/* Reject */}
-                        {p.status !== "rejected" && (
-                          <Button
-                            variant="ghost" size="sm"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 px-2"
-                            onClick={() => handleStatus(p, "rejected")}
-                            title="رفض"
-                          >
-                            <XCircle className="w-3.5 h-3.5" />
-                          </Button>
-                        )}
+                            <img
+                              src={getFirstImage(p.images)}
+                              alt={p.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.src = FALLBACK; }}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p
+                              className="font-bold text-slate-900 text-sm truncate max-w-[200px] cursor-pointer hover:text-teal-600 transition-colors leading-snug"
+                              dir="rtl"
+                              onClick={() => setSelectedProp(p as unknown as ExtendedProperty)}
+                            >
+                              {p.title}
+                            </p>
+                            <p className="text-xs text-slate-400 truncate max-w-[200px] mt-0.5">{p.address ?? "—"}</p>
+                            {p.featured && (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-600 mt-0.5">⭐ مميز</span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
 
-                        {/* Delete */}
-                        <Button
-                          variant="ghost" size="sm"
-                          className={`h-8 px-2 ${deleteConfirmId === p.id ? "bg-red-600 text-white hover:bg-red-700" : "text-red-500 hover:text-red-600 hover:bg-red-50"}`}
-                          onClick={() => handleDelete(p.id)}
-                          title={deleteConfirmId === p.id ? "اضغط مجدداً للتأكيد" : "حذف"}
-                        >
-                          {deleteConfirmId === p.id ? <span className="text-xs font-bold">تأكيد؟</span> : <Trash2 className="w-3.5 h-3.5" />}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      {/* Owner */}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold shrink-0 border border-teal-200">
+                            {ownerName.charAt(0)}
+                          </div>
+                          <span className="text-xs text-slate-700 font-semibold truncate max-w-[90px]">{ownerName}</span>
+                        </div>
+                      </TableCell>
+
+                      {/* Type */}
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant="outline" className={`text-xs w-fit font-semibold ${p.listingType === "sale" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-blue-700 border-blue-200 bg-blue-50"}`}>
+                            {p.listingType === "sale" ? "🏷 للبيع" : p.listingType === "rent" ? "🔑 للإيجار" : p.listingType}
+                          </Badge>
+                          <span className="text-[11px] text-slate-500 font-medium">{categoryLabel}</span>
+                        </div>
+                      </TableCell>
+
+                      {/* Price */}
+                      <TableCell>
+                        <span className="text-sm font-black text-black tabular-nums">{fmtPrice(p.price)}</span>
+                      </TableCell>
+
+                      {/* District */}
+                      <TableCell>
+                        <span className="text-xs text-slate-600 font-medium">{(p as any).district ?? p.address?.split("،")[0] ?? "—"}</span>
+                      </TableCell>
+
+                      {/* Added date */}
+                      <TableCell>
+                        <span className="text-xs text-slate-500 font-medium">{fmtDate(p.createdAt)}</span>
+                      </TableCell>
+
+                      {/* Last updated */}
+                      <TableCell>
+                        <span className="text-xs text-slate-500 font-medium">{fmtDate(p.updatedAt)}</span>
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell>{statusBadge(p.status)}</TableCell>
+
+                      {/* Actions */}
+                      <TableCell className="pe-4">
+                        <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2.5 text-xs text-slate-600 border-slate-200 hover:bg-slate-100 gap-1 font-semibold"
+                            onClick={() => setSelectedProp(p as unknown as ExtendedProperty)}
+                          >
+                            <Eye className="w-3 h-3" /> مشاهدة
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2.5 text-xs text-teal-700 border-teal-200 hover:bg-teal-50 gap-1 font-semibold"
+                            onClick={() => setLocation(`/admin/properties/${p.id}/edit`)}
+                          >
+                            <Pencil className="w-3 h-3" /> تعديل
+                          </Button>
+                          {p.status !== "approved" && p.status !== "active" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2.5 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50 gap-1 font-semibold"
+                              onClick={() => handleStatus(p, "approved")}
+                            >
+                              <CheckCircle2 className="w-3 h-3" /> موافقة
+                            </Button>
+                          )}
+                          {p.status !== "rejected" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2.5 text-xs text-red-600 border-red-200 hover:bg-red-50 gap-1 font-semibold"
+                              onClick={() => openRejectModal(p)}
+                            >
+                              <XCircle className="w-3 h-3" /> رفض
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className={`h-7 px-2.5 text-xs gap-1 font-semibold ${deleteConfirmId === p.id ? "bg-red-600 text-white hover:bg-red-700 hover:text-white" : "text-red-500 hover:text-red-600 hover:bg-red-50"}`}
+                            onClick={() => handleDelete(p.id)}
+                            title={deleteConfirmId === p.id ? "اضغط مجدداً للتأكيد" : "حذف"}
+                          >
+                            {deleteConfirmId === p.id ? <span className="font-black">تأكيد؟</span> : <><Trash2 className="w-3 h-3" /> حذف</>}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

@@ -444,7 +444,7 @@ function App() {
               </WouterRouter>
               <ScrollToTopButton />
               <PopupRenderer />
-              <AiChat />
+              {/* AiChat hidden */}
               <Toaster />
               <HotToaster position="top-center" />
             </TooltipProvider>

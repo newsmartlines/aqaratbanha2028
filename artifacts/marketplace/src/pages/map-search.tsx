@@ -72,8 +72,7 @@ function firstImg(p: Property): string {
 function formatPrice(price?: string) {
   if (!price) return "السعر عند الطلب";
   const n = Number(price);
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م ج.م`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k ج.م`;
+  if (isNaN(n) || n === 0) return "السعر عند الطلب";
   return `${n.toLocaleString("ar-EG")} ج.م`;
 }
 
@@ -117,11 +116,8 @@ function clusterIcon(count: number, isActive: boolean) {
 }
 
 function priceIcon(price: string | undefined, isActive: boolean) {
-  const label = price
-    ? (Number(price) >= 1_000_000
-        ? `${(Number(price) / 1_000_000).toFixed(1)}م`
-        : `${Math.round(Number(price) / 1000)}k`)
-    : "—";
+  const n = Number(price ?? 0);
+  const label = n > 0 ? n.toLocaleString("ar-EG") : "—";
   const bg = isActive ? "#0D9488" : "#fff";
   const color = isActive ? "#fff" : "#134E4A";
   const border = isActive ? "transparent" : "#0D9488";

@@ -29,17 +29,7 @@ function timeAgo(dateStr: string | null | undefined): string {
 function formatPrice(price: number | string | null | undefined, listType?: string): string {
   const n = Number(price);
   if (!price || isNaN(n) || n === 0) return "—";
-  let str: string;
-  if (n >= 1_000_000) {
-    const m = n / 1_000_000;
-    str = m % 1 === 0 ? `${m} مليون` : `${m.toFixed(1)} مليون`;
-  } else if (n >= 1_000) {
-    const k = n / 1_000;
-    str = k % 1 === 0 ? `${k} ألف` : `${k.toFixed(0)} ألف`;
-  } else {
-    str = n.toLocaleString("ar-EG");
-  }
-  return `${str} ج.م${listType === "rent" ? "/شهر" : ""}`;
+  return `${n.toLocaleString("ar-EG")} ج.م${listType === "rent" ? "/شهر" : ""}`;
 }
 
 const FILTER_TABS = [
