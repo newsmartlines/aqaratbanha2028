@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { categoriesTable, subcategoriesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { categoriesTable, subcategoriesTable, propertiesTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 import { autoExportGroup } from "../lib/auto-export";
 import { adminOnly } from "../middleware/adminOnly";
 
@@ -27,8 +27,23 @@ router.get("/categories", async (req, res) => {
 
     // Embed subcategories into each category
     const allSubs = await db.select().from(subcategoriesTable).orderBy(subcategoriesTable.categoryId, subcategoriesTable.id);
+
+    // Property count per category (match by slug)
+    const countRows = await db
+      .select({
+        slug: propertiesTable.mainCategory,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(propertiesTable)
+      .groupBy(propertiesTable.mainCategory);
+    const countMap: Record<string, number> = {};
+    for (const r of countRows) {
+      if (r.slug) countMap[r.slug] = r.count;
+    }
+
     const data = categories.map(cat => ({
       ...cat,
+      propertyCount: countMap[cat.slug ?? ""] ?? 0,
       subcategories: allSubs.filter(s => s.categoryId === cat.id),
     }));
 

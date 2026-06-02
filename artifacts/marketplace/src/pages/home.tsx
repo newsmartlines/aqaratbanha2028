@@ -374,15 +374,13 @@ export default function Home() {
   });
 
   const heroCityOptions = useMemo(() => {
-    const opts: { value: string; label: string; count: number }[] = [{ value: "__all__", label: "كل المناطق", count: -1 }];
-    (banhaAreas as Array<{ id: number; nameAr: string; enabled?: boolean; propertyCount?: number }>)
+    const all = { value: "__all__", label: "كل المناطق", count: -1 };
+    const areas = (banhaAreas as Array<{ id: number; nameAr: string; enabled?: boolean; propertyCount?: number }>)
       .filter(a => a.enabled !== false)
-      .forEach(a => {
-        if (!opts.some(o => o.value === a.nameAr)) {
-          opts.push({ value: a.nameAr, label: a.nameAr, count: a.propertyCount ?? 0 });
-        }
-      });
-    return opts;
+      .map(a => ({ value: a.nameAr, label: a.nameAr, count: a.propertyCount ?? 0 }))
+      .filter((a, i, arr) => arr.findIndex(x => x.value === a.value) === i)
+      .sort((a, b) => b.count - a.count);
+    return [all, ...areas];
   }, [banhaAreas]);
 
   useEffect(() => {
@@ -593,11 +591,24 @@ export default function Home() {
                       <Building2 className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="النوع" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">كل الأنواع</SelectItem>
-                      {reCategories.map(c => (
-                        <SelectItem key={c.id} value={c.slug ?? String(c.id)}>{c.nameAr}</SelectItem>
-                      ))}
+                    <SelectContent className="w-56 p-1">
+                      <SelectItem value="all" className="py-2 px-2 rounded-lg">
+                        <div className="flex items-center justify-between w-full gap-3">
+                          <span className="font-medium text-gray-800 text-sm">كل الأنواع</span>
+                        </div>
+                      </SelectItem>
+                      {(reCategories as Array<{ id: number; nameAr: string; slug?: string | null; propertyCount?: number }>)
+                        .sort((a, b) => (b.propertyCount ?? 0) - (a.propertyCount ?? 0))
+                        .map(c => (
+                          <SelectItem key={c.id} value={c.slug ?? String(c.id)} className="py-2 px-2 cursor-pointer rounded-lg">
+                            <div className="flex items-center justify-between w-full gap-3">
+                              <span className="font-medium text-gray-800 text-sm">{c.nameAr}</span>
+                              <span className={`min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${(c.propertyCount ?? 0) > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
+                                {c.propertyCount ?? 0}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -642,18 +653,18 @@ export default function Home() {
                       <MapPin className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="المنطقة" />
                     </SelectTrigger>
-                    <SelectContent className="w-64 max-h-80 overflow-y-auto" align="start">
+                    <SelectContent className="w-60 max-h-80 overflow-y-auto p-1" align="start">
                       {heroCityOptions.map(o => (
                         <SelectItem
                           key={o.value}
                           value={o.value}
-                          className="py-2.5 px-3 cursor-pointer"
+                          className="py-2 px-2 cursor-pointer rounded-lg"
                         >
                           <div className="flex items-center justify-between w-full gap-3">
-                            <span className="font-medium text-gray-800">{o.label}</span>
+                            <span className="font-medium text-gray-800 text-sm">{o.label}</span>
                             {o.count >= 0 && (
-                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${o.count > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
-                                {o.count > 0 ? `${o.count} عقار` : "لا يوجد"}
+                              <span className={`min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${o.count > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
+                                {o.count}
                               </span>
                             )}
                           </div>
