@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "categories",
   "label": "التصنيفات",
-  "exportedAt": "2026-06-02T09:18:10.647Z",
+  "exportedAt": "2026-06-02T10:59:58.455Z",
   "tables": {
     "categories": [
       {
@@ -15,7 +15,7 @@
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-06-02T09:17:52.895Z"
+        "createdAt": "2026-06-02T09:54:28.684Z"
       },
       {
         "id": 2,
@@ -27,7 +27,7 @@
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-06-02T09:17:52.895Z"
+        "createdAt": "2026-06-02T09:54:28.684Z"
       },
       {
         "id": 3,
@@ -39,7 +39,7 @@
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-06-02T09:17:52.895Z"
+        "createdAt": "2026-06-02T09:54:28.684Z"
       },
       {
         "id": 4,
@@ -51,7 +51,7 @@
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-06-02T09:17:52.895Z"
+        "createdAt": "2026-06-02T09:54:28.684Z"
       },
       {
         "id": 5,
@@ -63,7 +63,7 @@
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-06-02T09:17:52.895Z"
+        "createdAt": "2026-06-02T09:54:28.684Z"
       },
       {
         "id": 6,
@@ -75,7 +75,7 @@
         "image": null,
         "status": "active",
         "type": "service",
-        "createdAt": "2026-06-02T09:17:52.895Z"
+        "createdAt": "2026-06-02T09:54:28.684Z"
       },
       {
         "id": 7,
@@ -87,7 +87,7 @@
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-06-02T09:17:53.267Z"
+        "createdAt": "2026-06-02T09:54:28.964Z"
       },
       {
         "id": 8,
@@ -99,7 +99,7 @@
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-06-02T09:17:53.267Z"
+        "createdAt": "2026-06-02T09:54:28.964Z"
       },
       {
         "id": 9,
@@ -111,7 +111,7 @@
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-06-02T09:17:53.267Z"
+        "createdAt": "2026-06-02T09:54:28.964Z"
       },
       {
         "id": 10,
@@ -123,7 +123,7 @@
         "image": null,
         "status": "active",
         "type": "real_estate",
-        "createdAt": "2026-06-02T09:17:53.267Z"
+        "createdAt": "2026-06-02T09:54:28.964Z"
       }
     ],
     "subcategories": [
@@ -135,7 +135,7 @@
         "icon": "Building2",
         "slug": "apartment",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 2,
@@ -145,7 +145,7 @@
         "icon": "Home",
         "slug": "villa",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 3,
@@ -155,7 +155,7 @@
         "icon": "Layers",
         "slug": "duplex",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 4,
@@ -165,7 +165,7 @@
         "icon": "Home",
         "slug": "studio",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 5,
@@ -175,7 +175,7 @@
         "icon": "Sunset",
         "slug": "chalet",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 6,
@@ -185,7 +185,7 @@
         "icon": "Tag",
         "slug": "single-room",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 7,
@@ -195,7 +195,7 @@
         "icon": "Home",
         "slug": "standalone",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 8,
@@ -205,7 +205,7 @@
         "icon": "Layers",
         "slug": "full-floor",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.276Z"
+        "createdAt": "2026-06-02T09:54:28.971Z"
       },
       {
         "id": 9,
@@ -215,7 +215,7 @@
         "icon": "Store",
         "slug": "shop",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 10,
@@ -225,7 +225,7 @@
         "icon": "Building",
         "slug": "office",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 11,
@@ -235,7 +235,7 @@
         "icon": "Warehouse",
         "slug": "warehouse",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 12,
@@ -245,7 +245,7 @@
         "icon": "Building2",
         "slug": "commercial-building",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 13,
@@ -255,7 +255,7 @@
         "icon": "Layers",
         "slug": "showroom",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 14,
@@ -265,7 +265,7 @@
         "icon": "Tag",
         "slug": "pharmacy",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 15,
@@ -275,7 +275,7 @@
         "icon": "Store",
         "slug": "restaurant",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.288Z"
+        "createdAt": "2026-06-02T09:54:28.975Z"
       },
       {
         "id": 16,
@@ -285,7 +285,7 @@
         "icon": "Home",
         "slug": "land-residential",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.296Z"
+        "createdAt": "2026-06-02T09:54:28.978Z"
       },
       {
         "id": 17,
@@ -295,7 +295,7 @@
         "icon": "Store",
         "slug": "land-commercial",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.296Z"
+        "createdAt": "2026-06-02T09:54:28.978Z"
       },
       {
         "id": 18,
@@ -305,7 +305,7 @@
         "icon": "Trees",
         "slug": "land-agricultural",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.296Z"
+        "createdAt": "2026-06-02T09:54:28.978Z"
       },
       {
         "id": 19,
@@ -315,7 +315,7 @@
         "icon": "Factory",
         "slug": "land-industrial",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.296Z"
+        "createdAt": "2026-06-02T09:54:28.978Z"
       },
       {
         "id": 20,
@@ -325,7 +325,7 @@
         "icon": "MapPin",
         "slug": "land-service",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.296Z"
+        "createdAt": "2026-06-02T09:54:28.978Z"
       },
       {
         "id": 21,
@@ -335,7 +335,7 @@
         "icon": "Factory",
         "slug": "factory",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.303Z"
+        "createdAt": "2026-06-02T09:54:28.982Z"
       },
       {
         "id": 22,
@@ -345,7 +345,7 @@
         "icon": "Warehouse",
         "slug": "industrial-warehouse",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.303Z"
+        "createdAt": "2026-06-02T09:54:28.982Z"
       },
       {
         "id": 23,
@@ -355,7 +355,7 @@
         "icon": "Hammer",
         "slug": "workshop",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.303Z"
+        "createdAt": "2026-06-02T09:54:28.982Z"
       },
       {
         "id": 24,
@@ -365,7 +365,7 @@
         "icon": "Factory",
         "slug": "industrial-facility",
         "status": "active",
-        "createdAt": "2026-06-02T09:17:53.303Z"
+        "createdAt": "2026-06-02T09:54:28.982Z"
       }
     ]
   }

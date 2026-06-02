@@ -1505,7 +1505,7 @@ export default function PropertiesPage() {
 
                     {/* Map */}
                     <div className="flex-1 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-                      <MapContainer center={MAP_CENTER} zoom={6} className="h-full w-full">
+                      <MapContainer center={MAP_CENTER} zoom={6} className="h-full w-full" autoPanOnFocus={false}>
                         <TileLayer
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

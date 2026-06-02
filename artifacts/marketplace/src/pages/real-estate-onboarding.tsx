@@ -643,6 +643,7 @@ export default function RealEstateOnboarding() {
               zoom={mapPos ? 15 : 12}
               className="h-full w-full"
               key={mapPos ? "placed" : "default"}
+              autoPanOnFocus={false}
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <MapClickHandler onPick={onMapPick} />

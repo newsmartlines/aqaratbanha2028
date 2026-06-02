@@ -86,6 +86,7 @@ export function MapPicker({ lat, lng, onPick, onClear }: MapPickerProps) {
               center={mapPos ?? [BANHA_LAT, BANHA_LNG]}
               zoom={mapPos ? 15 : 12}
               className="h-full w-full"
+              autoPanOnFocus={false}
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <ClickHandler />
