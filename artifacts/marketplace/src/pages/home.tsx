@@ -591,9 +591,9 @@ export default function Home() {
                       <Building2 className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="النوع" />
                     </SelectTrigger>
-                    <SelectContent className="w-56 p-1">
+                    <SelectContent className="w-56 p-1" side="bottom" avoidCollisions={false}>
                       <SelectItem value="all" className="py-2 px-2 rounded-lg">
-                        <div className="flex items-center justify-between w-full gap-3">
+                        <div className="flex items-center w-full">
                           <span className="font-medium text-gray-800 text-sm">كل الأنواع</span>
                         </div>
                       </SelectItem>
@@ -601,9 +601,9 @@ export default function Home() {
                         .sort((a, b) => (b.propertyCount ?? 0) - (a.propertyCount ?? 0))
                         .map(c => (
                           <SelectItem key={c.id} value={c.slug ?? String(c.id)} className="py-2 px-2 cursor-pointer rounded-lg">
-                            <div className="flex items-center justify-between w-full gap-3">
+                            <div className="flex items-center w-full">
                               <span className="font-medium text-gray-800 text-sm">{c.nameAr}</span>
-                              <span className={`min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${(c.propertyCount ?? 0) > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
+                              <span className={`ml-auto min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${(c.propertyCount ?? 0) > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
                                 {c.propertyCount ?? 0}
                               </span>
                             </div>
@@ -653,17 +653,17 @@ export default function Home() {
                       <MapPin className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="المنطقة" />
                     </SelectTrigger>
-                    <SelectContent className="w-60 max-h-80 overflow-y-auto p-1" align="start">
+                    <SelectContent className="w-60 max-h-80 overflow-y-auto p-1" side="bottom" avoidCollisions={false}>
                       {heroCityOptions.map(o => (
                         <SelectItem
                           key={o.value}
                           value={o.value}
                           className="py-2 px-2 cursor-pointer rounded-lg"
                         >
-                          <div className="flex items-center justify-between w-full gap-3">
+                          <div className="flex items-center w-full">
                             <span className="font-medium text-gray-800 text-sm">{o.label}</span>
                             {o.count >= 0 && (
-                              <span className={`min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${o.count > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
+                              <span className={`ml-auto min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${o.count > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
                                 {o.count}
                               </span>
                             )}
