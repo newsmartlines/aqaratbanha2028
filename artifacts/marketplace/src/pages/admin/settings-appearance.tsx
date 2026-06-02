@@ -492,3 +492,5 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
     </div>
   );
 }
+
+export default AppearanceTab;
