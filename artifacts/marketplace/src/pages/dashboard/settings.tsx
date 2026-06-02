@@ -36,6 +36,7 @@ function MapClickPicker({
       onPick(e.latlng.lat, e.latlng.lng);
     },
   });
+  if (!isFinite(lat) || !isFinite(lng)) return null;
   return <Marker position={[lat, lng]} />;
 }
 
@@ -84,8 +85,10 @@ export default function ProviderSettings() {
     if (!Number.isFinite(rid)) return [];
     return (regions.find((r) => r.id === rid)?.cities ?? []).filter((c) => c.enabled !== false);
   }, [regions, regionId]);
-  const mapLat = Number.parseFloat(latitude || "24.7136");
-  const mapLng = Number.parseFloat(longitude || "46.6753");
+  const _mapLatRaw = Number.parseFloat(latitude);
+  const _mapLngRaw = Number.parseFloat(longitude);
+  const mapLat = isFinite(_mapLatRaw) ? _mapLatRaw : 30.468;
+  const mapLng = isFinite(_mapLngRaw) ? _mapLngRaw : 31.183;
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

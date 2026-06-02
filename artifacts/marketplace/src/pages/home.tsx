@@ -112,7 +112,9 @@ const CITY_COORDS: Record<string, [number, number]> = {
 
 function getProviderCoords(provider: Provider): [number, number] | null {
   if (provider.latitude && provider.longitude) {
-    return [parseFloat(provider.latitude), parseFloat(provider.longitude)];
+    const lat = parseFloat(provider.latitude);
+    const lng = parseFloat(provider.longitude);
+    if (isFinite(lat) && isFinite(lng)) return [lat, lng];
   }
   if (provider.city && CITY_COORDS[provider.city]) {
     const [lat, lng] = CITY_COORDS[provider.city];
