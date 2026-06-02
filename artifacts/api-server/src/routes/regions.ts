@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { regionsTable, citiesTable, areasTable, providerServiceAreasTable } from "@workspace/db/schema";
-import { eq, and } from "drizzle-orm";
+import { regionsTable, citiesTable, areasTable, providerServiceAreasTable, propertiesTable } from "@workspace/db/schema";
+import { eq, and, ilike, or, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
 import { autoExportGroup } from "../lib/auto-export";
 
@@ -43,16 +43,33 @@ router.get("/regions", async (_req, res) => {
   }
 });
 
-// ── Public: areas for a specific city ─────────────────────────────────────
+// ── Public: areas for a specific city (with property counts) ───────────────
 router.get("/cities/:cityId/areas", async (req, res) => {
   try {
     const cityId = parseInt(req.params.cityId);
-    const data = await db
+    const areas = await db
       .select()
       .from(areasTable)
       .where(and(eq(areasTable.cityId, cityId), eq(areasTable.enabled, true)))
       .orderBy(areasTable.nameAr);
-    res.json({ success: true, data });
+
+    const withCount = await Promise.all(
+      areas.map(async (area) => {
+        const pattern = `%${area.nameAr}%`;
+        const [row] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(propertiesTable)
+          .where(
+            or(
+              ilike(propertiesTable.district, pattern),
+              ilike(propertiesTable.address, pattern),
+            ),
+          );
+        return { ...area, propertyCount: row?.count ?? 0 };
+      }),
+    );
+
+    res.json({ success: true, data: withCount });
   } catch {
     res.status(500).json({ success: false, error: "Failed to load areas" });
   }

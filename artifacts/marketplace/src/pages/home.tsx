@@ -374,12 +374,12 @@ export default function Home() {
   });
 
   const heroCityOptions = useMemo(() => {
-    const opts: { value: string; label: string }[] = [{ value: "__all__", label: "كل المناطق" }];
-    (banhaAreas as Array<{ id: number; nameAr: string; enabled?: boolean }>)
+    const opts: { value: string; label: string; count: number }[] = [{ value: "__all__", label: "كل المناطق", count: -1 }];
+    (banhaAreas as Array<{ id: number; nameAr: string; enabled?: boolean; propertyCount?: number }>)
       .filter(a => a.enabled !== false)
       .forEach(a => {
         if (!opts.some(o => o.value === a.nameAr)) {
-          opts.push({ value: a.nameAr, label: a.nameAr });
+          opts.push({ value: a.nameAr, label: a.nameAr, count: a.propertyCount ?? 0 });
         }
       });
     return opts;
@@ -633,7 +633,7 @@ export default function Home() {
                 <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
 
                 {/* City / Area */}
-                <div className="w-28 shrink-0">
+                <div className="w-32 shrink-0">
                   <Select
                     value={heroCityName ?? "__all__"}
                     onValueChange={v => setHeroCityName(v === "__all__" ? null : v)}
@@ -642,9 +642,22 @@ export default function Home() {
                       <MapPin className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
                       <SelectValue placeholder="المنطقة" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="w-64 max-h-80 overflow-y-auto" align="start">
                       {heroCityOptions.map(o => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        <SelectItem
+                          key={o.value}
+                          value={o.value}
+                          className="py-2.5 px-3 cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between w-full gap-3">
+                            <span className="font-medium text-gray-800">{o.label}</span>
+                            {o.count >= 0 && (
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${o.count > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
+                                {o.count > 0 ? `${o.count} عقار` : "لا يوجد"}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
