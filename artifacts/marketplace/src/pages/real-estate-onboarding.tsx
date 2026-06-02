@@ -3,6 +3,7 @@ import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
@@ -646,6 +647,7 @@ export default function RealEstateOnboarding() {
               autoPanOnFocus={false}
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <DisableAutoPan />
               <MapClickHandler onPick={onMapPick} />
               {mapPos && <Marker position={mapPos} />}
             </MapContainer>

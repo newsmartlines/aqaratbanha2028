@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, mediaUrl, type ProviderDetail } from "@/lib/api";
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -537,6 +538,7 @@ export default function ProviderSettings() {
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                           />
+                          <DisableAutoPan />
                           <MapClickPicker
                             lat={mapLat}
                             lng={mapLng}

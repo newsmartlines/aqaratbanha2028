@@ -58,6 +58,12 @@ export function MapPicker({ lat, lng, onPick, onClear }: MapPickerProps) {
       ) : (() => {
         const { MapContainer, TileLayer, Marker, useMapEvents, useMap } = RL;
 
+        function FixAutoPan() {
+          const map = useMap();
+          useEffect(() => { (map as any)._panOnFocus = () => {}; }, [map]);
+          return null;
+        }
+
         function ClickHandler() {
           useMapEvents({ click: (e: any) => onPick(e.latlng.lat, e.latlng.lng) });
           return null;
@@ -89,6 +95,7 @@ export function MapPicker({ lat, lng, onPick, onClear }: MapPickerProps) {
               autoPanOnFocus={false}
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <FixAutoPan />
               <ClickHandler />
               <FlyToMarker pos={mapPos} />
               {mapPos && <Marker position={mapPos} />}

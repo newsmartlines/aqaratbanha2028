@@ -21,6 +21,7 @@ import {
 import { api, type Service, type Category, type Region, type ServiceArea } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 import { useT, commonDict, useLanguage } from "@/lib/i18n";
 
@@ -782,6 +783,7 @@ export default function AdminProviderEdit() {
                   <div className="h-[420px] w-full">
                     <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }} key={`${mapCenter[0]}-${mapCenter[1]}`} autoPanOnFocus={false}>
                       <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <DisableAutoPan />
                       <DraggableMarker position={mapCenter} onMove={(newLat, newLng) => { setLat(newLat.toFixed(6)); setLng(newLng.toFixed(6)); }} />
                     </MapContainer>
                   </div>

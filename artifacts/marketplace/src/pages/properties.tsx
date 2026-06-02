@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SmartSearch } from "@/components/SmartSearch";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
@@ -1510,6 +1511,7 @@ export default function PropertiesPage() {
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         />
+                        <DisableAutoPan />
                         {filtered.filter(p => p.hasCoords && !isNaN(p.lat) && !isNaN(p.lng)).map((p) => (
                           <Marker
                             key={p.id}

@@ -3,6 +3,7 @@ import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 import { api, mediaUrl } from "@/lib/api";
 import { Header } from "@/components/Header";
@@ -529,6 +530,7 @@ export default function MapSearchPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='© <a href="https://openstreetmap.org">OpenStreetMap</a>'
             />
+            <DisableAutoPan />
             <MapListener onUpdate={handleMapUpdate} />
             <FlyToCluster target={flyTarget} />
 

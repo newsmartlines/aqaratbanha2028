@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 import {
   BedDouble, Bath, Maximize2, Building2, ArrowLeft, ArrowRight,
@@ -719,6 +720,7 @@ export default function PropertyDetail() {
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     />
+                    <DisableAutoPan />
                     <Marker position={[property.lat, property.lng]}>
                       <Popup>
                         <div className="text-right min-w-[160px] font-sans" dir="rtl">
