@@ -524,7 +524,6 @@ export default function MapSearchPage() {
             zoom={12}
             className="h-full w-full"
             zoomControl={false}
-            autoPanOnFocus={false}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

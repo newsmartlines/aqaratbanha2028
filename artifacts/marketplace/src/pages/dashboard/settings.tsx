@@ -533,7 +533,7 @@ export default function ProviderSettings() {
                     <div className="space-y-2">
                       <Label>اختيار الموقع على الخريطة</Label>
                       <div className="h-72 overflow-hidden rounded-xl border border-border/60">
-                        <MapContainer center={[mapLat, mapLng]} zoom={12} className="h-full w-full" autoPanOnFocus={false}>
+                        <MapContainer center={[mapLat, mapLng]} zoom={12} className="h-full w-full">
                           <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

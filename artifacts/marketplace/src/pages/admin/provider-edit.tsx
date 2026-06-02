@@ -781,7 +781,7 @@ export default function AdminProviderEdit() {
                 </CardHeader>
                 <CardContent className="p-0 rounded-b-xl overflow-hidden">
                   <div className="h-[420px] w-full">
-                    <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }} key={`${mapCenter[0]}-${mapCenter[1]}`} autoPanOnFocus={false}>
+                    <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }} key={`${mapCenter[0]}-${mapCenter[1]}`}>
                       <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                       <DisableAutoPan />
                       <DraggableMarker position={mapCenter} onMove={(newLat, newLng) => { setLat(newLat.toFixed(6)); setLng(newLng.toFixed(6)); }} />

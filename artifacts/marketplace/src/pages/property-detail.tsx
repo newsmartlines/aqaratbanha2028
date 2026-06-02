@@ -714,7 +714,6 @@ export default function PropertyDetail() {
                     scrollWheelZoom={mapRevealed}
                     doubleClickZoom={mapRevealed}
                     touchZoom={mapRevealed}
-                    autoPanOnFocus={false}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

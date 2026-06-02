@@ -822,7 +822,7 @@ router.patch("/providers/:id/suspend", async (req, res) => {
 // ── DELETE /providers/:id — full provider + user deletion (admin only) ────────
 router.delete("/providers/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (!Number.isFinite(id)) {
       return res.status(400).json({ success: false, error: "Invalid provider id" });
     }
