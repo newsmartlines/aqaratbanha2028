@@ -318,8 +318,8 @@ export default function Home() {
   });
 
   const { data: banhaAreas = [] } = useQuery({
-    queryKey: ["areas", 45],
-    queryFn: () => api.locations.getAreasByCity(45),
+    queryKey: ["areas", 1],
+    queryFn: () => api.locations.getAreasByCity(1),
     staleTime: 5 * 60_000,
   });
 
@@ -375,23 +375,15 @@ export default function Home() {
 
   const heroCityOptions = useMemo(() => {
     const opts: { value: string; label: string }[] = [{ value: "__all__", label: "كل المناطق" }];
-    const addCity = (nameAr: string) => {
-      if (!opts.some(o => o.value === nameAr)) opts.push({ value: nameAr, label: nameAr });
-    };
-    if (heroRegionId != null) {
-      const reg = regions.find(r => r.id === heroRegionId);
-      (reg?.cities ?? []).forEach(c => {
-        if (c.enabled !== false) addCity(c.nameAr);
+    (banhaAreas as Array<{ id: number; nameAr: string; enabled?: boolean }>)
+      .filter(a => a.enabled !== false)
+      .forEach(a => {
+        if (!opts.some(o => o.value === a.nameAr)) {
+          opts.push({ value: a.nameAr, label: a.nameAr });
+        }
       });
-      return opts;
-    }
-    regions.forEach(region => {
-      region.cities.forEach(city => {
-        if (city.enabled !== false) addCity(city.nameAr);
-      });
-    });
-    return opts.length > 1 ? opts : [{ value: "__all__", label: "كل المناطق" }];
-  }, [regions, heroRegionId]);
+    return opts;
+  }, [banhaAreas]);
 
   useEffect(() => {
     setHeroCityName(null);
