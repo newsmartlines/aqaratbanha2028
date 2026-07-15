@@ -222,13 +222,14 @@ The **Start application** workflow runs everything automatically when you press 
 The project uses pnpm workspaces with `node-linker=hoisted` (set in `.npmrc`).  
 Run `pnpm install` from the workspace root to install all dependencies.
 
-### API server rebuild
-The workflow starts the **pre-built** API server (`artifacts/api-server/dist/index.mjs`).  
-After editing API server source files, rebuild with:
+### API server hot reload
+The workflow runs the API server via `tsx watch` — **no manual rebuild needed**.  
+Editing any file under `artifacts/api-server/src/` automatically restarts the API server.
+
+To produce a production bundle (for deployment), run:
 ```bash
 pnpm --filter @workspace/api-server run build
 ```
-Then restart the workflow.
 
 ---
 
