@@ -198,6 +198,40 @@ php artisan storage:link
 php artisan config:cache && php artisan route:cache
 ```
 
+## Running on Replit
+
+### How to run
+The **Start application** workflow runs everything automatically when you press **Run**:
+- Vite dev server (React frontend) on port 5000
+- Express API server on port 8080
+- Reverse-proxy (`health-server.mjs`) on port 20787 → 5000
+
+### Environment variables already set
+- `PORT=8080` — API server port
+- `VITE_PORT=5000` — Vite dev server port
+- `NODE_ENV=development`
+- `SESSION_SECRET` — session signing secret (Replit Secret)
+- `DATABASE_URL` — Replit's built-in PostgreSQL (runtime-managed)
+
+### Optional environment variables (not required to run)
+- `GOOGLE_CLIENT_ID` — for Google OAuth login
+- `OPENAI_API_KEY` — for AI-assisted email features
+- `CORS_ORIGIN` — explicit CORS origin (defaults to open in dev)
+
+### Package management
+The project uses pnpm workspaces with `node-linker=hoisted` (set in `.npmrc`).  
+Run `pnpm install` from the workspace root to install all dependencies.
+
+### API server rebuild
+The workflow starts the **pre-built** API server (`artifacts/api-server/dist/index.mjs`).  
+After editing API server source files, rebuild with:
+```bash
+pnpm --filter @workspace/api-server run build
+```
+Then restart the workflow.
+
+---
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

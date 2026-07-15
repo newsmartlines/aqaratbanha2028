@@ -31,8 +31,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm --filter @workspace/api-server run dev & pnpm --filter @workspace/marketplace run dev & node health-server.mjs & wait"
-waitForPort = 5000
+args = "pnpm --filter @workspace/marketplace run dev & node artifacts/api-server/dist/index.mjs & node health-server.mjs & wait"
 
 [agent]
 stack = "BEST_EFFORT_FALLBACK"

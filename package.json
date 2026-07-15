@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "concurrently --names \"API,VITE\" --prefix-colors \"cyan,green\" \"pnpm --filter @workspace/api-server run dev\" \"pnpm --filter @workspace/marketplace run dev\"",
+    "dev": "pnpm --filter @workspace/api-server run dev & pnpm --filter @workspace/marketplace run dev & wait",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "build:deploy": "pnpm --filter @workspace/marketplace run build && pnpm --filter @workspace/api-server run build",
     "start": "cross-env NODE_ENV=production node --enable-source-maps artifacts/api-server/dist/index.mjs",
@@ -16,7 +16,6 @@
   },
   "private": true,
   "devDependencies": {
-    "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2"
