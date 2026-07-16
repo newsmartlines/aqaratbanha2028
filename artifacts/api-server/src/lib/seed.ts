@@ -239,6 +239,7 @@ export async function seed() {
   await seedProperties();
   await seedEmailTemplates();
   await seedSiteSettings();
+  await seedDefaultAccounts();
 
   console.log("Database seeded successfully!");
 
@@ -1471,6 +1472,85 @@ export async function seedSiteSettings() {
     await db.insert(siteSettingsTable).values({ key, value }).onConflictDoNothing();
   }
   console.log("Site settings seeded.");
+}
+
+// ── Default Demo Accounts ─────────────────────────────────────────────────────
+// Always runs via upsert — safe on every startup, never creates duplicates.
+// Credentials are intentionally fixed so they survive re-installs unchanged.
+
+export async function seedDefaultAccounts() {
+  console.log("Ensuring default accounts...");
+
+  // ── Default User ──────────────────────────────────────────────────────────
+  const userHash = await bcrypt.hash("user123", 10);
+  const [defaultUser] = await db
+    .insert(usersTable)
+    .values({
+      name: "مستخدم تجريبي",
+      email: "user@aqaratbanha.com",
+      passwordHash: userHash,
+      role: "user",
+      status: "active",
+    })
+    .onConflictDoUpdate({
+      target: usersTable.email,
+      set: {
+        name: "مستخدم تجريبي",
+        passwordHash: userHash,
+        role: "user",
+        status: "active",
+      },
+    })
+    .returning();
+
+  // ── Default Company (Provider) ────────────────────────────────────────────
+  const companyHash = await bcrypt.hash("company123", 10);
+  const [companyUser] = await db
+    .insert(usersTable)
+    .values({
+      name: "شركة تجريبية",
+      email: "company@aqaratbanha.com",
+      passwordHash: companyHash,
+      role: "provider",
+      status: "active",
+    })
+    .onConflictDoUpdate({
+      target: usersTable.email,
+      set: {
+        name: "شركة تجريبية",
+        passwordHash: companyHash,
+        role: "provider",
+        status: "active",
+      },
+    })
+    .returning();
+
+  // Ensure a provider profile exists for the company user
+  const existingProvider = await db
+    .select({ id: providersTable.id })
+    .from(providersTable)
+    .where(eq(providersTable.userId, companyUser.id))
+    .limit(1);
+
+  if (existingProvider.length === 0) {
+    await db.insert(providersTable).values({
+      userId: companyUser.id,
+      bio: "حساب الشركة التجريبي للاختبار والتطوير",
+      city: "بنها",
+      verified: true,
+      featured: false,
+      approved: true,
+      active: true,
+      rating: "5.00",
+      reviewsCount: 0,
+    });
+  }
+
+  console.log(
+    `Default accounts ready:\n` +
+    `  User    → user@aqaratbanha.com     / user123\n` +
+    `  Company → company@aqaratbanha.com  / company123`
+  );
 }
 
 // ── Force Re-seed (for admin use) ─────────────────────────────────────────────
