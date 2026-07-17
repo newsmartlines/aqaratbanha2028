@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Circle, useMap, useMapEvents } from "react-leaflet";
 import type { LatLngTuple } from "leaflet";
+import { getCirclePathOptions, CIRCLE_RADIUS_DEFAULT } from "@/lib/circleStyles";
 
 // ── Internal: auto-fit + click-to-move ───────────────────────────────────────
 
@@ -100,13 +101,7 @@ export function PropertyMap({
           <Circle
             center={position}
             radius={radius}
-            pathOptions={{
-              fillColor: "#3B82F6",
-              fillOpacity: 0.2,
-              color: "#3B82F6",
-              weight: 2,
-              // No dash; clean solid border
-            }}
+            pathOptions={getCirclePathOptions(false, false)}
           />
         </MapContainer>
 
