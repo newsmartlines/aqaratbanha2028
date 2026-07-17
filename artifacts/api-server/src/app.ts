@@ -87,30 +87,36 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 // ── Global API rate limiter ───────────────────────────────────────────────────
-// 500 requests per 15 min per IP for all /api routes
-const globalApiLimiter = rateLimit({
-  windowMs:       15 * 60 * 1_000,
-  max:            500,
-  standardHeaders: true,
-  legacyHeaders:  false,
-  message:        { success: false, error: "طلبات كثيرة، يرجى المحاولة لاحقاً" },
-});
+// In dev (Replit), all traffic shares one IP — disable limits to avoid false 429s.
+// In production, apply strict per-IP limits.
+const skipInDev = (_req: Request) => !isProd;
 
-// Admin-specific rate limiter: 150 requests per 15 min per IP
-const adminApiLimiter = rateLimit({
+const globalApiLimiter = rateLimit({
   windowMs:        15 * 60 * 1_000,
-  max:             150,
+  max:             1_000,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip:            skipInDev,
+  message:         { success: false, error: "طلبات كثيرة، يرجى المحاولة لاحقاً" },
+});
+
+// Admin-specific rate limiter: 300 requests per 15 min per IP
+const adminApiLimiter = rateLimit({
+  windowMs:        15 * 60 * 1_000,
+  max:             300,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  skip:            skipInDev,
   message:         { success: false, error: "طلبات كثيرة على لوحة الإدارة، يرجى الانتظار" },
 });
 
-// Upload rate limiter: 60 uploads per hour per IP (prevents storage abuse)
+// Upload rate limiter: 120 uploads per hour per IP (prevents storage abuse)
 const uploadLimiter = rateLimit({
   windowMs:        60 * 60 * 1_000,
-  max:             60,
+  max:             120,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip:            skipInDev,
   message:         { success: false, error: "حدّ الرفع الساعي تجاوز، حاول لاحقاً" },
 });
 
