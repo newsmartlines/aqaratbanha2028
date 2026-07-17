@@ -11,3 +11,9 @@
 {"ts":"2026-07-16T11:56:26.149Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/property-features","status":200,"durationMs":340,"body":{"type":"feature","name":"مساؤء الفل","icon":"Car","status":"active","applicableTypes":"[\"شقة\"]","sortOrder":39}}
 {"ts":"2026-07-17T22:55:01.790Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"enabled","newStatus":"disabled"}}
 {"ts":"2026-07-17T22:55:01.935Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"disabled","newStatus":"enabled"}}
+{"ts":"2026-07-17T22:59:22.883Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/1/toggle","status":200,"durationMs":21,"body":{}}
+{"ts":"2026-07-17T22:59:24.048Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/2/toggle","status":200,"durationMs":19,"body":{}}
+{"ts":"2026-07-17T22:59:25.017Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/3/toggle","status":200,"durationMs":19,"body":{}}
+{"ts":"2026-07-17T22:59:26.095Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/4/toggle","status":200,"durationMs":19,"body":{}}
+{"ts":"2026-07-17T22:59:28.096Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/5/toggle","status":200,"durationMs":19,"body":{}}
+{"ts":"2026-07-17T23:03:42.001Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/1/toggle","status":200,"durationMs":43,"body":{}}

@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "billing",
   "label": "الفواتير والاشتراكات",
-  "exportedAt": "2026-07-16T11:56:26.153Z",
+  "exportedAt": "2026-07-17T23:03:41.992Z",
   "tables": {
     "billingPlans": [
       {
@@ -26,8 +26,8 @@
         "limits": "{\"properties\":3,\"photos\":10,\"videos\":0,\"featuredAds\":0,\"pinnedAds\":0,\"messages\":20,\"leads\":10}",
         "features": "{\"homepageDisplay\":false,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":false,\"seo\":false,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-15T21:53:37.319Z",
-        "updatedAt": "2026-07-15T21:53:37.319Z"
+        "createdAt": "2026-07-17T22:36:08.750Z",
+        "updatedAt": "2026-07-17T23:03:41.969Z"
       },
       {
         "id": 2,
@@ -41,7 +41,7 @@
         "durationDays": 30,
         "durationType": "monthly",
         "userType": "all",
-        "status": "active",
+        "status": "inactive",
         "isRecommended": false,
         "isMostPopular": true,
         "trialDays": 7,
@@ -50,8 +50,8 @@
         "limits": "{\"properties\":10,\"photos\":20,\"videos\":2,\"featuredAds\":3,\"pinnedAds\":1,\"messages\":100,\"leads\":50}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":false,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-15T21:53:37.341Z",
-        "updatedAt": "2026-07-15T21:53:37.341Z"
+        "createdAt": "2026-07-17T22:36:08.792Z",
+        "updatedAt": "2026-07-17T22:59:24.038Z"
       },
       {
         "id": 3,
@@ -65,7 +65,7 @@
         "durationDays": 30,
         "durationType": "monthly",
         "userType": "all",
-        "status": "active",
+        "status": "inactive",
         "isRecommended": true,
         "isMostPopular": false,
         "trialDays": 7,
@@ -74,8 +74,8 @@
         "limits": "{\"properties\":30,\"photos\":30,\"videos\":5,\"featuredAds\":10,\"pinnedAds\":3,\"messages\":500,\"leads\":200}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":true,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-15T21:53:37.346Z",
-        "updatedAt": "2026-07-15T21:53:37.346Z"
+        "createdAt": "2026-07-17T22:36:08.818Z",
+        "updatedAt": "2026-07-17T22:59:25.007Z"
       },
       {
         "id": 4,
@@ -89,7 +89,7 @@
         "durationDays": 30,
         "durationType": "monthly",
         "userType": "all",
-        "status": "active",
+        "status": "inactive",
         "isRecommended": false,
         "isMostPopular": false,
         "trialDays": 14,
@@ -98,8 +98,8 @@
         "limits": "{\"properties\":100,\"photos\":50,\"videos\":10,\"featuredAds\":30,\"pinnedAds\":10,\"messages\":-1,\"leads\":-1}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-15T21:53:37.360Z",
-        "updatedAt": "2026-07-15T21:53:37.360Z"
+        "createdAt": "2026-07-17T22:36:08.827Z",
+        "updatedAt": "2026-07-17T22:59:26.085Z"
       },
       {
         "id": 5,
@@ -113,7 +113,7 @@
         "durationDays": 30,
         "durationType": "monthly",
         "userType": "all",
-        "status": "active",
+        "status": "inactive",
         "isRecommended": false,
         "isMostPopular": false,
         "trialDays": 14,
@@ -122,8 +122,8 @@
         "limits": "{\"properties\":-1,\"photos\":-1,\"videos\":-1,\"featuredAds\":-1,\"pinnedAds\":-1,\"messages\":-1,\"leads\":-1}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":true}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-15T21:53:37.365Z",
-        "updatedAt": "2026-07-15T21:53:37.365Z"
+        "createdAt": "2026-07-17T22:36:08.831Z",
+        "updatedAt": "2026-07-17T22:59:28.085Z"
       }
     ],
     "commissionRules": [],
@@ -139,7 +139,7 @@
         "featuredAllowed": 0,
         "topBadge": false,
         "priorityRank": 0,
-        "createdAt": "2026-07-15T21:53:37.382Z"
+        "createdAt": "2026-07-17T22:36:08.842Z"
       },
       {
         "id": 2,
@@ -152,7 +152,7 @@
         "featuredAllowed": 3,
         "topBadge": false,
         "priorityRank": 1,
-        "createdAt": "2026-07-15T21:53:37.382Z"
+        "createdAt": "2026-07-17T22:36:08.842Z"
       },
       {
         "id": 3,
@@ -165,7 +165,7 @@
         "featuredAllowed": null,
         "topBadge": true,
         "priorityRank": 2,
-        "createdAt": "2026-07-15T21:53:37.382Z"
+        "createdAt": "2026-07-17T22:36:08.842Z"
       }
     ]
   }

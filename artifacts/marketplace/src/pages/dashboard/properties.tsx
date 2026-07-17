@@ -98,6 +98,12 @@ const LISTING_LABELS: Record<string, string> = {
   sale: "للبيع", rent: "للإيجار", investment: "للاستثمار",
 };
 
+/** Formats the public advertisement number, e.g. AD-2026000125 */
+function fmtAdNumber(id: number, createdAt?: string): string {
+  const year = createdAt ? new Date(createdAt).getFullYear() : new Date().getFullYear();
+  return `AD-${year}${String(id).padStart(6, "0")}`;
+}
+
 function getFirstImage(images: string | string[] | undefined): string | null {
   if (!images) return null;
   if (Array.isArray(images)) return images[0] ?? null;
@@ -170,6 +176,12 @@ function ListCard({ prop, onEdit, onDelete, onRenew, isRenewing }: {
 
       {/* Content */}
       <div className="flex-1 p-3.5 sm:p-4 flex flex-col gap-2 min-w-0">
+
+        {/* Ad number */}
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 w-fit">
+          <span className="text-teal-400 text-[10px]">#</span>
+          {fmtAdNumber(prop.id, prop.createdAt)}
+        </div>
 
         {/* Top row: title + status */}
         <div className="flex items-start gap-2">
@@ -330,6 +342,13 @@ function GridCard({ prop, onEdit, onDelete, onRenew, isRenewing }: {
 
       {/* Body */}
       <div className="p-3.5 flex flex-col gap-2 flex-1">
+
+        {/* Ad number */}
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-2 py-0.5 w-fit">
+          <span className="text-teal-400 text-[10px]">#</span>
+          {fmtAdNumber(prop.id, prop.createdAt)}
+        </div>
+
         <h3 className="text-foreground font-bold text-sm leading-snug line-clamp-2">{prop.title}</h3>
         {loc && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
