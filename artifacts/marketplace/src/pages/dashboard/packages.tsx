@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useSiteSettings } from "@/App";
 import { Link, useLocation } from "wouter";
 import {
   Crown, CheckCircle2, XCircle, Clock, Calendar, AlertTriangle,
@@ -301,6 +302,8 @@ export default function PackagesPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const siteSettings = useSiteSettings();
+  const subsEnabled = siteSettings?.subscriptionsEnabled !== "false";
 
   const [historyFilter, setHistoryFilter] = useState<"all" | "active" | "expired">("all");
   const [historySearch, setHistorySearch] = useState("");
@@ -810,38 +813,46 @@ export default function PackagesPage() {
             </div>}
 
             {/* ══════════════════════════════════════════════════════════════════
-                SECTION 3 — Upgrade / Plans (visible to all roles)
+                SECTION 3 — Upgrade / Plans (hidden when subscriptions disabled)
             ══════════════════════════════════════════════════════════════════ */}
-            <div id="upgrade" className="space-y-5">
-              <div>
-                <h2 className="text-lg font-bold text-foreground">الباقات المتاحة</h2>
-                <p className="text-sm text-muted-foreground mt-1">اختر الباقة المناسبة لأعمالك وابدأ الترقية الآن</p>
-              </div>
+            {subsEnabled ? (
+              <div id="upgrade" className="space-y-5">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">الباقات المتاحة</h2>
+                  <p className="text-sm text-muted-foreground mt-1">اختر الباقة المناسبة لأعمالك وابدأ الترقية الآن</p>
+                </div>
 
-              {plansLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                </div>
-              ) : sortedPlans.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-16 text-center">
-                  <p className="text-muted-foreground text-sm">لا توجد باقات متاحة حالياً</p>
-                </div>
-              ) : (
-                <div className={`grid grid-cols-1 gap-5 ${
-                  sortedPlans.length === 2 ? "sm:grid-cols-2" :
-                  sortedPlans.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
-                }`}>
-                  {sortedPlans.map((plan) => (
-                    <PlanCard
-                      key={plan.id}
-                      plan={plan}
-                      selected={isCurrentPlan(plan)}
-                      onSelect={() => handleSubscribeClick(plan)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+                {plansLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : sortedPlans.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-16 text-center">
+                    <p className="text-muted-foreground text-sm">لا توجد باقات متاحة حالياً</p>
+                  </div>
+                ) : (
+                  <div className={`grid grid-cols-1 gap-5 ${
+                    sortedPlans.length === 2 ? "sm:grid-cols-2" :
+                    sortedPlans.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
+                  }`}>
+                    {sortedPlans.map((plan) => (
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        selected={isCurrentPlan(plan)}
+                        onSelect={() => handleSubscribeClick(plan)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div id="upgrade" className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/50 py-12 text-center space-y-2">
+                <p className="text-2xl">🚫</p>
+                <p className="font-semibold text-amber-800">الباقات والاشتراكات معطّلة حالياً</p>
+                <p className="text-sm text-amber-600">لا يمكن شراء باقات جديدة في الوقت الحالي. اشتراكك النشط يبقى سارياً حتى انتهائه.</p>
+              </div>
+            )}
           </>
         )}
 

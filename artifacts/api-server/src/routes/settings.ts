@@ -3,6 +3,8 @@ import { db } from "@workspace/db";
 import { siteSettingsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { autoExportGroup } from "../lib/auto-export";
+import { writeAuditLog } from "../lib/auditLog";
+import { invalidateSetting } from "../lib/settingsCache";
 
 const router = Router();
 
@@ -10,6 +12,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   googleClientId: "",
   googleClientSecret: "",
   servicesModuleEnabled: "true",
+  subscriptionsEnabled: "true",
   // ── Payment gateway ─────────────────────────────────────────────
   paymentGateway: "vodafone_cash",
   vodafoneCashEnabled: "true",
@@ -93,6 +96,30 @@ router.post("/settings", async (req, res) => {
     const updates: Record<string, string> = req.body;
     for (const [key, value] of Object.entries(updates)) {
       const existing = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, key)).limit(1);
+
+      // For subscriptionsEnabled: capture previous value and write audit log
+      if (key === "subscriptionsEnabled") {
+        const prevValue = existing[0]?.value ?? "true";
+        const newValue = String(value);
+        if (prevValue !== newValue) {
+          const sess = (req as any).session as { userId?: number; email?: string } | undefined;
+          writeAuditLog({
+            ts: new Date().toISOString(),
+            ip: req.ip ?? "unknown",
+            userId: sess?.userId,
+            email: sess?.email,
+            method: "PATCH",
+            path: "/api/admin/settings/subscriptionsEnabled",
+            body: {
+              action: "toggle_subscriptions",
+              previousStatus: prevValue === "false" ? "disabled" : "enabled",
+              newStatus: newValue === "false" ? "disabled" : "enabled",
+            },
+          });
+        }
+        invalidateSetting("subscriptionsEnabled");
+      }
+
       if (existing.length > 0) {
         await db.update(siteSettingsTable).set({ value: String(value), updatedAt: new Date() }).where(eq(siteSettingsTable.key, key));
       } else {

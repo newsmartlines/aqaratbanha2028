@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api, type ProviderStats, type UserCurrentSub } from "@/lib/api";
 import { parseLimits, parseFeatures, fmtDate, FEATURE_LABELS } from "@/lib/plan-helpers";
 import { useAuth } from "@/lib/auth-context";
+import { useSiteSettings } from "@/App";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -157,6 +158,8 @@ function NoSubscription({ packagesHref }: { packagesHref: string }) {
 export function SubscriptionWidget() {
   const { isProvider, providerId } = useRole();
   const { user } = useAuth();
+  const siteSettings = useSiteSettings();
+  const subsEnabled = siteSettings?.subscriptionsEnabled !== "false";
 
   const { data: stats, isLoading: statsLoading } = useQuery<ProviderStats>({
     queryKey: ["providerStats", providerId],
@@ -215,6 +218,8 @@ export function SubscriptionWidget() {
   const hasNoSub = status === "none";
 
   if (hasNoSub) {
+    // When subscriptions are disabled, don't prompt the user to upgrade
+    if (!subsEnabled) return null;
     return <NoSubscription packagesHref={packagesHref} />;
   }
 
@@ -344,57 +349,59 @@ export function SubscriptionWidget() {
         {/* Features */}
         <PlanFeatures billingPlanId={sub?.billingPlanId ?? null} maxListings={maxListings} />
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-1">
-          {isExpired ? (
-            <>
-              <Link href={packagesHref} className="flex-1">
-                <Button className="w-full rounded-xl gap-2 bg-red-600 hover:bg-red-700 text-white">
-                  <RefreshCw className="w-4 h-4" />
-                  تجديد الاشتراك الآن
-                </Button>
-              </Link>
-              <Link href={packagesHref} className="flex-1">
-                <Button variant="outline" className="w-full rounded-xl gap-2 border-red-200 text-red-700 hover:bg-red-50">
-                  <Zap className="w-4 h-4" />
-                  الترقية إلى باقة أعلى
-                </Button>
-              </Link>
-            </>
-          ) : isExpiring ? (
-            <>
-              <Link href={packagesHref} className="flex-1">
-                <Button className="w-full rounded-xl gap-2 bg-amber-600 hover:bg-amber-700 text-white">
-                  <RefreshCw className="w-4 h-4" />
-                  تجديد الاشتراك
-                </Button>
-              </Link>
-              <Link href={packagesHref} className="flex-1">
-                <Button variant="outline" className="w-full rounded-xl gap-2">
-                  <Zap className="w-4 h-4" />
-                  ترقية الباقة
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link href={packagesHref} className="flex-1">
-                <Button className="w-full rounded-xl gap-2">
-                  <Zap className="w-4 h-4" />
-                  ترقية الباقة
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
-              <Link href={packagesHref} className="flex-1">
-                <Button variant="outline" className="w-full rounded-xl gap-2">
-                  <Crown className="w-4 h-4" />
-                  شراء باقة أعلى
-                </Button>
-              </Link>
-            </>
-          )}
-        </div>
+        {/* CTA Buttons — hidden when subscriptions are globally disabled */}
+        {subsEnabled && (
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
+            {isExpired ? (
+              <>
+                <Link href={packagesHref} className="flex-1">
+                  <Button className="w-full rounded-xl gap-2 bg-red-600 hover:bg-red-700 text-white">
+                    <RefreshCw className="w-4 h-4" />
+                    تجديد الاشتراك الآن
+                  </Button>
+                </Link>
+                <Link href={packagesHref} className="flex-1">
+                  <Button variant="outline" className="w-full rounded-xl gap-2 border-red-200 text-red-700 hover:bg-red-50">
+                    <Zap className="w-4 h-4" />
+                    الترقية إلى باقة أعلى
+                  </Button>
+                </Link>
+              </>
+            ) : isExpiring ? (
+              <>
+                <Link href={packagesHref} className="flex-1">
+                  <Button className="w-full rounded-xl gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+                    <RefreshCw className="w-4 h-4" />
+                    تجديد الاشتراك
+                  </Button>
+                </Link>
+                <Link href={packagesHref} className="flex-1">
+                  <Button variant="outline" className="w-full rounded-xl gap-2">
+                    <Zap className="w-4 h-4" />
+                    ترقية الباقة
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href={packagesHref} className="flex-1">
+                  <Button className="w-full rounded-xl gap-2">
+                    <Zap className="w-4 h-4" />
+                    ترقية الباقة
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+                <Link href={packagesHref} className="flex-1">
+                  <Button variant="outline" className="w-full rounded-xl gap-2">
+                    <Crown className="w-4 h-4" />
+                    شراء باقة أعلى
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

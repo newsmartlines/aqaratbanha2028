@@ -549,6 +549,15 @@ router.get("/providers/:id/interactions", async (req, res) => {
 // Provider self-subscribe — supports both old packageId and new billingPlanId
 router.post("/providers/:id/subscribe", async (req, res) => {
   try {
+    // Block new subscriptions when feature is globally disabled
+    const { subscriptionsEnabled } = await import("../lib/settingsCache");
+    if (!(await subscriptionsEnabled())) {
+      return res.status(403).json({
+        success: false,
+        error: "الاشتراكات والباقات معطّلة حالياً من قِبل الإدارة",
+      });
+    }
+
     const id = parseInt(req.params.id, 10);
     if (!Number.isFinite(id) || id < 1) {
       return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });

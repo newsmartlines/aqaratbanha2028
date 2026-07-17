@@ -6,6 +6,7 @@ import { api, type BillingPlan } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { useAuth } from "@/lib/auth-context";
+import { useSiteSettings } from "@/App";
 
 function parseLimits(raw?: string | null): Record<string, number> {
   try { return JSON.parse(raw ?? "{}"); } catch { return {}; }
@@ -225,6 +226,28 @@ export default function PricingPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const [isYearly, setIsYearly] = useState(false);
+  const siteSettings = useSiteSettings();
+  const subsEnabled = siteSettings?.subscriptionsEnabled !== "false";
+
+  // Show disabled banner when subscriptions are turned off
+  if (!subsEnabled) {
+    return (
+      <div className="min-h-screen bg-white" dir="rtl">
+        <Header />
+        <div className="flex flex-col items-center justify-center py-40 px-4 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-amber-100 flex items-center justify-center mb-6 text-4xl">
+            🚫
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">الباقات غير متاحة حالياً</h1>
+          <p className="text-gray-500 max-w-md leading-relaxed">
+            نظام الباقات والاشتراكات موقوف مؤقتاً من قِبل إدارة المنصة.
+            يرجى التواصل معنا للمزيد من المعلومات.
+          </p>
+        </div>
+        <RealEstateFooter />
+      </div>
+    );
+  }
 
   const billingUserType: "user" | "company" | null = user
     ? user.role === "provider" ? "company" : "user"

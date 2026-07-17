@@ -252,6 +252,7 @@ export default function AdminSettings() {
   const requireApproval = form.requireProviderApproval !== "false";
   const allowRegistration = form.allowRegistration !== "false";
   const servicesEnabled = form.servicesModuleEnabled !== "false";
+  const subsEnabled = form.subscriptionsEnabled !== "false";
 
   const [spotlightSearch, setSpotlightSearch] = useState("");
 
@@ -961,6 +962,67 @@ export default function AdminSettings() {
                   className={servicesEnabled ? "bg-teal-600 hover:bg-teal-700" : "bg-rose-500 hover:bg-rose-600"}>
                   {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
                   حفظ إعداد قسم الشركات العقارية
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Subscriptions & Packages Master Switch */}
+            <Card className={`shadow-sm border-2 transition-colors ${subsEnabled ? "border-teal-200" : "border-amber-300 bg-amber-50/30"}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-xl">📦</span>
+                  الباقات والاشتراكات
+                </CardTitle>
+                <CardDescription>
+                  تشغيل أو إيقاف نظام الباقات والاشتراكات — لا تُلغى الاشتراكات النشطة، تبقى سارية حتى انتهائها
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${subsEnabled ? "bg-teal-50 border-teal-200" : "bg-amber-50 border-amber-300"}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${subsEnabled ? "bg-teal-100" : "bg-amber-100"}`}>
+                      {subsEnabled ? "✅" : "🚫"}
+                    </div>
+                    <div>
+                      <p className={`font-bold text-base ${subsEnabled ? "text-teal-800" : "text-amber-800"}`}>
+                        {subsEnabled ? "الباقات والاشتراكات مفعّلة" : "الباقات والاشتراكات مُوقَفة"}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {subsEnabled
+                          ? "المستخدمون يرون صفحة الأسعار ويمكنهم شراء الباقات"
+                          : "أزرار الترقية والأسعار وصفحة الباقات مخفية تماماً"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={subsEnabled}
+                    onCheckedChange={v => setForm(f => ({ ...f, subscriptionsEnabled: v ? "true" : "false" }))}
+                  />
+                </div>
+
+                {!subsEnabled && (
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 space-y-1">
+                    <p className="font-semibold">عند التعطيل سيُخفى:</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>صفحة الأسعار والباقات <code className="bg-amber-100 px-1 rounded">/pricing</code></li>
+                      <li>أزرار الترقية وشراء الباقة في لوحة التحكم</li>
+                      <li>ويدجت الاشتراك (زر الترقية فقط — حالة الاشتراك الحالي تبقى)</li>
+                      <li>جميع نقاط API الخاصة بشراء الباقات (محمية بـ 403)</li>
+                    </ul>
+                    <p className="font-semibold mt-2">يبقى يعمل:</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>الاشتراكات النشطة وصلاحياتها حتى انتهاء مدتها</li>
+                      <li>إدارة الاشتراكات من لوحة الأدمن</li>
+                    </ul>
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => handleSave({ subscriptionsEnabled: form.subscriptionsEnabled ?? "true" })}
+                  disabled={saveMutation.isPending}
+                  className={subsEnabled ? "bg-teal-600 hover:bg-teal-700" : "bg-amber-500 hover:bg-amber-600"}>
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعداد الباقات والاشتراكات
                 </Button>
               </CardContent>
             </Card>

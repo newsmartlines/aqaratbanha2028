@@ -6,6 +6,7 @@ import {
 } from "@workspace/db";
 import { eq, desc, sum, count, or, and } from "drizzle-orm";
 import { autoExportGroup } from "../lib/auto-export";
+import { subscriptionsEnabled } from "../lib/settingsCache";
 
 const router = Router();
 
@@ -23,6 +24,10 @@ router.use((req, res, next) => {
 
 router.get("/billing/plans", async (req, res) => {
   try {
+    // Return empty list when subscriptions are globally disabled
+    if (!(await subscriptionsEnabled())) {
+      return res.json({ success: true, data: [] });
+    }
     const { userType } = req.query as { userType?: string };
     const plans = await db
       .select()

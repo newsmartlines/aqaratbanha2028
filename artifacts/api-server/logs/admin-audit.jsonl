@@ -9,3 +9,5 @@
 {"ts":"2026-07-16T11:37:16.007Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/property-features/16/toggle","status":200,"durationMs":270,"body":{}}
 {"ts":"2026-07-16T11:37:18.242Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/property-features/1/toggle","status":200,"durationMs":17,"body":{}}
 {"ts":"2026-07-16T11:56:26.149Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/property-features","status":200,"durationMs":340,"body":{"type":"feature","name":"مساؤء الفل","icon":"Car","status":"active","applicableTypes":"[\"شقة\"]","sortOrder":39}}
+{"ts":"2026-07-17T22:55:01.790Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"enabled","newStatus":"disabled"}}
+{"ts":"2026-07-17T22:55:01.935Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"disabled","newStatus":"enabled"}}

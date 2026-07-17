@@ -3,11 +3,16 @@ import { db } from "@workspace/db";
 import { packagesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
+import { subscriptionsEnabled } from "../lib/settingsCache";
 
 const router = Router();
 
 router.get("/packages", async (_req, res) => {
   try {
+    // Return empty list when subscriptions are globally disabled
+    if (!(await subscriptionsEnabled())) {
+      return res.json({ success: true, data: [] });
+    }
     const packages = await db.select().from(packagesTable).orderBy(packagesTable.price);
     res.json({ success: true, data: packages });
   } catch (err) {
