@@ -13,11 +13,14 @@ import {
   MapContainer,
   TileLayer,
   Circle,
+  Marker,
   useMapEvents,
   useMap,
 } from "react-leaflet";
 import type { LatLngTuple } from "leaflet";
 import L from "leaflet";
+import Supercluster from "supercluster";
+import type { ClusterFeature, PointFeature } from "supercluster";
 import { api, mediaUrl } from "@/lib/api";
 import { Header } from "@/components/Header";
 import {
@@ -46,13 +49,11 @@ import {
   SLUG_TO_SUBTYPES,
   type FieldConfigRow,
 } from "@/lib/property-field-rules";
-import {
-  getCirclePathOptions,
-  getCircleRadius,
-} from "@/lib/circleStyles";
+import { getCirclePathOptions, getCircleRadius } from "@/lib/circleStyles";
 import "leaflet/dist/leaflet.css";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
+
 interface Property {
   id: number;
   title: string;
@@ -76,12 +77,27 @@ interface MapBounds {
   west: number;
 }
 
+// Feature property shapes passed into Supercluster
+interface PointProps {
+  id: number;
+}
+
+type SC = Supercluster<PointProps>;
+type SCCluster = ClusterFeature<PointProps>;
+type SCPoint = PointFeature<PointProps>;
+type SCItem = SCCluster | SCPoint;
+
 // ─── Constants ─────────────────────────────────────────────────────────────────
+
 const BANHA_LAT = 30.468;
 const BANHA_LNG = 31.183;
 
+/** Zoom level at which Supercluster stops clustering (individual circles appear). */
+const CLUSTER_MAX_ZOOM = 15;
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
-/** Returns real coordinates or null — never fakes random coords for missing data. */
+
+/** Returns real [lat, lng] or null — never generates fake coordinates. */
 function getCoords(p: Property): LatLngTuple | null {
   const lat = parseFloat(String(p.latitude ?? ""));
   const lng = parseFloat(String(p.longitude ?? ""));
@@ -92,9 +108,7 @@ function getCoords(p: Property): LatLngTuple | null {
 function firstImg(p: Property): string {
   try {
     const arr =
-      typeof p.images === "string"
-        ? JSON.parse(p.images)
-        : (p.images ?? []);
+      typeof p.images === "string" ? JSON.parse(p.images) : (p.images ?? []);
     return Array.isArray(arr) && arr[0] ? arr[0] : "";
   } catch {
     return "";
@@ -108,9 +122,31 @@ function formatPrice(price?: string) {
   return `${n.toLocaleString("en-US")} ج.م`;
 }
 
+// ─── Cluster divIcon ───────────────────────────────────────────────────────────
+
+function makeClusterIcon(count: number, isActive: boolean): L.DivIcon {
+  const size = count > 99 ? 56 : count > 9 ? 48 : 40;
+  const bg = isActive ? "#0D9488" : "#134E4A";
+  return L.divIcon({
+    className: "",
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${bg};color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:${count > 9 ? 13 : 15}px;font-weight:800;font-family:sans-serif;
+      border:3px solid rgba(255,255,255,0.85);
+      box-shadow:0 4px 16px rgba(0,0,0,0.28);
+      cursor:pointer;
+      transition:transform 0.15s;
+    ">${count}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
 // ─── Map sub-components ────────────────────────────────────────────────────────
 
-/** Stores the map instance in a ref so external controls can use it. */
+/** Stores the Leaflet map instance in a ref accessible from outside MapContainer. */
 function MapInstanceRef({
   mapRef,
 }: {
@@ -123,16 +159,16 @@ function MapInstanceRef({
   return null;
 }
 
-/** Syncs map bounds/zoom to parent state on every move/zoom end. */
-function MapListener({
+/** Reports zoom + bounds to parent on every move/zoom end. */
+function MapStateSync({
   onUpdate,
 }: {
-  onUpdate: (bounds: MapBounds) => void;
+  onUpdate: (zoom: number, bounds: MapBounds) => void;
 }) {
   const map = useMapEvents({
     moveend() {
       const b = map.getBounds();
-      onUpdate({
+      onUpdate(map.getZoom(), {
         north: b.getNorth(),
         south: b.getSouth(),
         east: b.getEast(),
@@ -141,7 +177,7 @@ function MapListener({
     },
     zoomend() {
       const b = map.getBounds();
-      onUpdate({
+      onUpdate(map.getZoom(), {
         north: b.getNorth(),
         south: b.getSouth(),
         east: b.getEast(),
@@ -153,9 +189,9 @@ function MapListener({
 }
 
 /**
- * Fits all geo-located properties into view once when they first load.
- * If the bounding zoom would be < 12 (properties too spread out to see
- * 100 m circles), fall back to centering on the centroid at zoom 13.
+ * Fits all geo-located properties into view on first data load.
+ * If the resulting zoom would be < 14 (circles invisible at that scale),
+ * centers on the property centroid at zoom 14 instead.
  */
 function MapAutoFit({ geoProps }: { geoProps: Property[] }) {
   const map = useMap();
@@ -178,14 +214,11 @@ function MapAutoFit({ geoProps }: { geoProps: Property[] }) {
     const targetZoom = map.getBoundsZoom(bounds, false, [48, 48] as any);
 
     if (targetZoom >= 14) {
-      // Circles will be clearly visible — fit them all in view
       map.fitBounds(bounds, { padding: [48, 48], animate: true, duration: 0.7 });
     } else {
-      // Properties span too large an area for circles to be visible at the
-      // fitted zoom; instead center on the largest density cluster at zoom 14.
-      const centroidLat = points.reduce((s, p) => s + p[0], 0) / points.length;
-      const centroidLng = points.reduce((s, p) => s + p[1], 0) / points.length;
-      map.setView([centroidLat, centroidLng], 14, { animate: true, duration: 0.7 });
+      const centLat = points.reduce((s, p) => s + p[0], 0) / points.length;
+      const centLng = points.reduce((s, p) => s + p[1], 0) / points.length;
+      map.setView([centLat, centLng], 14, { animate: true, duration: 0.7 });
     }
   }, [geoProps, map]);
 
@@ -195,37 +228,78 @@ function MapAutoFit({ geoProps }: { geoProps: Property[] }) {
 /** Smoothly flies to the selected property whenever activeId changes. */
 function FlyToProperty({
   activeId,
-  propMap,
+  coordsMap,
 }: {
   activeId: number | null;
-  propMap: Map<number, LatLngTuple>;
+  coordsMap: Map<number, LatLngTuple>;
 }) {
   const map = useMap();
 
   useEffect(() => {
     if (activeId === null) return;
-    const coords = propMap.get(activeId);
+    const coords = coordsMap.get(activeId);
     if (!coords) return;
-    map.flyTo(coords, Math.max(map.getZoom(), 15), {
-      animate: true,
-      duration: 0.5,
-    });
-  }, [activeId, propMap, map]);
+    // Zoom in enough so the circle is visible, but don't over-zoom
+    const targetZoom = Math.max(map.getZoom(), CLUSTER_MAX_ZOOM + 1);
+    map.flyTo(coords, targetZoom, { animate: true, duration: 0.55 });
+  }, [activeId, coordsMap, map]);
 
   return null;
 }
 
+// ─── ClusterMarker ─────────────────────────────────────────────────────────────
+
+interface ClusterMarkerProps {
+  cluster: SCCluster;
+  sc: SC;
+  isActive: boolean;
+  onExpand: (clusterId: number, lat: number, lng: number) => void;
+}
+
+const ClusterMarker = memo(function ClusterMarker({
+  cluster,
+  sc,
+  isActive,
+  onExpand,
+}: ClusterMarkerProps) {
+  const [lng, lat] = cluster.geometry.coordinates;
+  const count = cluster.properties.point_count;
+  const icon = useMemo(
+    () => makeClusterIcon(count, isActive),
+    [count, isActive],
+  );
+
+  const eventHandlers = useMemo(
+    () => ({
+      click() {
+        const id = cluster.properties.cluster_id;
+        onExpand(id, lat, lng);
+      },
+    }),
+    [cluster.properties.cluster_id, lat, lng, onExpand],
+  );
+
+  return (
+    <Marker
+      position={[lat, lng]}
+      icon={icon}
+      eventHandlers={eventHandlers}
+    />
+  );
+});
+
 // ─── PropertyCircle ────────────────────────────────────────────────────────────
+
 interface PropertyCircleProps {
-  p: Property;
   coords: LatLngTuple;
+  propId: number;
   isSelected: boolean;
   onSelect: (id: number) => void;
 }
 
 const PropertyCircle = memo(function PropertyCircle({
-  p,
   coords,
+  propId,
   isSelected,
   onSelect,
 }: PropertyCircleProps) {
@@ -239,11 +313,11 @@ const PropertyCircle = memo(function PropertyCircle({
 
   const eventHandlers = useMemo(
     () => ({
-      click: () => onSelect(p.id),
+      click: () => onSelect(propId),
       mouseover: () => setHovered(true),
       mouseout: () => setHovered(false),
     }),
-    [p.id, onSelect],
+    [propId, onSelect],
   );
 
   return (
@@ -257,6 +331,7 @@ const PropertyCircle = memo(function PropertyCircle({
 });
 
 // ─── PropCard ──────────────────────────────────────────────────────────────────
+
 interface PropCardProps {
   p: Property;
   active: boolean;
@@ -282,7 +357,6 @@ const PropCard = memo(function PropCard({
           : "border-border/60 bg-white"
       }`}
     >
-      {/* Thumbnail */}
       <div className="h-36 bg-muted relative overflow-hidden">
         {img ? (
           <img
@@ -307,7 +381,6 @@ const PropCard = memo(function PropCard({
         </span>
       </div>
 
-      {/* Body */}
       <div className="p-2.5" dir="rtl">
         <p className="font-bold text-sm text-foreground truncate">{p.title}</p>
         <p className="text-gray-900 font-extrabold text-sm mt-0.5">
@@ -339,8 +412,6 @@ const PropCard = memo(function PropCard({
             {p.address}
           </p>
         )}
-
-        {/* Navigate — stops propagation so it doesn't also trigger onSelect */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -357,9 +428,11 @@ const PropCard = memo(function PropCard({
 });
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function MapSearchPage() {
   const [, setLocation] = useLocation();
 
+  const [zoom, setZoom] = useState(13);
   const [bounds, setBounds] = useState<MapBounds>({
     north: BANHA_LAT + 0.15,
     south: BANHA_LAT - 0.15,
@@ -374,12 +447,12 @@ export default function MapSearchPage() {
   const [filterRooms, setFilterRooms] = useState("all");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Leaflet map instance ref — set by MapInstanceRef inside MapContainer
+  // Leaflet map instance — set by MapInstanceRef inside MapContainer
   const mapRef = useRef<L.Map | null>(null);
   // Per-card DOM refs for scroll-into-view
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-  // Scroll the selected card into view whenever activeId changes
+  // Scroll the active card into view whenever selection changes
   useEffect(() => {
     if (activeId === null) return;
     const el = cardRefs.current.get(activeId);
@@ -387,6 +460,7 @@ export default function MapSearchPage() {
   }, [activeId]);
 
   // ── Data ─────────────────────────────────────────────────────────────────────
+
   const { data: fieldConfigs = [] } = useQuery<FieldConfigRow[]>({
     queryKey: ["property-field-configs"],
     queryFn: () => api.propertyFieldConfigs.list(),
@@ -446,23 +520,20 @@ export default function MapSearchPage() {
         if (filterRooms !== "all" && p.rooms) {
           if (p.rooms < Number(filterRooms)) return false;
         }
-        if (
-          search &&
-          !p.title?.toLowerCase().includes(search.toLowerCase())
-        )
+        if (search && !p.title?.toLowerCase().includes(search.toLowerCase()))
           return false;
         return true;
       }),
     [allProps, filterDeal, filterType, filterSubType, filterRooms, search],
   );
 
-  // Only properties with real coordinates (shown on map)
+  // Only properties with valid real-world coordinates
   const geoProps = useMemo(
     () => filtered.filter((p) => getCoords(p) !== null),
     [filtered],
   );
 
-  // Pre-computed coords map for fast lookup (avoids repeated parseFloat in render)
+  // Pre-computed id → [lat, lng] for fast lookups
   const coordsMap = useMemo(() => {
     const m = new Map<number, LatLngTuple>();
     for (const p of geoProps) {
@@ -472,10 +543,62 @@ export default function MapSearchPage() {
     return m;
   }, [geoProps]);
 
-  // Properties visible in current map bounds (sidebar list)
+  // id → Property for fast lookup by circle / cluster click
+  const propById = useMemo(() => {
+    const m = new Map<number, Property>();
+    for (const p of geoProps) m.set(p.id, p);
+    return m;
+  }, [geoProps]);
+
+  // ── Supercluster ──────────────────────────────────────────────────────────────
+
+  /**
+   * Supercluster instance — rebuilt only when the filtered geo-property list
+   * changes. maxZoom matches CLUSTER_MAX_ZOOM so individual points appear
+   * exactly when we switch from clusters to circles.
+   */
+  const sc = useMemo<SC>(() => {
+    const instance = new Supercluster<PointProps>({
+      radius: 60,       // cluster pixel radius
+      maxZoom: CLUSTER_MAX_ZOOM,
+      minPoints: 2,
+    });
+    const features: PointFeature<PointProps>[] = geoProps
+      .map((p) => {
+        const c = getCoords(p);
+        if (!c) return null;
+        return {
+          type: "Feature" as const,
+          geometry: {
+            type: "Point" as const,
+            coordinates: [c[1], c[0]], // GeoJSON: [lng, lat]
+          },
+          properties: { id: p.id },
+        };
+      })
+      .filter((f): f is PointFeature<PointProps> => f !== null);
+    instance.load(features);
+    return instance;
+  }, [geoProps]);
+
+  /**
+   * Current set of clusters/points for the visible bbox.
+   * Recomputed on every zoom/pan — this is cheap (Supercluster is O(log n)).
+   */
+  const scItems = useMemo<SCItem[]>(() => {
+    const bbox: [number, number, number, number] = [
+      bounds.west,
+      bounds.south,
+      bounds.east,
+      bounds.north,
+    ];
+    return sc.getClusters(bbox, Math.floor(zoom)) as SCItem[];
+  }, [sc, bounds, zoom]);
+
+  // Properties visible in current map bounds (for sidebar)
   const inBounds = useMemo(
     () =>
-      filtered.filter((p) => {
+      geoProps.filter((p) => {
         const c = coordsMap.get(p.id);
         if (!c) return false;
         return (
@@ -485,26 +608,41 @@ export default function MapSearchPage() {
           c[1] >= bounds.west
         );
       }),
-    [filtered, coordsMap, bounds],
+    [geoProps, coordsMap, bounds],
   );
 
-  // ── Callbacks ────────────────────────────────────────────────────────────────
-  const handleMapUpdate = useCallback((b: MapBounds) => {
+  // ── Callbacks ─────────────────────────────────────────────────────────────────
+
+  const handleMapUpdate = useCallback((z: number, b: MapBounds) => {
+    setZoom(z);
     setBounds(b);
   }, []);
 
+  /** Expand a cluster by flying to the zoom level where it splits. */
+  const handleClusterExpand = useCallback(
+    (clusterId: number, lat: number, lng: number) => {
+      const expansionZoom = Math.min(
+        sc.getClusterExpansionZoom(clusterId),
+        20,
+      );
+      mapRef.current?.flyTo([lat, lng], expansionZoom, {
+        animate: true,
+        duration: 0.6,
+      });
+    },
+    [sc],
+  );
+
+  /** Select an individual property (toggle off if already selected). */
   const handleSelect = useCallback((id: number) => {
     setActiveId((prev) => (prev === id ? null : id));
   }, []);
 
   const handleNavigate = useCallback(
-    (id: number) => {
-      setLocation(`/property/${id}`);
-    },
+    (id: number) => setLocation(`/property/${id}`),
     [setLocation],
   );
 
-  // Stable ref-setter factory
   const setCardRef = useCallback(
     (id: number) => (el: HTMLDivElement | null) => {
       if (el) cardRefs.current.set(id, el);
@@ -513,7 +651,8 @@ export default function MapSearchPage() {
     [],
   );
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
+
   return (
     <>
       <style>{`
@@ -524,7 +663,7 @@ export default function MapSearchPage() {
       <div className="h-screen flex flex-col overflow-hidden" dir="rtl">
         <Header />
 
-        {/* ── Filter Bar ─────────────────────────────────────────────────────── */}
+        {/* ── Filter Bar ────────────────────────────────────────────────────── */}
         <div className="shrink-0 bg-white border-b border-border/60 shadow-sm px-4 py-2 flex items-center gap-2 flex-wrap z-10">
           <div className="relative flex-1 min-w-[160px] max-w-xs">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -605,7 +744,7 @@ export default function MapSearchPage() {
           )}
 
           <span className="text-xs text-muted-foreground mr-auto">
-            {inBounds.length} عقار في المنطقة
+            {geoProps.length} عقار على الخريطة
           </span>
 
           <Button
@@ -623,55 +762,83 @@ export default function MapSearchPage() {
           </Button>
         </div>
 
-        {/* ── Main Split ──────────────────────────────────────────────────────── */}
-        <div className="flex flex-1 overflow-hidden" style={{ direction: "ltr" }}>
-
+        {/* ── Main Split ────────────────────────────────────────────────────── */}
+        <div
+          className="flex flex-1 overflow-hidden"
+          style={{ direction: "ltr" }}
+        >
           {/* Map column */}
-          <div
-            className="flex-1 relative z-0 overflow-hidden"
-            style={{ borderRadius: 0 }}
-          >
-            {/* Fade-in wrapper — same pattern as PropertyMap */}
-            <div className="absolute inset-0">
-              <MapContainer
-                center={[BANHA_LAT, BANHA_LNG]}
-                zoom={13}
-                className="h-full w-full"
-                zoomControl={false}
-                scrollWheelZoom
-                dragging
-                doubleClickZoom
-                touchZoom
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='© <a href="https://openstreetmap.org">OpenStreetMap</a>'
-                />
+          <div className="flex-1 relative z-0">
+            <MapContainer
+              center={[BANHA_LAT, BANHA_LNG]}
+              zoom={zoom}
+              className="h-full w-full"
+              zoomControl={false}
+              scrollWheelZoom
+              dragging
+              doubleClickZoom
+              touchZoom
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='© <a href="https://openstreetmap.org">OpenStreetMap</a>'
+              />
 
-                {/* Internals */}
-                <MapInstanceRef mapRef={mapRef} />
-                <MapListener onUpdate={handleMapUpdate} />
-                <MapAutoFit geoProps={geoProps} />
-                <FlyToProperty activeId={activeId} propMap={coordsMap} />
+              {/* Infrastructure */}
+              <MapInstanceRef mapRef={mapRef} />
+              <MapStateSync onUpdate={handleMapUpdate} />
+              <MapAutoFit geoProps={geoProps} />
+              <FlyToProperty activeId={activeId} coordsMap={coordsMap} />
 
-                {/* One circle per geo-located property */}
-                {geoProps.map((p) => {
-                  const coords = coordsMap.get(p.id);
-                  if (!coords) return null;
+              {/* Render clusters or individual circles */}
+              {scItems.map((item) => {
+                const [lng, lat] = item.geometry.coordinates;
+
+                if ("cluster_id" in item.properties) {
+                  // ── Cluster bubble ──
+                  const cl = item as SCCluster;
+                  const clusterId = cl.properties.cluster_id;
+                  // A cluster is "active" when one of its leaves is selected
+                  const isActive = activeId !== null && (() => {
+                    try {
+                      const leaves = sc.getLeaves(clusterId, Infinity);
+                      return leaves.some(
+                        (l) => (l.properties as PointProps).id === activeId,
+                      );
+                    } catch {
+                      return false;
+                    }
+                  })();
+
                   return (
-                    <PropertyCircle
-                      key={p.id}
-                      p={p}
-                      coords={coords}
-                      isSelected={p.id === activeId}
-                      onSelect={handleSelect}
+                    <ClusterMarker
+                      key={`cluster-${clusterId}`}
+                      cluster={cl}
+                      sc={sc}
+                      isActive={isActive}
+                      onExpand={handleClusterExpand}
                     />
                   );
-                })}
-              </MapContainer>
-            </div>
+                }
 
-            {/* Zoom controls — outside MapContainer, uses mapRef */}
+                // ── Individual property circle ──
+                const pt = item as SCPoint;
+                const propId = pt.properties.id;
+                const coords: LatLngTuple = [lat, lng];
+
+                return (
+                  <PropertyCircle
+                    key={`prop-${propId}`}
+                    coords={coords}
+                    propId={propId}
+                    isSelected={propId === activeId}
+                    onSelect={handleSelect}
+                  />
+                );
+              })}
+            </MapContainer>
+
+            {/* Zoom controls — call Leaflet directly via mapRef */}
             <div className="absolute bottom-6 left-4 flex flex-col gap-1 z-[1000]">
               <button
                 className="w-9 h-9 bg-white shadow-md rounded-lg text-xl font-bold flex items-center justify-center hover:bg-gray-50 border border-border/60 transition-colors"
@@ -689,9 +856,11 @@ export default function MapSearchPage() {
               </button>
             </div>
 
-            {/* Count badge */}
+            {/* Hint badge */}
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs text-gray-600 shadow-sm border border-border/40 pointer-events-none select-none">
-              {geoProps.length} عقار على الخريطة — انقر على دائرة لاختيار العقار
+              {zoom <= CLUSTER_MAX_ZOOM
+                ? "🔍 كبّر لرؤية العقارات بشكل منفصل — انقر على المجموعة للتكبير"
+                : "انقر على الدائرة الزرقاء لاختيار عقار"}
             </div>
           </div>
 
@@ -724,10 +893,7 @@ export default function MapSearchPage() {
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
                     {inBounds.map((p) => (
-                      <div
-                        key={p.id}
-                        ref={setCardRef(p.id)}
-                      >
+                      <div key={p.id} ref={setCardRef(p.id)}>
                         <PropCard
                           p={p}
                           active={p.id === activeId}
