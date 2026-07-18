@@ -4,7 +4,7 @@ import {
   subscriptionsTable, reviewsTable,
   regionsTable, citiesTable, areasTable, billingPlansTable,
   propertiesTable, featuredAreasTable, emailTemplatesTable, siteSettingsTable,
-  subcategoriesTable,
+  subcategoriesTable, menuItemsTable,
 } from "@workspace/db";
 import bcrypt from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
@@ -240,6 +240,7 @@ export async function seed() {
   await seedEmailTemplates();
   await seedSiteSettings();
   await seedDefaultAccounts();
+  await seedMenuItems();
 
   console.log("Database seeded successfully!");
 
@@ -1459,6 +1460,23 @@ const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   ]),
   servicesModuleEnabled: "true",
 };
+
+export async function seedMenuItems() {
+  const existing = await db.select({ id: menuItemsTable.id }).from(menuItemsTable).limit(1);
+  if (existing.length > 0) {
+    console.log("Menu items already seeded, skipping.");
+    return;
+  }
+  await db.insert(menuItemsTable).values([
+    { label: "الرئيسية",        href: "/",                            sortOrder: 0, visible: true },
+    { label: "للبيع",           href: "/properties?listingType=sale", sortOrder: 1, visible: true },
+    { label: "للإيجار",         href: "/properties?listingType=rent", sortOrder: 2, visible: true },
+    { label: "الباقات",         href: "/pricing",                     sortOrder: 3, visible: true },
+    { label: "🗺 بحث بالخريطة", href: "/map-search",                  sortOrder: 4, visible: true },
+    { label: "📊 مؤشرات السوق", href: "/market",                      sortOrder: 5, visible: true },
+  ]);
+  console.log("Menu items seeded.");
+}
 
 export async function seedSiteSettings() {
   const existing = await db.select({ id: siteSettingsTable.id }).from(siteSettingsTable)

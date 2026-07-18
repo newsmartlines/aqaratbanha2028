@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   GripVertical, Plus, Pencil, Trash2, Eye, EyeOff,
   ExternalLink, Check, X, Loader2, Navigation,
-  RotateCcw, Link as LinkIcon,
+  RotateCcw, Link as LinkIcon, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import toast from "react-hot-toast";
-import { api } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface MenuItem {
@@ -32,49 +31,87 @@ interface MenuItem {
   sortOrder: number;
 }
 
-// ─── Empty form ───────────────────────────────────────────────────────────────
+// ─── Raw fetch helpers (bypass fetchJson's auto-unwrap to control response) ───
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const base = (window as any).__API_BASE__ ?? "/api";
+  const url  = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  const res  = await fetch(url, {
+    credentials: "include",
+    cache: "no-store",
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(body?.error ?? body?.message ?? `HTTP ${res.status}`);
+  }
+  if (body?.success === false) {
+    throw new Error(body?.error ?? "طلب فاشل");
+  }
+  return (body?.data ?? body) as T;
+}
+
+const menuApi = {
+  list:    ()                               => apiFetch<MenuItem[]>("/admin/menu-items"),
+  create:  (b: Omit<typeof emptyForm, never>) => apiFetch<MenuItem>("/admin/menu-items", { method: "POST", body: JSON.stringify(b) }),
+  update:  (id: number, b: Partial<MenuItem>) => apiFetch<MenuItem>(`/admin/menu-items/${id}`, { method: "PUT", body: JSON.stringify(b) }),
+  remove:  (id: number)                     => apiFetch<void>(`/admin/menu-items/${id}`, { method: "DELETE" }),
+  reorder: (order: number[])               => apiFetch<void>("/admin/menu-items/reorder", { method: "PUT", body: JSON.stringify({ order }) }),
+};
+
+// ─── Empty form default ───────────────────────────────────────────────────────
 const emptyForm = { label: "", href: "", icon: "", openInNewTab: false };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminMenuPage() {
   const qc = useQueryClient();
 
-  const { data: items = [], isLoading } = useQuery<MenuItem[]>({
+  // ── Server data ─────────────────────────────────────────────────────────────
+  const { data: serverItems, isLoading, isError, error, refetch } = useQuery<MenuItem[]>({
     queryKey: ["admin-menu-items"],
-    queryFn:  () => api.menuItems.adminList().then((r: any) => r.data ?? r),
+    queryFn:  menuApi.list,
     staleTime: 0,
+    retry: 1,
   });
 
-  // ── Local ordered copy for optimistic drag ──
+  // ── Local ordered state (drives display + optimistic drag) ──────────────────
   const [ordered, setOrdered] = useState<MenuItem[]>([]);
-  const synced = ordered.length === items.length && ordered.every((o, i) => o.id === items[i]?.id);
-  const displayed = synced ? ordered : items;
 
-  // Keep local list in sync when server data changes
-  if (!synced && items.length > 0) {
-    setOrdered([...items].sort((a, b) => a.sortOrder - b.sortOrder));
+  // Sync server data → local ordered list (only when server data arrives/changes)
+  useEffect(() => {
+    if (serverItems && serverItems.length > 0) {
+      setOrdered([...serverItems].sort((a, b) => a.sortOrder - b.sortOrder));
+    } else if (serverItems && serverItems.length === 0) {
+      setOrdered([]);
+    }
+  }, [serverItems]);
+
+  // Display: if ordered is populated use it (preserves drag order), else fall back to server
+  const displayed = ordered.length > 0 ? ordered : (serverItems ?? []);
+
+  // ── Modal state ──────────────────────────────────────────────────────────────
+  const [editItem,      setEditItem]      = useState<MenuItem | null>(null);
+  const [showAdd,       setShowAdd]       = useState(false);
+  const [form,          setForm]          = useState(emptyForm);
+  const [deleteTarget,  setDeleteTarget]  = useState<MenuItem | null>(null);
+
+  // ── Drag & Drop ──────────────────────────────────────────────────────────────
+  const dragId = useRef<number | null>(null);
+
+  function onDragStart(id: number) {
+    dragId.current = id;
   }
 
-  // ── Modals state ────────────────────────────────────────────────────────────
-  const [editItem, setEditItem]         = useState<MenuItem | null>(null);
-  const [showAdd, setShowAdd]           = useState(false);
-  const [form, setForm]                 = useState(emptyForm);
-  const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
-
-  // ── Drag & drop ─────────────────────────────────────────────────────────────
-  const dragId   = useRef<number | null>(null);
-  const overId   = useRef<number | null>(null);
-
-  function onDragStart(id: number) { dragId.current = id; }
-
-  function onDragOver(e: React.DragEvent, id: number) {
+  function onDragOver(e: React.DragEvent, overId: number) {
     e.preventDefault();
-    overId.current = id;
-    if (dragId.current === null || dragId.current === id) return;
+    if (dragId.current === null || dragId.current === overId) return;
     setOrdered(prev => {
-      const next = [...prev];
+      const next    = [...prev];
       const fromIdx = next.findIndex(x => x.id === dragId.current);
-      const toIdx   = next.findIndex(x => x.id === id);
+      const toIdx   = next.findIndex(x => x.id === overId);
       if (fromIdx === -1 || toIdx === -1) return prev;
       const [moved] = next.splice(fromIdx, 1);
       next.splice(toIdx, 0, moved);
@@ -83,33 +120,42 @@ export default function AdminMenuPage() {
   }
 
   const reorderMut = useMutation({
-    mutationFn: (order: number[]) => api.menuItems.reorder(order),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-menu-items"] }),
-    onError:   () => toast.error("فشل حفظ الترتيب"),
+    mutationFn: (order: number[]) => menuApi.reorder(order),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-menu-items"] });
+      qc.invalidateQueries({ queryKey: ["public-menu-items"] });
+    },
+    onError: () => toast.error("فشل حفظ الترتيب"),
   });
 
   function onDragEnd() {
-    if (dragId.current !== null) {
+    if (dragId.current !== null && ordered.length > 0) {
       reorderMut.mutate(ordered.map(x => x.id));
     }
     dragId.current = null;
-    overId.current = null;
   }
 
   // ── Visibility toggle ────────────────────────────────────────────────────────
   const toggleMut = useMutation({
     mutationFn: ({ id, visible }: { id: number; visible: boolean }) =>
-      api.menuItems.update(id, { visible }),
+      menuApi.update(id, { visible }),
+    onMutate: ({ id, visible }) => {
+      // Optimistic update
+      setOrdered(prev => prev.map(x => x.id === id ? { ...x, visible } : x));
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-menu-items"] });
       qc.invalidateQueries({ queryKey: ["public-menu-items"] });
     },
-    onError: () => toast.error("فشل تغيير الحالة"),
+    onError: () => {
+      toast.error("فشل تغيير الحالة");
+      refetch();
+    },
   });
 
-  // ── Add mutation ─────────────────────────────────────────────────────────────
+  // ── Add ──────────────────────────────────────────────────────────────────────
   const addMut = useMutation({
-    mutationFn: (body: typeof emptyForm) => api.menuItems.create(body),
+    mutationFn: (body: typeof emptyForm) => menuApi.create(body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-menu-items"] });
       qc.invalidateQueries({ queryKey: ["public-menu-items"] });
@@ -117,57 +163,53 @@ export default function AdminMenuPage() {
       setShowAdd(false);
       setForm(emptyForm);
     },
-    onError: () => toast.error("فشل الإضافة"),
+    onError: (e: any) => toast.error(e?.message ?? "فشل الإضافة"),
   });
 
-  // ── Edit mutation ────────────────────────────────────────────────────────────
+  // ── Edit ─────────────────────────────────────────────────────────────────────
   const editMut = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Partial<MenuItem> }) =>
-      api.menuItems.update(id, body),
+      menuApi.update(id, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-menu-items"] });
       qc.invalidateQueries({ queryKey: ["public-menu-items"] });
-      toast.success("تم التعديل");
+      toast.success("تم الحفظ");
       setEditItem(null);
     },
-    onError: () => toast.error("فشل التعديل"),
+    onError: (e: any) => toast.error(e?.message ?? "فشل التعديل"),
   });
 
-  // ── Delete mutation ──────────────────────────────────────────────────────────
+  // ── Delete ───────────────────────────────────────────────────────────────────
   const deleteMut = useMutation({
-    mutationFn: (id: number) => api.menuItems.remove(id),
+    mutationFn: (id: number) => menuApi.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-menu-items"] });
       qc.invalidateQueries({ queryKey: ["public-menu-items"] });
       toast.success("تم الحذف");
       setDeleteTarget(null);
     },
-    onError: () => toast.error("فشل الحذف"),
+    onError: (e: any) => toast.error(e?.message ?? "فشل الحذف"),
   });
 
   // ── Reset to defaults ────────────────────────────────────────────────────────
-  // (just delete all then let ensureDefaults re-seed on next fetch)
   const resetMut = useMutation({
     mutationFn: async () => {
-      await Promise.all(displayed.map(i => api.menuItems.remove(i.id)));
+      for (const item of ordered) {
+        await menuApi.remove(item.id);
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-menu-items"] });
       qc.invalidateQueries({ queryKey: ["public-menu-items"] });
-      toast.success("تمت إعادة الضبط للقائمة الافتراضية");
+      toast.success("تمت استعادة القائمة الافتراضية");
     },
     onError: () => toast.error("فشل إعادة الضبط"),
   });
 
-  // ── Open edit modal pre-filled ────────────────────────────────────────────────
+  // ── Open edit modal ──────────────────────────────────────────────────────────
   function openEdit(item: MenuItem) {
     setEditItem(item);
-    setForm({
-      label: item.label,
-      href:  item.href,
-      icon:  item.icon ?? "",
-      openInNewTab: item.openInNewTab,
-    });
+    setForm({ label: item.label, href: item.href, icon: item.icon ?? "", openInNewTab: item.openInNewTab });
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -175,7 +217,7 @@ export default function AdminMenuPage() {
     <AdminLayout>
       <div className="p-6 max-w-3xl mx-auto space-y-6" dir="rtl">
 
-        {/* Header */}
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -188,139 +230,165 @@ export default function AdminMenuPage() {
           </div>
           <div className="flex gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs"
+              variant="outline" size="sm" className="gap-1.5 text-xs"
               onClick={() => resetMut.mutate()}
-              disabled={resetMut.isPending}
+              disabled={resetMut.isPending || displayed.length === 0}
             >
-              {resetMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+              {resetMut.isPending
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : <RotateCcw className="w-3.5 h-3.5" />}
               استعادة الافتراضي
             </Button>
-            <Button size="sm" className="gap-1.5" onClick={() => { setForm(emptyForm); setShowAdd(true); }}>
+            <Button size="sm" className="gap-1.5"
+              onClick={() => { setForm(emptyForm); setShowAdd(true); }}>
               <Plus className="w-4 h-4" /> إضافة عنصر
             </Button>
           </div>
         </div>
 
-        {/* List */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : displayed.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-muted py-20 text-center">
-            <Navigation className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-muted-foreground">لا توجد عناصر في القائمة</p>
-            <Button size="sm" className="mt-4 gap-1.5" onClick={() => { setForm(emptyForm); setShowAdd(true); }}>
-              <Plus className="w-4 h-4" /> إضافة عنصر جديد
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {displayed.map((item) => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={() => onDragStart(item.id)}
-                onDragOver={(e) => onDragOver(e, item.id)}
-                onDragEnd={onDragEnd}
-                className={`group flex items-center gap-3 bg-white dark:bg-card border rounded-xl px-4 py-3 shadow-sm transition-all cursor-grab active:cursor-grabbing hover:shadow-md ${
-                  !item.visible ? "opacity-50" : ""
-                }`}
-              >
-                {/* Drag handle */}
-                <GripVertical className="w-4 h-4 text-muted-foreground/40 shrink-0 group-hover:text-muted-foreground transition-colors" />
-
-                {/* Icon + Label */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    {item.icon && <span className="text-base leading-none">{item.icon}</span>}
-                    <span className={`font-semibold text-sm ${!item.visible ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                      {item.label}
-                    </span>
-                    {item.openInNewTab && (
-                      <ExternalLink className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <LinkIcon className="w-3 h-3 text-muted-foreground/40 shrink-0" />
-                    <span className="text-xs text-muted-foreground truncate font-mono">{item.href}</span>
-                  </div>
-                </div>
-
-                {/* Visibility badge */}
-                <span className={`hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                  item.visible
-                    ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                    : "bg-gray-100 text-gray-500 border border-gray-200"
-                }`}>
-                  {item.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                  {item.visible ? "مرئي" : "مخفي"}
-                </span>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1 shrink-0">
-                  {/* Toggle visibility */}
-                  <button
-                    title={item.visible ? "إخفاء" : "إظهار"}
-                    onClick={() => toggleMut.mutate({ id: item.id, visible: !item.visible })}
-                    className="p-1.5 rounded-lg hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {item.visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-
-                  {/* Edit */}
-                  <button
-                    title="تعديل"
-                    onClick={() => openEdit(item)}
-                    className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-blue-600 transition-colors"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-
-                  {/* Delete */}
-                  <button
-                    title="حذف"
-                    onClick={() => setDeleteTarget(item)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* Reorder hint */}
-            {reorderMut.isPending && (
-              <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" /> جاري حفظ الترتيب...
-              </p>
-            )}
+        {/* ── Loading ─────────────────────────────────────────────────────────── */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">جاري تحميل عناصر القائمة...</p>
           </div>
         )}
 
-        {/* Live preview strip */}
-        <div className="rounded-xl border bg-muted/30 p-4">
-          <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
-            <Eye className="w-3.5 h-3.5" /> معاينة القائمة كما ستظهر على الموقع
-          </p>
-          <div className="flex flex-wrap items-center gap-4 rtl:flex-row">
-            {displayed.filter(i => i.visible).map(i => (
-              <span key={i.id} className="text-sm font-medium text-foreground flex items-center gap-1">
-                {i.icon && <span>{i.icon}</span>}
-                {i.label}
-                {i.openInNewTab && <ExternalLink className="w-3 h-3 text-muted-foreground/50" />}
-              </span>
-            ))}
-            {displayed.filter(i => i.visible).length === 0 && (
-              <span className="text-xs text-muted-foreground">لا توجد عناصر مرئية</span>
-            )}
+        {/* ── Error ───────────────────────────────────────────────────────────── */}
+        {isError && !isLoading && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center space-y-3">
+            <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
+            <p className="font-semibold text-red-700">فشل تحميل عناصر القائمة</p>
+            <p className="text-sm text-red-600">{(error as any)?.message ?? "خطأ غير معروف"}</p>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4" /> إعادة المحاولة
+            </Button>
           </div>
-        </div>
+        )}
+
+        {/* ── Empty (no items at all) ──────────────────────────────────────────── */}
+        {!isLoading && !isError && displayed.length === 0 && (
+          <div className="rounded-2xl border-2 border-dashed border-muted py-20 text-center space-y-3">
+            <Navigation className="w-10 h-10 text-muted-foreground/40 mx-auto" />
+            <p className="text-muted-foreground">لا توجد عناصر — أضف أول عنصر أو استعد الافتراضي</p>
+            <div className="flex justify-center gap-2">
+              <Button size="sm" className="gap-1.5"
+                onClick={() => { setForm(emptyForm); setShowAdd(true); }}>
+                <Plus className="w-4 h-4" /> إضافة عنصر
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5"
+                onClick={() => resetMut.mutate()} disabled={resetMut.isPending}>
+                {resetMut.isPending
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <RotateCcw className="w-3.5 h-3.5" />}
+                استعادة الافتراضي
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Items list ──────────────────────────────────────────────────────── */}
+        {!isLoading && !isError && displayed.length > 0 && (
+          <>
+            <div className="space-y-2">
+              {displayed.map((item) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={() => onDragStart(item.id)}
+                  onDragOver={(e) => onDragOver(e, item.id)}
+                  onDragEnd={onDragEnd}
+                  className={`group flex items-center gap-3 bg-white dark:bg-card border rounded-xl px-4 py-3 shadow-sm transition-all cursor-grab active:cursor-grabbing hover:shadow-md select-none ${
+                    !item.visible ? "opacity-50" : ""
+                  }`}
+                >
+                  {/* Drag handle */}
+                  <GripVertical className="w-4 h-4 text-muted-foreground/40 shrink-0 group-hover:text-muted-foreground transition-colors" />
+
+                  {/* Icon + Label + URL */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      {item.icon && <span className="text-base leading-none">{item.icon}</span>}
+                      <span className={`font-semibold text-sm ${!item.visible ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                        {item.label}
+                      </span>
+                      {item.openInNewTab && (
+                        <ExternalLink className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <LinkIcon className="w-3 h-3 text-muted-foreground/40 shrink-0" />
+                      <span className="text-xs text-muted-foreground truncate font-mono">{item.href}</span>
+                    </div>
+                  </div>
+
+                  {/* Visibility badge (desktop only) */}
+                  <span className={`hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                    item.visible
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                      : "bg-gray-100 text-gray-500 border border-gray-200"
+                  }`}>
+                    {item.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                    {item.visible ? "مرئي" : "مخفي"}
+                  </span>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <button
+                      title={item.visible ? "إخفاء" : "إظهار"}
+                      onClick={() => toggleMut.mutate({ id: item.id, visible: !item.visible })}
+                      className="p-1.5 rounded-lg hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {item.visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                    <button
+                      title="تعديل"
+                      onClick={() => openEdit(item)}
+                      className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-blue-600 transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="حذف"
+                      onClick={() => setDeleteTarget(item)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {reorderMut.isPending && (
+                <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1 py-1">
+                  <Loader2 className="w-3 h-3 animate-spin" /> جاري حفظ الترتيب...
+                </p>
+              )}
+            </div>
+
+            {/* ── Live preview ──────────────────────────────────────────────── */}
+            <div className="rounded-xl border bg-muted/30 p-4">
+              <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5" /> معاينة القائمة كما ستظهر على الموقع
+              </p>
+              <div className="flex flex-wrap items-center gap-5">
+                {displayed.filter(i => i.visible).map(i => (
+                  <span key={i.id} className="text-sm font-medium text-foreground flex items-center gap-1">
+                    {i.icon && <span>{i.icon}</span>}
+                    {i.label}
+                    {i.openInNewTab && <ExternalLink className="w-3 h-3 text-muted-foreground/50" />}
+                  </span>
+                ))}
+                {displayed.filter(i => i.visible).length === 0 && (
+                  <span className="text-xs text-muted-foreground italic">لا توجد عناصر مرئية حالياً</span>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* ── Add / Edit Dialog ─────────────────────────────────────────────── */}
+      {/* ── Add / Edit Dialog ─────────────────────────────────────────────────── */}
       <Dialog
         open={showAdd || !!editItem}
         onOpenChange={(open) => { if (!open) { setShowAdd(false); setEditItem(null); } }}
@@ -330,22 +398,23 @@ export default function AdminMenuPage() {
             <DialogTitle>{editItem ? "تعديل العنصر" : "إضافة عنصر جديد"}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-1">
             {/* Label */}
             <div className="space-y-1.5">
-              <Label htmlFor="m-label">النص (الاسم)</Label>
+              <Label htmlFor="m-label">النص (الاسم) *</Label>
               <Input
                 id="m-label"
                 placeholder="مثال: للبيع"
                 value={form.label}
                 onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                 dir="rtl"
+                autoFocus
               />
             </div>
 
             {/* href */}
             <div className="space-y-1.5">
-              <Label htmlFor="m-href">الرابط</Label>
+              <Label htmlFor="m-href">الرابط *</Label>
               <Input
                 id="m-href"
                 placeholder="مثال: /properties?listingType=sale"
@@ -354,17 +423,15 @@ export default function AdminMenuPage() {
                 dir="ltr"
                 className="text-left font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                رابط داخلي يبدأ بـ / أو رابط خارجي كامل
-              </p>
+              <p className="text-xs text-muted-foreground">رابط داخلي يبدأ بـ / أو رابط خارجي كامل</p>
             </div>
 
             {/* Icon */}
             <div className="space-y-1.5">
-              <Label htmlFor="m-icon">أيقونة (إيموجي اختياري)</Label>
+              <Label htmlFor="m-icon">أيقونة إيموجي (اختياري)</Label>
               <Input
                 id="m-icon"
-                placeholder="مثال: 🏠 أو 🗺"
+                placeholder="🏠  أو  🗺  أو اتركها فارغة"
                 value={form.icon}
                 onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
                 dir="ltr"
@@ -373,7 +440,7 @@ export default function AdminMenuPage() {
             </div>
 
             {/* Open in new tab */}
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/20">
               <div>
                 <p className="text-sm font-medium">فتح في تاب جديد</p>
                 <p className="text-xs text-muted-foreground">مناسب للروابط الخارجية</p>
@@ -390,7 +457,10 @@ export default function AdminMenuPage() {
               <X className="w-4 h-4 ml-1" /> إلغاء
             </Button>
             <Button
-              disabled={!form.label.trim() || !form.href.trim() || addMut.isPending || editMut.isPending}
+              disabled={
+                !form.label.trim() || !form.href.trim() ||
+                addMut.isPending || editMut.isPending
+              }
               onClick={() => {
                 if (editItem) {
                   editMut.mutate({ id: editItem.id, body: form });
@@ -409,13 +479,13 @@ export default function AdminMenuPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Delete Confirm ────────────────────────────────────────────────── */}
+      {/* ── Delete Confirmation ───────────────────────────────────────────────── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={o => { if (!o) setDeleteTarget(null); }}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
             <AlertDialogTitle>حذف العنصر</AlertDialogTitle>
             <AlertDialogDescription>
-              هل أنت متأكد من حذف "<strong>{deleteTarget?.label}</strong>"؟ لا يمكن التراجع.
+              هل أنت متأكد من حذف «<strong>{deleteTarget?.label}</strong>»؟ لا يمكن التراجع.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
