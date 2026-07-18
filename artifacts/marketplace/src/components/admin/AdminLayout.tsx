@@ -7,7 +7,7 @@ import {
   CheckCheck, Layers3, Mail, MessageSquare, UserCog, ShieldCheck, MapPin,
   Ticket, Languages, Building2, Stamp, Search, KeyRound, Bot, Star,
   Database, HardDrive, TrendingUp, Megaphone, Flag, FileUp, Zap,
-  Globe, Wallet, LifeBuoy,
+  Globe, Wallet, LifeBuoy, Navigation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -143,8 +143,9 @@ const MENU_GROUPS: MenuGroup[] = [
     icon: Settings,
     label: "الإعدادات والأدوات",
     items: [
-      { icon: Settings,  label: "إعدادات الموقع",    href: "/admin/settings",      perm: "settings" },
-      { icon: Search,    label: "إدارة السيو",        href: "/admin/seo",           perm: null },
+      { icon: Settings,    label: "إعدادات الموقع",    href: "/admin/settings",      perm: "settings" },
+      { icon: Navigation,  label: "القائمة الرئيسية",  href: "/admin/menu",          perm: "settings" },
+      { icon: Search,      label: "إدارة السيو",        href: "/admin/seo",           perm: null },
       { icon: KeyRound,  label: "Google Kit",         href: "/admin/google-kit",    perm: "settings" },
       { icon: Bot,       label: "المساعد الذكي",     href: "/admin/chatbot",       perm: "settings" },
       { icon: Database,  label: "المحتوى التجريبي",  href: "/admin/demo-content",  perm: null },

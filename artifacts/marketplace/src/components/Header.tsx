@@ -44,14 +44,22 @@ export function Header() {
   const siteName = settings?.siteName ?? "عقارات بنها";
   const logoUrl = settings?.logoUrl;
 
-  const navLinks = [
-    { href: "/", label: "الرئيسية" },
-    { href: "/properties?listingType=sale", label: "للبيع" },
-    { href: "/properties?listingType=rent", label: "للإيجار" },
-    { href: "/pricing", label: "الباقات" },
-    { href: "/map-search", label: "🗺 بحث بالخريطة" },
-    { href: "/market", label: "📊 مؤشرات السوق" },
+  const { data: menuData } = useQuery<{ id: number; label: string; href: string; icon: string | null; openInNewTab: boolean }[]>({
+    queryKey: ["public-menu-items"],
+    queryFn: () => fetch("/api/menu-items").then(r => r.json()).then(r => r.data ?? []),
+    staleTime: 60_000,
+  });
+
+  const FALLBACK_NAV = [
+    { id: -1, href: "/",                            label: "الرئيسية",       icon: null, openInNewTab: false },
+    { id: -2, href: "/properties?listingType=sale", label: "للبيع",          icon: null, openInNewTab: false },
+    { id: -3, href: "/properties?listingType=rent", label: "للإيجار",        icon: null, openInNewTab: false },
+    { id: -4, href: "/pricing",                     label: "الباقات",        icon: null, openInNewTab: false },
+    { id: -5, href: "/map-search",                  label: "🗺 بحث بالخريطة", icon: null, openInNewTab: false },
+    { id: -6, href: "/market",                      label: "📊 مؤشرات السوق", icon: null, openInNewTab: false },
   ];
+
+  const navLinks = (menuData && menuData.length > 0) ? menuData : FALLBACK_NAV;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

@@ -2,62 +2,62 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-07-17T22:58:56.703Z",
+  "exportedAt": "2026-07-18T10:21:39.145Z",
   "tables": {
     "siteSettings": [
       {
         "id": 1,
         "key": "siteName",
         "value": "عقارات بنها",
-        "updatedAt": "2026-07-17T22:36:09.343Z"
+        "updatedAt": "2026-07-18T10:21:39.088Z"
       },
       {
         "id": 2,
         "key": "siteNameEn",
         "value": "Aqarat Banha",
-        "updatedAt": "2026-07-17T22:36:09.346Z"
+        "updatedAt": "2026-07-18T10:21:39.105Z"
       },
       {
         "id": 3,
         "key": "logoUrl",
         "value": "",
-        "updatedAt": "2026-07-17T22:36:09.355Z"
+        "updatedAt": "2026-07-18T10:21:39.110Z"
       },
       {
         "id": 4,
         "key": "faviconUrl",
         "value": "",
-        "updatedAt": "2026-07-17T22:36:09.358Z"
+        "updatedAt": "2026-07-18T10:21:39.115Z"
       },
       {
         "id": 5,
         "key": "heroImage",
-        "value": "https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80",
-        "updatedAt": "2026-07-17T22:36:09.363Z"
+        "value": "/uploads/banners/d41ceedf34d2f54358ecacb0c2037819.webp",
+        "updatedAt": "2026-07-18T10:21:39.120Z"
       },
       {
         "id": 6,
         "key": "heroTitle",
         "value": "اعثر على عقارك المثالي في بنها",
-        "updatedAt": "2026-07-17T22:36:09.366Z"
+        "updatedAt": "2026-07-18T10:21:39.124Z"
       },
       {
         "id": 7,
         "key": "heroSubtitle",
         "value": "بيع وإيجار وشراء العقارات في بنها والقليوبية — أسرع وأوثق",
-        "updatedAt": "2026-07-17T22:36:09.369Z"
+        "updatedAt": "2026-07-18T10:21:39.128Z"
       },
       {
         "id": 8,
         "key": "ctaText",
         "value": "نضمن لك أفضل العقارات بأفضل الأسعار في بنها والقليوبية",
-        "updatedAt": "2026-07-17T22:36:09.372Z"
+        "updatedAt": "2026-07-18T10:21:39.133Z"
       },
       {
         "id": 9,
         "key": "ctaButtonText",
         "value": "تصفح العقارات الآن",
-        "updatedAt": "2026-07-17T22:36:09.375Z"
+        "updatedAt": "2026-07-18T10:21:39.137Z"
       },
       {
         "id": 10,

@@ -1175,4 +1175,24 @@ export const promotions = {
   /** Admin: manually spotlight a property */
   adminSpotlightProperty: (propertyId: number) =>
     fetchJson<{ success: boolean }>(`/admin/properties/${propertyId}/spotlight`, { method: "POST" }),
+
+  // ── Menu Items ────────────────────────────────────────────────────────────
+  menuItems: {
+    /** Public: visible items only */
+    list: () => fetchJson<{ success: boolean; data: any[] }>("/menu-items"),
+    /** Admin: all items */
+    adminList: () => fetchJson<{ success: boolean; data: any[] }>("/admin/menu-items"),
+    /** Admin: create */
+    create: (body: { label: string; href: string; icon?: string; openInNewTab?: boolean }) =>
+      fetchJson<{ success: boolean; data: any }>("/admin/menu-items", { method: "POST", body: JSON.stringify(body) }),
+    /** Admin: update */
+    update: (id: number, body: Partial<{ label: string; href: string; icon: string; openInNewTab: boolean; visible: boolean }>) =>
+      fetchJson<{ success: boolean; data: any }>(`/admin/menu-items/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+    /** Admin: batch reorder */
+    reorder: (order: number[]) =>
+      fetchJson<{ success: boolean }>("/admin/menu-items/reorder", { method: "PUT", body: JSON.stringify({ order }) }),
+    /** Admin: delete */
+    remove: (id: number) =>
+      fetchJson<{ success: boolean }>(`/admin/menu-items/${id}`, { method: "DELETE" }),
+  },
 };

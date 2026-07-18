@@ -78,6 +78,7 @@ import AdminPromotions from "@/pages/admin/promotions";
 import AdminCategories from "@/pages/admin/categories";
 import AdminCommission from "@/pages/admin/commission";
 import AdminSettingsAppearance from "@/pages/admin/settings-appearance";
+import AdminMenu from "@/pages/admin/menu";
 import { PopupRenderer } from "@/components/PopupRenderer";
 import PropertyDetail from "@/pages/property-detail";
 import ComparePage from "@/pages/compare";
@@ -386,6 +387,9 @@ function Router() {
       </Route>
       <Route path="/admin/settings-appearance">
         {() => <AdminProtectedRoute component={AdminSettingsAppearance} />}
+      </Route>
+      <Route path="/admin/menu">
+        {() => <AdminProtectedRoute component={AdminMenu} />}
       </Route>
 
       <Route component={NotFound} />
