@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-07-19T14:18:46.686Z",
+  "exportedAt": "2026-07-19T14:19:13.522Z",
   "tables": {
     "siteSettings": [
       {
@@ -123,43 +123,43 @@
         "id": 21,
         "key": "featuredSectionTitle",
         "value": "اكتشف أفضل العقارات في بنها",
-        "updatedAt": "2026-07-19T14:18:46.587Z"
+        "updatedAt": "2026-07-19T14:19:13.479Z"
       },
       {
         "id": 22,
         "key": "featuredSectionSubtitle",
         "value": "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.",
-        "updatedAt": "2026-07-19T14:18:46.651Z"
+        "updatedAt": "2026-07-19T14:19:13.492Z"
       },
       {
         "id": 23,
         "key": "featuredSectionTypes",
         "value": "[\"all\"]",
-        "updatedAt": "2026-07-19T14:18:46.656Z"
+        "updatedAt": "2026-07-19T14:19:13.499Z"
       },
       {
         "id": 24,
         "key": "featuredSectionCount",
         "value": "8",
-        "updatedAt": "2026-07-19T14:18:46.660Z"
+        "updatedAt": "2026-07-19T14:19:13.503Z"
       },
       {
         "id": 25,
         "key": "featuredSectionCustomCount",
         "value": "12",
-        "updatedAt": "2026-07-19T14:18:46.664Z"
+        "updatedAt": "2026-07-19T14:19:13.508Z"
       },
       {
         "id": 26,
         "key": "featuredSectionColumns",
-        "value": "6",
-        "updatedAt": "2026-07-19T14:18:46.671Z"
+        "value": "5",
+        "updatedAt": "2026-07-19T14:19:13.513Z"
       },
       {
         "id": 27,
         "key": "featuredSectionSort",
         "value": "newest",
-        "updatedAt": "2026-07-19T14:18:46.676Z"
+        "updatedAt": "2026-07-19T14:19:13.517Z"
       }
     ]
   }

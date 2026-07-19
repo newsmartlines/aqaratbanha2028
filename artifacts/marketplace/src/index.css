@@ -37,6 +37,14 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+/* ── Wide container — fill the viewport like Dubizzle (minimal side margins) ── */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;   /* 16px — small edge padding on all screens */
+  width: 100%;
+  max-width: 1700px;      /* effectively full-width on all normal monitors */
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

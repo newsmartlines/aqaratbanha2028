@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "locations",
   "label": "المواقع الجغرافية",
-  "exportedAt": "2026-07-19T12:38:45.976Z",
+  "exportedAt": "2026-07-19T14:21:04.002Z",
   "tables": {
     "regions": [
       {
@@ -487,15 +487,6 @@
       }
     ],
     "featuredAreas": [
-      {
-        "id": 2,
-        "nameAr": "بنها",
-        "image": "https://images.unsplash.com/photo-1582407947304-fd86f28f7f89?w=600&q=80",
-        "cityName": "بنها",
-        "displayOrder": 1,
-        "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
-      },
       {
         "id": 3,
         "nameAr": "شبرا الخيمة",
