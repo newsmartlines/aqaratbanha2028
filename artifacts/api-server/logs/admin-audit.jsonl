@@ -18,3 +18,5 @@
 {"ts":"2026-07-17T22:59:28.096Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/5/toggle","status":200,"durationMs":19,"body":{}}
 {"ts":"2026-07-17T23:03:42.001Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/billing/plans/1/toggle","status":200,"durationMs":43,"body":{}}
 {"ts":"2026-07-17T23:17:22.016Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/seed-demo","status":200,"durationMs":38,"body":{"section":"locations"}}
+{"ts":"2026-07-19T12:23:36.815Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PUT","path":"/admin/menu-items/6","status":200,"durationMs":59,"body":{"visible":false}}
+{"ts":"2026-07-19T12:23:44.264Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PUT","path":"/admin/menu-items/4","status":200,"durationMs":39,"body":{"visible":false}}

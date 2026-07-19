@@ -11,12 +11,13 @@ import { SmartSearch } from "@/components/SmartSearch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search, MapPin, Navigation,
-  Star, ArrowLeft, CheckCircle2,
+  Star, ArrowLeft, CheckCircle2, Check,
   Filter, ChevronDown, ChevronRight,
   ChefHat, Wrench, Palette, BookOpen, Calendar, Sparkles, Grid,
   Loader2, Phone, Mail, Map, Heart, MessageCircle,
@@ -292,6 +293,9 @@ export default function Home() {
   const [heroSubcategoryId, setHeroSubcategoryId] = useState<string>("all");
 
   const [priceRange, setPriceRange] = useState<string>("all");
+  const [catOpen, setCatOpen] = useState(false);
+  const [subCatOpen, setSubCatOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
   const [nearMeLoading, setNearMeLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showNearMeMap, setShowNearMeMap] = useState(false);
@@ -585,56 +589,125 @@ export default function Home() {
                 <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
 
                 {/* Category */}
-                <div className="w-32 shrink-0">
-                  <Select value={selectedCategory} onValueChange={v => { setSelectedCategory(v); setHeroSubcategoryId("all"); }}>
-                    <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
-                      <Building2 className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
-                      <SelectValue placeholder="النوع" />
-                    </SelectTrigger>
-                    <SelectContent className="w-56 p-1" side="bottom" avoidCollisions={false}>
-                      <SelectItem value="all" className="py-2 px-2 rounded-lg">
-                        <div className="flex items-center w-full">
-                          <span className="font-medium text-gray-800 text-sm">كل الأنواع</span>
-                        </div>
-                      </SelectItem>
-                      {(reCategories as Array<{ id: number; nameAr: string; slug?: string | null; propertyCount?: number }>)
-                        .sort((a, b) => (b.propertyCount ?? 0) - (a.propertyCount ?? 0))
-                        .map(c => (
-                          <SelectItem key={c.id} value={c.slug ?? String(c.id)} className="py-2 px-2 cursor-pointer rounded-lg">
-                            <div className="flex items-center w-full">
-                              <span className="font-medium text-gray-800 text-sm">{c.nameAr}</span>
-                              <span className={`ml-auto min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${(c.propertyCount ?? 0) > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
-                                {c.propertyCount ?? 0}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                <div className="w-36 shrink-0">
+                  {(() => {
+                    const getCatIcon = (slug: string | null | undefined, nameAr: string) => {
+                      const s = (slug ?? "").toLowerCase();
+                      const n = nameAr ?? "";
+                      if (s.includes("resid") || s.includes("sakan") || n.includes("سكن")) return BedDouble;
+                      if (s.includes("comm") || s.includes("tijar") || n.includes("تجار")) return Store;
+                      if (s.includes("land") || s.includes("aradi") || n.includes("أراض") || n.includes("اراض")) return Trees;
+                      return Building2;
+                    };
+                    const selCatLabel = selectedCategory === "all"
+                      ? "كل الأنواع"
+                      : (reCategories as Array<{ id: number; nameAr: string; slug?: string | null; propertyCount?: number }>)
+                          .find(c => (c.slug ?? String(c.id)) === selectedCategory)?.nameAr ?? "كل الأنواع";
+                    return (
+                      <Popover open={catOpen} onOpenChange={setCatOpen}>
+                        <PopoverTrigger asChild>
+                          <button className="h-14 flex items-center gap-1.5 px-3 w-full text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors focus:outline-none">
+                            <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span className="truncate flex-1 text-right">{selCatLabel}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 ${catOpen ? "rotate-180" : ""}`} />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          sideOffset={8}
+                          className="w-52 p-1.5 rounded-xl border border-gray-100 shadow-xl bg-white"
+                        >
+                          {/* All types */}
+                          <button
+                            onClick={() => { setSelectedCategory("all"); setHeroSubcategoryId("all"); setCatOpen(false); }}
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${selectedCategory === "all" ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                          >
+                            <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${selectedCategory === "all" ? "bg-primary/15" : "bg-gray-100"}`}>
+                              <Grid className={`w-3.5 h-3.5 ${selectedCategory === "all" ? "text-primary" : "text-gray-400"}`} />
+                            </span>
+                            <span className="font-medium flex-1 text-right">كل الأنواع</span>
+                            {selectedCategory === "all" && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                          </button>
+                          {/* Category items */}
+                          {(reCategories as Array<{ id: number; nameAr: string; slug?: string | null; propertyCount?: number }>)
+                            .sort((a, b) => (b.propertyCount ?? 0) - (a.propertyCount ?? 0))
+                            .map(c => {
+                              const val = c.slug ?? String(c.id);
+                              const active = selectedCategory === val;
+                              const Icon = getCatIcon(c.slug, c.nameAr);
+                              const count = c.propertyCount ?? 0;
+                              return (
+                                <button
+                                  key={c.id}
+                                  onClick={() => { setSelectedCategory(val); setHeroSubcategoryId("all"); setCatOpen(false); }}
+                                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                                >
+                                  <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-primary/15" : "bg-gray-100"}`}>
+                                    <Icon className={`w-3.5 h-3.5 ${active ? "text-primary" : "text-gray-400"}`} />
+                                  </span>
+                                  <span className="font-medium flex-1 text-right">{c.nameAr}</span>
+                                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 ${count > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
+                                    {count}
+                                  </span>
+                                  {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                                </button>
+                              );
+                            })}
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })()}
                 </div>
 
-                {/* Property Sub-type dropdown — subcategories from DB, appears inline when a category is selected */}
+                {/* Property Sub-type dropdown */}
                 {(() => {
                   const selCat = reCategories.find(c => (c.slug ?? String(c.id)) === selectedCategory);
                   const subs = selCat
                     ? ((allSubs as Subcategory[] | undefined) ?? []).filter(s => s.categoryId === selCat.id)
                     : [];
                   if (selectedCategory === "all" || subs.length === 0) return null;
+                  const selSubLabel = heroSubcategoryId === "all"
+                    ? "كل الأنواع"
+                    : subs.find(s => String(s.id) === heroSubcategoryId)?.nameAr ?? "كل الأنواع";
                   return (
                     <>
                       <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
-                      <div className="w-32 shrink-0">
-                        <Select value={heroSubcategoryId} onValueChange={setHeroSubcategoryId}>
-                          <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
-                            <SelectValue placeholder="النوع الفرعي" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">كل الأنواع</SelectItem>
-                            {subs.map(s => (
-                              <SelectItem key={s.id} value={String(s.id)}>{s.nameAr}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="w-36 shrink-0">
+                        <Popover open={subCatOpen} onOpenChange={setSubCatOpen}>
+                          <PopoverTrigger asChild>
+                            <button className="h-14 flex items-center gap-1.5 px-3 w-full text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors focus:outline-none">
+                              <Grid className="w-3.5 h-3.5 text-primary shrink-0" />
+                              <span className="truncate flex-1 text-right">{selSubLabel}</span>
+                              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 ${subCatOpen ? "rotate-180" : ""}`} />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            sideOffset={8}
+                            className="w-48 p-1.5 rounded-xl border border-gray-100 shadow-xl bg-white"
+                          >
+                            <button
+                              onClick={() => { setHeroSubcategoryId("all"); setSubCatOpen(false); }}
+                              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${heroSubcategoryId === "all" ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                            >
+                              <span className="font-medium flex-1 text-right">كل الأنواع</span>
+                              {heroSubcategoryId === "all" && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                            </button>
+                            {subs.map(s => {
+                              const active = heroSubcategoryId === String(s.id);
+                              return (
+                                <button
+                                  key={s.id}
+                                  onClick={() => { setHeroSubcategoryId(String(s.id)); setSubCatOpen(false); }}
+                                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                                >
+                                  <span className="font-medium flex-1 text-right">{s.nameAr}</span>
+                                  {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                                </button>
+                              );
+                            })}
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </>
                   );
@@ -644,34 +717,50 @@ export default function Home() {
                 <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
 
                 {/* City / Area */}
-                <div className="w-32 shrink-0">
-                  <Select
-                    value={heroCityName ?? "__all__"}
-                    onValueChange={v => setHeroCityName(v === "__all__" ? null : v)}
-                  >
-                    <SelectTrigger className="h-14 bg-transparent border-none focus:ring-0 shadow-none px-3 font-medium text-sm w-full text-gray-600">
-                      <MapPin className="w-3.5 h-3.5 ml-1 text-primary shrink-0" />
-                      <SelectValue placeholder="المنطقة" />
-                    </SelectTrigger>
-                    <SelectContent className="w-60 max-h-80 overflow-y-auto p-1" side="bottom" avoidCollisions={false}>
-                      {heroCityOptions.map(o => (
-                        <SelectItem
-                          key={o.value}
-                          value={o.value}
-                          className="py-2 px-2 cursor-pointer rounded-lg"
+                <div className="w-36 shrink-0">
+                  {(() => {
+                    const selCityLabel = heroCityName
+                      ? heroCityOptions.find(o => o.value === heroCityName)?.label ?? heroCityName
+                      : "كل المناطق";
+                    return (
+                      <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                        <PopoverTrigger asChild>
+                          <button className="h-14 flex items-center gap-1.5 px-3 w-full text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors focus:outline-none">
+                            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span className="truncate flex-1 text-right">{selCityLabel}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 ${cityOpen ? "rotate-180" : ""}`} />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          sideOffset={8}
+                          className="w-56 p-1.5 rounded-xl border border-gray-100 shadow-xl bg-white max-h-72 overflow-y-auto"
                         >
-                          <div className="flex items-center w-full">
-                            <span className="font-medium text-gray-800 text-sm">{o.label}</span>
-                            {o.count >= 0 && (
-                              <span className={`ml-auto min-w-[28px] h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${o.count > 0 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
-                                {o.count}
-                              </span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          {heroCityOptions.map(o => {
+                            const active = (heroCityName ?? "__all__") === o.value;
+                            return (
+                              <button
+                                key={o.value}
+                                onClick={() => { setHeroCityName(o.value === "__all__" ? null : o.value); setCityOpen(false); }}
+                                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                              >
+                                <span className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${active ? "bg-primary/15" : "bg-gray-100"}`}>
+                                  <MapPin className={`w-3 h-3 ${active ? "text-primary" : "text-gray-400"}`} />
+                                </span>
+                                <span className="font-medium flex-1 text-right">{o.label}</span>
+                                {o.count >= 0 && (
+                                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 ${o.count > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
+                                    {o.count}
+                                  </span>
+                                )}
+                                {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                              </button>
+                            );
+                          })}
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })()}
                 </div>
 
                 {/* Search button */}
