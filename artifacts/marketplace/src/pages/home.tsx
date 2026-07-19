@@ -795,12 +795,15 @@ export default function Home() {
         </section>
 
         {/* ── AD: hero bottom ── */}
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4">
           <AdBanner position="hero_bottom" />
         </div>
 
         {/* ── FEATURED PROPERTIES SECTION (admin-controlled) ── */}
-        <FeaturedPropertiesSection settings={settings as Record<string, string> | undefined} />
+        <FeaturedPropertiesSection
+          settings={settings as Record<string, string> | undefined}
+          categories={(reCategories as Array<{ id: number; nameAr: string; slug: string; propertyCount?: number }>)}
+        />
 
         {/* ── FEATURED AREAS ── */}
         {featuredAreas.length > 0 && (

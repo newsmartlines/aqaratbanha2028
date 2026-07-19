@@ -32,15 +32,11 @@ function formatPrice(price: number | string | null | undefined, listType?: strin
   return `${n.toLocaleString("en-US")} ج.م${listType === "rent" ? "/شهر" : ""}`;
 }
 
-const FILTER_TABS = [
-  { key: "all",         label: "الكل",    mainCat: null,          subCat: null },
-  { key: "residential", label: "سكني",    mainCat: "residential", subCat: null },
-  { key: "commercial",  label: "تجاري",   mainCat: "commercial",  subCat: null },
-  { key: "villa",       label: "فلل",     mainCat: "residential", subCat: "villa" },
-  { key: "apartment",   label: "شقق",     mainCat: "residential", subCat: "apartment" },
-  { key: "office",      label: "مكاتب",   mainCat: "commercial",  subCat: "office" },
-  { key: "shop",        label: "محلات",   mainCat: "commercial",  subCat: "shop" },
-  { key: "land",        label: "أراضي",   mainCat: "land",        subCat: null },
+// Fallback tabs used only when no categories are passed from the API
+const FALLBACK_TABS = [
+  { key: "residential", label: "سكني",    mainCat: "residential" },
+  { key: "commercial",  label: "تجاري",   mainCat: "commercial"  },
+  { key: "land",        label: "أراضي",   mainCat: "land"        },
 ];
 
 const COLUMNS_CLASS: Record<string, string> = {
@@ -51,8 +47,15 @@ const COLUMNS_CLASS: Record<string, string> = {
   "6": "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6",
 };
 
+interface CategoryTab {
+  key: string;
+  label: string;
+  mainCat: string;
+}
+
 interface Props {
   settings?: Record<string, string>;
+  categories?: Array<{ id: number; nameAr: string; slug: string; propertyCount?: number }>;
 }
 
 /* ── Hover Mini-Card ──────────────────────────────────────────────────────── */
@@ -138,7 +141,7 @@ function HoverCard({ property, visible, onNavigate }: {
 }
 
 /* ── Main Component ─────────────────────────────────────────────────────────── */
-export function FeaturedPropertiesSection({ settings }: Props) {
+export function FeaturedPropertiesSection({ settings, categories }: Props) {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -147,6 +150,16 @@ export function FeaturedPropertiesSection({ settings }: Props) {
   const [activeTab, setActiveTab] = useState("all");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Build filter tabs dynamically from real DB categories; fall back to static list
+  const filterTabs: CategoryTab[] = useMemo(() => {
+    const source = categories && categories.length > 0 ? categories : FALLBACK_TABS;
+    return source.map(c => ({
+      key: (c as any).key ?? (c as any).slug,
+      label: (c as any).label ?? (c as any).nameAr,
+      mainCat: (c as any).key ?? (c as any).slug,
+    }));
+  }, [categories]);
 
   const sectionTitle    = settings?.featuredSectionTitle    ?? "اكتشف أفضل العقارات في بنها";
   const sectionSubtitle = settings?.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.";
@@ -210,14 +223,11 @@ export function FeaturedPropertiesSection({ settings }: Props) {
   }, [allProps, adminSelectedTypes]);
 
   const filteredByTab = useMemo(() => {
-    const tab = FILTER_TABS.find(t => t.key === activeTab);
-    if (!tab || (!tab.mainCat && !tab.subCat)) return poolByAdminTypes;
-    return poolByAdminTypes.filter((p: any) => {
-      if (tab.mainCat && p.mainCategory !== tab.mainCat) return false;
-      if (tab.subCat  && p.subCategory !== tab.subCat)  return false;
-      return true;
-    });
-  }, [poolByAdminTypes, activeTab]);
+    if (activeTab === "all") return poolByAdminTypes;
+    const tab = filterTabs.find(t => t.key === activeTab);
+    if (!tab) return poolByAdminTypes;
+    return poolByAdminTypes.filter((p: any) => p.mainCategory === tab.mainCat);
+  }, [poolByAdminTypes, activeTab, filterTabs]);
 
   const sorted = useMemo(() => {
     const arr = [...filteredByTab];
@@ -234,13 +244,9 @@ export function FeaturedPropertiesSection({ settings }: Props) {
 
   const hasTabCount = (tabKey: string) => {
     if (tabKey === "all") return poolByAdminTypes.length;
-    const tab = FILTER_TABS.find(t => t.key === tabKey);
+    const tab = filterTabs.find(t => t.key === tabKey);
     if (!tab) return 0;
-    return poolByAdminTypes.filter((p: any) => {
-      if (tab.mainCat && p.mainCategory !== tab.mainCat) return false;
-      if (tab.subCat  && p.subCategory !== tab.subCat)  return false;
-      return true;
-    }).length;
+    return poolByAdminTypes.filter((p: any) => p.mainCategory === tab.mainCat).length;
   };
 
   const handleMouseEnter = (id: number) => {
@@ -287,11 +293,33 @@ export function FeaturedPropertiesSection({ settings }: Props) {
           </button>
         </div>
 
-        {/* ── Filter Tabs ── */}
+        {/* ── Filter Tabs — dynamic from real DB categories ── */}
         <div className="flex gap-2 flex-wrap mb-8">
-          {FILTER_TABS.map(tab => {
+          {/* "الكل" tab */}
+          {(() => {
+            const allCount = hasTabCount("all");
+            return (
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-all ${
+                  activeTab === "all"
+                    ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-primary/40 hover:text-primary"
+                }`}
+              >
+                الكل
+                {allCount > 0 && (
+                  <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
+                    activeTab === "all" ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
+                  }`}>{allCount}</span>
+                )}
+              </button>
+            );
+          })()}
+          {/* Category tabs — from real DB */}
+          {filterTabs.map(tab => {
             const count = hasTabCount(tab.key);
-            if (count === 0 && tab.key !== "all") return null;
+            if (count === 0) return null;
             return (
               <button
                 key={tab.key}
@@ -303,13 +331,9 @@ export function FeaturedPropertiesSection({ settings }: Props) {
                 }`}
               >
                 {tab.label}
-                {count > 0 && (
-                  <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
-                    activeTab === tab.key ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
-                  }`}>
-                    {count}
-                  </span>
-                )}
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
+                  activeTab === tab.key ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
+                }`}>{count}</span>
               </button>
             );
           })}
