@@ -123,6 +123,7 @@ export interface Subcategory {
   icon: string | null;
   slug: string;
   status?: string | null;
+  propertyCount?: number;
 }
 export interface Provider {
   id: number;

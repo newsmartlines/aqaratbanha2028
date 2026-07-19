@@ -695,6 +695,7 @@ export default function Home() {
                             </button>
                             {subs.map(s => {
                               const active = heroSubcategoryId === String(s.id);
+                              const count = s.propertyCount ?? 0;
                               return (
                                 <button
                                   key={s.id}
@@ -702,6 +703,9 @@ export default function Home() {
                                   className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
                                 >
                                   <span className="font-medium flex-1 text-right">{s.nameAr}</span>
+                                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 ${count > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
+                                    {count}
+                                  </span>
                                   {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                                 </button>
                               );
@@ -716,18 +720,18 @@ export default function Home() {
                 {/* Divider */}
                 <div className="w-px bg-gray-100 self-stretch my-2 shrink-0" />
 
-                {/* City / Area */}
+                {/* Featured Areas — admin-managed, with property counts */}
                 <div className="w-36 shrink-0">
                   {(() => {
-                    const selCityLabel = heroCityName
-                      ? heroCityOptions.find(o => o.value === heroCityName)?.label ?? heroCityName
-                      : "كل المناطق";
+                    const areaOptions = (featuredAreas as Array<{ id: number; nameAr: string; propertyCount: number; enabled: boolean }>)
+                      .filter(a => a.enabled);
+                    const selAreaLabel = heroAreaName ?? "كل المناطق";
                     return (
                       <Popover open={cityOpen} onOpenChange={setCityOpen}>
                         <PopoverTrigger asChild>
                           <button className="h-14 flex items-center gap-1.5 px-3 w-full text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors focus:outline-none">
                             <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                            <span className="truncate flex-1 text-right">{selCityLabel}</span>
+                            <span className="truncate flex-1 text-right">{selAreaLabel}</span>
                             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 ${cityOpen ? "rotate-180" : ""}`} />
                           </button>
                         </PopoverTrigger>
@@ -736,23 +740,35 @@ export default function Home() {
                           sideOffset={8}
                           className="w-56 p-1.5 rounded-xl border border-gray-100 shadow-xl bg-white max-h-72 overflow-y-auto"
                         >
-                          {heroCityOptions.map(o => {
-                            const active = (heroCityName ?? "__all__") === o.value;
+                          {/* All areas */}
+                          <button
+                            onClick={() => { setHeroAreaName(null); setCityOpen(false); }}
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${!heroAreaName ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                          >
+                            <span className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${!heroAreaName ? "bg-primary/15" : "bg-gray-100"}`}>
+                              <MapPin className={`w-3 h-3 ${!heroAreaName ? "text-primary" : "text-gray-400"}`} />
+                            </span>
+                            <span className="font-medium flex-1 text-right">كل المناطق</span>
+                            {!heroAreaName && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                          </button>
+                          {areaOptions.length === 0 && (
+                            <p className="text-xs text-gray-400 text-center py-3">لا توجد مناطق مضافة</p>
+                          )}
+                          {areaOptions.map(a => {
+                            const active = heroAreaName === a.nameAr;
                             return (
                               <button
-                                key={o.value}
-                                onClick={() => { setHeroCityName(o.value === "__all__" ? null : o.value); setCityOpen(false); }}
+                                key={a.id}
+                                onClick={() => { setHeroAreaName(a.nameAr); setCityOpen(false); }}
                                 className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
                               >
                                 <span className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${active ? "bg-primary/15" : "bg-gray-100"}`}>
                                   <MapPin className={`w-3 h-3 ${active ? "text-primary" : "text-gray-400"}`} />
                                 </span>
-                                <span className="font-medium flex-1 text-right">{o.label}</span>
-                                {o.count >= 0 && (
-                                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 ${o.count > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
-                                    {o.count}
-                                  </span>
-                                )}
+                                <span className="font-medium flex-1 text-right">{a.nameAr}</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 ${a.propertyCount > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
+                                  {a.propertyCount}
+                                </span>
                                 {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                               </button>
                             );

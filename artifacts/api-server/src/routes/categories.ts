@@ -116,7 +116,19 @@ router.get("/categories/:id/subcategories", async (req, res) => {
 router.get("/subcategories", async (_req, res) => {
   try {
     const subs = await db.select().from(subcategoriesTable).orderBy(subcategoriesTable.categoryId, subcategoriesTable.id);
-    res.json({ success: true, data: subs });
+
+    // Count active properties per subcategory by matching slug to the subCategory text field
+    const countRows = await db
+      .select({ slug: propertiesTable.subCategory, count: sql<number>`count(*)::int` })
+      .from(propertiesTable)
+      .groupBy(propertiesTable.subCategory);
+    const countMap: Record<string, number> = {};
+    for (const r of countRows) {
+      if (r.slug) countMap[r.slug] = r.count;
+    }
+
+    const data = subs.map(s => ({ ...s, propertyCount: countMap[s.slug ?? ""] ?? 0 }));
+    res.json({ success: true, data });
   } catch {
     res.status(500).json({ success: false, error: "Failed to fetch subcategories" });
   }
