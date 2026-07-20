@@ -733,7 +733,7 @@ export default function PropertiesPage() {
               ref={sidebarRef}
               className="sticky top-[136px] max-h-[calc(100vh-152px)] overflow-y-auto no-scrollbar [overscroll-behavior:contain]"
             >
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div>
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
