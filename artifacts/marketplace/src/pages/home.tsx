@@ -726,8 +726,8 @@ export default function Home() {
                 {/* Featured Areas — admin-managed, with property counts */}
                 <div className="w-36 shrink-0">
                   {(() => {
-                    const areaOptions = (featuredAreas as Array<{ id: number; nameAr: string; propertyCount: number; enabled: boolean }>)
-                      .filter(a => a.enabled);
+                    /* أحياء بنها الفعلية من جدول areas — نستبعد عنصر "كل المناطق" الأول */
+                    const areaOptions = heroCityOptions.filter(a => a.value !== "__all__");
                     const selAreaLabel = heroAreaName ?? "كل المناطق";
                     return (
                       <Popover open={cityOpen} onOpenChange={setCityOpen}>
@@ -758,20 +758,22 @@ export default function Home() {
                             <p className="text-xs text-gray-400 text-center py-3">لا توجد مناطق مضافة</p>
                           )}
                           {areaOptions.map(a => {
-                            const active = heroAreaName === a.nameAr;
+                            const active = heroAreaName === a.value;
                             return (
                               <button
-                                key={a.id}
-                                onClick={() => { setHeroAreaName(a.nameAr); setCityOpen(false); }}
+                                key={a.value}
+                                onClick={() => { setHeroAreaName(a.value); setCityOpen(false); }}
                                 className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
                               >
                                 <span className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${active ? "bg-primary/15" : "bg-gray-100"}`}>
                                   <MapPin className={`w-3 h-3 ${active ? "text-primary" : "text-gray-400"}`} />
                                 </span>
-                                <span className="font-medium flex-1 text-right">{a.nameAr}</span>
-                                <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 ${a.propertyCount > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}>
-                                  {a.propertyCount}
-                                </span>
+                                <span className="font-medium flex-1 text-right">{a.label}</span>
+                                {a.count > 0 && (
+                                  <span className="px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums shrink-0 bg-primary/10 text-primary">
+                                    {a.count}
+                                  </span>
+                                )}
                                 {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                               </button>
                             );
