@@ -235,34 +235,39 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 /* ─── Accordion Section ────────────────────────────────────────────── */
-function Section({ title, children, open: defaultOpen = true, badge }: {
-  title: string; children: React.ReactNode; open?: boolean; badge?: number;
+function Section({ title, children, open: defaultOpen = true, badge, onReset }: {
+  title: string; children: React.ReactNode; open?: boolean; badge?: number; onReset?: () => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-zinc-100 last:border-0">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="flex items-center justify-between w-full py-3.5 group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] font-bold text-zinc-700 tracking-wide uppercase">{title}</span>
+    <div className="mb-7 last:mb-0">
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="flex items-center gap-2 group"
+        >
+          <span className="text-[13px] font-bold text-zinc-900">{title}</span>
           {badge != null && badge > 0 && (
-            <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] font-black flex items-center justify-center">{badge}</span>
+            <span className="w-[18px] h-[18px] rounded-full bg-primary text-white text-[9px] font-black flex items-center justify-center">{badge}</span>
           )}
-        </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
+          <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </button>
+        {onReset && badge != null && badge > 0 && (
+          <button onClick={onReset} className="text-[12px] font-semibold text-primary hover:text-primary/70 transition-colors">
+            إعادة
+          </button>
+        )}
+      </div>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18 }}
+            transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="pb-4">{children}</div>
+            <div>{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -277,11 +282,11 @@ function Pill({ active, onClick, children, sm }: {
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl border-2 font-bold transition-all select-none
-        ${sm ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-sm"}
+      className={`rounded-full font-semibold transition-all select-none
+        ${sm ? "px-3 py-1 text-[12px]" : "px-3.5 py-1.5 text-[13px]"}
         ${active
-          ? "bg-primary text-white border-primary shadow-sm"
-          : "bg-white text-zinc-600 border-zinc-200 hover:border-primary/50 hover:text-primary"
+          ? "bg-primary text-white shadow-sm"
+          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-800"
         }`}
     >
       {children}
@@ -330,18 +335,23 @@ function DynamicFeaturesPanel({ group, category, amenities, nearbyServices, onAm
   );
 }
 
-/* ─── Toggle option ────────────────────────────────────────────────── */
+/* ─── Toggle option (checkbox style) ─────────────────────────────── */
 function ToggleOpt({ active, onClick, children }: {
   active: boolean; onClick: () => void; children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-between w-full py-2 px-3 rounded-xl text-sm transition-all
-        ${active ? "bg-primary/8 text-primary font-semibold" : "text-zinc-600 hover:bg-zinc-50"}`}
+      className="flex items-center gap-2.5 w-full py-1.5 group text-right"
     >
-      <span>{children}</span>
-      {active && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+      <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all shrink-0
+        ${active ? "bg-primary border-primary" : "border-zinc-300 group-hover:border-zinc-400"}`}>
+        {active && <Check className="w-2.5 h-2.5 text-white" />}
+      </div>
+      <span className={`text-[13px] transition-colors leading-snug
+        ${active ? "text-zinc-900 font-semibold" : "text-zinc-600 group-hover:text-zinc-800"}`}>
+        {children}
+      </span>
     </button>
   );
 }
@@ -589,19 +599,19 @@ export default function SearchPage() {
 
   /* ── Filter Panel ────────────────────────────────────────────────── */
   const FilterPanel = () => (
-    <div dir="rtl" className="space-y-0">
+    <div dir="rtl">
 
       {/* الغرض */}
-      <Section title="الغرض">
+      <Section title="الغرض" onReset={() => { set("listingType", "all"); set("rentDuration", ""); }} badge={filters.listingType !== "all" ? 1 : 0}>
         <div className="flex gap-2">
           {[{ v: "all", l: "الكل" }, { v: "sale", l: "للبيع" }, { v: "rent", l: "للإيجار" }].map(o => (
             <button
               key={o.v}
               onClick={() => { set("listingType", o.v); if (o.v !== "rent") set("rentDuration", ""); }}
-              className={`flex-1 h-9 rounded-xl text-sm font-bold border-2 transition-all
+              className={`flex-1 h-9 rounded-full text-[13px] font-bold transition-all
                 ${filters.listingType === o.v
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "bg-white text-zinc-500 border-zinc-200 hover:border-primary/50"}`}
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}`}
             >
               {o.l}
             </button>
@@ -610,30 +620,30 @@ export default function SearchPage() {
       </Section>
 
       {/* نوع العقار */}
-      <Section title="نوع العقار">
-        <div className="grid grid-cols-2 gap-2">
+      <Section title="نوع العقار" onReset={() => { set("category", "all"); set("subCategory", "all"); }} badge={filters.category !== "all" ? 1 : 0}>
+        <div className="flex flex-wrap gap-2">
           {[
-            { v: "all", l: "الكل", icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-            { v: "residential", l: "سكني", icon: CATEGORY_ICONS.residential },
-            { v: "commercial", l: "تجاري", icon: CATEGORY_ICONS.commercial },
-            { v: "land", l: "أراضي", icon: CATEGORY_ICONS.land },
-            { v: "industrial", l: "صناعي", icon: CATEGORY_ICONS.industrial },
+            { v: "all", l: "الكل" },
+            { v: "residential", l: "سكني" },
+            { v: "commercial", l: "تجاري" },
+            { v: "land", l: "أراضي" },
+            { v: "industrial", l: "صناعي" },
           ].map(o => (
             <button
               key={o.v}
               onClick={() => { set("category", o.v); set("subCategory", "all"); }}
-              className={`flex items-center gap-2 px-3 h-9 rounded-xl text-sm font-semibold border transition-all
+              className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all
                 ${filters.category === o.v
-                  ? "bg-primary/8 border-primary text-primary"
-                  : "bg-white border-zinc-200 text-zinc-600 hover:border-primary/40"}`}
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-800"}`}
             >
-              {o.icon}{o.l}
+              {o.l}
             </button>
           ))}
         </div>
         {currentSubcats.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-zinc-100">
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">التصنيف الفرعي</p>
+          <div className="mt-4">
+            <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">التصنيف الفرعي</p>
             <div className="flex flex-wrap gap-1.5">
               {[{ value: "all", label: "الكل" }, ...currentSubcats].map(s => (
                 <Pill key={s.value} active={filters.subCategory === s.value} onClick={() => set("subCategory", s.value)} sm>
@@ -646,7 +656,7 @@ export default function SearchPage() {
       </Section>
 
       {/* الموقع */}
-      <Section title="الموقع" badge={[filters.city, filters.district, filters.compound, filters.street].filter(Boolean).length}>
+      <Section title="الموقع" badge={[filters.city, filters.district, filters.compound, filters.street].filter(Boolean).length} onReset={() => { set("city", ""); set("district", ""); set("compound", ""); set("street", ""); }}>
         <div className="space-y-2">
           {[
             { field: "city" as const, placeholder: "المدينة...", icon: "🏙" },
@@ -674,13 +684,13 @@ export default function SearchPage() {
       </Section>
 
       {/* السعر */}
-      <Section title="السعر (ج.م)" open={false} badge={filters.priceMin || filters.priceMax ? 1 : 0}>
+      <Section title="السعر (ج.م)" open={false} badge={filters.priceMin || filters.priceMax ? 1 : 0} onReset={() => { set("priceMin", ""); set("priceMax", ""); }}>
         <RangeInputs
           minVal={filters.priceMin} maxVal={filters.priceMax}
           onMin={v => set("priceMin", v)} onMax={v => set("priceMax", v)}
           suffix="ج.م" placeholder={["من", "إلى"]}
         />
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {[
             { label: "< 500ألف", min: "", max: "500000" },
             { label: "500ألف–مليون", min: "500000", max: "1000000" },
@@ -691,10 +701,10 @@ export default function SearchPage() {
             <button
               key={r.label}
               onClick={() => { set("priceMin", r.min); set("priceMax", r.max); }}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all
                 ${filters.priceMin === r.min && filters.priceMax === r.max
-                  ? "bg-primary/8 border-primary text-primary"
-                  : "border-zinc-200 text-zinc-600 hover:border-primary/40 bg-white"}`}
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}`}
             >
               {r.label}
             </button>
@@ -703,13 +713,13 @@ export default function SearchPage() {
       </Section>
 
       {/* المساحة */}
-      <Section title="المساحة (م²)" open={false} badge={filters.areaMin || filters.areaMax ? 1 : 0}>
+      <Section title="المساحة (م²)" open={false} badge={filters.areaMin || filters.areaMax ? 1 : 0} onReset={() => { set("areaMin", ""); set("areaMax", ""); }}>
         <RangeInputs
           minVal={filters.areaMin} maxVal={filters.areaMax}
           onMin={v => set("areaMin", v)} onMax={v => set("areaMax", v)}
           suffix="م²" placeholder={["من", "إلى"]}
         />
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {[
             { label: "< 100م²", min: "", max: "100" },
             { label: "100–200م²", min: "100", max: "200" },
@@ -719,10 +729,10 @@ export default function SearchPage() {
             <button
               key={r.label}
               onClick={() => { set("areaMin", r.min); set("areaMax", r.max); }}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all
                 ${filters.areaMin === r.min && filters.areaMax === r.max
-                  ? "bg-primary/8 border-primary text-primary"
-                  : "border-zinc-200 text-zinc-600 hover:border-primary/40 bg-white"}`}
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}`}
             >
               {r.label}
             </button>
@@ -829,20 +839,20 @@ export default function SearchPage() {
 
       {/* الاتجاه والواجهة */}
       {(fieldRules.direction || fieldRules.facade) && (
-      <Section title="الاتجاه والواجهة" open={false} badge={(filters.direction ? 1 : 0) + (filters.facade ? 1 : 0)}>
+      <Section title="الاتجاه والواجهة" open={false} badge={(filters.direction ? 1 : 0) + (filters.facade ? 1 : 0)} onReset={() => { set("direction", ""); set("facade", ""); }}>
         <div className="space-y-3">
           {fieldRules.direction && (
           <div>
             <p className="text-[11px] font-bold text-zinc-400 mb-2">اتجاه العقار</p>
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-2 gap-1.5">
               {DIRECTION_OPTS.map(o => (
                 <button
                   key={o.value}
                   onClick={() => set("direction", filters.direction === o.value ? "" : o.value)}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all text-center
+                  className={`py-1.5 px-2 rounded-full text-[12px] font-semibold transition-all text-center
                     ${filters.direction === o.value
-                      ? "bg-primary/8 border-primary text-primary"
-                      : "border-zinc-200 text-zinc-600 hover:border-primary/40 bg-white"}`}
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}`}
                 >
                   {o.label}
                 </button>
@@ -915,33 +925,45 @@ export default function SearchPage() {
 
       {/* إعلانات خاصة */}
       <Section title="إعلانات خاصة">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <button
             onClick={() => set("featured", !filters.featured)}
-            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl border transition-all
-              ${filters.featured ? "bg-amber-50 border-amber-300 text-amber-700" : "border-zinc-200 text-zinc-600 bg-white hover:border-amber-300/60"}`}
+            className="flex items-center gap-2.5 w-full py-1.5 group"
           >
-            <Crown className="w-4 h-4 text-amber-500 shrink-0" />
-            <span className="text-sm font-semibold">العقارات المميزة فقط</span>
-            {filters.featured && <Check className="w-3.5 h-3.5 text-amber-600 mr-auto" />}
+            <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all shrink-0
+              ${filters.featured ? "bg-amber-500 border-amber-500" : "border-zinc-300 group-hover:border-zinc-400"}`}>
+              {filters.featured && <Check className="w-2.5 h-2.5 text-white" />}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className={`text-[13px] transition-colors ${filters.featured ? "text-zinc-900 font-semibold" : "text-zinc-600 group-hover:text-zinc-800"}`}>
+                العقارات المميزة فقط
+              </span>
+            </div>
           </button>
           <button
             onClick={() => set("urgent", !filters.urgent)}
-            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl border transition-all
-              ${filters.urgent ? "bg-red-50 border-red-300 text-red-700" : "border-zinc-200 text-zinc-600 bg-white hover:border-red-300/60"}`}
+            className="flex items-center gap-2.5 w-full py-1.5 group"
           >
-            <Zap className="w-4 h-4 text-red-500 shrink-0" />
-            <span className="text-sm font-semibold">الإعلانات العاجلة فقط</span>
-            {filters.urgent && <Check className="w-3.5 h-3.5 text-red-600 mr-auto" />}
+            <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all shrink-0
+              ${filters.urgent ? "bg-red-500 border-red-500" : "border-zinc-300 group-hover:border-zinc-400"}`}>
+              {filters.urgent && <Check className="w-2.5 h-2.5 text-white" />}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              <span className={`text-[13px] transition-colors ${filters.urgent ? "text-zinc-900 font-semibold" : "text-zinc-600 group-hover:text-zinc-800"}`}>
+                الإعلانات العاجلة فقط
+              </span>
+            </div>
           </button>
         </div>
       </Section>
 
       {/* Actions */}
-      <div className="pt-3 space-y-2">
+      <div className="pt-4 space-y-2">
         <button
           onClick={applySearch}
-          className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl text-[13px] transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
         >
           <Search className="w-4 h-4" />
           عرض النتائج
@@ -949,7 +971,7 @@ export default function SearchPage() {
         {activeCount > 0 && (
           <button
             onClick={resetAll}
-            className="w-full h-9 border border-zinc-200 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5"
+            className="w-full h-9 text-zinc-500 hover:text-zinc-800 font-semibold rounded-2xl text-[13px] transition-all flex items-center justify-center gap-1.5 hover:bg-zinc-50"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             مسح كل الفلاتر ({activeCount})
@@ -1336,28 +1358,25 @@ export default function SearchPage() {
       <div className="max-w-screen-xl mx-auto w-full px-4 sm:px-6 py-5 flex gap-5 flex-1">
 
         {/* ── Desktop Sidebar ──────────────────────────────────────── */}
-        <aside className="hidden lg:block w-72 shrink-0">
+        <aside className="hidden lg:block w-60 shrink-0">
           <div
             ref={filterPanelRef}
-            className="bg-white rounded-2xl shadow-sm border border-zinc-200/80 sticky top-[130px] max-h-[calc(100vh-150px)] overflow-y-auto no-scrollbar [overscroll-behavior:contain]"
+            className="sticky top-[130px] max-h-[calc(100vh-150px)] overflow-y-auto no-scrollbar [overscroll-behavior:contain]"
           >
-            <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-zinc-100">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-primary" />
-                <span className="font-bold text-zinc-800 text-sm">الفلاتر</span>
+                <span className="font-bold text-zinc-900 text-[15px]">الفلاتر</span>
                 {activeCount > 0 && (
                   <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">{activeCount}</span>
                 )}
               </div>
               {activeCount > 0 && (
-                <button onClick={resetAll} className="text-[11px] font-semibold text-red-400 hover:text-red-600 transition-colors flex items-center gap-1">
-                  <RotateCcw className="w-3 h-3" /> مسح
+                <button onClick={resetAll} className="text-[12px] font-semibold text-primary hover:text-primary/70 transition-colors flex items-center gap-1">
+                  <RotateCcw className="w-3 h-3" /> مسح الكل
                 </button>
               )}
             </div>
-            <div className="px-4 pb-4 pt-1">
-              <FilterPanel />
-            </div>
+            <FilterPanel />
           </div>
         </aside>
 
