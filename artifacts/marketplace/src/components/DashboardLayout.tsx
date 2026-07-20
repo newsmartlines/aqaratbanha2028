@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSiteSettings } from "@/App";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -62,10 +63,17 @@ const PROVIDER_NAV = [] as const;
 
 const USER_NAV = [] as const;
 
+const SUBSCRIPTION_HREFS = [
+  "/dashboard/packages",
+  "/dashboard/promotions",
+  "/dashboard/payments",
+] as const;
+
 function buildNav(
   isProvider: boolean,
   unreadCount: number,
   msgUnread: number,
+  showSubscriptions: boolean,
 ) {
   const roleItems = isProvider ? PROVIDER_NAV : USER_NAV;
 
@@ -73,12 +81,14 @@ function buildNav(
   return [
     ...SHARED_NAV,
     ...roleItems,
-  ].map((item) => ({
-    ...item,
-    badge:
-      item.href === "/dashboard/messages" ? msgUnread
-      : 0,
-  }));
+  ]
+    .filter((item) => showSubscriptions || !SUBSCRIPTION_HREFS.includes(item.href as typeof SUBSCRIPTION_HREFS[number]))
+    .map((item) => ({
+      ...item,
+      badge:
+        item.href === "/dashboard/messages" ? msgUnread
+        : 0,
+    }));
 }
 
 // ── Role badge ─────────────────────────────────────────────────────────────────
@@ -152,8 +162,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     return <Redirect to="/login" />;
   }
 
+  const siteSettings = useSiteSettings();
+  const showSubscriptions = siteSettings?.subscriptionsEnabled !== "false";
+
   const isProvider = user?.role === "provider";
-  const navItems = buildNav(isProvider, unreadCount, msgUnread);
+  const navItems = buildNav(isProvider, unreadCount, msgUnread, showSubscriptions);
   const displayName = user?.name ?? (isProvider ? "الشركة العقارية" : "المستخدم");
 
   // ── Sidebar ──────────────────────────────────────────────────────────────────
