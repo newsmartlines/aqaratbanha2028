@@ -997,7 +997,7 @@ export default function SearchPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, delay: Math.min(idx, 5) * 0.04 }}
-        className={`group relative bg-white rounded-lg overflow-hidden cursor-pointer flex flex-row h-[152px]
+        className={`group relative bg-white rounded-lg overflow-hidden cursor-pointer flex flex-row h-[176px]
           border transition-colors duration-150
           ${p.featured
             ? "border-amber-200 hover:border-amber-300"
@@ -1009,7 +1009,7 @@ export default function SearchPage() {
         {/* ── Image — RIGHT side in RTL (first in DOM) ── */}
         <PropertyImageGallery
           images={imgs} alt={p.title} fallback={DEFAULT_IMG}
-          className="shrink-0 w-[210px] sm:w-[250px]"
+          className="shrink-0 w-[240px] sm:w-[290px]"
         >
           {/* Action buttons — top-left of image */}
           <div className="absolute top-2 left-2 z-20 flex items-center gap-1">
@@ -1040,10 +1040,10 @@ export default function SearchPage() {
         </PropertyImageGallery>
 
         {/* ── Content — LEFT side in RTL ── */}
-        <div className="flex-1 flex flex-col px-3.5 py-2.5 min-w-0 overflow-hidden">
+        <div className="flex-1 flex flex-col px-4 py-3 min-w-0 overflow-hidden">
 
           {/* Row 1: Location + listing type badge */}
-          <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-1 min-w-0">
               <MapPin className="w-3 h-3 text-primary shrink-0" />
               <span className="text-[11px] font-medium text-zinc-500 truncate">{loc}</span>
@@ -1056,7 +1056,7 @@ export default function SearchPage() {
 
           {/* Row 2: Company logo + name */}
           {(p.agentName || logoSrc) && (
-            <div className="flex items-center gap-1.5 mb-1.5">
+            <div className="flex items-center gap-1.5 mb-2">
               {logoSrc ? (
                 <img
                   src={logoSrc}
@@ -1079,20 +1079,20 @@ export default function SearchPage() {
           )}
 
           {/* Row 3: Title */}
-          <h2 className="font-bold text-[13px] text-zinc-900 leading-snug line-clamp-1 mb-1 group-hover:text-primary transition-colors">
+          <h2 className="font-bold text-[13px] text-zinc-900 leading-snug line-clamp-1 mb-2 group-hover:text-primary transition-colors">
             {p.title}
           </h2>
 
           {/* Row 4: Description snippet */}
           {descSnippet && (
-            <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-1.5 flex-shrink-0">
+            <p className="text-[11px] text-zinc-400 line-clamp-1 leading-relaxed mb-2 flex-shrink-0">
               {descSnippet}
             </p>
           )}
 
           {/* Row 5: Specs — compact inline */}
           {(p.rooms != null || p.bathrooms != null || p.area != null) && (
-            <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
               {p.rooms != null && (
                 <span className="flex items-center gap-0.5 text-[11px] text-zinc-500">
                   <BedDouble className="w-3 h-3 text-zinc-400 shrink-0" />{p.rooms} غرف
