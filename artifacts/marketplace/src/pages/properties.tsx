@@ -581,7 +581,7 @@ export default function PropertiesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
         <Header />
         <div className="flex flex-col items-center gap-3 text-gray-400 mt-20">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -592,7 +592,7 @@ export default function PropertiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]" dir="rtl">
+    <div className="min-h-screen bg-white" dir="rtl">
       <Header />
 
       {/* ── Top Search Bar (Dubizzle-style) ── */}
