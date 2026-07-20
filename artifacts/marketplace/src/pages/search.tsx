@@ -1236,7 +1236,7 @@ export default function SearchPage() {
 
   /* ── Render ─────────────────────────────────────────────────────── */
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-[#f7f7f5]" dir="rtl">
+    <div className="min-h-[100dvh] flex flex-col bg-white" dir="rtl">
       <Header />
 
       {/* ── Sticky Top Bar ──────────────────────────────────────────── */}
