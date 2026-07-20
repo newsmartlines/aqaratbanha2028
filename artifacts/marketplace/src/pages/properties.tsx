@@ -581,7 +581,7 @@ export default function PropertiesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center" dir="rtl">
         <Header />
         <div className="flex flex-col items-center gap-3 text-gray-400 mt-20">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -592,7 +592,7 @@ export default function PropertiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-[#f5f5f5]" dir="rtl">
       <Header />
 
       {/* ── Top Search Bar (Dubizzle-style) ── */}
@@ -722,12 +722,12 @@ export default function PropertiesPage() {
 
       {/* ── Main Layout ── */}
       <div className="container mx-auto px-4">
-        <div className="flex gap-0">
+        <div className="flex gap-6">
 
           {/* ═══════════════════════════════════════
               RIGHT SIDEBAR — Filters
           ═══════════════════════════════════════ */}
-          <aside className="w-80 shrink-0 hidden lg:flex lg:flex-col pt-6">
+          <aside className="w-80 shrink-0 hidden lg:flex lg:flex-col py-6">
             {/* Smart-scroll inner: sticky + independent wheel scroll */}
             <div
               ref={sidebarRef}
@@ -1013,7 +1013,7 @@ export default function PropertiesPage() {
           {/* ═══════════════════════════════════════
               LEFT — Results
           ═══════════════════════════════════════ */}
-          <div className="flex-1 min-w-0 pt-6">
+          <div className="flex-1 min-w-0 py-6">
             {/* Results header */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-wrap">
