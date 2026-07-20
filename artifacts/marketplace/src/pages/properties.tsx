@@ -1136,6 +1136,19 @@ export default function PropertiesPage() {
                                   </span>
                                 </div>
                               )}
+                              {/* Company logo badge — bottom-right of image */}
+                              {p.agentLogo && (
+                                <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
+                                  <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md border border-white/60 flex items-center justify-center" style={{ minWidth: 48, maxWidth: 80 }}>
+                                    <img
+                                      src={p.agentLogo}
+                                      alt={p.agentName}
+                                      className="h-6 w-auto object-contain"
+                                      onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
@@ -1224,14 +1237,28 @@ export default function PropertiesPage() {
                                 {/* Agent */}
                                 {p.agentName && (
                                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                    {(p.agentAvatar || p.agentLogo) ? (
+                                    {p.agentLogo ? (
+                                      /* Company: rectangular logo badge */
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        <div className="h-6 px-1.5 rounded border border-gray-200 bg-white flex items-center justify-center" style={{ maxWidth: 64 }}>
+                                          <img
+                                            src={p.agentLogo}
+                                            alt={p.agentName}
+                                            className="h-4 w-auto object-contain"
+                                            onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : p.agentAvatar ? (
+                                      /* Individual: round avatar */
                                       <img
-                                        src={p.agentAvatar || p.agentLogo}
+                                        src={p.agentAvatar}
                                         alt={p.agentName}
                                         className="w-6 h-6 rounded-full object-cover border border-gray-200 shrink-0"
                                         onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName || "م")}&background=0d9488&color=fff&size=24`; }}
                                       />
                                     ) : (
+                                      /* Fallback initials circle */
                                       <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-[10px]">
                                         {p.agentName.charAt(0)}
                                       </div>
