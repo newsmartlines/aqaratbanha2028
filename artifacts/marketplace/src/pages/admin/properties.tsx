@@ -447,6 +447,15 @@ export default function AdminProperties() {
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Button
                     size="sm"
+                    variant="outline"
+                    className="h-7 px-3 text-xs border-amber-400 text-amber-700 bg-amber-50 hover:bg-amber-100 gap-1 font-semibold"
+                    onClick={() => setLocation(`/admin/properties/${p.id}/review`)}
+                  >
+                    <Eye className="w-3 h-3" />
+                    مراجعة كاملة
+                  </Button>
+                  <Button
+                    size="sm"
                     className="h-7 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
                     onClick={() => handleStatus(p, "approved")}
                   >
@@ -704,6 +713,15 @@ export default function AdminProperties() {
                           >
                             <Eye className="w-3 h-3" /> مشاهدة
                           </Button>
+                          {(p.status === "pending" || p.status === "updated_after_rejection") && (
+                            <Button
+                              size="sm"
+                              className="h-7 px-2.5 text-xs bg-amber-500 hover:bg-amber-600 text-white gap-1 font-semibold shadow-sm"
+                              onClick={() => setLocation(`/admin/properties/${p.id}/review`)}
+                            >
+                              <AlertCircle className="w-3 h-3" /> مراجعة
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
