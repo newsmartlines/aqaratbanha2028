@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Building2, LogIn, UserPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { useSiteSettings } from "@/App";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { PropertyFormFull } from "@/components/property-form";
@@ -79,6 +80,10 @@ function GuestScreen() {
 
 export default function AddPropertyPage() {
   const { user, loading } = useAuth();
+  const siteSettings = useSiteSettings();
+
+  // Show plans step only when the Packages & Subscriptions feature is enabled
+  const showPlans = siteSettings?.subscriptionsEnabled !== "false";
 
   if (loading) {
     return (
@@ -97,7 +102,7 @@ export default function AddPropertyPage() {
         <PropertyFormFull
           mode="user"
           backPath="/"
-          showPlans={true}
+          showPlans={showPlans}
         />
       </div>
       <RealEstateFooter />

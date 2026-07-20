@@ -21,3 +21,6 @@
 {"ts":"2026-07-19T12:23:36.815Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PUT","path":"/admin/menu-items/6","status":200,"durationMs":59,"body":{"visible":false}}
 {"ts":"2026-07-19T12:23:44.264Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PUT","path":"/admin/menu-items/4","status":200,"durationMs":39,"body":{"visible":false}}
 {"ts":"2026-07-19T14:20:28.845Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"DELETE","path":"/admin/featured-areas/2","status":200,"durationMs":55}
+{"ts":"2026-07-20T14:01:35.612Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PUT","path":"/admin/menu-items/6","status":200,"durationMs":72,"body":{"visible":false}}
+{"ts":"2026-07-20T14:01:37.233Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PUT","path":"/admin/menu-items/4","status":200,"durationMs":30,"body":{"visible":false}}
+{"ts":"2026-07-20T14:01:47.464Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"enabled","newStatus":"disabled"}}

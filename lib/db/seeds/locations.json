@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "locations",
   "label": "المواقع الجغرافية",
-  "exportedAt": "2026-07-19T14:21:04.002Z",
+  "exportedAt": "2026-07-20T14:01:37.235Z",
   "tables": {
     "regions": [
       {
@@ -488,13 +488,22 @@
     ],
     "featuredAreas": [
       {
+        "id": 2,
+        "nameAr": "بنها",
+        "image": "https://images.unsplash.com/photo-1582407947304-fd86f28f7f89?w=600&q=80",
+        "cityName": "بنها",
+        "displayOrder": 1,
+        "enabled": true,
+        "createdAt": "2026-07-20T13:17:15.597Z"
+      },
+      {
         "id": 3,
         "nameAr": "شبرا الخيمة",
         "image": "https://images.unsplash.com/photo-1560472355-536de3962603?w=600&q=80",
         "cityName": "شبرا الخيمة",
         "displayOrder": 2,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 4,
@@ -503,7 +512,7 @@
         "cityName": "القناطر الخيرية",
         "displayOrder": 3,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 5,
@@ -512,7 +521,7 @@
         "cityName": "طوخ",
         "displayOrder": 4,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 6,
@@ -521,7 +530,7 @@
         "cityName": "قليوب",
         "displayOrder": 5,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 7,
@@ -530,7 +539,7 @@
         "cityName": "التجمع الخامس",
         "displayOrder": 6,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 8,
@@ -539,7 +548,7 @@
         "cityName": "الشيخ زايد",
         "displayOrder": 7,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 9,
@@ -548,7 +557,7 @@
         "cityName": "مدينة بدر",
         "displayOrder": 8,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 10,
@@ -557,7 +566,7 @@
         "cityName": "العبور",
         "displayOrder": 9,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 11,
@@ -566,7 +575,7 @@
         "cityName": "الخانكة",
         "displayOrder": 10,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       },
       {
         "id": 12,
@@ -575,7 +584,7 @@
         "cityName": "كفر شكر",
         "displayOrder": 11,
         "enabled": true,
-        "createdAt": "2026-07-19T12:06:18.955Z"
+        "createdAt": "2026-07-20T13:17:15.597Z"
       }
     ]
   }
