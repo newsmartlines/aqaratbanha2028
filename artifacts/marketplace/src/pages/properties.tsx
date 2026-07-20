@@ -425,6 +425,7 @@ export default function PropertiesPage() {
     onSuccess: (_, { id, add }) => {
       setLiked(prev => { const s = new Set(prev); add ? s.add(id) : s.delete(id); return s; });
       queryClient.invalidateQueries({ queryKey: ["property-favorites-ids"] });
+      queryClient.invalidateQueries({ queryKey: ["property-favorites"] });
       toast.success(add ? "أُضيف للمفضلة" : "حُذف من المفضلة");
     },
     onError: () => toast.error("حدث خطأ، حاول مرة أخرى"),

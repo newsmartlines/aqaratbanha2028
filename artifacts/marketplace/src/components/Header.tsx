@@ -86,6 +86,10 @@ export function Header() {
   const getInitials = (name: string) =>
     name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
+  const showSubscriptions = settings?.subscriptionsEnabled !== "false";
+
+  const SUBSCRIPTION_MENU_HREFS = ["/dashboard/packages", "/dashboard/payments"];
+
   const providerMenuItems = [
     { icon: LayoutDashboard, label: "لوحة التحكم",  href: "/dashboard" },
     { icon: Package,         label: "باقتي",         href: "/dashboard/packages" },
@@ -96,7 +100,7 @@ export function Header() {
     { icon: CreditCard,      label: "المدفوعات",     href: "/dashboard/payments" },
     { icon: Settings,        label: "الإعدادات",     href: "/dashboard/settings" },
     { icon: HelpCircle,      label: "المساعدة",      href: "/dashboard/support" },
-  ];
+  ].filter(item => showSubscriptions || !SUBSCRIPTION_MENU_HREFS.includes(item.href));
 
   const userMenuItems = [
     { icon: PlusCircle,      label: "أضف عقارك",     href: "/add-property",            highlight: true },
@@ -108,7 +112,7 @@ export function Header() {
     { icon: MessageCircle,   label: "رسائلي",         href: "/dashboard/messages",      badge: msgUnread > 0 ? msgUnread : 0 },
     { icon: Settings,        label: "الإعدادات",      href: "/dashboard/settings" },
     { icon: HelpCircle,      label: "المساعدة",       href: "/dashboard/support" },
-  ];
+  ].filter(item => showSubscriptions || !SUBSCRIPTION_MENU_HREFS.includes(item.href));
 
   const menuItems = user?.role === "provider" ? providerMenuItems :
     user?.role === "admin" ? [{ icon: LayoutDashboard, label: "لوحة التحكم", href: "/admin/dashboard" }] :

@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-07-20T14:38:19.333Z",
+  "exportedAt": "2026-07-20T15:33:46.982Z",
   "tables": {
     "siteSettings": [
       {
@@ -123,7 +123,7 @@
         "id": 21,
         "key": "subscriptionsEnabled",
         "value": "false",
-        "updatedAt": "2026-07-20T14:10:47.654Z"
+        "updatedAt": "2026-07-20T15:33:46.794Z"
       },
       {
         "id": 22,

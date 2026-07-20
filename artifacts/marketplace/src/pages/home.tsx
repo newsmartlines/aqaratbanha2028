@@ -374,7 +374,10 @@ export default function Home() {
       if (add) await api.propertyFavorites.add(id);
       else await api.propertyFavorites.remove(id);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["property-favorites-ids"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["property-favorites-ids"] });
+      qc.invalidateQueries({ queryKey: ["property-favorites"] });
+    },
   });
 
   const heroCityOptions = useMemo(() => {

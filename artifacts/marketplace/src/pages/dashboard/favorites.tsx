@@ -31,7 +31,8 @@ export default function FavoritesPage() {
     queryKey: ["property-favorites"],
     queryFn: () => api.propertyFavorites.list(),
     enabled: !!user,
-    staleTime: 30_000,
+    staleTime: 0,           // always re-fetch on mount so newly-added favorites appear instantly
+    refetchOnMount: true,
   });
 
   const removeMutation = useMutation({
