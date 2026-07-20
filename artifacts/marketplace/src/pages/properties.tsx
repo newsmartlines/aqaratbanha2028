@@ -1110,20 +1110,20 @@ export default function PropertiesPage() {
                               images={p.imgs}
                               alt={p.title}
                               fallback={FALLBACK}
-                              className="shrink-0 w-60 sm:w-80 min-h-[280px]"
+                              className="shrink-0 w-52 sm:w-64 min-h-[190px]"
                             >
                               {/* Like button */}
                               <button
-                                className={`absolute top-2.5 left-2.5 z-20 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
+                                className={`absolute top-2 left-2 z-20 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
                                 onClick={(e) => toggleLike(p.id, e)}
                               >
                                 <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
                               </button>
                               {/* Premium featured badge */}
                               {p.featured && (
-                                <div className="absolute bottom-2.5 left-2.5 z-20 pointer-events-none">
+                                <div className="absolute bottom-2 left-2 z-20 pointer-events-none">
                                   <span
-                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
+                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full tracking-wide"
                                     style={{
                                       background: "linear-gradient(135deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%)",
                                       color: "#fff",
@@ -1139,114 +1139,25 @@ export default function PropertiesPage() {
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
-                            <div className="flex-1 flex flex-col p-6 gap-0 min-w-0">
-                              {/* Price */}
-                              <div className="flex items-baseline gap-1.5 mb-2">
-                                <span className="text-[22px] sm:text-2xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
-                                <span className="text-sm font-bold text-gray-700">ج.م</span>
-                                {p.type === "للإيجار" && <span className="text-xs text-gray-600">/ شهر</span>}
-                              </div>
-
-                              {/* Title */}
-                              <h3 className="font-bold text-base text-gray-900 leading-snug line-clamp-2 mb-2">
-                                {p.title}
-                              </h3>
-
-                              {/* Location */}
-                              <div className="flex items-center gap-1 text-gray-800 text-sm mb-3">
-                                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                                <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
-                              </div>
-
-                              {/* Specs — always show beds */}
-                              <div className="flex items-center gap-4 mb-3 flex-wrap">
-                                <div className="flex items-center gap-1.5 text-gray-900 text-sm">
-                                  <BedDouble className="w-4 h-4 text-gray-600 shrink-0" />
-                                  <span className="font-semibold">{p.beds || "—"}</span>
-                                  <span className="text-gray-700">غرف</span>
+                            <div className="flex-1 flex flex-col p-4 gap-0 min-w-0">
+                              {/* Price + type badge */}
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
+                                  <span className="text-xs font-bold text-gray-600">ج.م</span>
+                                  {p.type === "للإيجار" && <span className="text-[11px] text-gray-500">/ شهر</span>}
                                 </div>
-                                {p.baths > 0 && (
-                                  <div className="flex items-center gap-1.5 text-gray-900 text-sm">
-                                    <Bath className="w-4 h-4 text-gray-600 shrink-0" />
-                                    <span className="font-semibold">{p.baths}</span>
-                                    <span className="text-gray-700">حمام</span>
-                                  </div>
-                                )}
-                                {p.area > 0 && (
-                                  <div className="flex items-center gap-1.5 text-gray-900 text-sm">
-                                    <Maximize2 className="w-4 h-4 text-gray-600 shrink-0" />
-                                    <span className="font-semibold">{p.area}</span>
-                                    <span className="text-gray-700">م²</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Extra tags: finishing / floor / furnished / payment */}
-                              {(p.finishing || p.floor != null || p.furnished || p.paymentMethod) && (
-                                <div className="flex flex-wrap gap-1.5 mb-4">
-                                  {p.finishing && (
-                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100">{p.finishing}</span>
-                                  )}
-                                  {p.floor != null && (
-                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                                      {p.floor === 0 ? "دور أرضي" : `دور ${p.floor}`}
-                                    </span>
-                                  )}
-                                  {p.furnished && p.furnished !== "غير مفروش" && (
-                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">{p.furnished}</span>
-                                  )}
-                                  {p.paymentMethod && (
-                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100">{p.paymentMethod}</span>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Divider */}
-                              <div className="border-t border-gray-100 mb-3" />
-
-                              {/* Agent row */}
-                              {p.agentName && (
-                                <div className="flex items-center gap-2 min-w-0 mb-2">
-                                  {(p.agentAvatar || p.agentLogo) ? (
-                                    <img
-                                      src={p.agentAvatar || p.agentLogo}
-                                      alt={p.agentName}
-                                      className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0"
-                                      onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName || "م")}&background=0d9488&color=fff&size=28`; }}
-                                    />
-                                  ) : (
-                                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-xs">
-                                      {p.agentName.charAt(0)}
-                                    </div>
-                                  )}
-                                  <span className="text-xs font-semibold text-gray-900 truncate">{p.agentName}</span>
-                                </div>
-                              )}
-
-                              {/* Time + views + compare + flag — one line */}
-                              <div className="flex items-center justify-between gap-1">
-                                {p.createdAt && (
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3 text-gray-600 shrink-0" />
-                                    <span className="text-xs font-semibold text-gray-900">{timeAgo(p.createdAt)}</span>
-                                    {(p.viewCount ?? 0) > 0 && (
-                                      <span className="flex items-center gap-0.5 text-gray-700 text-[10px] mr-1">
-                                        <Eye className="w-2.5 h-2.5" />{p.viewCount}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
                                 <div className="flex items-center gap-1 shrink-0">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else if (r === "type_mismatch") toast.error("لا يمكن مقارنة بيع مع إيجار"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
-                                    className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-600 hover:border-primary/30 hover:text-primary"}`}
+                                    className={`w-6 h-6 rounded-md border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-400 hover:border-primary/30 hover:text-primary"}`}
                                     title="أضف للمقارنة"
                                   >
                                     <GitCompare className="w-3 h-3" />
                                   </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
-                                    className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:text-rose-500 hover:border-rose-200 transition-all"
+                                    className="w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-200 transition-all"
                                     title="إبلاغ"
                                   >
                                     <Flag className="w-3 h-3" />
@@ -1254,32 +1165,118 @@ export default function PropertiesPage() {
                                 </div>
                               </div>
 
-                              {/* تواصل مع المعلن */}
-                              {(() => {
-                                const cm = p.contactMethods;
-                                const showWA  = p.whatsapp && (cm.length === 0 || cm.includes("whatsapp"));
-                                const showCall = p.phone  && (cm.length === 0 || cm.includes("call"));
-                                const showEmail = cm.includes("email");
-                                if (!showWA && !showCall && !showEmail) return null;
-                                return (
-                                  <div className="mt-3 pt-3 border-t border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-right">تواصل مع المعلن</p>
-                                    <div className="flex items-center gap-2 flex-wrap">
+                              {/* Title */}
+                              <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1 mb-1">
+                                {p.title}
+                              </h3>
+
+                              {/* Location */}
+                              <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
+                                <MapPin className="w-3 h-3 text-primary shrink-0" />
+                                <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
+                              </div>
+
+                              {/* Specs row */}
+                              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                <div className="flex items-center gap-1 text-gray-700 text-xs">
+                                  <BedDouble className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                  <span className="font-semibold">{p.beds || "—"}</span>
+                                  <span>غرف</span>
+                                </div>
+                                {p.baths > 0 && (
+                                  <div className="flex items-center gap-1 text-gray-700 text-xs">
+                                    <Bath className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                    <span className="font-semibold">{p.baths}</span>
+                                    <span>حمام</span>
+                                  </div>
+                                )}
+                                {p.area > 0 && (
+                                  <div className="flex items-center gap-1 text-gray-700 text-xs">
+                                    <Maximize2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                    <span className="font-semibold">{p.area}</span>
+                                    <span>م²</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Tags: finishing / floor / furnished / payment */}
+                              {(p.finishing || p.floor != null || p.furnished || p.paymentMethod) && (
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                  {p.finishing && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">{p.finishing}</span>
+                                  )}
+                                  {p.floor != null && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                                      {p.floor === 0 ? "دور أرضي" : `دور ${p.floor}`}
+                                    </span>
+                                  )}
+                                  {p.furnished && p.furnished !== "غير مفروش" && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">{p.furnished}</span>
+                                  )}
+                                  {p.paymentMethod && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">{p.paymentMethod}</span>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Bottom row: agent + time + contact buttons */}
+                              <div className="mt-auto pt-2 border-t border-gray-100 flex items-center gap-2">
+                                {/* Agent */}
+                                {p.agentName && (
+                                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                    {(p.agentAvatar || p.agentLogo) ? (
+                                      <img
+                                        src={p.agentAvatar || p.agentLogo}
+                                        alt={p.agentName}
+                                        className="w-6 h-6 rounded-full object-cover border border-gray-200 shrink-0"
+                                        onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName || "م")}&background=0d9488&color=fff&size=24`; }}
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-[10px]">
+                                        {p.agentName.charAt(0)}
+                                      </div>
+                                    )}
+                                    <span className="text-[11px] font-semibold text-gray-700 truncate">{p.agentName}</span>
+                                    {p.createdAt && (
+                                      <span className="text-[10px] text-gray-400 shrink-0 mr-1">{timeAgo(p.createdAt)}</span>
+                                    )}
+                                  </div>
+                                )}
+                                {!p.agentName && p.createdAt && (
+                                  <div className="flex items-center gap-1 flex-1">
+                                    <Clock className="w-3 h-3 text-gray-400 shrink-0" />
+                                    <span className="text-[11px] text-gray-500">{timeAgo(p.createdAt)}</span>
+                                    {(p.viewCount ?? 0) > 0 && (
+                                      <span className="flex items-center gap-0.5 text-gray-400 text-[10px] mr-1">
+                                        <Eye className="w-2.5 h-2.5" />{p.viewCount}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                                {/* Contact buttons */}
+                                {(() => {
+                                  const cm = p.contactMethods;
+                                  const showWA  = p.whatsapp && (cm.length === 0 || cm.includes("whatsapp"));
+                                  const showCall = p.phone  && (cm.length === 0 || cm.includes("call"));
+                                  const showEmail = cm.includes("email");
+                                  if (!showWA && !showCall && !showEmail) return null;
+                                  return (
+                                    <div className="flex items-center gap-1.5 shrink-0">
                                       {showWA && (
                                         <button
                                           onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
-                                          className="flex-1 min-w-0 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md"
+                                          className="flex items-center gap-1 h-8 px-3 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all"
                                         >
-                                          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
                                           واتساب
                                         </button>
                                       )}
                                       {showCall && (
                                         <button
                                           onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
-                                          className={`flex items-center justify-center gap-1.5 h-10 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${showWA ? "px-5" : "flex-1"}`}
+                                          className="flex items-center gap-1 h-8 px-3 rounded-lg border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all"
                                         >
-                                          <Phone className="w-4 h-4 shrink-0" />
+                                          <Phone className="w-3.5 h-3.5 shrink-0" />
                                           اتصال
                                         </button>
                                       )}
@@ -1287,15 +1284,15 @@ export default function PropertiesPage() {
                                         <a
                                           href="mailto:?"
                                           onClick={(e) => e.stopPropagation()}
-                                          className="flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold transition-all"
+                                          className="flex items-center gap-1 h-8 px-3 rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold transition-all"
                                         >
                                           ✉ إيميل
                                         </a>
                                       )}
                                     </div>
-                                  </div>
-                                );
-                              })()}
+                                  );
+                                })()}
+                              </div>
                             </div>
                           </div>
                         </motion.div>
