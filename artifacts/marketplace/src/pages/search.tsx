@@ -981,170 +981,181 @@ export default function SearchPage() {
     </div>
   );
 
-  /* ── List Card ────────────────────────────────────────────────── */
+  /* ── List Card — Nawy-style ──────────────────────────────────── */
   const ListCard = ({ p, idx }: { p: PropertyResult; idx: number }) => {
     const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
     const priceStr = Number(p.price) ? Number(p.price).toLocaleString("en-US") : null;
     const typeAr = LISTING_TYPE_MAP[p.listingType] ?? p.listingType;
     const loc = [p.district, p.address].filter(Boolean).join("، ") || "بنها";
     const wa = (p.whatsapp ?? p.phone ?? "").replace(/\D/g, "");
+    const descSnippet = p.description ? p.description.slice(0, 110) : null;
+    const logoSrc = p.agentLogo || p.agentAvatar;
 
     return (
       <PropertyTooltip property={{ id: p.id, title: p.title, description: p.description, price: p.price, listingType: p.listingType, district: p.district, address: p.address, mainCategory: CATEGORY_MAP[p.mainCategory] ?? p.mainCategory, rooms: p.rooms, bathrooms: p.bathrooms, area: p.area, images: p.images }}>
       <motion.article
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: Math.min(idx, 5) * 0.05 }}
-        className={`group relative bg-white rounded-xl overflow-hidden cursor-pointer flex flex-row
-          transition-colors duration-150
+        transition={{ duration: 0.25, delay: Math.min(idx, 5) * 0.04 }}
+        className={`group relative bg-white rounded-lg overflow-hidden cursor-pointer flex flex-row h-[152px]
+          border transition-colors duration-150
           ${p.featured
-            ? "border border-amber-200 hover:border-amber-300"
+            ? "border-amber-200 hover:border-amber-300"
             : p.urgent
-            ? "border border-red-200 hover:border-red-300"
-            : "border border-zinc-200/80 hover:border-zinc-300"}`}
+            ? "border-red-200 hover:border-red-300"
+            : "border-zinc-200 hover:border-zinc-300"}`}
         onClick={() => setLocation(`/property/${p.id}`)}
       >
+        {/* ── Image — RIGHT side in RTL (first in DOM) ── */}
         <PropertyImageGallery
           images={imgs} alt={p.title} fallback={DEFAULT_IMG}
-          className="shrink-0 w-60 sm:w-80"
+          className="shrink-0 w-[210px] sm:w-[250px]"
         >
-          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/15 pointer-events-none" />
-          {/* Premium featured badge */}
+          {/* Action buttons — top-left of image */}
+          <div className="absolute top-2 left-2 z-20 flex items-center gap-1">
+            <button
+              onClick={e => toggleSave(p.id, e)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center bg-white/90 transition-all
+                ${saved.has(p.id) ? "text-rose-500" : "text-zinc-400 hover:text-rose-500"}`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-rose-500" : ""}`} />
+            </button>
+          </div>
+
+          {/* Featured / Urgent badge — top-right of image */}
           {p.featured && (
-            <div className="absolute bottom-3 right-3 z-20 pointer-events-none">
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
-                style={{
-                  background: "linear-gradient(135deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%)",
-                  color: "#fff",
-                  boxShadow: "0 3px 10px rgba(245,158,11,0.5), 0 1px 3px rgba(0,0,0,0.2)",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.15)",
-                  border: "1.5px solid rgba(255,255,255,0.35)",
-                }}
-              >
-                <Crown className="w-3 h-3 shrink-0" /> مميز
+            <div className="absolute top-2 right-2 z-20 pointer-events-none">
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-400 text-white">
+                <Crown className="w-2.5 h-2.5 shrink-0" /> مميز
               </span>
             </div>
           )}
-          <button
-            onClick={e => toggleSave(p.id, e)}
-            className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition-all shadow-sm
-              ${saved.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/90 border-white/60 text-zinc-500 hover:text-rose-500"}`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-white" : ""}`} />
-          </button>
-          <div className="absolute bottom-0 inset-x-0 z-20 bg-black/40 backdrop-blur-[2px] text-white text-[10px] font-medium px-3 py-1.5 text-center">
-            {CATEGORY_MAP[p.mainCategory] ?? p.mainCategory}
-          </div>
+          {!p.featured && p.urgent && (
+            <div className="absolute top-2 right-2 z-20 pointer-events-none">
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500 text-white">
+                <Zap className="w-2.5 h-2.5 shrink-0" /> عاجل
+              </span>
+            </div>
+          )}
         </PropertyImageGallery>
 
-        <div className="flex-1 flex flex-col p-4 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex items-baseline gap-1.5" dir="ltr">
-              {priceStr ? (
-                <>
-                  <span className="text-2xl font-black text-black leading-none">{priceStr}</span>
-                  <span className="text-base font-bold text-gray-600">ج.م</span>
-                  {p.listingType === "rent" && <span className="text-xs text-gray-500">/ {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : "/"}</span>}
-                </>
-              ) : (
-                <span className="text-sm font-semibold text-zinc-400" dir="rtl">السعر عند التواصل</span>
-              )}
+        {/* ── Content — LEFT side in RTL ── */}
+        <div className="flex-1 flex flex-col px-3.5 py-2.5 min-w-0 overflow-hidden">
+
+          {/* Row 1: Location + listing type badge */}
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex items-center gap-1 min-w-0">
+              <MapPin className="w-3 h-3 text-primary shrink-0" />
+              <span className="text-[11px] font-medium text-zinc-500 truncate">{loc}</span>
+              {p.compound && <span className="text-[10px] text-zinc-400 shrink-0 truncate">· {p.compound}</span>}
             </div>
-            {p.advertiserType && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 shrink-0">
-                {ADVERTISER_OPTS.find(o => o.value === p.advertiserType)?.label ?? p.advertiserType}
-              </span>
-            )}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/8 text-primary shrink-0 whitespace-nowrap">
+              {typeAr}
+            </span>
           </div>
 
-          <h2 className="font-bold text-[14px] text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+          {/* Row 2: Company logo + name */}
+          {(p.agentName || logoSrc) && (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              {logoSrc ? (
+                <img
+                  src={logoSrc}
+                  alt={p.agentName ?? ""}
+                  className="w-[22px] h-[22px] rounded object-cover shrink-0 border border-zinc-100"
+                  onError={e => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName ?? "م")}&background=0d9488&color=fff&size=22`;
+                  }}
+                />
+              ) : (
+                <div className="w-[22px] h-[22px] rounded bg-primary/10 flex items-center justify-center shrink-0 text-primary font-black text-[9px]">
+                  {p.agentName?.charAt(0) ?? "م"}
+                </div>
+              )}
+              {p.agentName && (
+                <span className="text-[11px] font-semibold text-zinc-500 truncate">{p.agentName}</span>
+              )}
+            </div>
+          )}
+
+          {/* Row 3: Title */}
+          <h2 className="font-bold text-[13px] text-zinc-900 leading-snug line-clamp-1 mb-1 group-hover:text-primary transition-colors">
             {p.title}
           </h2>
 
-          <div className="flex items-center gap-1.5 text-zinc-500 text-sm mb-2.5">
-            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="line-clamp-1 font-medium text-xs">{loc}</span>
-            {p.compound && <span className="text-[11px] text-zinc-400 shrink-0">· {p.compound}</span>}
-          </div>
-
-          {(p.rooms || p.bathrooms || p.area) && (
-            <div className="flex items-center gap-2 flex-wrap mb-2.5">
-              {p.rooms != null && (
-                <div className="flex items-center gap-1 bg-zinc-50 rounded-lg px-2 py-1">
-                  <BedDouble className="w-3 h-3 text-zinc-400" />
-                  <span className="text-xs font-bold text-zinc-700">{p.rooms}</span>
-                  <span className="text-[10px] text-zinc-400">غرف</span>
-                </div>
-              )}
-              {p.bathrooms != null && (
-                <div className="flex items-center gap-1 bg-zinc-50 rounded-lg px-2 py-1">
-                  <Bath className="w-3 h-3 text-zinc-400" />
-                  <span className="text-xs font-bold text-zinc-700">{p.bathrooms}</span>
-                  <span className="text-[10px] text-zinc-400">حمام</span>
-                </div>
-              )}
-              {p.area != null && (
-                <div className="flex items-center gap-1 bg-zinc-50 rounded-lg px-2 py-1">
-                  <Maximize2 className="w-3 h-3 text-zinc-400" />
-                  <span className="text-xs font-bold text-zinc-700">{Number(p.area).toLocaleString("ar-EG")}</span>
-                  <span className="text-[10px] text-zinc-400">م²</span>
-                </div>
-              )}
-              {p.floor != null && (
-                <div className="flex items-center gap-1 bg-zinc-50 rounded-lg px-2 py-1">
-                  <Building2 className="w-3 h-3 text-zinc-400" />
-                  <span className="text-xs font-bold text-zinc-700">{p.floor === 0 ? "أرضي" : `ط${p.floor}`}</span>
-                </div>
-              )}
-            </div>
+          {/* Row 4: Description snippet */}
+          {descSnippet && (
+            <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-1.5 flex-shrink-0">
+              {descSnippet}
+            </p>
           )}
 
-          {(p.finishing || p.furnished || p.condition || p.paymentMethod) && (
-            <div className="flex flex-wrap gap-1 mb-2.5">
-              {p.finishing && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{FINISHING_OPTS.find(o => o.value === p.finishing)?.label ?? p.finishing}</span>}
-              {p.furnished && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">{FURNISHED_OPTS.find(o => o.value === p.furnished)?.label ?? p.furnished}</span>}
-              {p.condition && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-600">{CONDITION_OPTS.find(o => o.value === p.condition)?.label ?? p.condition}</span>}
-              {p.paymentMethod && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{PAYMENT_OPTS.find(o => o.value === p.paymentMethod)?.label ?? p.paymentMethod}</span>}
+          {/* Row 5: Specs — compact inline */}
+          {(p.rooms != null || p.bathrooms != null || p.area != null) && (
+            <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+              {p.rooms != null && (
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-500">
+                  <BedDouble className="w-3 h-3 text-zinc-400 shrink-0" />{p.rooms} غرف
+                </span>
+              )}
+              {p.bathrooms != null && (
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-500">
+                  <Bath className="w-3 h-3 text-zinc-400 shrink-0" />{p.bathrooms} حمام
+                </span>
+              )}
+              {p.area != null && (
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-500">
+                  <Maximize2 className="w-3 h-3 text-zinc-400 shrink-0" />{Number(p.area).toLocaleString("ar-EG")} م²
+                </span>
+              )}
             </div>
           )}
 
           <div className="flex-1" />
-          <div className="border-t border-zinc-100 mt-1 pt-2.5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              {(p.agentAvatar || p.agentLogo) ? (
-                <img src={p.agentAvatar || p.agentLogo!} alt={p.agentName ?? ""} className="w-7 h-7 rounded-full object-cover border-2 border-white shadow-sm shrink-0"
-                  onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName ?? "م")}&background=0d9488&color=fff&size=28`; }} />
-              ) : p.agentName ? (
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-black text-xs">{p.agentName.charAt(0)}</div>
-              ) : null}
-              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                {p.agentName && <span className="text-xs font-bold text-zinc-700 truncate leading-none">{p.agentName}</span>}
-                <span className="flex items-center gap-0.5 text-zinc-400 text-[10px] shrink-0">
+
+          {/* Row 6: Price + contact buttons */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              {priceStr ? (
+                <div dir="ltr" className="text-[15px] font-black text-zinc-900 leading-none">
+                  {priceStr}
+                  <span className="text-[11px] font-bold text-zinc-500 mr-1">ج.م</span>
+                  {p.listingType === "rent" && (
+                    <span className="text-[10px] text-zinc-400">
+                      / {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : ""}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="text-[11px] font-semibold text-zinc-400">السعر عند التواصل</span>
+              )}
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="flex items-center gap-0.5 text-[10px] text-zinc-400">
                   <Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}
                 </span>
                 {p.viewCount > 0 && (
-                  <span className="flex items-center gap-0.5 text-zinc-400 text-[10px] shrink-0">
+                  <span className="flex items-center gap-0.5 text-[10px] text-zinc-400">
                     <Eye className="w-2.5 h-2.5" />{p.viewCount.toLocaleString("ar-EG")}
                   </span>
                 )}
-                <span className="text-[10px] text-zinc-400 font-mono shrink-0">#{p.id}</span>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {wa && (
                 <button
                   onClick={e => { e.stopPropagation(); window.open(`https://wa.me/${wa}`, "_blank"); }}
-                  className="flex items-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white text-[11px] font-bold px-3 h-8 rounded-xl transition-all shadow-sm hover:shadow-md"
+                  className="flex items-center gap-1 bg-[#25D366] hover:bg-[#20ba5a] text-white text-[11px] font-bold px-2.5 h-7 rounded-lg transition-all"
                 >
                   <WaIcon />
                   واتساب
                 </button>
               )}
               {p.phone && (
-                <button onClick={e => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
-                  className="w-8 h-8 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-500 hover:text-primary hover:border-primary/40 transition-all">
-                  <Phone className="w-3.5 h-3.5" />
+                <button
+                  onClick={e => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                  className="w-7 h-7 rounded-lg border border-zinc-200 flex items-center justify-center text-zinc-500 hover:text-primary hover:border-primary/40 transition-all"
+                >
+                  <Phone className="w-3 h-3" />
                 </button>
               )}
             </div>
@@ -1415,7 +1426,7 @@ export default function SearchPage() {
               </button>
             </div>
           ) : viewMode === "list" ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {results.map((p, i) => <ListCard key={p.id} p={p} idx={i} />)}
             </div>
           ) : (
