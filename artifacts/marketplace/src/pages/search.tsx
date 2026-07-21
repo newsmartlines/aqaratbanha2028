@@ -357,35 +357,48 @@ function ToggleOpt({ active, onClick, children }: {
 }
 
 /* ─── Price / Area range inputs ──────────────────────────────────── */
-function RangeInputs({ minVal, maxVal, onMin, onMax, suffix, placeholder }: {
+function RangeInputs({ minVal, maxVal, onMin, onMax, placeholder }: {
   minVal: string; maxVal: string;
   onMin: (v: string) => void; onMax: (v: string) => void;
-  suffix: string; placeholder?: [string, string];
+  suffix?: string; placeholder?: [string, string];
 }) {
+  // Format number with commas for display; store raw value in state
+  function formatDisplay(val: string) {
+    if (!val) return "";
+    const n = Number(val.replace(/,/g, ""));
+    return isNaN(n) ? val : n.toLocaleString("en-US");
+  }
+  function handleChange(raw: string, setter: (v: string) => void) {
+    setter(raw.replace(/,/g, ""));
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 relative">
+    <div className="flex items-stretch border border-zinc-200 rounded-xl overflow-hidden bg-white">
+      {/* Max value — left side (RTL: appears on left visually = "إلى") */}
+      <div className="flex-1">
         <input
-          type="number" inputMode="numeric" min="0"
-          placeholder={placeholder?.[0] ?? "من"}
-          value={minVal}
-          onChange={e => onMin(e.target.value)}
-          className="w-full h-9 pr-3 pl-8 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-zinc-400 transition-all"
+          type="text" inputMode="numeric"
+          placeholder={placeholder?.[1] ?? "حد أقصى"}
+          value={formatDisplay(maxVal)}
+          onChange={e => handleChange(e.target.value, onMax)}
+          className="w-full h-10 px-3 text-sm text-center focus:outline-none placeholder:text-zinc-400 bg-transparent"
           dir="ltr"
         />
-        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 font-medium pointer-events-none">{suffix}</span>
       </div>
-      <span className="text-zinc-400 text-xs font-bold">—</span>
-      <div className="flex-1 relative">
+      {/* Separator */}
+      <div className="flex items-center px-2 border-x border-zinc-200 text-zinc-400 text-xs font-semibold select-none">
+        إلى
+      </div>
+      {/* Min value — right side (RTL: appears on right = "من") */}
+      <div className="flex-1">
         <input
-          type="number" inputMode="numeric" min="0"
-          placeholder={placeholder?.[1] ?? "إلى"}
-          value={maxVal}
-          onChange={e => onMax(e.target.value)}
-          className="w-full h-9 pr-3 pl-8 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-zinc-400 transition-all"
+          type="text" inputMode="numeric"
+          placeholder={placeholder?.[0] ?? "الحد الأدنى"}
+          value={formatDisplay(minVal)}
+          onChange={e => handleChange(e.target.value, onMin)}
+          className="w-full h-10 px-3 text-sm text-center focus:outline-none placeholder:text-zinc-400 bg-transparent"
           dir="ltr"
         />
-        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 font-medium pointer-events-none">{suffix}</span>
       </div>
     </div>
   );
@@ -688,7 +701,7 @@ export default function SearchPage() {
         <RangeInputs
           minVal={filters.priceMin} maxVal={filters.priceMax}
           onMin={v => set("priceMin", v)} onMax={v => set("priceMax", v)}
-          suffix="ج.م" placeholder={["من", "إلى"]}
+          placeholder={["الحد الأدنى", "حد أقصى"]}
         />
         <div className="flex flex-wrap gap-1.5 mt-3">
           {[
@@ -717,7 +730,7 @@ export default function SearchPage() {
         <RangeInputs
           minVal={filters.areaMin} maxVal={filters.areaMax}
           onMin={v => set("areaMin", v)} onMax={v => set("areaMax", v)}
-          suffix="م²" placeholder={["من", "إلى"]}
+          placeholder={["الحد الأدنى", "حد أقصى"]}
         />
         <div className="flex flex-wrap gap-1.5 mt-3">
           {[
