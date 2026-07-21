@@ -322,8 +322,8 @@ export default function Home() {
   });
 
   const { data: banhaAreas = [] } = useQuery({
-    queryKey: ["areas", 1],
-    queryFn: () => api.locations.getAreasByCity(1),
+    queryKey: ["areas", 2],
+    queryFn: () => api.locations.getAreasByCity(2),
     staleTime: 5 * 60_000,
   });
 

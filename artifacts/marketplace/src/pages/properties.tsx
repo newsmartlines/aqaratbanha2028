@@ -351,8 +351,8 @@ export default function PropertiesPage() {
   }, [subCategories]);
 
   const { data: banhaAreas = [] } = useQuery<Area[]>({
-    queryKey: ["areas", 45],
-    queryFn: () => api.locations.getAreasByCity(45),
+    queryKey: ["areas", 2],
+    queryFn: () => api.locations.getAreasByCity(2),
     staleTime: 5 * 60_000,
   });
 
@@ -813,19 +813,27 @@ export default function PropertiesPage() {
                   })()}
                 </FilterSection>
 
-                {/* ── المدينة ── */}
-                {availableCities.length > 0 && (
-                  <FilterSection title="المدينة / المنطقة">
-                    <select
-                      value={selectedCity ?? ""}
-                      onChange={e => setSelectedCity(e.target.value || null)}
-                      className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 text-gray-700 focus:outline-none focus:border-primary/50 cursor-pointer"
-                    >
-                      <option value="">كل المدن</option>
-                      {availableCities.map(c => (
-                        <option key={c} value={c}>{c}</option>
+                {/* ── الحي / المنطقة من DB ── */}
+                {banhaAreas.length > 0 && (
+                  <FilterSection title="الحي / المنطقة">
+                    <div className="flex flex-col gap-2 max-h-52 overflow-y-auto no-scrollbar">
+                      {banhaAreas.map((a) => (
+                        <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
+                          <div
+                            onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
+                          >
+                            {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
+                          </div>
+                          <span
+                            onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
+                            className={`text-sm transition-colors cursor-pointer ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}
+                          >
+                            {a.nameAr}
+                          </span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </FilterSection>
                 )}
 
@@ -980,23 +988,6 @@ export default function PropertiesPage() {
                   </div>
                 </FilterSection>
 
-                {/* ── المنطقة من DB ── */}
-                {banhaAreas.length > 0 && (
-                  <FilterSection title="الحي / المنطقة" defaultOpen={false}>
-                    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto no-scrollbar">
-                      {banhaAreas.map((a) => (
-                        <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
-                          <div onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                            {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
-                          </div>
-                          <span onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
-                            className={`text-sm transition-colors cursor-pointer ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </FilterSection>
-                )}
 
                 {/* CTA */}
                 {activeCount > 0 && (
