@@ -188,6 +188,7 @@ interface PropertyResult {
   viewCount: number; createdAt: string;
   agentName?: string | null; agentAvatar?: string | null;
   agentLogo?: string | null; verified?: boolean | null;
+  providerId?: number | null;
 }
 
 /* ─── Filter state interface ─────────────────────────────────────── */
@@ -1043,6 +1044,35 @@ export default function SearchPage() {
             </button>
           </div>
 
+          {/* Provider logo — premium circular overlay */}
+          {(logoSrc || p.agentName) && (
+            <div
+              className="absolute bottom-2.5 left-2.5 z-20"
+              onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+              title={p.agentName ?? undefined}
+            >
+              <div className={`w-11 h-11 rounded-full border-[2.5px] border-white shadow-[0_2px_10px_rgba(0,0,0,0.28)] overflow-hidden bg-white transition-transform duration-150 ${p.providerId ? "cursor-pointer hover:scale-110" : ""}`}>
+                {logoSrc ? (
+                  <img
+                    src={logoSrc}
+                    alt={p.agentName ?? ""}
+                    className="w-full h-full object-cover"
+                    onError={e => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        p.agentName
+                          ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName!)}&background=0d9488&color=fff&size=88&bold=true`
+                          : "";
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-sm">
+                    {p.agentName?.charAt(0) ?? <Building2 className="w-5 h-5 opacity-90" />}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Featured / Urgent badge — top-right of image */}
           {p.featured && (
             <div className="absolute top-2 right-2 z-20 pointer-events-none">
@@ -1075,27 +1105,15 @@ export default function SearchPage() {
             </span>
           </div>
 
-          {/* Row 2: Company logo + name */}
-          {(p.agentName || logoSrc) && (
+          {/* Row 2: Company name */}
+          {p.agentName && (
             <div className="flex items-center gap-1.5 mb-2">
-              {logoSrc ? (
-                <img
-                  src={logoSrc}
-                  alt={p.agentName ?? ""}
-                  className="w-[22px] h-[22px] rounded object-cover shrink-0 border border-zinc-100"
-                  onError={e => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName ?? "م")}&background=0d9488&color=fff&size=22`;
-                  }}
-                />
-              ) : (
-                <div className="w-[22px] h-[22px] rounded bg-primary/10 flex items-center justify-center shrink-0 text-primary font-black text-[9px]">
-                  {p.agentName?.charAt(0) ?? "م"}
-                </div>
-              )}
-              {p.agentName && (
-                <span className="text-[11px] font-semibold text-zinc-500 truncate">{p.agentName}</span>
-              )}
+              <span
+                className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
+                onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+              >
+                {p.agentName}
+              </span>
             </div>
           )}
 
@@ -1229,6 +1247,38 @@ export default function SearchPage() {
               ${saved.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/90 border-white/60 text-zinc-500 hover:text-rose-500"}`}>
             <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-white" : ""}`} />
           </button>
+
+          {/* Provider logo — premium circular overlay */}
+          {(() => {
+            const gLogoSrc = p.agentLogo || p.agentAvatar;
+            return (gLogoSrc || p.agentName) ? (
+              <div
+                className="absolute bottom-3 left-3 z-20"
+                onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                title={p.agentName ?? undefined}
+              >
+                <div className={`w-12 h-12 rounded-full border-[2.5px] border-white shadow-[0_2px_12px_rgba(0,0,0,0.32)] overflow-hidden bg-white transition-transform duration-150 ${p.providerId ? "cursor-pointer hover:scale-110" : ""}`}>
+                  {gLogoSrc ? (
+                    <img
+                      src={gLogoSrc}
+                      alt={p.agentName ?? ""}
+                      className="w-full h-full object-cover"
+                      onError={e => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          p.agentName
+                            ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName!)}&background=0d9488&color=fff&size=96&bold=true`
+                            : "";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-base">
+                      {p.agentName?.charAt(0) ?? <Building2 className="w-5 h-5 opacity-90" />}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null;
+          })()}
         </PropertyImageGallery>
         <div className="p-3.5">
           {/* Price — clean black, no background */}
