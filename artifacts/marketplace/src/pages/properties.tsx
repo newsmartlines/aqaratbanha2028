@@ -947,6 +947,9 @@ export default function PropertiesPage() {
                               ? selectedDistricts[0]
                               : `${selectedDistricts.length} أحياء مختارة`}
                         </span>
+                        {selectedDistricts.length === 0 && (
+                          <span className="text-xs text-gray-400 tabular-nums shrink-0">{Object.values(countsByDistrict).reduce((s, n) => s + n, 0)}</span>
+                        )}
                         <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${districtDropOpen ? "rotate-180" : ""}`} />
                       </button>
 
@@ -1124,7 +1127,7 @@ export default function PropertiesPage() {
 
                 {/* ── الميزات والمرافق ── */}
                 {allDynFeatures.length > 0 && (
-                <FilterSection title="الميزات والمرافق" defaultOpen={false}>
+                <FilterSection title="الميزات والمرافق" defaultOpen={true}>
                   <div className="flex flex-wrap gap-1.5">
                     {allDynFeatures.map((f) => {
                       const active = selectedFeatures.includes(f.name);
@@ -1150,7 +1153,7 @@ export default function PropertiesPage() {
                 )}
 
                 {/* ── تاريخ الإضافة ── */}
-                <FilterSection title="تاريخ الإضافة" defaultOpen={false}>
+                <FilterSection title="تاريخ الإضافة" defaultOpen={true}>
                   <div className="flex flex-col gap-2">
                     {RECENCY_OPTIONS.map((r, i) => (
                       <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
@@ -1306,6 +1309,23 @@ export default function PropertiesPage() {
                                     }}
                                   >
                                     <Crown className="w-3 h-3 shrink-0" /> مميز
+                                  </span>
+                                </div>
+                              )}
+                              {/* Verified company badge — top-right of image */}
+                              {p.verified && (
+                                <div className="absolute top-2 right-2 z-20 pointer-events-none">
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full tracking-wide"
+                                    style={{
+                                      background: "linear-gradient(135deg,#0d9488 0%,#14b8a6 50%,#0d9488 100%)",
+                                      color: "#fff",
+                                      boxShadow: "0 3px 10px rgba(13,148,136,0.45), 0 1px 3px rgba(0,0,0,0.2)",
+                                      textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                                      border: "1.5px solid rgba(255,255,255,0.35)",
+                                    }}
+                                  >
+                                    <BadgeCheck className="w-3 h-3 shrink-0" /> موثّق
                                   </span>
                                 </div>
                               )}
@@ -1555,6 +1575,23 @@ export default function PropertiesPage() {
                                     }}
                                   >
                                     <Crown className="w-3 h-3 shrink-0" /> مميز
+                                  </span>
+                                </div>
+                              )}
+                              {/* Verified company badge — top-right of image */}
+                              {p.verified && (
+                                <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
+                                    style={{
+                                      background: "linear-gradient(135deg,#0d9488 0%,#14b8a6 50%,#0d9488 100%)",
+                                      color: "#fff",
+                                      boxShadow: "0 3px 10px rgba(13,148,136,0.45), 0 1px 3px rgba(0,0,0,0.2)",
+                                      textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                                      border: "1.5px solid rgba(255,255,255,0.35)",
+                                    }}
+                                  >
+                                    <BadgeCheck className="w-3 h-3 shrink-0" /> موثّق
                                   </span>
                                 </div>
                               )}
@@ -1908,7 +1945,7 @@ export default function PropertiesPage() {
 
             {/* Features - dynamic from DB */}
             {allDynFeatures.length > 0 && (
-              <FilterSection title="الميزات والمرافق" defaultOpen={false}>
+              <FilterSection title="الميزات والمرافق" defaultOpen={true}>
                 <div className="flex flex-wrap gap-1.5">
                   {allDynFeatures.map((f) => {
                     const active = selectedFeatures.includes(f.name);
