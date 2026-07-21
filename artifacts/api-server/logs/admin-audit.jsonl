@@ -33,3 +33,4 @@
 {"ts":"2026-07-21T18:08:14.554Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/backup","status":200,"durationMs":18,"body":{"label":"pre-update"}}
 {"ts":"2026-07-21T18:08:34.763Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/create-package","status":200,"durationMs":36,"body":{"bumpType":"patch","changelog":"بسم الله نسخة رقم 1\nتحديث","includeDb":true}}
 {"ts":"2026-07-21T18:09:44.739Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/backup","status":200,"durationMs":66,"body":{"label":"quick"}}
+{"ts":"2026-07-21T23:38:55.535Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/backup","status":200,"durationMs":32,"body":{"label":"manual"}}
