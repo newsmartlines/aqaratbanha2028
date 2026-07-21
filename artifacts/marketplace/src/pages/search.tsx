@@ -362,25 +362,33 @@ function RangeInputs({ minVal, maxVal, onMin, onMax, placeholder }: {
   onMin: (v: string) => void; onMax: (v: string) => void;
   suffix?: string; placeholder?: [string, string];
 }) {
-  // Format number with commas for display; store raw value in state
   function formatDisplay(val: string) {
     if (!val) return "";
     const n = Number(val.replace(/,/g, ""));
     return isNaN(n) ? val : n.toLocaleString("en-US");
   }
-  function handleChange(raw: string, setter: (v: string) => void) {
-    setter(raw.replace(/,/g, ""));
+  function handleMin(raw: string) {
+    const v = raw.replace(/,/g, "");
+    onMin(v);
+    // if max exists and is now smaller than new min, bump max up to min
+    if (v && maxVal && Number(v) > Number(maxVal)) onMax(v);
+  }
+  function handleMax(raw: string) {
+    const v = raw.replace(/,/g, "");
+    onMax(v);
+    // if min exists and new max is smaller than min, pull max down to min
+    if (v && minVal && Number(v) < Number(minVal)) onMax(minVal);
   }
 
   return (
     <div className="flex items-stretch border border-zinc-200 rounded-xl overflow-hidden bg-white">
-      {/* Max value — left side (RTL: appears on left visually = "إلى") */}
+      {/* Max value — left side (RTL) */}
       <div className="flex-1">
         <input
           type="text" inputMode="numeric"
           placeholder={placeholder?.[1] ?? "حد أقصى"}
           value={formatDisplay(maxVal)}
-          onChange={e => handleChange(e.target.value, onMax)}
+          onChange={e => handleMax(e.target.value)}
           className="w-full h-10 px-3 text-sm text-center focus:outline-none placeholder:text-zinc-400 bg-transparent"
           dir="ltr"
         />
@@ -389,13 +397,13 @@ function RangeInputs({ minVal, maxVal, onMin, onMax, placeholder }: {
       <div className="flex items-center px-2 border-x border-zinc-200 text-zinc-400 text-xs font-semibold select-none">
         إلى
       </div>
-      {/* Min value — right side (RTL: appears on right = "من") */}
+      {/* Min value — right side (RTL) */}
       <div className="flex-1">
         <input
           type="text" inputMode="numeric"
           placeholder={placeholder?.[0] ?? "الحد الأدنى"}
           value={formatDisplay(minVal)}
-          onChange={e => handleChange(e.target.value, onMin)}
+          onChange={e => handleMin(e.target.value)}
           className="w-full h-10 px-3 text-sm text-center focus:outline-none placeholder:text-zinc-400 bg-transparent"
           dir="ltr"
         />
