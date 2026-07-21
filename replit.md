@@ -14,10 +14,10 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ### Required secrets / env vars
 | Variable | Where to set | Notes |
 |---|---|---|
-| `DATABASE_URL` | Replit Secrets | PostgreSQL connection string |
+| `DATABASE_URL` | Auto-provided by Replit | Runtime-managed PostgreSQL connection string — do **not** set manually |
 | `SESSION_SECRET` | Replit Secrets | Long random string for session signing |
-| `PORT` | `.replit` `[userenv.shared]` | API server port (default `8080`) |
-| `VITE_PORT` | `.replit` `[userenv.shared]` | Frontend dev server port (default `5000`) |
+| `PORT` | Replit env vars (shared) | API server port (default `8080`) |
+| `VITE_PORT` | Replit env vars (shared) | Frontend dev server port (default `5000`) |
 
 ### Optional secrets
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — enables Google OAuth login
