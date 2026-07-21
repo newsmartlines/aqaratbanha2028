@@ -212,19 +212,14 @@ const STATIC_SUBCATS: Record<string, string[]> = {
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
 const BATHS_OPTIONS = [1, 2, 3, 4];
 const FLOOR_OPTIONS = ["أرضي", "1", "2", "3", "4", "5+"];
-const PRICE_RANGES = [
-  { label: "أقل من 500 ألف", min: 0, max: 500000 },
-  { label: "500 ألف – مليون", min: 500000, max: 1000000 },
-  { label: "مليون – 3 مليون", min: 1000000, max: 3000000 },
-  { label: "أكثر من 3 مليون", min: 3000000, max: Infinity },
-];
-const AREA_RANGES = [
-  { label: "أقل من 100 م²", min: 0, max: 100 },
-  { label: "100 – 200 م²", min: 100, max: 200 },
-  { label: "200 – 400 م²", min: 200, max: 400 },
-  { label: "400 – 1000 م²", min: 400, max: 1000 },
-  { label: "أكثر من 1000 م²", min: 1000, max: Infinity },
-];
+/** Format a raw numeric string with thousand-separators for display */
+function fmtNum(v: string): string {
+  const n = v.replace(/\D/g, "");
+  if (!n) return "";
+  return Number(n).toLocaleString("ar-EG");
+}
+/** Strip everything except digits from an input value */
+function digitsOnly(v: string): string { return v.replace(/\D/g, ""); }
 const RECENCY_OPTIONS = [
   { label: "اليوم", hours: 24 },
   { label: "هذا الأسبوع", hours: 168 },
@@ -311,13 +306,10 @@ export default function PropertiesPage() {
   const [reportEmail, setReportEmail] = useState("");
   const [reportMessage, setReportMessage] = useState("");
   const [reportLoading, setReportLoading] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState<number | null>(() => {
-    if (!initParams.price) return null;
-    const [min, max] = initParams.price.split("-").map(Number);
-    const idx = PRICE_RANGES.findIndex(r => r.min === min && (r.max === max || (max > 1e7 && r.max === Infinity)));
-    return idx >= 0 ? idx : null;
-  });
-  const [selectedArea, setSelectedArea] = useState<number | null>(null);
+  const [priceMin, setPriceMin] = useState<string>("");
+  const [priceMax, setPriceMax] = useState<string>("");
+  const [areaMin, setAreaMin]   = useState<string>("");
+  const [areaMax, setAreaMax]   = useState<string>("");
   const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
   const [currentPage, setCurrentPage] = useState(1);
   const [liked, setLiked] = useState<Set<number>>(new Set());
@@ -445,7 +437,8 @@ export default function PropertiesPage() {
       if (selectedKind) filters.mainCategory = selectedKind;
       if (selectedType) filters.listingType = selectedType;
       if (selectedCity) filters.city = selectedCity;
-      if (selectedPrice !== null) filters.maxPrice = PRICE_RANGES[selectedPrice].max;
+      if (priceMax) filters.maxPrice = Number(priceMax);
+      if (priceMin) filters.minPrice = Number(priceMin);
       return api.savedSearches.create({ name: saveSearchName, email: saveSearchEmail || undefined, filters, notifyEmail: true, notifyApp: true });
     },
     onSuccess: () => { setSaveSearchOpen(false); toast.success("تم حفظ البحث! سنُعلمك عند توفر عقارات تطابقه"); },
@@ -474,14 +467,12 @@ export default function PropertiesPage() {
         if (selectedFloor === "5+") { if ((p.floor ?? 0) < 5) return false; }
         else if (floorVal !== null && p.floor !== floorVal) return false;
       }
-      if (selectedPrice !== null) {
-        const r = PRICE_RANGES[selectedPrice];
-        if (p.priceNum < r.min || p.priceNum > r.max) return false;
-      }
-      if (selectedArea !== null) {
-        const r = AREA_RANGES[selectedArea];
-        if (p.area < r.min || p.area > r.max) return false;
-      }
+      const pMin = Number(priceMin); const pMax = Number(priceMax);
+      if (priceMin && p.priceNum < pMin) return false;
+      if (priceMax && p.priceNum > pMax) return false;
+      const aMin = Number(areaMin);  const aMax = Number(areaMax);
+      if (areaMin && p.area < aMin) return false;
+      if (areaMax && p.area > aMax) return false;
       if (selectedFeaturedOnly && !p.featured) return false;
       if (selectedFeatures.length > 0) {
         const pf = p.features.join(" ");
@@ -512,7 +503,7 @@ export default function PropertiesPage() {
       list = [...list].sort((a, b) => b.viewCount - a.viewCount);
 
     return list;
-  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
 
   const ITEMS_PER_PAGE = 30;
 
@@ -557,7 +548,7 @@ export default function PropertiesPage() {
     selectedType, selectedKind, selectedSubKind, selectedCity,
     selectedFinishing, selectedFurnished, selectedPayment,
     selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null,
-    selectedFloor, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null,
+    selectedFloor, priceMin || priceMax || null, areaMin || areaMax || null,
     selectedFeaturedOnly ? 1 : null, selectedRecency !== null ? 1 : null,
     ...selectedFeatures,
   ].filter(Boolean).length + selectedDistricts.length;
@@ -565,7 +556,8 @@ export default function PropertiesPage() {
   const clearAll = () => {
     setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistricts([]);
     setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
-    setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null); setSelectedPrice(null); setSelectedArea(null);
+    setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null);
+    setPriceMin(""); setPriceMax(""); setAreaMin(""); setAreaMax("");
     setSelectedFeaturedOnly(false); setSelectedFeatures([]); setSelectedRecency(null); setSearch("");
   };
 
@@ -891,32 +883,52 @@ export default function PropertiesPage() {
                 {/* ── نطاق السعر ── */}
                 <FilterSection title="نطاق السعر (جنيه)">
                   <div className="flex flex-col gap-2">
-                    {PRICE_RANGES.map((r, i) => (
-                      <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
-                        <div onClick={() => setSelectedPrice(selectedPrice === i ? null : i)}
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedPrice === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                          {selectedPrice === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                        <span onClick={() => setSelectedPrice(selectedPrice === i ? null : i)}
-                          className={`text-sm transition-colors cursor-pointer ${selectedPrice === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
-                      </label>
-                    ))}
+                    <div className="relative">
+                      <input
+                        type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                        value={fmtNum(priceMin)}
+                        onChange={e => setPriceMin(digitsOnly(e.target.value))}
+                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                      />
+                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
+                      {priceMin && <button onClick={() => setPriceMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text" inputMode="numeric" placeholder="الحد الأقصى"
+                        value={fmtNum(priceMax)}
+                        onChange={e => setPriceMax(digitsOnly(e.target.value))}
+                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                      />
+                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
+                      {priceMax && <button onClick={() => setPriceMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                    </div>
                   </div>
                 </FilterSection>
 
                 {/* ── المساحة ── */}
                 <FilterSection title="المساحة (م²)">
                   <div className="flex flex-col gap-2">
-                    {AREA_RANGES.map((r, i) => (
-                      <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
-                        <div onClick={() => setSelectedArea(selectedArea === i ? null : i)}
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedArea === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                          {selectedArea === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                        <span onClick={() => setSelectedArea(selectedArea === i ? null : i)}
-                          className={`text-sm transition-colors cursor-pointer ${selectedArea === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
-                      </label>
-                    ))}
+                    <div className="relative">
+                      <input
+                        type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                        value={fmtNum(areaMin)}
+                        onChange={e => setAreaMin(digitsOnly(e.target.value))}
+                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                      />
+                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
+                      {areaMin && <button onClick={() => setAreaMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text" inputMode="numeric" placeholder="الحد الأقصى"
+                        value={fmtNum(areaMax)}
+                        onChange={e => setAreaMax(digitsOnly(e.target.value))}
+                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                      />
+                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
+                      {areaMax && <button onClick={() => setAreaMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                    </div>
                   </div>
                 </FilterSection>
 
@@ -1113,9 +1125,14 @@ export default function PropertiesPage() {
                     {selectedBeds}+ غرف <X className="w-3 h-3" />
                   </span>
                 )}
-                {selectedPrice !== null && (
-                  <span onClick={() => setSelectedPrice(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
-                    {PRICE_RANGES[selectedPrice].label} <X className="w-3 h-3" />
+                {(priceMin || priceMax) && (
+                  <span onClick={() => { setPriceMin(""); setPriceMax(""); }} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {priceMin ? fmtNum(priceMin) : "٠"} – {priceMax ? fmtNum(priceMax) : "∞"} جنيه <X className="w-3 h-3" />
+                  </span>
+                )}
+                {(areaMin || areaMax) && (
+                  <span onClick={() => { setAreaMin(""); setAreaMax(""); }} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {areaMin ? fmtNum(areaMin) : "٠"} – {areaMax ? fmtNum(areaMax) : "∞"} م² <X className="w-3 h-3" />
                   </span>
                 )}
               </div>
@@ -1665,14 +1682,26 @@ export default function PropertiesPage() {
             {/* Price Range */}
             <FilterSection title="نطاق السعر (جنيه)">
               <div className="flex flex-col gap-2">
-                {PRICE_RANGES.map((r, i) => (
-                  <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
-                    <div onClick={() => setSelectedPrice(selectedPrice === i ? null : i)} className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedPrice === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                      {selectedPrice === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                    </div>
-                    <span onClick={() => setSelectedPrice(selectedPrice === i ? null : i)} className={`text-sm transition-colors ${selectedPrice === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
-                  </label>
-                ))}
+                <div className="relative">
+                  <input
+                    type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                    value={fmtNum(priceMin)}
+                    onChange={e => setPriceMin(digitsOnly(e.target.value))}
+                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
+                  {priceMin && <button onClick={() => setPriceMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text" inputMode="numeric" placeholder="الحد الأقصى"
+                    value={fmtNum(priceMax)}
+                    onChange={e => setPriceMax(digitsOnly(e.target.value))}
+                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
+                  {priceMax && <button onClick={() => setPriceMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                </div>
               </div>
             </FilterSection>
 
@@ -1688,16 +1717,28 @@ export default function PropertiesPage() {
             )}
 
             {/* Area */}
-            <FilterSection title="المساحة" defaultOpen={true}>
+            <FilterSection title="المساحة (م²)" defaultOpen={true}>
               <div className="flex flex-col gap-2">
-                {AREA_RANGES.map((r, i) => (
-                  <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
-                    <div onClick={() => setSelectedArea(selectedArea === i ? null : i)} className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedArea === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                      {selectedArea === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                    </div>
-                    <span onClick={() => setSelectedArea(selectedArea === i ? null : i)} className={`text-sm transition-colors ${selectedArea === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
-                  </label>
-                ))}
+                <div className="relative">
+                  <input
+                    type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                    value={fmtNum(areaMin)}
+                    onChange={e => setAreaMin(digitsOnly(e.target.value))}
+                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
+                  {areaMin && <button onClick={() => setAreaMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text" inputMode="numeric" placeholder="الحد الأقصى"
+                    value={fmtNum(areaMax)}
+                    onChange={e => setAreaMax(digitsOnly(e.target.value))}
+                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
+                  {areaMax && <button onClick={() => setAreaMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
+                </div>
               </div>
             </FilterSection>
 
