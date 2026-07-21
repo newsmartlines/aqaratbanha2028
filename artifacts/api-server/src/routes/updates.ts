@@ -426,7 +426,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     const apiSrc = path.join(sourceDir, "api-server-src");
     if (existsSync(apiSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "artifacts/api-server/src");
-      await execCmd(`rsync -a --delete "${apiSrc}/" "${dest}/"`);
+      await execCmd(`rm -rf "${dest}" && cp -rp "${apiSrc}" "${dest}"`);
       log(job, "✓ تم تطبيق كود الـ Backend", 65);
     }
 
@@ -434,7 +434,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     const marketSrc = path.join(sourceDir, "marketplace-src");
     if (existsSync(marketSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "artifacts/marketplace/src");
-      await execCmd(`rsync -a --delete "${marketSrc}/" "${dest}/"`);
+      await execCmd(`rm -rf "${dest}" && cp -rp "${marketSrc}" "${dest}"`);
       log(job, "✓ تم تطبيق كود الـ Frontend", 75);
     }
 
@@ -442,7 +442,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     const libSrc = path.join(sourceDir, "lib");
     if (existsSync(libSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "lib");
-      await execCmd(`rsync -a --delete "${libSrc}/" "${dest}/"`);
+      await execCmd(`rm -rf "${dest}" && cp -rp "${libSrc}" "${dest}"`);
       log(job, "✓ تم تطبيق المكتبات المشتركة", 80);
     }
 
@@ -502,7 +502,7 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
     const uploadsBackup = path.join(tempDir, "uploads");
     if (existsSync(uploadsBackup)) {
       log(job, "📁 استعادة ملفات الرفع...", 40);
-      await execCmd(`rsync -a --delete "${uploadsBackup}/" "${UPLOADS_DIR}/"`);
+      await execCmd(`rm -rf "${UPLOADS_DIR}" && cp -rp "${uploadsBackup}" "${UPLOADS_DIR}"`);
     }
 
     // Restore database (write JSON to a temp location then use restore-upload API internally)
