@@ -216,7 +216,7 @@ const FLOOR_OPTIONS = ["أرضي", "1", "2", "3", "4", "5+"];
 function fmtNum(v: string): string {
   const n = v.replace(/\D/g, "");
   if (!n) return "";
-  return Number(n).toLocaleString("ar-EG");
+  return Number(n).toLocaleString("en-US");
 }
 /** Strip everything except digits from an input value */
 function digitsOnly(v: string): string { return v.replace(/\D/g, ""); }
