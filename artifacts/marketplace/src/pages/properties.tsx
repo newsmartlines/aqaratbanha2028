@@ -310,6 +310,19 @@ export default function PropertiesPage() {
   const [priceMax, setPriceMax] = useState<string>("");
   const [areaMin, setAreaMin]   = useState<string>("");
   const [areaMax, setAreaMax]   = useState<string>("");
+
+  // Auto-correct: if min > max, snap max up to min immediately
+  useEffect(() => {
+    if (priceMin && priceMax && Number(priceMin) > Number(priceMax)) {
+      setPriceMax(priceMin);
+    }
+  }, [priceMin, priceMax]);
+
+  useEffect(() => {
+    if (areaMin && areaMax && Number(areaMin) > Number(areaMax)) {
+      setAreaMax(areaMin);
+    }
+  }, [areaMin, areaMax]);
   const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
   const [currentPage, setCurrentPage] = useState(1);
   const [liked, setLiked] = useState<Set<number>>(new Set());
@@ -887,7 +900,7 @@ export default function PropertiesPage() {
                       <input
                         type="text" inputMode="numeric" placeholder="حد أقصى"
                         value={fmtNum(priceMax)}
-                        onChange={e => { const v = digitsOnly(e.target.value); setPriceMax(v && priceMin && Number(v) < Number(priceMin) ? priceMin : v); }}
+                        onChange={e => setPriceMax(digitsOnly(e.target.value))}
                         className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
                     </div>
@@ -896,7 +909,7 @@ export default function PropertiesPage() {
                       <input
                         type="text" inputMode="numeric" placeholder="الحد الأدنى"
                         value={fmtNum(priceMin)}
-                        onChange={e => { const v = digitsOnly(e.target.value); setPriceMin(v); if (v && priceMax && Number(v) > Number(priceMax)) setPriceMax(v); }}
+                        onChange={e => setPriceMin(digitsOnly(e.target.value))}
                         className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
                     </div>
@@ -910,7 +923,7 @@ export default function PropertiesPage() {
                       <input
                         type="text" inputMode="numeric" placeholder="حد أقصى"
                         value={fmtNum(areaMax)}
-                        onChange={e => { const v = digitsOnly(e.target.value); setAreaMax(v && areaMin && Number(v) < Number(areaMin) ? areaMin : v); }}
+                        onChange={e => setAreaMax(digitsOnly(e.target.value))}
                         className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
                     </div>
@@ -919,7 +932,7 @@ export default function PropertiesPage() {
                       <input
                         type="text" inputMode="numeric" placeholder="الحد الأدنى"
                         value={fmtNum(areaMin)}
-                        onChange={e => { const v = digitsOnly(e.target.value); setAreaMin(v); if (v && areaMax && Number(v) > Number(areaMax)) setAreaMax(v); }}
+                        onChange={e => setAreaMin(digitsOnly(e.target.value))}
                         className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
                     </div>
@@ -1680,7 +1693,7 @@ export default function PropertiesPage() {
                   <input
                     type="text" inputMode="numeric" placeholder="حد أقصى"
                     value={fmtNum(priceMax)}
-                    onChange={e => { const v = digitsOnly(e.target.value); setPriceMax(v && priceMin && Number(v) < Number(priceMin) ? priceMin : v); }}
+                    onChange={e => setPriceMax(digitsOnly(e.target.value))}
                     className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
                 </div>
@@ -1689,7 +1702,7 @@ export default function PropertiesPage() {
                   <input
                     type="text" inputMode="numeric" placeholder="الحد الأدنى"
                     value={fmtNum(priceMin)}
-                    onChange={e => { const v = digitsOnly(e.target.value); setPriceMin(v); if (v && priceMax && Number(v) > Number(priceMax)) setPriceMax(v); }}
+                    onChange={e => setPriceMin(digitsOnly(e.target.value))}
                     className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
                 </div>
@@ -1714,7 +1727,7 @@ export default function PropertiesPage() {
                   <input
                     type="text" inputMode="numeric" placeholder="حد أقصى"
                     value={fmtNum(areaMax)}
-                    onChange={e => { const v = digitsOnly(e.target.value); setAreaMax(v && areaMin && Number(v) < Number(areaMin) ? areaMin : v); }}
+                    onChange={e => setAreaMax(digitsOnly(e.target.value))}
                     className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
                 </div>
@@ -1723,7 +1736,7 @@ export default function PropertiesPage() {
                   <input
                     type="text" inputMode="numeric" placeholder="الحد الأدنى"
                     value={fmtNum(areaMin)}
-                    onChange={e => { const v = digitsOnly(e.target.value); setAreaMin(v); if (v && areaMax && Number(v) > Number(areaMax)) setAreaMax(v); }}
+                    onChange={e => setAreaMin(digitsOnly(e.target.value))}
                     className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
                 </div>

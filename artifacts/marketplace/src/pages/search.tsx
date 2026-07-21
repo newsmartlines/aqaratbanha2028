@@ -367,19 +367,6 @@ function RangeInputs({ minVal, maxVal, onMin, onMax, placeholder }: {
     const n = Number(val.replace(/,/g, ""));
     return isNaN(n) ? val : n.toLocaleString("en-US");
   }
-  function handleMin(raw: string) {
-    const v = raw.replace(/,/g, "");
-    onMin(v);
-    // if max exists and is now smaller than new min, bump max up to min
-    if (v && maxVal && Number(v) > Number(maxVal)) onMax(v);
-  }
-  function handleMax(raw: string) {
-    const v = raw.replace(/,/g, "");
-    onMax(v);
-    // if min exists and new max is smaller than min, pull max down to min
-    if (v && minVal && Number(v) < Number(minVal)) onMax(minVal);
-  }
-
   return (
     <div className="flex items-stretch border border-zinc-200 rounded-xl overflow-hidden bg-white">
       {/* Max value — left side (RTL) */}
@@ -388,7 +375,7 @@ function RangeInputs({ minVal, maxVal, onMin, onMax, placeholder }: {
           type="text" inputMode="numeric"
           placeholder={placeholder?.[1] ?? "حد أقصى"}
           value={formatDisplay(maxVal)}
-          onChange={e => handleMax(e.target.value)}
+          onChange={e => onMax(e.target.value.replace(/,/g, ""))}
           className="w-full h-10 px-3 text-sm text-center focus:outline-none placeholder:text-zinc-400 bg-transparent"
           dir="ltr"
         />
@@ -403,7 +390,7 @@ function RangeInputs({ minVal, maxVal, onMin, onMax, placeholder }: {
           type="text" inputMode="numeric"
           placeholder={placeholder?.[0] ?? "الحد الأدنى"}
           value={formatDisplay(minVal)}
-          onChange={e => handleMin(e.target.value)}
+          onChange={e => onMin(e.target.value.replace(/,/g, ""))}
           className="w-full h-10 px-3 text-sm text-center focus:outline-none placeholder:text-zinc-400 bg-transparent"
           dir="ltr"
         />
@@ -447,6 +434,19 @@ export default function SearchPage() {
   }, [urlSig]);
 
   useEffect(() => { set("subCategory", "all"); }, [filters.category]);
+
+  // Auto-correct: if min > max, snap max up to min immediately
+  useEffect(() => {
+    if (filters.priceMin && filters.priceMax && Number(filters.priceMin) > Number(filters.priceMax)) {
+      set("priceMax", filters.priceMin);
+    }
+  }, [filters.priceMin, filters.priceMax]);
+
+  useEffect(() => {
+    if (filters.areaMin && filters.areaMax && Number(filters.areaMin) > Number(filters.areaMax)) {
+      set("areaMax", filters.areaMin);
+    }
+  }, [filters.areaMin, filters.areaMax]);
 
   const debouncedFilters = useDebounce(filters, 400);
 
