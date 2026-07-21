@@ -34,7 +34,7 @@ import { DisableAutoPan } from "@/components/DisableAutoPan";
 import L from "leaflet";
 import {
   Search, MapPin, BedDouble, Bath, Maximize2, Building2,
-  Heart, Map, Grid3X3, X, ChevronDown, ChevronUp,
+  Heart, Map, Grid3X3, X, ChevronDown, ChevronUp, Check,
   SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
   LayoutList, Scale, GitCompare, Eye, Clock, Flag, Layers, Phone, BadgeCheck, Crown,
 } from "lucide-react";
@@ -290,7 +290,14 @@ export default function PropertiesPage() {
   const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
   const [selectedSubKind, setSelectedSubKind] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(initParams.city);
-  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(initParams.district);
+  const [selectedDistricts, setSelectedDistricts] = useState<string[]>(
+    initParams.district ? [initParams.district] : []
+  );
+  const toggleDistrict = (name: string) =>
+    setSelectedDistricts(prev =>
+      prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]
+    );
+  const [districtDropOpen, setDistrictDropOpen] = useState(false);
   const [selectedFinishing, setSelectedFinishing] = useState<string | null>(null);
   const [selectedFurnished, setSelectedFurnished] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
@@ -456,7 +463,7 @@ export default function PropertiesPage() {
       if (selectedKind && !selectedSubKind && p.kind !== selectedKind) return false;
       if (selectedSubKind && p.subCategory !== selectedSubKind) return false;
       if (selectedCity && !p.location.includes(selectedCity)) return false;
-      if (selectedDistrict && p.district !== selectedDistrict && !p.location.includes(selectedDistrict)) return false;
+      if (selectedDistricts.length > 0 && !selectedDistricts.some(d => p.district === d || p.location.includes(d))) return false;
       if (selectedFinishing && p.finishing !== selectedFinishing) return false;
       if (selectedFurnished && p.furnished !== selectedFurnished) return false;
       if (selectedPayment && p.paymentMethod !== selectedPayment) return false;
@@ -505,7 +512,7 @@ export default function PropertiesPage() {
       list = [...list].sort((a, b) => b.viewCount - a.viewCount);
 
     return list;
-  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
+  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, selectedPrice, selectedArea, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
 
   const ITEMS_PER_PAGE = 30;
 
@@ -547,16 +554,16 @@ export default function PropertiesPage() {
   );
 
   const activeCount = [
-    selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistrict,
+    selectedType, selectedKind, selectedSubKind, selectedCity,
     selectedFinishing, selectedFurnished, selectedPayment,
     selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null,
     selectedFloor, selectedPrice !== null ? 1 : null, selectedArea !== null ? 1 : null,
     selectedFeaturedOnly ? 1 : null, selectedRecency !== null ? 1 : null,
     ...selectedFeatures,
-  ].filter(Boolean).length;
+  ].filter(Boolean).length + selectedDistricts.length;
 
   const clearAll = () => {
-    setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistrict(null);
+    setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistricts([]);
     setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
     setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null); setSelectedPrice(null); setSelectedArea(null);
     setSelectedFeaturedOnly(false); setSelectedFeatures([]); setSelectedRecency(null); setSearch("");
@@ -813,26 +820,70 @@ export default function PropertiesPage() {
                   })()}
                 </FilterSection>
 
-                {/* ── الحي / المنطقة من DB ── */}
+                {/* ── الحي / المنطقة — multi-select dropdown ── */}
                 {banhaAreas.length > 0 && (
                   <FilterSection title="الحي / المنطقة">
-                    <div className="flex flex-col gap-2 max-h-52 overflow-y-auto no-scrollbar">
-                      {banhaAreas.map((a) => (
-                        <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
-                          <div
-                            onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}
-                          >
-                            {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
-                          </div>
-                          <span
-                            onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)}
-                            className={`text-sm transition-colors cursor-pointer ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}
-                          >
-                            {a.nameAr}
-                          </span>
-                        </label>
-                      ))}
+                    <div className="relative">
+                      {/* Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setDistrictDropOpen(o => !o)}
+                        className="w-full flex items-center justify-between gap-2 h-9 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 hover:border-primary/40 focus:outline-none transition-colors"
+                      >
+                        <span className="truncate text-right flex-1">
+                          {selectedDistricts.length === 0
+                            ? "كل الأحياء"
+                            : selectedDistricts.length === 1
+                              ? selectedDistricts[0]
+                              : `${selectedDistricts.length} أحياء مختارة`}
+                        </span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${districtDropOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      {/* Dropdown */}
+                      {districtDropOpen && (
+                        <div className="absolute z-50 mt-1 w-full rounded-xl border border-gray-100 bg-white shadow-xl max-h-60 overflow-y-auto">
+                          {/* Clear option */}
+                          {selectedDistricts.length > 0 && (
+                            <button
+                              onClick={() => { setSelectedDistricts([]); setDistrictDropOpen(false); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary font-semibold hover:bg-primary/5 border-b border-gray-100"
+                            >
+                              <X className="w-3 h-3" /> إزالة الاختيار
+                            </button>
+                          )}
+                          {banhaAreas.map((a) => {
+                            const active = selectedDistricts.includes(a.nameAr);
+                            return (
+                              <button
+                                key={a.id}
+                                onClick={() => toggleDistrict(a.nameAr)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-right transition-colors ${active ? "bg-primary/8 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                              >
+                                <span className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${active ? "bg-primary border-primary" : "border-gray-300"}`}>
+                                  {active && <Check className="w-2.5 h-2.5 text-white" />}
+                                </span>
+                                <span className="flex-1 text-right">{a.nameAr}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Selected chips */}
+                      {selectedDistricts.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {selectedDistricts.map(d => (
+                            <span
+                              key={d}
+                              onClick={() => toggleDistrict(d)}
+                              className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20"
+                            >
+                              {d} <X className="w-2.5 h-2.5" />
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </FilterSection>
                 )}
@@ -1037,11 +1088,11 @@ export default function PropertiesPage() {
                     {selectedCity} <X className="w-3 h-3" />
                   </span>
                 )}
-                {selectedDistrict && (
-                  <span onClick={() => setSelectedDistrict(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
-                    {selectedDistrict} <X className="w-3 h-3" />
+                {selectedDistricts.map(d => (
+                  <span key={d} onClick={() => toggleDistrict(d)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {d} <X className="w-3 h-3" />
                   </span>
-                )}
+                ))}
                 {selectedFinishing && (
                   <span onClick={() => setSelectedFinishing(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
                     {selectedFinishing} <X className="w-3 h-3" />
@@ -1650,18 +1701,21 @@ export default function PropertiesPage() {
               </div>
             </FilterSection>
 
-            {/* District */}
+            {/* District — multi-select */}
             {banhaAreas.length > 0 && (
-              <FilterSection title="المنطقة">
-                <div className="flex flex-col gap-2">
-                  {banhaAreas.map((a) => (
-                    <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
-                      <div onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedDistrict === a.nameAr ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                        {selectedDistrict === a.nameAr && <div className="w-2 h-2 rounded-sm bg-white" />}
-                      </div>
-                      <span onClick={() => setSelectedDistrict(selectedDistrict === a.nameAr ? null : a.nameAr)} className={`text-sm transition-colors ${selectedDistrict === a.nameAr ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
-                    </label>
-                  ))}
+              <FilterSection title="الحي / المنطقة">
+                <div className="flex flex-col gap-2 max-h-52 overflow-y-auto no-scrollbar">
+                  {banhaAreas.map((a) => {
+                    const active = selectedDistricts.includes(a.nameAr);
+                    return (
+                      <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div onClick={() => toggleDistrict(a.nameAr)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${active ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                          {active && <div className="w-2 h-2 rounded-sm bg-white" />}
+                        </div>
+                        <span onClick={() => toggleDistrict(a.nameAr)} className={`text-sm transition-colors cursor-pointer ${active ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </FilterSection>
             )}
