@@ -20,7 +20,7 @@ import { fileURLToPath } from "url";
 
 const execCmd = promisify(exec);
 const router = Router();
-router.use("/api/admin/updates", adminOnly);
+router.use("/admin/updates", adminOnly);
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -544,7 +544,7 @@ const upload = multer({
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 // GET /api/admin/updates/info
-router.get("/api/admin/updates/info", async (_req, res) => {
+router.get("/admin/updates/info", async (_req, res) => {
   try {
     const version = await getVersion();
     const backups = await listZipFiles(BACKUPS_DIR);
@@ -567,7 +567,7 @@ router.get("/api/admin/updates/info", async (_req, res) => {
 });
 
 // GET /api/admin/updates/backups
-router.get("/api/admin/updates/backups", async (_req, res) => {
+router.get("/admin/updates/backups", async (_req, res) => {
   try {
     res.json({ success: true, data: await listZipFiles(BACKUPS_DIR) });
   } catch (err: any) {
@@ -576,7 +576,7 @@ router.get("/api/admin/updates/backups", async (_req, res) => {
 });
 
 // GET /api/admin/updates/packages
-router.get("/api/admin/updates/packages", async (_req, res) => {
+router.get("/admin/updates/packages", async (_req, res) => {
   try {
     res.json({ success: true, data: await listZipFiles(PACKAGES_DIR) });
   } catch (err: any) {
@@ -585,14 +585,14 @@ router.get("/api/admin/updates/packages", async (_req, res) => {
 });
 
 // POST /api/admin/updates/backup
-router.post("/api/admin/updates/backup", async (req, res) => {
+router.post("/admin/updates/backup", async (req, res) => {
   const { label = "manual" } = req.body as { label?: string };
   const jobId = startJob("backup", job => runCreateBackup(job, label));
   res.json({ success: true, jobId });
 });
 
 // POST /api/admin/updates/create-package
-router.post("/api/admin/updates/create-package", async (req, res) => {
+router.post("/admin/updates/create-package", async (req, res) => {
   const { bumpType = "patch", changelog = "", includeDb = false } = req.body as {
     bumpType?: "patch" | "minor" | "major";
     changelog?: string;
@@ -605,14 +605,14 @@ router.post("/api/admin/updates/create-package", async (req, res) => {
 });
 
 // POST /api/admin/updates/install
-router.post("/api/admin/updates/install", upload.single("package"), async (req, res) => {
+router.post("/admin/updates/install", upload.single("package"), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, error: "لم يتم رفع أي ملف" });
   const jobId = startJob("install", job => runInstallPackage(job, req.file!.path));
   res.json({ success: true, jobId });
 });
 
 // POST /api/admin/updates/rollback
-router.post("/api/admin/updates/rollback", async (req, res) => {
+router.post("/admin/updates/rollback", async (req, res) => {
   const { filename } = req.body as { filename: string };
   if (!filename) return res.status(400).json({ success: false, error: "اسم ملف النسخة الاحتياطية مطلوب" });
   if (filename.includes("..") || filename.includes("/")) {
@@ -623,14 +623,14 @@ router.post("/api/admin/updates/rollback", async (req, res) => {
 });
 
 // GET /api/admin/updates/job/:id
-router.get("/api/admin/updates/job/:id", (req, res) => {
+router.get("/admin/updates/job/:id", (req, res) => {
   const job = jobs.get(String(req.params.id));
   if (!job) return res.status(404).json({ success: false, error: "Job not found" });
   res.json({ success: true, data: job });
 });
 
 // GET /api/admin/updates/download/backup/:name
-router.get("/api/admin/updates/download/backup/:name", async (req, res) => {
+router.get("/admin/updates/download/backup/:name", async (req, res) => {
   const name = String(req.params.name);
   if (name.includes("..") || name.includes("/") || !name.endsWith(".zip")) {
     return res.status(400).json({ success: false, error: "اسم الملف غير صالح" });
@@ -643,7 +643,7 @@ router.get("/api/admin/updates/download/backup/:name", async (req, res) => {
 });
 
 // GET /api/admin/updates/download/package/:name
-router.get("/api/admin/updates/download/package/:name", async (req, res) => {
+router.get("/admin/updates/download/package/:name", async (req, res) => {
   const name = String(req.params.name);
   if (name.includes("..") || name.includes("/") || !name.endsWith(".zip")) {
     return res.status(400).json({ success: false, error: "اسم الملف غير صالح" });
@@ -656,7 +656,7 @@ router.get("/api/admin/updates/download/package/:name", async (req, res) => {
 });
 
 // DELETE /api/admin/updates/backup/:name
-router.delete("/api/admin/updates/backup/:name", async (req, res) => {
+router.delete("/admin/updates/backup/:name", async (req, res) => {
   const name = String(req.params.name);
   if (name.includes("..") || name.includes("/") || !name.endsWith(".zip")) {
     return res.status(400).json({ success: false, error: "اسم الملف غير صالح" });
@@ -668,7 +668,7 @@ router.delete("/api/admin/updates/backup/:name", async (req, res) => {
 });
 
 // DELETE /api/admin/updates/package/:name
-router.delete("/api/admin/updates/package/:name", async (req, res) => {
+router.delete("/admin/updates/package/:name", async (req, res) => {
   const name = String(req.params.name);
   if (name.includes("..") || name.includes("/") || !name.endsWith(".zip")) {
     return res.status(400).json({ success: false, error: "اسم الملف غير صالح" });
