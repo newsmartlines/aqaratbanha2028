@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "billing",
   "label": "الفواتير والاشتراكات",
-  "exportedAt": "2026-07-21T23:38:55.523Z",
+  "exportedAt": "2026-07-21T23:46:56.154Z",
   "tables": {
     "billingPlans": [
       {

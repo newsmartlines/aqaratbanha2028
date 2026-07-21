@@ -316,9 +316,9 @@ async function runCreatePackage(
     await fs.writeFile(path.join(tempDir, "version.json"), JSON.stringify(newVersionInfo, null, 2));
 
     log(job, "🔐 حساب التوقيع الرقمي...", 70);
-    // Compute checksum of source files
+    // Compute checksum of source files using relative paths for portability
     const { stdout: fileList } = await execCmd(
-      `find "${tempDir}/source" -type f | sort | xargs sha256sum 2>/dev/null || echo ""`,
+      `cd "${tempDir}/source" && find . -type f | sort | xargs sha256sum 2>/dev/null || echo ""`,
     );
     const checksum = crypto.createHash("sha256").update(fileList).digest("hex");
     const signature = sign(checksum);
@@ -380,7 +380,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
 
     log(job, "🔐 التحقق من التوقيع الرقمي...", 20);
     const { stdout: fileList } = await execCmd(
-      `find "${tempDir}/source" -type f | sort | xargs sha256sum 2>/dev/null || echo ""`,
+      `cd "${tempDir}/source" && find . -type f | sort | xargs sha256sum 2>/dev/null || echo ""`,
     ).catch(() => ({ stdout: "" }));
     const computedChecksum = crypto.createHash("sha256").update(fileList).digest("hex");
     const computedSignature = sign(computedChecksum);
