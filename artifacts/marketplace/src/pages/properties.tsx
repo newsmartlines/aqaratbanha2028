@@ -303,6 +303,7 @@ export default function PropertiesPage() {
   const [selectedBaths, setSelectedBaths] = useState<number | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
   const [selectedFeaturedOnly, setSelectedFeaturedOnly] = useState(false);
+  const [selectedVerifiedOnly, setSelectedVerifiedOnly] = useState(false);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedRecency, setSelectedRecency] = useState<number | null>(null);
   const [reportPropertyId, setReportPropertyId] = useState<number | null>(null);
@@ -490,6 +491,7 @@ export default function PropertiesPage() {
       if (areaMin && p.area < aMin) return false;
       if (areaMax && p.area > aMax) return false;
       if (selectedFeaturedOnly && !p.featured) return false;
+      if (selectedVerifiedOnly && !p.verified) return false;
       if (selectedFeatures.length > 0) {
         const pf = p.features.join(" ");
         if (!selectedFeatures.every(f => pf.includes(f))) return false;
@@ -522,7 +524,7 @@ export default function PropertiesPage() {
   }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
 
   // ── Faceted counts: each dimension counted with all OTHER filters applied ──
-  const FILTER_DEPS = [allProps, search, selectedType, selectedKind, selectedSubKind, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedFeatures, selectedRecency] as const;
+  const FILTER_DEPS = [allProps, search, selectedType, selectedKind, selectedSubKind, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedVerifiedOnly, selectedFeatures, selectedRecency] as const;
 
   function applyBaseFilters(
     list: DisplayProp[],
@@ -533,7 +535,7 @@ export default function PropertiesPage() {
       selectedFinishing: string | null; selectedFurnished: string | null; selectedPayment: string | null;
       selectedBeds: number | null; selectedBaths: number | null; selectedFloor: string | null;
       priceMin: string; priceMax: string; areaMin: string; areaMax: string;
-      selectedFeaturedOnly: boolean; selectedFeatures: string[]; selectedRecency: number | null;
+      selectedFeaturedOnly: boolean; selectedVerifiedOnly: boolean; selectedFeatures: string[]; selectedRecency: number | null;
     }
   ): DisplayProp[] {
     const now = Date.now();
@@ -541,7 +543,7 @@ export default function PropertiesPage() {
       const { search: s, selectedType: sT, selectedKind: sK, selectedSubKind: sSK, selectedDistricts: sD,
         selectedFinishing: sFin, selectedFurnished: sFur, selectedPayment: sPay, selectedBeds: sBeds,
         selectedBaths: sBaths, selectedFloor: sFloor, priceMin: pMin, priceMax: pMax,
-        areaMin: aMin, areaMax: aMax, selectedFeaturedOnly: sFeat, selectedFeatures: sFeats, selectedRecency: sRec } = deps;
+        areaMin: aMin, areaMax: aMax, selectedFeaturedOnly: sFeat, selectedVerifiedOnly: sVer, selectedFeatures: sFeats, selectedRecency: sRec } = deps;
       if (s && !p.title.includes(s) && !p.location.includes(s) && !p.district.includes(s)) return false;
       if (!opts.excludeType && sT && p.type !== sT) return false;
       if (!opts.excludeKind && !opts.excludeSubKind && sK && !sSK && p.kind !== sK) return false;
@@ -562,6 +564,7 @@ export default function PropertiesPage() {
       if (aMin && p.area < Number(aMin)) return false;
       if (aMax && p.area > Number(aMax)) return false;
       if (sFeat && !p.featured) return false;
+      if (sVer && !p.verified) return false;
       if (sFeats.length > 0) { const pf = p.features.join(" "); if (!sFeats.every(f => pf.includes(f))) return false; }
       if (sRec !== null) {
         const hours = RECENCY_OPTIONS[sRec].hours;
@@ -575,7 +578,7 @@ export default function PropertiesPage() {
     search, selectedType, selectedKind, selectedSubKind, selectedDistricts,
     selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths,
     selectedFloor, priceMin, priceMax, areaMin, areaMax,
-    selectedFeaturedOnly, selectedFeatures, selectedRecency,
+    selectedFeaturedOnly, selectedVerifiedOnly, selectedFeatures, selectedRecency,
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -658,7 +661,7 @@ export default function PropertiesPage() {
     selectedFinishing, selectedFurnished, selectedPayment,
     selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null,
     selectedFloor, priceMin || priceMax || null, areaMin || areaMax || null,
-    selectedFeaturedOnly ? 1 : null, selectedRecency !== null ? 1 : null,
+    selectedFeaturedOnly ? 1 : null, selectedVerifiedOnly ? 1 : null, selectedRecency !== null ? 1 : null,
     ...selectedFeatures,
   ].filter(Boolean).length + selectedDistricts.length;
 
@@ -667,7 +670,7 @@ export default function PropertiesPage() {
     setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
     setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null);
     setPriceMin(""); setPriceMax(""); setAreaMin(""); setAreaMax("");
-    setSelectedFeaturedOnly(false); setSelectedFeatures([]); setSelectedRecency(null); setSearch("");
+    setSelectedFeaturedOnly(false); setSelectedVerifiedOnly(false); setSelectedFeatures([]); setSelectedRecency(null); setSearch("");
   };
 
   const submitReport = async () => {
@@ -857,6 +860,21 @@ export default function PropertiesPage() {
               </div>
 
               <div className="px-5 pt-4 pb-5">
+
+                {/* ── شركات موثقة ── */}
+                <div className="mb-3 pb-3 border-b border-gray-100">
+                  <label className="flex items-center justify-between cursor-pointer group">
+                    <span className="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                      <BadgeCheck className="w-4 h-4 text-teal-500" /> شركات موثقة
+                    </span>
+                    <div
+                      onClick={() => setSelectedVerifiedOnly(v => !v)}
+                      className={`w-10 h-6 rounded-full transition-all relative cursor-pointer ${selectedVerifiedOnly ? "bg-teal-500" : "bg-gray-200"}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${selectedVerifiedOnly ? "right-1" : "left-1"}`} />
+                    </div>
+                  </label>
+                </div>
 
                 {/* ── العقارات المميزة فقط ── */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
@@ -1286,7 +1304,7 @@ export default function PropertiesPage() {
                               images={p.imgs}
                               alt={p.title}
                               fallback={FALLBACK}
-                              className="shrink-0 w-52 sm:w-64 min-h-[190px]"
+                              className="shrink-0 w-64 sm:w-80 min-h-[230px]"
                             >
                               {/* Like button */}
                               <button
@@ -1345,9 +1363,9 @@ export default function PropertiesPage() {
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
-                            <div className="flex-1 flex flex-col p-4 gap-0 min-w-0">
+                            <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
                               {/* Price + type badge */}
-                              <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="flex items-center justify-between gap-2 mb-3">
                                 <div className="flex items-baseline gap-1">
                                   <span className="text-xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
                                   <span className="text-xs font-bold text-gray-600">ج.م</span>
@@ -1372,18 +1390,18 @@ export default function PropertiesPage() {
                               </div>
 
                               {/* Title */}
-                              <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1 mb-1">
+                              <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1 mb-2.5">
                                 {p.title}
                               </h3>
 
                               {/* Location */}
-                              <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
+                              <div className="flex items-center gap-1 text-gray-500 text-xs mb-3">
                                 <MapPin className="w-3 h-3 text-primary shrink-0" />
                                 <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
                               </div>
 
                               {/* Specs row */}
-                              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                              <div className="flex items-center gap-3 mb-3 flex-wrap">
                                 <div className="flex items-center gap-1 text-gray-700 text-xs">
                                   <BedDouble className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                                   <span className="font-semibold">{p.beds || "—"}</span>
@@ -1553,7 +1571,7 @@ export default function PropertiesPage() {
                               images={p.imgs}
                               alt={p.title}
                               fallback={FALLBACK}
-                              className="h-52"
+                              className="h-64"
                             >
                               <button
                                 className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
@@ -1611,7 +1629,7 @@ export default function PropertiesPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="p-4 flex flex-col gap-2">
+                              <div className="p-4 flex flex-col gap-3">
                               <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-1">
                                 {p.title}
                               </h3>
