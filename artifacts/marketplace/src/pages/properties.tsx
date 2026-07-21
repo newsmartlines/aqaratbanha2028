@@ -882,52 +882,46 @@ export default function PropertiesPage() {
 
                 {/* ── نطاق السعر ── */}
                 <FilterSection title="نطاق السعر (جنيه)">
-                  <div className="flex flex-col gap-2">
-                    <div className="relative">
+                  <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <div className="flex-1">
+                      <input
+                        type="text" inputMode="numeric" placeholder="حد أقصى"
+                        value={fmtNum(priceMax)}
+                        onChange={e => setPriceMax(digitsOnly(e.target.value))}
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                      />
+                    </div>
+                    <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                    <div className="flex-1">
                       <input
                         type="text" inputMode="numeric" placeholder="الحد الأدنى"
                         value={fmtNum(priceMin)}
                         onChange={e => setPriceMin(digitsOnly(e.target.value))}
-                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
-                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
-                      {priceMin && <button onClick={() => setPriceMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="text" inputMode="numeric" placeholder="الحد الأقصى"
-                        value={fmtNum(priceMax)}
-                        onChange={e => setPriceMax(digitsOnly(e.target.value))}
-                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
-                      />
-                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
-                      {priceMax && <button onClick={() => setPriceMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
                     </div>
                   </div>
                 </FilterSection>
 
                 {/* ── المساحة ── */}
                 <FilterSection title="المساحة (م²)">
-                  <div className="flex flex-col gap-2">
-                    <div className="relative">
+                  <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <div className="flex-1">
+                      <input
+                        type="text" inputMode="numeric" placeholder="حد أقصى"
+                        value={fmtNum(areaMax)}
+                        onChange={e => setAreaMax(digitsOnly(e.target.value))}
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                      />
+                    </div>
+                    <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                    <div className="flex-1">
                       <input
                         type="text" inputMode="numeric" placeholder="الحد الأدنى"
                         value={fmtNum(areaMin)}
                         onChange={e => setAreaMin(digitsOnly(e.target.value))}
-                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
-                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
-                      {areaMin && <button onClick={() => setAreaMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="text" inputMode="numeric" placeholder="الحد الأقصى"
-                        value={fmtNum(areaMax)}
-                        onChange={e => setAreaMax(digitsOnly(e.target.value))}
-                        className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
-                      />
-                      <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
-                      {areaMax && <button onClick={() => setAreaMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
                     </div>
                   </div>
                 </FilterSection>
@@ -1681,26 +1675,23 @@ export default function PropertiesPage() {
 
             {/* Price Range */}
             <FilterSection title="نطاق السعر (جنيه)">
-              <div className="flex flex-col gap-2">
-                <div className="relative">
+              <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <div className="flex-1">
+                  <input
+                    type="text" inputMode="numeric" placeholder="حد أقصى"
+                    value={fmtNum(priceMax)}
+                    onChange={e => setPriceMax(digitsOnly(e.target.value))}
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                  />
+                </div>
+                <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                <div className="flex-1">
                   <input
                     type="text" inputMode="numeric" placeholder="الحد الأدنى"
                     value={fmtNum(priceMin)}
                     onChange={e => setPriceMin(digitsOnly(e.target.value))}
-                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
-                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
-                  {priceMin && <button onClick={() => setPriceMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
-                </div>
-                <div className="relative">
-                  <input
-                    type="text" inputMode="numeric" placeholder="الحد الأقصى"
-                    value={fmtNum(priceMax)}
-                    onChange={e => setPriceMax(digitsOnly(e.target.value))}
-                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-12 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
-                  />
-                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">جنيه</span>
-                  {priceMax && <button onClick={() => setPriceMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
                 </div>
               </div>
             </FilterSection>
@@ -1718,26 +1709,23 @@ export default function PropertiesPage() {
 
             {/* Area */}
             <FilterSection title="المساحة (م²)" defaultOpen={true}>
-              <div className="flex flex-col gap-2">
-                <div className="relative">
+              <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <div className="flex-1">
+                  <input
+                    type="text" inputMode="numeric" placeholder="حد أقصى"
+                    value={fmtNum(areaMax)}
+                    onChange={e => setAreaMax(digitsOnly(e.target.value))}
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                  />
+                </div>
+                <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                <div className="flex-1">
                   <input
                     type="text" inputMode="numeric" placeholder="الحد الأدنى"
                     value={fmtNum(areaMin)}
                     onChange={e => setAreaMin(digitsOnly(e.target.value))}
-                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
-                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
-                  {areaMin && <button onClick={() => setAreaMin("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
-                </div>
-                <div className="relative">
-                  <input
-                    type="text" inputMode="numeric" placeholder="الحد الأقصى"
-                    value={fmtNum(areaMax)}
-                    onChange={e => setAreaMax(digitsOnly(e.target.value))}
-                    className="w-full h-9 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 pe-10 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
-                  />
-                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">م²</span>
-                  {areaMax && <button onClick={() => setAreaMax("")} className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3 h-3" /></button>}
                 </div>
               </div>
             </FilterSection>
