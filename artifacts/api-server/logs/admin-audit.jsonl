@@ -26,3 +26,5 @@
 {"ts":"2026-07-20T14:01:47.464Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"enabled","newStatus":"disabled"}}
 {"ts":"2026-07-20T15:33:07.604Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"disabled","newStatus":"enabled"}}
 {"ts":"2026-07-20T15:33:46.793Z","ip":"127.0.0.1","method":"PATCH","path":"/api/admin/settings/subscriptionsEnabled","body":{"action":"toggle_subscriptions","previousStatus":"enabled","newStatus":"disabled"}}
+{"ts":"2026-07-21T17:11:03.178Z","ip":"127.0.0.1","method":"POST","path":"/seed/all","status":401,"durationMs":2}
+{"ts":"2026-07-21T17:11:17.399Z","ip":"127.0.0.1","method":"POST","path":"/seed-demo","status":401,"durationMs":1,"body":{"section":"all"}}
