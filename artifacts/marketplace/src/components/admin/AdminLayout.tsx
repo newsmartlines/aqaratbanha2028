@@ -150,6 +150,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { icon: Bot,       label: "المساعد الذكي",     href: "/admin/chatbot",       perm: "settings" },
       { icon: Database,  label: "المحتوى التجريبي",  href: "/admin/demo-content",  perm: null },
       { icon: HardDrive, label: "النسخ الاحتياطي",   href: "/admin/backup",        perm: null },
+      { icon: Zap,       label: "التحديثات",         href: "/admin/updates",       perm: null },
       { icon: FileUp,    label: "استيراد WordPress", href: "/admin/wp-import",     perm: null },
     ],
   },

@@ -71,6 +71,7 @@ import AdminPropertyFeatures from "@/pages/admin/property-features";
 import AdminPropertyTypeConfigs from "@/pages/admin/property-type-configs";
 import AdminDemoContent from "@/pages/admin/demo-content";
 import AdminBackup from "@/pages/admin/backup";
+import AdminUpdates from "@/pages/admin/updates";
 import AdminWpImport from "@/pages/admin/wp-import";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminAds from "@/pages/admin/ads";
@@ -367,6 +368,9 @@ function Router() {
       </Route>
       <Route path="/admin/backup">
         {() => <AdminProtectedRoute component={AdminBackup} />}
+      </Route>
+      <Route path="/admin/updates">
+        {() => <AdminProtectedRoute component={AdminUpdates} />}
       </Route>
       <Route path="/admin/wp-import">
         {() => <AdminProtectedRoute component={AdminWpImport} />}
