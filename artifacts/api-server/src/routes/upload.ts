@@ -97,6 +97,7 @@ function makeUploader(subfolder: string) {
 
 const avatarUpload        = makeUploader("avatars");
 const bannerUpload        = makeUploader("banners");
+const logoUpload          = makeUploader("logos");
 const serviceUpload       = makeUploader("services");
 const propertyImageUpload = makeUploader("properties");
 
@@ -161,6 +162,7 @@ function handleUpload(
 /* ── Routes ───────────────────────────────────────────────────────────────── */
 router.post("/upload/avatar",         handleUpload(avatarUpload,        "avatar",  "/uploads/avatars",    isValidImage));
 router.post("/upload/banner",         handleUpload(bannerUpload,        "banner",  "/uploads/banners",    isValidImage));
+router.post("/upload/logo",           handleUpload(logoUpload,          "logo",    "/uploads/logos",      isValidImage));
 router.post("/upload/service",        handleUpload(serviceUpload,       "image",   "/uploads/services",   isValidImage));
 router.post("/upload/property-image", handleUpload(propertyImageUpload, "image",   "/uploads/properties", isValidImage));
 

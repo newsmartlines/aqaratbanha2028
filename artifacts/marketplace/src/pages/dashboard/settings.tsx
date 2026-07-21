@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Save, User, MapPin, Shield, Loader2, Camera, Upload } from "lucide-react";
+import { Save, User, MapPin, Shield, Loader2, Camera, Upload, Building2 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,8 +58,10 @@ export default function ProviderSettings() {
   /* ─── Local form state ─── */
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,6 +70,7 @@ export default function ProviderSettings() {
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("");
   const [banner, setBanner] = useState("");
+  const [logo, setLogo] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [regionId, setRegionId] = useState("");
@@ -117,6 +120,7 @@ export default function ProviderSettings() {
       setLongitude(provider.longitude ?? "");
       if (!avatar && provider.avatar) setAvatar(provider.avatar);
       if (!banner && provider.banner) setBanner(provider.banner);
+      if (!logo && (provider as any).logo) setLogo((provider as any).logo);
       try {
         const raw = (provider as any).contactMethods;
         if (typeof raw === "string" && raw.trim()) {
@@ -154,6 +158,7 @@ export default function ProviderSettings() {
         bio: bio || undefined,
         avatar: avatar || undefined,
         banner: banner || undefined,
+        logo: logo || undefined,
         city: city || undefined,
         district: district || undefined,
         latitude: latitude || undefined,
@@ -371,6 +376,89 @@ export default function ProviderSettings() {
                   </div>
                 ) : (
                   <>
+                    {/* ── Company Logo upload ── */}
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-base font-semibold">لوجو الشركة</Label>
+                        <p className="text-xs text-muted-foreground mt-1">يظهر على كروت العقارات في نتائج البحث — يُفضَّل صورة مربعة بخلفية شفافة أو بيضاء</p>
+                      </div>
+                      <div className="flex items-center gap-5">
+                        {/* Preview circle */}
+                        <div
+                          className="relative group cursor-pointer shrink-0 w-20 h-20 rounded-full border-[3px] border-primary/20 overflow-hidden bg-secondary shadow-sm"
+                          onClick={() => logoInputRef.current?.click()}
+                        >
+                          {logo ? (
+                            <img
+                              src={mediaUrl(logo)}
+                              alt="لوجو الشركة"
+                              className="w-full h-full object-cover"
+                              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500/20 to-teal-700/20">
+                              <Building2 className="w-8 h-8 text-primary/40" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            {uploadingLogo ? (
+                              <Loader2 className="w-6 h-6 text-white animate-spin" />
+                            ) : (
+                              <Camera className="w-6 h-6 text-white" />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <input
+                            ref={logoInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setUploadingLogo(true);
+                              try {
+                                const { url } = await api.upload.logo(file);
+                                setLogo(url);
+                                toast({ title: "تم رفع اللوجو", description: "تذكّر الضغط على حفظ التغييرات" });
+                              } catch (err: any) {
+                                toast({ title: "فشل رفع اللوجو", description: err.message, variant: "destructive" });
+                              } finally {
+                                setUploadingLogo(false);
+                                e.target.value = "";
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full rounded-xl"
+                            onClick={() => logoInputRef.current?.click()}
+                            disabled={uploadingLogo}
+                          >
+                            {uploadingLogo ? (
+                              <><Loader2 className="w-4 h-4 animate-spin ml-2" />جاري الرفع...</>
+                            ) : (
+                              <><Upload className="w-4 h-4 ml-2" />ارفع لوجو الشركة (JPG / PNG / WEBP)</>
+                            )}
+                          </Button>
+                          {logo && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                              onClick={() => setLogo("")}
+                            >
+                              حذف اللوجو
+                            </Button>
+                          )}
+                          <p className="text-xs text-muted-foreground">الحجم الأقصى: 5 ميجابايت</p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* ── Banner upload ── */}
                     <div className="space-y-3">
                       <Label className="text-base font-semibold">صورة البانر (تظهر في أعلى صفحة ملفك الشخصي)</Label>

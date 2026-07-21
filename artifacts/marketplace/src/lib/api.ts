@@ -130,6 +130,7 @@ export interface Provider {
   bio: string | null;
   avatar: string | null;
   banner: string | null;
+  logo: string | null;
   /** Some payloads use these aliases; prefer `banner` / `avatar` when absent. */
   cover_image?: string | null;
   profile_image?: string | null;
@@ -679,6 +680,7 @@ export const api = {
   upload: {
     avatar: (file: File) => uploadFile("/upload/avatar", "avatar", file),
     banner: (file: File) => uploadFile("/upload/banner", "banner", file),
+    logo:   (file: File) => uploadFile("/upload/logo",   "logo",   file),
     service: (file: File) => uploadFile("/upload/service", "image", file),
     propertyImage: (file: File) => uploadFile("/upload/property-image", "image", file),
     brochure: async (file: File): Promise<{ url: string }> => {

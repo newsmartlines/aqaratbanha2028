@@ -43,6 +43,7 @@ router.get("/providers/nearby", async (req, res) => {
         bio: providersTable.bio,
         avatar: providersTable.avatar,
         banner: providersTable.banner,
+        logo: providersTable.logo,
         city: providersTable.city,
         district: providersTable.district,
         phone: providersTable.phone,
@@ -104,6 +105,7 @@ router.get("/providers", async (req, res) => {
         bio: providersTable.bio,
         avatar: providersTable.avatar,
         banner: providersTable.banner,
+        logo: providersTable.logo,
         city: providersTable.city,
         district: providersTable.district,
         phone: providersTable.phone,
@@ -233,6 +235,7 @@ router.get("/providers/:id", async (req, res) => {
         bio: providersTable.bio,
         avatar: providersTable.avatar,
         banner: providersTable.banner,
+        logo: providersTable.logo,
         city: providersTable.city,
         district: providersTable.district,
         phone: providersTable.phone,
@@ -284,11 +287,12 @@ router.get("/providers/:id", async (req, res) => {
 router.put("/providers/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { bio, avatar, banner, city, district, phone, whatsapp, categoryId, verified, featured, latitude, longitude, contactMethods } = req.body;
+    const { bio, avatar, banner, logo, city, district, phone, whatsapp, categoryId, verified, featured, latitude, longitude, contactMethods } = req.body;
     const updateData: Record<string, unknown> = {};
     if (bio !== undefined) updateData.bio = bio;
     if (avatar !== undefined) updateData.avatar = avatar;
     if (banner !== undefined) updateData.banner = banner;
+    if (logo !== undefined) updateData.logo = logo;
     if (city !== undefined) updateData.city = city;
     if (district !== undefined) updateData.district = district;
     if (phone !== undefined) updateData.phone = phone;
