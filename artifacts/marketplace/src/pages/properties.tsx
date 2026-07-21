@@ -89,6 +89,7 @@ type DbProp = {
   verified?: boolean | null;
   providerPhone?: string | null;
   providerWhatsapp?: string | null;
+  providerId?: number | null;
 };
 
 type DisplayProp = {
@@ -125,6 +126,7 @@ type DisplayProp = {
   verified: boolean;
   phone: string;
   whatsapp: string;
+  providerId: number | null;
 };
 
 function tryJsonArr(val: string | null | undefined): string[] {
@@ -158,6 +160,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     agentAvatar: row.agentAvatar ?? "",
     agentLogo: row.agentLogo ?? "",
     verified: row.verified ?? false,
+    providerId: (row as any).providerId ?? null,
     phone: (row as any).phone ?? row.providerPhone ?? "",
     whatsapp: (row as any).whatsapp ?? row.providerWhatsapp ?? "",
     contactMethods: tryJsonArr((row as any).contactMethods),
@@ -1347,16 +1350,30 @@ export default function PropertiesPage() {
                                   </span>
                                 </div>
                               )}
-                              {/* Company logo badge — bottom-right of image */}
-                              {p.agentLogo && (
-                                <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
-                                  <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md border border-white/60 flex items-center justify-center" style={{ minWidth: 48, maxWidth: 80 }}>
-                                    <img
-                                      src={p.agentLogo}
-                                      alt={p.agentName}
-                                      className="h-6 w-auto object-contain"
-                                      onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                                    />
+                              {/* Provider logo — premium circular overlay */}
+                              {(p.agentLogo || p.agentAvatar || p.agentName) && (
+                                <div
+                                  className="absolute bottom-2.5 left-2.5 z-20"
+                                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                                  title={p.agentName || undefined}
+                                >
+                                  <div className={`w-11 h-11 rounded-full border-[2.5px] border-white shadow-[0_2px_10px_rgba(0,0,0,0.28)] overflow-hidden bg-white transition-transform duration-150 ${p.providerId ? "cursor-pointer hover:scale-110" : ""}`}>
+                                    {(p.agentLogo || p.agentAvatar) ? (
+                                      <img
+                                        src={p.agentLogo || p.agentAvatar}
+                                        alt={p.agentName}
+                                        className="w-full h-full object-cover"
+                                        onError={e => {
+                                          (e.currentTarget as HTMLImageElement).src = p.agentName
+                                            ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName)}&background=0d9488&color=fff&size=88&bold=true`
+                                            : "";
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-sm">
+                                        {p.agentName?.charAt(0) ?? <Building2 className="w-5 h-5 opacity-90" />}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}

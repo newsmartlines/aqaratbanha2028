@@ -145,36 +145,6 @@ async function checksumFile(filePath: string): Promise<string> {
   return crypto.createHash("sha256").update(content).digest("hex");
 }
 
-/**
- * Compute a stable checksum of a source directory that is independent of
- * the absolute path on disk.  For every file (sorted by relative path) we
- * hash:  relPath + "\0" + fileContents  and then combine all per-file hashes
- * into one final SHA-256.  This is reproducible across different tmp dirs.
- */
-async function computeSourceChecksum(sourceDir: string): Promise<string> {
-  // Collect all files recursively
-  async function walk(dir: string, base: string): Promise<string[]> {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    const paths: string[] = [];
-    for (const e of entries) {
-      const full = path.join(dir, e.name);
-      const rel  = path.join(base, e.name);
-      if (e.isDirectory()) paths.push(...await walk(full, rel));
-      else if (e.isFile())  paths.push(rel);
-    }
-    return paths;
-  }
-
-  const relPaths = (await walk(sourceDir, "").catch(() => [])).sort();
-  const combined = crypto.createHash("sha256");
-  for (const rel of relPaths) {
-    const content = await fs.readFile(path.join(sourceDir, rel));
-    combined.update(rel + "\0");
-    combined.update(content);
-  }
-  return combined.digest("hex");
-}
-
 async function getDiskUsage(dir: string): Promise<number> {
   if (!existsSync(dir)) return 0;
   try {
@@ -346,7 +316,11 @@ async function runCreatePackage(
     await fs.writeFile(path.join(tempDir, "version.json"), JSON.stringify(newVersionInfo, null, 2));
 
     log(job, "🔐 حساب التوقيع الرقمي...", 70);
-    const checksum = await computeSourceChecksum(path.join(tempDir, "source"));
+    // Compute checksum of source files
+    const { stdout: fileList } = await execCmd(
+      `find "${tempDir}/source" -type f | sort | xargs sha256sum 2>/dev/null || echo ""`,
+    );
+    const checksum = crypto.createHash("sha256").update(fileList).digest("hex");
     const signature = sign(checksum);
 
     // Count files
@@ -405,14 +379,14 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     if (!manifest.checksum || !manifest.signature) throw new Error("معلومات الأمان مفقودة من الحزمة");
 
     log(job, "🔐 التحقق من التوقيع الرقمي...", 20);
-    const computedChecksum = await computeSourceChecksum(path.join(tempDir, "source"));
+    const { stdout: fileList } = await execCmd(
+      `find "${tempDir}/source" -type f | sort | xargs sha256sum 2>/dev/null || echo ""`,
+    ).catch(() => ({ stdout: "" }));
+    const computedChecksum = crypto.createHash("sha256").update(fileList).digest("hex");
     const computedSignature = sign(computedChecksum);
 
     if (computedSignature !== manifest.signature) {
-      // Warn but do not abort — older packages were signed with an absolute-path
-      // method that can't be reproduced here; the manifest + platform check above
-      // is sufficient for integrity on a self-hosted system.
-      log(job, "⚠️ تحذير: لم يتطابق التوقيع الرقمي (حزمة قديمة) — متابعة التثبيت...");
+      throw new Error("فشل التحقق من التوقيع الرقمي — الحزمة قد تكون تالفة أو مزورة");
     }
 
     log(job, "💾 إنشاء نسخة احتياطية قبل التحديث...", 30);
@@ -426,7 +400,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     const apiSrc = path.join(sourceDir, "api-server-src");
     if (existsSync(apiSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "artifacts/api-server/src");
-      await execCmd(`rm -rf "${dest}" && cp -rp "${apiSrc}" "${dest}"`);
+      await execCmd(`rsync -a --delete "${apiSrc}/" "${dest}/"`);
       log(job, "✓ تم تطبيق كود الـ Backend", 65);
     }
 
@@ -434,7 +408,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     const marketSrc = path.join(sourceDir, "marketplace-src");
     if (existsSync(marketSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "artifacts/marketplace/src");
-      await execCmd(`rm -rf "${dest}" && cp -rp "${marketSrc}" "${dest}"`);
+      await execCmd(`rsync -a --delete "${marketSrc}/" "${dest}/"`);
       log(job, "✓ تم تطبيق كود الـ Frontend", 75);
     }
 
@@ -442,7 +416,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     const libSrc = path.join(sourceDir, "lib");
     if (existsSync(libSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "lib");
-      await execCmd(`rm -rf "${dest}" && cp -rp "${libSrc}" "${dest}"`);
+      await execCmd(`rsync -a --delete "${libSrc}/" "${dest}/"`);
       log(job, "✓ تم تطبيق المكتبات المشتركة", 80);
     }
 
@@ -502,7 +476,7 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
     const uploadsBackup = path.join(tempDir, "uploads");
     if (existsSync(uploadsBackup)) {
       log(job, "📁 استعادة ملفات الرفع...", 40);
-      await execCmd(`rm -rf "${UPLOADS_DIR}" && cp -rp "${uploadsBackup}" "${UPLOADS_DIR}"`);
+      await execCmd(`rsync -a --delete "${uploadsBackup}/" "${UPLOADS_DIR}/"`);
     }
 
     // Restore database (write JSON to a temp location then use restore-upload API internally)
