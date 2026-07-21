@@ -246,13 +246,16 @@ function FilterSection({ title, children, defaultOpen = true }: { title: string;
   );
 }
 
-function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function Chip({ label, active, onClick, count }: { label: string; active: boolean; onClick: () => void; count?: number }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
+      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all inline-flex items-center gap-1 ${active ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
     >
       {label}
+      {count !== undefined && (
+        <span className={`text-[10px] font-normal tabular-nums ${active ? "opacity-70" : "opacity-45"}`}>{count}</span>
+      )}
     </button>
   );
 }
@@ -518,6 +521,99 @@ export default function PropertiesPage() {
     return list;
   }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
 
+  // ── Faceted counts: each dimension counted with all OTHER filters applied ──
+  const FILTER_DEPS = [allProps, search, selectedType, selectedKind, selectedSubKind, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedFeatures, selectedRecency] as const;
+
+  function applyBaseFilters(
+    list: DisplayProp[],
+    opts: { excludeType?: boolean; excludeKind?: boolean; excludeSubKind?: boolean; excludeDistricts?: boolean },
+    deps: {
+      search: string; selectedType: string | null; selectedKind: string | null;
+      selectedSubKind: string | null; selectedDistricts: string[];
+      selectedFinishing: string | null; selectedFurnished: string | null; selectedPayment: string | null;
+      selectedBeds: number | null; selectedBaths: number | null; selectedFloor: string | null;
+      priceMin: string; priceMax: string; areaMin: string; areaMax: string;
+      selectedFeaturedOnly: boolean; selectedFeatures: string[]; selectedRecency: number | null;
+    }
+  ): DisplayProp[] {
+    const now = Date.now();
+    return list.filter((p) => {
+      const { search: s, selectedType: sT, selectedKind: sK, selectedSubKind: sSK, selectedDistricts: sD,
+        selectedFinishing: sFin, selectedFurnished: sFur, selectedPayment: sPay, selectedBeds: sBeds,
+        selectedBaths: sBaths, selectedFloor: sFloor, priceMin: pMin, priceMax: pMax,
+        areaMin: aMin, areaMax: aMax, selectedFeaturedOnly: sFeat, selectedFeatures: sFeats, selectedRecency: sRec } = deps;
+      if (s && !p.title.includes(s) && !p.location.includes(s) && !p.district.includes(s)) return false;
+      if (!opts.excludeType && sT && p.type !== sT) return false;
+      if (!opts.excludeKind && !opts.excludeSubKind && sK && !sSK && p.kind !== sK) return false;
+      if (!opts.excludeSubKind && sSK && p.subCategory !== sSK) return false;
+      if (!opts.excludeDistricts && sD.length > 0 && !sD.some(d => p.district === d || p.location.includes(d))) return false;
+      if (sFin && p.finishing !== sFin) return false;
+      if (sFur && p.furnished !== sFur) return false;
+      if (sPay && p.paymentMethod !== sPay) return false;
+      if (sBeds && p.beds < sBeds) return false;
+      if (sBaths && p.baths < sBaths) return false;
+      if (sFloor) {
+        const fv = sFloor === "أرضي" ? 0 : sFloor === "5+" ? null : Number(sFloor);
+        if (sFloor === "5+") { if ((p.floor ?? 0) < 5) return false; }
+        else if (fv !== null && p.floor !== fv) return false;
+      }
+      if (pMin && p.priceNum < Number(pMin)) return false;
+      if (pMax && p.priceNum > Number(pMax)) return false;
+      if (aMin && p.area < Number(aMin)) return false;
+      if (aMax && p.area > Number(aMax)) return false;
+      if (sFeat && !p.featured) return false;
+      if (sFeats.length > 0) { const pf = p.features.join(" "); if (!sFeats.every(f => pf.includes(f))) return false; }
+      if (sRec !== null) {
+        const hours = RECENCY_OPTIONS[sRec].hours;
+        if (!p.createdAt || (now - new Date(p.createdAt).getTime()) > hours * 3600 * 1000) return false;
+      }
+      return true;
+    });
+  }
+
+  const facetDeps = {
+    search, selectedType, selectedKind, selectedSubKind, selectedDistricts,
+    selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths,
+    selectedFloor, priceMin, priceMax, areaMin, areaMax,
+    selectedFeaturedOnly, selectedFeatures, selectedRecency,
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsByType = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeType: true }, facetDeps))
+      m[p.type] = (m[p.type] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsByKind = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeKind: true, excludeSubKind: true }, facetDeps))
+      m[p.kind] = (m[p.kind] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsBySubKind = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeSubKind: true }, facetDeps))
+      if (p.subCategory) m[p.subCategory] = (m[p.subCategory] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsByDistrict = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeDistricts: true }, facetDeps))
+      if (p.district) m[p.district] = (m[p.district] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
   const ITEMS_PER_PAGE = 30;
 
   // Reset to page 1 when filters change
@@ -778,15 +874,19 @@ export default function PropertiesPage() {
                 {/* ── نوع الصفقة ── */}
                 <FilterSection title="نوع الصفقة">
                   <div className="flex gap-2">
-                    {TYPES.map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => setSelectedType(selectedType === t ? null : t)}
-                        className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all ${selectedType === t ? "bg-primary text-white border-primary shadow-sm" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
-                      >
-                        {t}
-                      </button>
-                    ))}
+                    {TYPES.map((t) => {
+                      const cnt = countsByType[t] ?? 0;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setSelectedType(selectedType === t ? null : t)}
+                          className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 ${selectedType === t ? "bg-primary text-white border-primary shadow-sm" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
+                        >
+                          {t}
+                          <span className={`text-[11px] font-normal tabular-nums ${selectedType === t ? "opacity-70" : "opacity-50"}`}>{cnt}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </FilterSection>
 
@@ -798,11 +898,14 @@ export default function PropertiesPage() {
                           const slug = c.slug ?? String(c.id);
                           return (
                             <Chip key={slug} label={c.nameAr} active={selectedKind === slug}
+                              count={countsByKind[slug] ?? 0}
                               onClick={() => { setSelectedKind(selectedKind === slug ? null : slug); setSelectedSubKind(null); }} />
                           );
                         })
                       : KINDS.map((k) => (
-                          <Chip key={k} label={k} active={selectedKind === k} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
+                          <Chip key={k} label={k} active={selectedKind === k}
+                            count={countsByKind[k] ?? 0}
+                            onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
                         ))
                     }
                   </div>
@@ -810,13 +913,15 @@ export default function PropertiesPage() {
                     const dbSubs = subCategories.map(s => s.nameAr);
                     const activeSubs = dbSubs.length > 0 ? dbSubs : (STATIC_SUBCATS[selectedKind] ?? []);
                     if (activeSubs.length === 0) return null;
+                    const allSubCount = Object.values(countsBySubKind).reduce((s, n) => s + n, 0);
                     return (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <p className="text-xs text-gray-400 mb-2 font-semibold">التصنيف الفرعي:</p>
                         <div className="flex flex-wrap gap-1.5">
-                          <Chip label="الكل" active={!selectedSubKind} onClick={() => setSelectedSubKind(null)} />
+                          <Chip label="الكل" active={!selectedSubKind} count={allSubCount} onClick={() => setSelectedSubKind(null)} />
                           {activeSubs.map(name => (
                             <Chip key={name} label={name} active={selectedSubKind === name}
+                              count={countsBySubKind[name] ?? 0}
                               onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)} />
                           ))}
                         </div>
@@ -859,6 +964,7 @@ export default function PropertiesPage() {
                           )}
                           {banhaAreas.map((a) => {
                             const active = selectedDistricts.includes(a.nameAr);
+                            const cnt = countsByDistrict[a.nameAr] ?? 0;
                             return (
                               <button
                                 key={a.id}
@@ -869,6 +975,7 @@ export default function PropertiesPage() {
                                   {active && <Check className="w-2.5 h-2.5 text-white" />}
                                 </span>
                                 <span className="flex-1 text-right">{a.nameAr}</span>
+                                <span className={`text-xs tabular-nums shrink-0 ${active ? "text-primary/70" : "text-gray-400"}`}>{cnt}</span>
                               </button>
                             );
                           })}
@@ -1654,14 +1761,18 @@ export default function PropertiesPage() {
             {/* Transaction Type */}
             <FilterSection title="نوع الصفقة">
               <div className="flex flex-col gap-2">
-                {TYPES.map((t) => (
-                  <label key={t} className="flex items-center gap-2.5 cursor-pointer group">
-                    <div onClick={() => setSelectedType(selectedType === t ? null : t)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedType === t ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
-                      {selectedType === t && <div className="w-2 h-2 rounded-sm bg-white" />}
-                    </div>
-                    <span onClick={() => setSelectedType(selectedType === t ? null : t)} className={`text-sm transition-colors ${selectedType === t ? "text-primary font-semibold" : "text-gray-600"}`}>{t}</span>
-                  </label>
-                ))}
+                {TYPES.map((t) => {
+                  const cnt = countsByType[t] ?? 0;
+                  return (
+                    <label key={t} className="flex items-center gap-2.5 cursor-pointer group">
+                      <div onClick={() => setSelectedType(selectedType === t ? null : t)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedType === t ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                        {selectedType === t && <div className="w-2 h-2 rounded-sm bg-white" />}
+                      </div>
+                      <span onClick={() => setSelectedType(selectedType === t ? null : t)} className={`flex-1 text-sm transition-colors ${selectedType === t ? "text-primary font-semibold" : "text-gray-600"}`}>{t}</span>
+                      <span className="text-xs text-gray-400 tabular-nums">{cnt}</span>
+                    </label>
+                  );
+                })}
               </div>
             </FilterSection>
 
@@ -1671,16 +1782,16 @@ export default function PropertiesPage() {
                 {reCategories.length > 0
                   ? reCategories.map((c) => {
                       const slug = c.slug ?? String(c.id);
-                      return <Chip key={slug} label={c.nameAr} active={selectedKind === slug} onClick={() => { const next = selectedKind === slug ? null : slug; setSelectedKind(next); setSelectedSubKind(null); }} />;
+                      return <Chip key={slug} label={c.nameAr} active={selectedKind === slug} count={countsByKind[slug] ?? 0} onClick={() => { const next = selectedKind === slug ? null : slug; setSelectedKind(next); setSelectedSubKind(null); }} />;
                     })
-                  : KINDS.map((k) => <Chip key={k} label={k} active={selectedKind === k} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />)
+                  : KINDS.map((k) => <Chip key={k} label={k} active={selectedKind === k} count={countsByKind[k] ?? 0} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />)
                 }
               </div>
               {selectedKind && subCategories.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <p className="text-xs text-gray-400 mb-2 font-semibold">تخصيص أكثر:</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {subCategories.map((s) => <Chip key={s.id} label={s.nameAr} active={selectedSubKind === s.nameAr} onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)} />)}
+                    {subCategories.map((s) => <Chip key={s.id} label={s.nameAr} active={selectedSubKind === s.nameAr} count={countsBySubKind[s.nameAr] ?? 0} onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)} />)}
                   </div>
                 </div>
               )}
@@ -1749,12 +1860,14 @@ export default function PropertiesPage() {
                 <div className="flex flex-col gap-2 max-h-52 overflow-y-auto no-scrollbar">
                   {banhaAreas.map((a) => {
                     const active = selectedDistricts.includes(a.nameAr);
+                    const cnt = countsByDistrict[a.nameAr] ?? 0;
                     return (
                       <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
                         <div onClick={() => toggleDistrict(a.nameAr)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${active ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
                           {active && <div className="w-2 h-2 rounded-sm bg-white" />}
                         </div>
-                        <span onClick={() => toggleDistrict(a.nameAr)} className={`text-sm transition-colors cursor-pointer ${active ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
+                        <span onClick={() => toggleDistrict(a.nameAr)} className={`flex-1 text-sm transition-colors cursor-pointer ${active ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
+                        <span className={`text-xs tabular-nums shrink-0 ${active ? "text-primary/70" : "text-gray-400"}`}>{cnt}</span>
                       </label>
                     );
                   })}
