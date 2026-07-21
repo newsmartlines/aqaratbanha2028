@@ -27,7 +27,7 @@ router.use("/admin/updates", adminOnly);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Navigate up: routes → src → api-server → artifacts → workspace
-const WORKSPACE_ROOT = path.resolve(__dirname, "../../../../..");
+const WORKSPACE_ROOT = path.resolve(__dirname, "../../../..");
 const BACKUPS_DIR = path.join(WORKSPACE_ROOT, "backups");
 const PACKAGES_DIR = path.join(WORKSPACE_ROOT, "update-packages");
 const VERSION_FILE = path.join(WORKSPACE_ROOT, "version.json");

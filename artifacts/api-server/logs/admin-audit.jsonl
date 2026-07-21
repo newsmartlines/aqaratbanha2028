@@ -29,3 +29,7 @@
 {"ts":"2026-07-21T17:11:03.178Z","ip":"127.0.0.1","method":"POST","path":"/seed/all","status":401,"durationMs":2}
 {"ts":"2026-07-21T17:11:17.399Z","ip":"127.0.0.1","method":"POST","path":"/seed-demo","status":401,"durationMs":1,"body":{"section":"all"}}
 {"ts":"2026-07-21T17:54:08.526Z","ip":"127.0.0.1","method":"POST","path":"/updates/backup","status":401,"durationMs":2,"body":{"label":"test"}}
+{"ts":"2026-07-21T18:08:09.817Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/backup","status":200,"durationMs":29,"body":{"label":"manual"}}
+{"ts":"2026-07-21T18:08:14.554Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/backup","status":200,"durationMs":18,"body":{"label":"pre-update"}}
+{"ts":"2026-07-21T18:08:34.763Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/create-package","status":200,"durationMs":36,"body":{"bumpType":"patch","changelog":"بسم الله نسخة رقم 1\nتحديث","includeDb":true}}
+{"ts":"2026-07-21T18:09:44.739Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/backup","status":200,"durationMs":66,"body":{"label":"quick"}}
