@@ -4,6 +4,32 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## Running on Replit
+
+### First-time setup
+1. **Install dependencies**: `pnpm install`
+2. **Push DB schema**: `pnpm db:push` (creates all tables from Drizzle schema)
+3. **Start the app**: use the **Start application** workflow (runs Vite dev server on port 5000 + API server on port 8080)
+
+### Required secrets / env vars
+| Variable | Where to set | Notes |
+|---|---|---|
+| `DATABASE_URL` | Replit Secrets | PostgreSQL connection string |
+| `SESSION_SECRET` | Replit Secrets | Long random string for session signing |
+| `PORT` | `.replit` `[userenv.shared]` | API server port (default `8080`) |
+| `VITE_PORT` | `.replit` `[userenv.shared]` | Frontend dev server port (default `5000`) |
+
+### Optional secrets
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — enables Google OAuth login
+- `OPENAI_API_KEY` — enables AI-assisted email generation in the admin panel
+
+### Workflow
+- **Frontend** (React + Vite): `http://localhost:5000` — proxied to port 20787 externally
+- **API server** (Express 5): `http://localhost:8080`
+- Vite dev proxy: `/api-server/*` → `http://localhost:8080`
+
+
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
