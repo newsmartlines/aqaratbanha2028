@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useParams, useLocation } from "wouter";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useParams, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
@@ -420,14 +420,27 @@ function ReviewsSection({ reviews, rating, reviewsCount }: { reviews: Review[]; 
 /* ─── Main Page ─────────────────────────────────────────────────── */
 export default function AdvertiserPage() {
   const params = useParams<{ id: string }>();
-  const [, setLocation] = useLocation();
+  const [location, navigate] = useLocation();
+  const search = useSearch();                              // reactive query string
   const providerId = parseInt(params.id ?? "0");
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Tab state lives in the URL (?type=all|sale|rent) so it survives
+  // back-navigation and never resets on re-render.
+  const qs = new URLSearchParams(search);
+  const activeTab = (qs.get("type") as "all" | "sale" | "rent") || "all";
+
+  const setActiveTab = useCallback((tab: "all" | "sale" | "rent") => {
+    const next = new URLSearchParams(search);
+    if (tab === "all") next.delete("type");
+    else next.set("type", tab);
+    const suffix = next.toString() ? `?${next.toString()}` : "";
+    navigate(`/advertiser/${providerId}${suffix}`, { replace: true });
+  }, [search, navigate, providerId]);
 
   const [provider, setProvider] = useState<ProviderInfo | null>(null);
   const [properties, setProperties] = useState<PropItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "rent" | "sale">("all");
 
   useEffect(() => {
     if (!providerId) return;
@@ -467,10 +480,9 @@ export default function AdvertiserPage() {
     ? Math.max(1, Math.round((Date.now() - new Date(provider.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)))
     : null;
 
-  const filteredProps = properties.filter(p => {
-    if (activeTab === "all") return true;
-    return p.rawListingType === activeTab; // "sale" | "rent"
-  });
+  const filteredProps = properties.filter(p =>
+    activeTab === "all" || p.rawListingType === activeTab
+  );
 
   if (loading) {
     return (
@@ -704,7 +716,7 @@ export default function AdvertiserPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {filteredProps.map((p, idx) => (
-                    <PropertyCard key={p.id} p={p} idx={idx} onClick={() => setLocation(`/property/${p.id}`)} />
+                    <PropertyCard key={p.id} p={p} idx={idx} onClick={() => navigate(`/property/${p.id}`)} />
                   ))}
                 </div>
               )}
