@@ -28,7 +28,7 @@ function timeAgo(dateStr: string | null | undefined): string {
 
 function formatPrice(price: number | string | null | undefined, listType?: string): string {
   const n = Number(price);
-  if (!price || isNaN(n) || n === 0) return "—";
+  if (!price || isNaN(n) || n === 0) return "السعر عند الاتصال";
   return `${n.toLocaleString("en-US")} ج.م${listType === "rent" ? "/شهر" : ""}`;
 }
 
@@ -445,7 +445,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
                         {property.title}
                       </h3>
 
-                      <div className="flex items-center gap-1 text-gray-500 text-xs mb-3">
+                      <div className="flex items-center gap-1 text-gray-700 text-xs mb-3">
                         <MapPin className="w-3 h-3 text-primary shrink-0" />
                         <span className="truncate">{location}</span>
                       </div>
@@ -453,31 +453,31 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
                       {/* Specs */}
                       <div className="flex items-center gap-3 flex-wrap mb-3">
                         {(property.rooms ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="flex items-center gap-1 text-gray-700 text-xs">
                             <BedDouble className="w-3 h-3" /> {property.rooms} غرف
                           </span>
                         )}
                         {(property.bathrooms ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="flex items-center gap-1 text-gray-700 text-xs">
                             <Bath className="w-3 h-3" /> {property.bathrooms} حمام
                           </span>
                         )}
                         {(property.area ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="flex items-center gap-1 text-gray-700 text-xs">
                             <Maximize2 className="w-3 h-3" /> {Number(property.area).toLocaleString("ar-EG")} م²
                           </span>
                         )}
                       </div>
 
-                      <div className="border-t border-border/50 pt-3 flex items-center justify-between text-[11px] text-gray-500">
+                      <div className="border-t border-border/50 pt-3 flex items-center justify-between text-[11px] text-gray-600">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3 shrink-0" />
                           {timeAgo(property.createdAt) || "—"}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 font-semibold">
                             <Eye className="w-3 h-3 shrink-0" />
-                            {(property.viewCount ?? 0).toLocaleString("ar-EG")}
+                            {(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات
                           </span>
                           <button
                             className={`flex items-center justify-center w-7 h-7 rounded-lg border transition-all ${
