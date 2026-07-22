@@ -312,7 +312,7 @@ export default function AdminUpdates() {
     try {
       const formData = new FormData();
       formData.append("package", installFile);
-      const res = await fetch("/api-server/api/admin/updates/install", {
+      const res = await fetch("/api/admin/updates/install", {
         method: "POST",
         body: formData,
         credentials: "include",

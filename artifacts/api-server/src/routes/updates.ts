@@ -637,9 +637,23 @@ router.post("/admin/updates/create-package", async (req, res) => {
 });
 
 // POST /api/admin/updates/install
+// Guard: only one install may run at a time to prevent concurrent uploads
+// from flooding disk I/O and producing "upstream unavailable" errors.
+let installRunning = false;
 router.post("/admin/updates/install", upload.single("package"), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, error: "لم يتم رفع أي ملف" });
-  const jobId = startJob("install", job => runInstallPackage(job, req.file!.path));
+  if (installRunning) {
+    await fs.unlink(req.file.path).catch(() => {});
+    return res.status(409).json({ success: false, error: "عملية تثبيت أخرى جارية — انتظر حتى تكتمل" });
+  }
+  installRunning = true;
+  const jobId = startJob("install", async (job) => {
+    try {
+      return await runInstallPackage(job, req.file!.path);
+    } finally {
+      installRunning = false;
+    }
+  });
   res.json({ success: true, jobId });
 });
 
