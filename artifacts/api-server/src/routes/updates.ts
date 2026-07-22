@@ -32,6 +32,9 @@ const BACKUPS_DIR = path.join(WORKSPACE_ROOT, "backups");
 const PACKAGES_DIR = path.join(WORKSPACE_ROOT, "update-packages");
 const VERSION_FILE = path.join(WORKSPACE_ROOT, "version.json");
 const UPLOADS_DIR = path.join(WORKSPACE_ROOT, "uploads");
+// Jobs are persisted to disk so they survive API-server restarts triggered by
+// tsx watch when source files are replaced during an install.
+const JOBS_DIR = path.join(os.tmpdir(), "aqarat-jobs");
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -70,8 +73,29 @@ interface PackageManifest {
 }
 
 // ── Job Registry ──────────────────────────────────────────────────────────────
+// Jobs are stored both in-memory AND on disk so they survive API server
+// restarts that tsx watch triggers when source files are replaced mid-install.
 
 const jobs = new Map<string, Job>();
+
+function jobFilePath(id: string) {
+  return path.join(JOBS_DIR, `${id}.json`);
+}
+
+async function persistJob(job: Job) {
+  try {
+    await fs.mkdir(JOBS_DIR, { recursive: true });
+    await fs.writeFile(jobFilePath(job.id), JSON.stringify(job, null, 2));
+  } catch {}
+}
+
+async function loadJobFromDisk(id: string): Promise<Job | undefined> {
+  try {
+    return JSON.parse(await fs.readFile(jobFilePath(id), "utf8")) as Job;
+  } catch {
+    return undefined;
+  }
+}
 
 function startJob(type: Job["type"], fn: (job: Job) => Promise<any>): string {
   const id = crypto.randomUUID();
@@ -80,6 +104,7 @@ function startJob(type: Job["type"], fn: (job: Job) => Promise<any>): string {
     logs: [], startedAt: new Date().toISOString(),
   };
   jobs.set(id, job);
+  persistJob(job);
 
   fn(job)
     .then(result => {
@@ -87,12 +112,14 @@ function startJob(type: Job["type"], fn: (job: Job) => Promise<any>): string {
       job.progress = 100;
       job.result = result;
       job.completedAt = new Date().toISOString();
+      persistJob(job);
     })
     .catch(err => {
       job.status = "failed";
       job.error = err?.message ?? String(err);
       job.completedAt = new Date().toISOString();
       job.logs.push(`❌ خطأ: ${job.error}`);
+      persistJob(job);
     });
 
   return id;
@@ -101,6 +128,7 @@ function startJob(type: Job["type"], fn: (job: Job) => Promise<any>): string {
 function log(job: Job, msg: string, progress?: number) {
   job.logs.push(`[${new Date().toISOString().slice(11, 19)}] ${msg}`);
   if (progress !== undefined) job.progress = progress;
+  persistJob(job); // persist after every log so progress survives restarts
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -396,47 +424,51 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     log(job, "📋 تطبيق ملفات الكود...", 55);
     const sourceDir = path.join(tempDir, "source");
 
-    // Apply backend source
-    const apiSrc = path.join(sourceDir, "api-server-src");
-    if (existsSync(apiSrc)) {
-      const dest = path.join(WORKSPACE_ROOT, "artifacts/api-server/src");
-      await execCmd(`rsync -a --delete "${apiSrc}/" "${dest}/"`);
-      log(job, "✓ تم تطبيق كود الـ Backend", 65);
-    }
-
-    // Apply frontend source
+    // ── Apply frontend source FIRST (does NOT trigger tsx restart) ──────────
     const marketSrc = path.join(sourceDir, "marketplace-src");
     if (existsSync(marketSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "artifacts/marketplace/src");
-      await execCmd(`rsync -a --delete "${marketSrc}/" "${dest}/"`);
-      log(job, "✓ تم تطبيق كود الـ Frontend", 75);
+      await execCmd(`rm -rf "${dest}" && cp -rp "${marketSrc}" "${dest}"`);
+      log(job, "✓ تم تطبيق كود الـ Frontend", 65);
     }
 
-    // Apply lib
+    // ── Apply lib SECOND (does NOT trigger tsx restart) ──────────────────────
     const libSrc = path.join(sourceDir, "lib");
     if (existsSync(libSrc)) {
       const dest = path.join(WORKSPACE_ROOT, "lib");
-      await execCmd(`rsync -a --delete "${libSrc}/" "${dest}/"`);
-      log(job, "✓ تم تطبيق المكتبات المشتركة", 80);
+      await execCmd(`rm -rf "${dest}" && cp -rp "${libSrc}" "${dest}"`);
+      log(job, "✓ تم تطبيق المكتبات المشتركة", 75);
     }
 
     // Apply DB data if included
     const dbData = path.join(tempDir, "database", "data.json");
     if (existsSync(dbData)) {
-      log(job, "💾 استعادة بيانات قاعدة البيانات...", 85);
-      // Leave DB restoration to the admin (it can be done separately via backup page)
-      log(job, "ℹ️ بيانات DB متاحة — استخدم صفحة النسخ الاحتياطي للاستعادة", 85);
+      log(job, "💾 بيانات DB متاحة — استخدم صفحة النسخ الاحتياطي للاستعادة", 80);
     }
 
-    log(job, "📝 تحديث ملف الإصدار...", 90);
+    log(job, "📝 تحديث ملف الإصدار...", 85);
     const newVersionInfo = JSON.parse(
       await fs.readFile(path.join(tempDir, "version.json"), "utf8").catch(() => "null"),
     ) ?? { version: manifest.toVersion };
     newVersionInfo.installedAt = new Date().toISOString();
     await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
 
-    log(job, `✅ تم تثبيت التحديث v${manifest.toVersion} بنجاح`, 100);
-    log(job, "🔄 سيتم إعادة تحميل الخادم تلقائياً...");
+    // ── Mark job complete on disk BEFORE applying backend ───────────────────
+    // tsx watch will restart the API server when backend .ts files change,
+    // clearing the in-memory jobs Map.  Writing success to disk first means
+    // the restart-tolerant GET /job/:id endpoint will still return success.
+    log(job, `✅ تم تثبيت التحديث v${manifest.toVersion} بنجاح`, 95);
+    log(job, "🔄 جارٍ تطبيق كود الـ Backend — سيُعاد تشغيل الخادم تلقائياً...");
+    job.status = "success";
+    job.completedAt = new Date().toISOString();
+    await persistJob(job);
+
+    // ── Apply backend LAST (triggers tsx restart — that's OK now) ───────────
+    const apiSrc = path.join(sourceDir, "api-server-src");
+    if (existsSync(apiSrc)) {
+      const dest = path.join(WORKSPACE_ROOT, "artifacts/api-server/src");
+      await execCmd(`rm -rf "${dest}" && cp -rp "${apiSrc}" "${dest}"`);
+    }
 
     return { version: manifest.toVersion };
   } catch (err: any) {
@@ -476,7 +508,7 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
     const uploadsBackup = path.join(tempDir, "uploads");
     if (existsSync(uploadsBackup)) {
       log(job, "📁 استعادة ملفات الرفع...", 40);
-      await execCmd(`rsync -a --delete "${uploadsBackup}/" "${UPLOADS_DIR}/"`);
+      await execCmd(`rm -rf "${UPLOADS_DIR}" && cp -rp "${uploadsBackup}" "${UPLOADS_DIR}"`);
     }
 
     // Restore database (write JSON to a temp location then use restore-upload API internally)
@@ -623,9 +655,13 @@ router.post("/admin/updates/rollback", async (req, res) => {
 });
 
 // GET /api/admin/updates/job/:id
-router.get("/admin/updates/job/:id", (req, res) => {
-  const job = jobs.get(String(req.params.id));
+// Falls back to disk so the status survives a tsx-triggered server restart.
+router.get("/admin/updates/job/:id", async (req, res) => {
+  const id = String(req.params.id);
+  let job = jobs.get(id) ?? await loadJobFromDisk(id);
   if (!job) return res.status(404).json({ success: false, error: "Job not found" });
+  // Re-cache in memory for subsequent fast lookups
+  jobs.set(id, job);
   res.json({ success: true, data: job });
 });
 
