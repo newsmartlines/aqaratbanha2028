@@ -41,3 +41,5 @@
 {"ts":"2026-07-21T23:53:32.715Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/install","status":200,"durationMs":7584,"body":{}}
 {"ts":"2026-07-22T00:10:11.020Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/install","status":200,"durationMs":2617,"body":{}}
 {"ts":"2026-07-22T00:14:19.796Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/install","status":200,"durationMs":3494,"body":{}}
+{"ts":"2026-07-22T00:28:42.642Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/create-package","status":200,"durationMs":65,"body":{"bumpType":"patch","changelog":"اصلاححححح"}}
+{"ts":"2026-07-22T00:29:13.042Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/install","status":200,"durationMs":1428,"body":{}}

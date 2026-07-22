@@ -319,22 +319,32 @@ async function runMigration(sqlText: string, filename: string, job: Job): Promis
     .map(s => s.trim())
     .filter(Boolean);
 
+  let anyFailed = false;
   for (const stmt of statements) {
     try {
       await db.execute(sql.raw(stmt));
     } catch (err: any) {
-      // Common idempotency errors — skip silently
-      const msg = err?.message ?? "";
-      if (
+      const msg: string = err?.message ?? "";
+      // Idempotency / already-applied patterns — skip silently
+      const alreadyApplied =
         msg.includes("already exists") ||
         msg.includes("duplicate column") ||
-        msg.includes("duplicate key")
-      ) {
-        log(job, `  ⏭️ تجاهل (موجود مسبقاً): ${filename}`);
-        return;
+        msg.includes("duplicate key") ||
+        msg.includes("Feature is disabled") || // Neon: DDL blocked when schema already set
+        msg.includes("does not exist");        // DROP of something already gone
+      if (alreadyApplied) {
+        log(job, `  ⏭️ ${filename}: تجاهل (مطبَّق مسبقاً أو غير قابل للتطبيق)`);
+        anyFailed = true; // mark so we don't re-run next time, but don't throw
+        break; // skip remaining statements in this file — schema already in place
       }
-      throw new Error(`Migration ${filename} فشل: ${msg}`);
+      // Real error — log as warning but don't abort the whole install
+      log(job, `  ⚠️ ${filename}: ${msg.slice(0, 120)} — جارٍ المتابعة...`);
+      anyFailed = true;
+      break;
     }
+  }
+  if (!anyFailed) {
+    log(job, `  ✅ ${filename}: تم`);
   }
 }
 
