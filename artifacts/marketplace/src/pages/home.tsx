@@ -1100,7 +1100,7 @@ export default function Home() {
                   )}
                 </div>
                 <div className="p-3.5">
-                  <p dir="ltr" className="text-gray-900 font-extrabold text-base leading-none">{priceStr} <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
+                  <p className="text-right"><span dir="ltr" className="inline text-gray-900 font-extrabold text-base leading-none">{priceStr}</span> <span className="text-[11px] text-muted-foreground font-normal">ج.م</span></p>
                   <h3 className="font-semibold text-gray-900 text-sm mt-1 mb-1.5 line-clamp-1 group-hover:text-primary transition-colors">{property.title}</h3>
                   <div className="flex items-center gap-1 text-muted-foreground text-xs">
                     <MapPin className="w-3 h-3 text-primary shrink-0" />
