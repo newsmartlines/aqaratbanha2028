@@ -31,7 +31,8 @@ type PropItem = {
   priceNum: number;
   address: string;
   mainCategory: string;
-  listingType: string;
+  listingType: string;   // Arabic label: "للبيع" | "للإيجار"
+  rawListingType: string; // raw API value: "sale" | "rent"
   rooms: number;
   bathrooms: number;
   area: string;
@@ -63,6 +64,7 @@ function mapProp(p: Record<string, unknown>): PropItem {
   const imgs = (() => {
     try { return JSON.parse((p.images as string) ?? "[]") as string[]; } catch { return []; }
   })();
+  const raw = (p.listingType as string) ?? "sale";
   return {
     id: p.id as number,
     title: (p.title as string) ?? "",
@@ -72,7 +74,8 @@ function mapProp(p: Record<string, unknown>): PropItem {
     priceNum: parseFloat((p.price as string) ?? "0") || 0,
     address: (p.address as string) ?? "",
     mainCategory: (p.mainCategory as string) ?? "",
-    listingType: (p.listingType as string) === "rent" ? "للإيجار" : "للبيع",
+    rawListingType: raw,
+    listingType: raw === "rent" ? "للإيجار" : "للبيع",
     rooms: (p.rooms as number) ?? 0,
     bathrooms: (p.bathrooms as number) ?? 0,
     area: (p.area as string) ?? "0",
@@ -466,8 +469,7 @@ export default function AdvertiserPage() {
 
   const filteredProps = properties.filter(p => {
     if (activeTab === "all") return true;
-    if (activeTab === "rent") return p.listingType === "للإيجار";
-    return p.listingType === "للبيع";
+    return p.rawListingType === activeTab; // "sale" | "rent"
   });
 
   if (loading) {
@@ -675,15 +677,22 @@ export default function AdvertiserPage() {
                   إعلانات المعلن
                 </h2>
                 <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
-                  {(["all", "sale", "rent"] as const).map(tab => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === tab ? "bg-white text-primary shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-                    >
-                      {tab === "all" ? `الكل (${properties.length})` : tab === "sale" ? `للبيع (${properties.filter(p => p.listingType === "للبيع").length})` : `للإيجار (${properties.filter(p => p.listingType === "للإيجار").length})`}
-                    </button>
-                  ))}
+                  {(["all", "sale", "rent"] as const).map(tab => {
+                    const count = tab === "all"
+                      ? properties.length
+                      : properties.filter(p => p.rawListingType === tab).length;
+                    const label = tab === "all" ? "الكل" : tab === "sale" ? "للبيع" : "للإيجار";
+                    return (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === tab ? "bg-white text-primary shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                      >
+                        {label} ({count})
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
