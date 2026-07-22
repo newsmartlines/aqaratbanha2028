@@ -1333,77 +1333,22 @@ export default function PropertiesPage() {
                                   </span>
                                 </div>
                               )}
-                              {/* Verified company badge — top-right of image */}
-                              {p.verified && (
-                                <div className="absolute top-2 right-2 z-20 pointer-events-none">
-                                  <span
-                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full tracking-wide"
-                                    style={{
-                                      background: "linear-gradient(135deg,#0d9488 0%,#14b8a6 50%,#0d9488 100%)",
-                                      color: "#fff",
-                                      boxShadow: "0 3px 10px rgba(13,148,136,0.45), 0 1px 3px rgba(0,0,0,0.2)",
-                                      textShadow: "0 1px 2px rgba(0,0,0,0.15)",
-                                      border: "1.5px solid rgba(255,255,255,0.35)",
-                                    }}
-                                  >
-                                    <BadgeCheck className="w-3 h-3 shrink-0" /> موثّق
-                                  </span>
-                                </div>
-                              )}
-                              {/* Provider logo — premium circular overlay */}
-                              {(p.agentLogo || p.agentAvatar || p.agentName) && (
-                                <div
-                                  className="absolute bottom-2.5 left-2.5 z-20"
-                                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
-                                  title={p.agentName || undefined}
-                                >
-                                  <div className={`w-11 h-11 rounded-full border-[2.5px] border-white shadow-[0_2px_10px_rgba(0,0,0,0.28)] overflow-hidden bg-white transition-transform duration-150 ${p.providerId ? "cursor-pointer hover:scale-110" : ""}`}>
-                                    {(p.agentLogo || p.agentAvatar) ? (
-                                      <img
-                                        src={p.agentLogo || p.agentAvatar}
-                                        alt={p.agentName}
-                                        className="w-full h-full object-cover"
-                                        onError={e => {
-                                          (e.currentTarget as HTMLImageElement).src = p.agentName
-                                            ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName)}&background=0d9488&color=fff&size=88&bold=true`
-                                            : "";
-                                        }}
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-sm">
-                                        {p.agentName?.charAt(0) ?? <Building2 className="w-5 h-5 opacity-90" />}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
                             </PropertyImageGallery>
 
                             {/* ── Content ── */}
                             <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
-                              {/* Price + type badge */}
+                              {/* Price + verified badge */}
                               <div className="flex items-center justify-between gap-2 mb-3">
                                 <div className="flex items-baseline gap-1">
                                   <span className="text-xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
                                   <span className="text-xs font-bold text-gray-600">ج.م</span>
                                   {p.type === "للإيجار" && <span className="text-[11px] text-gray-500">/ شهر</span>}
                                 </div>
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else if (r === "type_mismatch") toast.error("لا يمكن مقارنة بيع مع إيجار"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}
-                                    className={`w-6 h-6 rounded-md border flex items-center justify-center transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-400 hover:border-primary/30 hover:text-primary"}`}
-                                    title="أضف للمقارنة"
-                                  >
-                                    <GitCompare className="w-3 h-3" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}
-                                    className="w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-200 transition-all"
-                                    title="إبلاغ"
-                                  >
-                                    <Flag className="w-3 h-3" />
-                                  </button>
-                                </div>
+                                {p.verified && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200 shrink-0">
+                                    <BadgeCheck className="w-3 h-3 text-teal-500 shrink-0" /> موثّق
+                                  </span>
+                                )}
                               </div>
 
                               {/* Title */}
@@ -1419,22 +1364,22 @@ export default function PropertiesPage() {
 
                               {/* Specs row */}
                               <div className="flex items-center gap-3 mb-3 flex-wrap">
-                                <div className="flex items-center gap-1 text-gray-700 text-xs">
-                                  <BedDouble className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                  <span className="font-semibold">{p.beds || "—"}</span>
+                                <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                  <BedDouble className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                  <span>{p.beds || "—"}</span>
                                   <span>غرف</span>
                                 </div>
                                 {p.baths > 0 && (
-                                  <div className="flex items-center gap-1 text-gray-700 text-xs">
-                                    <Bath className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                    <span className="font-semibold">{p.baths}</span>
+                                  <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                    <Bath className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                    <span>{p.baths}</span>
                                     <span>حمام</span>
                                   </div>
                                 )}
                                 {p.area > 0 && (
-                                  <div className="flex items-center gap-1 text-gray-700 text-xs">
-                                    <Maximize2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                    <span className="font-semibold">{p.area}</span>
+                                  <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                    <Maximize2 className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                    <span>{p.area}</span>
                                     <span>م²</span>
                                   </div>
                                 )}
@@ -1460,54 +1405,32 @@ export default function PropertiesPage() {
                                 </div>
                               )}
 
-                              {/* Bottom row: agent + time + contact buttons */}
+                              {/* Bottom row: agent + time + views + contact buttons */}
                               <div className="mt-auto pt-2 border-t border-gray-100 flex items-center gap-2">
-                                {/* Agent */}
-                                {p.agentName && (
-                                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                    {p.agentLogo ? (
-                                      /* Company: rectangular logo badge */
-                                      <div className="flex items-center gap-1.5 shrink-0">
-                                        <div className="h-6 px-1.5 rounded border border-gray-200 bg-white flex items-center justify-center" style={{ maxWidth: 64 }}>
-                                          <img
-                                            src={p.agentLogo}
-                                            alt={p.agentName}
-                                            className="h-4 w-auto object-contain"
-                                            onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                                          />
-                                        </div>
-                                      </div>
-                                    ) : p.agentAvatar ? (
-                                      /* Individual: round avatar */
+                                {/* Agent info */}
+                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                  {p.agentLogo && (
+                                    <div className="h-6 px-1.5 rounded border border-gray-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 68 }}>
                                       <img
-                                        src={p.agentAvatar}
+                                        src={p.agentLogo}
                                         alt={p.agentName}
-                                        className="w-6 h-6 rounded-full object-cover border border-gray-200 shrink-0"
-                                        onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName || "م")}&background=0d9488&color=fff&size=24`; }}
+                                        className="h-4 w-auto object-contain"
+                                        onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                                       />
-                                    ) : (
-                                      /* Fallback initials circle */
-                                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-[10px]">
-                                        {p.agentName.charAt(0)}
-                                      </div>
-                                    )}
-                                    <span className="text-[11px] font-semibold text-gray-700 truncate">{p.agentName}</span>
-                                    {p.createdAt && (
-                                      <span className="text-[10px] text-gray-400 shrink-0 mr-1">{timeAgo(p.createdAt)}</span>
-                                    )}
-                                  </div>
-                                )}
-                                {!p.agentName && p.createdAt && (
-                                  <div className="flex items-center gap-1 flex-1">
-                                    <Clock className="w-3 h-3 text-gray-400 shrink-0" />
-                                    <span className="text-[11px] text-gray-500">{timeAgo(p.createdAt)}</span>
-                                    {(p.viewCount ?? 0) > 0 && (
-                                      <span className="flex items-center gap-0.5 text-gray-400 text-[10px] mr-1">
-                                        <Eye className="w-2.5 h-2.5" />{p.viewCount}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
+                                    </div>
+                                  )}
+                                  {p.agentName && (
+                                    <span className="text-[11px] font-semibold text-gray-600 truncate">{p.agentName}</span>
+                                  )}
+                                  {p.createdAt && (
+                                    <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(p.createdAt)}</span>
+                                  )}
+                                  {(p.viewCount ?? 0) > 0 && (
+                                    <span className="flex items-center gap-0.5 text-gray-400 text-[10px] shrink-0">
+                                      <Eye className="w-2.5 h-2.5" />{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                    </span>
+                                  )}
+                                </div>
                                 {/* Contact buttons */}
                                 {(() => {
                                   const cm = p.contactMethods;
@@ -1613,23 +1536,6 @@ export default function PropertiesPage() {
                                   </span>
                                 </div>
                               )}
-                              {/* Verified company badge — top-right of image */}
-                              {p.verified && (
-                                <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
-                                  <span
-                                    className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full tracking-wide"
-                                    style={{
-                                      background: "linear-gradient(135deg,#0d9488 0%,#14b8a6 50%,#0d9488 100%)",
-                                      color: "#fff",
-                                      boxShadow: "0 3px 10px rgba(13,148,136,0.45), 0 1px 3px rgba(0,0,0,0.2)",
-                                      textShadow: "0 1px 2px rgba(0,0,0,0.15)",
-                                      border: "1.5px solid rgba(255,255,255,0.35)",
-                                    }}
-                                  >
-                                    <BadgeCheck className="w-3 h-3 shrink-0" /> موثّق
-                                  </span>
-                                </div>
-                              )}
                             </PropertyImageGallery>
 
                             {/* Body */}
@@ -1656,33 +1562,28 @@ export default function PropertiesPage() {
                               </div>
 
                               {/* Specs — always show beds */}
-                              <div className="flex items-center gap-2.5 text-gray-600 text-xs">
-                                <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-gray-400" />{p.beds || "—"} غرف</span>
-                                {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-gray-400" />{p.baths} حمام</span>}
-                                {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-gray-400" />{p.area}م²</span>}
+                              <div className="flex items-center gap-2.5 text-gray-400 text-xs">
+                                <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-gray-300" />{p.beds || "—"} غرف</span>
+                                {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-gray-300" />{p.baths} حمام</span>}
+                                {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-gray-300" />{p.area}م²</span>}
                               </div>
 
-                              {/* Agent + actions */}
+                              {/* Agent + views */}
                               <div className="flex items-center gap-2 pt-2 mt-1 border-t border-gray-100">
+                                {p.agentLogo ? (
+                                  <div className="h-6 px-1.5 rounded border border-gray-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 68 }}>
+                                    <img src={p.agentLogo} alt={p.agentName} className="h-4 w-auto object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                                  </div>
+                                ) : null}
                                 {p.agentName && (
-                                  <>
-                                    {(p.agentAvatar || p.agentLogo) ? (
-                                      <img src={p.agentAvatar || p.agentLogo} alt={p.agentName} className="w-6 h-6 rounded-full object-cover border border-gray-200 shrink-0" onError={e => { (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName||"م")}&background=0d9488&color=fff&size=24`; }} />
-                                    ) : (
-                                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-[10px]">{p.agentName.charAt(0)}</div>
-                                    )}
-                                    <span className="text-[11px] text-gray-900 font-semibold truncate flex-1">{p.agentName}</span>
-                                  </>
+                                  <span className="text-[11px] text-gray-600 font-semibold truncate flex-1">{p.agentName}</span>
                                 )}
                                 {!p.agentName && <span className="flex-1" />}
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <button className="p-1 rounded-lg border border-rose-200 text-rose-400 hover:bg-rose-50 transition-all" title="إبلاغ" onClick={(e) => { e.stopPropagation(); setReportPropertyId(p.id); }}>
-                                    <Flag className="w-3 h-3" />
-                                  </button>
-                                  <button className={`p-1 rounded-lg border transition-all ${isInCompare(p.id) ? "bg-primary/10 border-primary/40 text-primary" : "border-gray-200 text-gray-700 hover:border-primary/30 hover:text-primary"}`} title="قارن" onClick={(e) => { e.stopPropagation(); const r = addToCompare({ id: p.id, title: p.title, price: p.price, priceNum: p.priceNum, image: p.img, location: p.location, beds: p.beds, baths: p.baths, area: p.area, type: p.type, kind: p.kind, year: 0, finishing: "" }); if (r === "added") toast.success("أُضيف للمقارنة ✓"); else if (r === "already") toast("موجود بالفعل"); else if (r === "type_mismatch") toast.error("لا يمكن مقارنة بيع مع إيجار"); else toast.error("المقارنة ممتلئة (٤ عقارات)"); }}>
-                                    <GitCompare className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
+                                {(p.viewCount ?? 0) > 0 && (
+                                  <span className="flex items-center gap-0.5 text-[10px] text-gray-400 shrink-0">
+                                    <Eye className="w-2.5 h-2.5" />{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                  </span>
+                                )}
                               </div>
 
                               {/* تواصل مع المعلن */}

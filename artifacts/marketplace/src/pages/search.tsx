@@ -1044,34 +1044,6 @@ export default function SearchPage() {
             </button>
           </div>
 
-          {/* Provider logo — premium circular overlay */}
-          {(logoSrc || p.agentName) && (
-            <div
-              className="absolute bottom-2.5 left-2.5 z-20"
-              onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
-              title={p.agentName ?? undefined}
-            >
-              <div className={`w-11 h-11 rounded-full border-[2.5px] border-white shadow-[0_2px_10px_rgba(0,0,0,0.28)] overflow-hidden bg-white transition-transform duration-150 ${p.providerId ? "cursor-pointer hover:scale-110" : ""}`}>
-                {logoSrc ? (
-                  <img
-                    src={logoSrc}
-                    alt={p.agentName ?? ""}
-                    className="w-full h-full object-cover"
-                    onError={e => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        p.agentName
-                          ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName!)}&background=0d9488&color=fff&size=88&bold=true`
-                          : "";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-sm">
-                    {p.agentName?.charAt(0) ?? <Building2 className="w-5 h-5 opacity-90" />}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Featured / Urgent badge — top-right of image */}
           {p.featured && (
@@ -1105,15 +1077,25 @@ export default function SearchPage() {
             </span>
           </div>
 
-          {/* Row 2: Company name */}
+          {/* Row 2: Company logo + name + verified */}
           {p.agentName && (
             <div className="flex items-center gap-1.5 mb-2">
+              {p.agentLogo && (
+                <div className="h-5 px-1.5 rounded border border-zinc-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 64 }}>
+                  <img src={p.agentLogo} alt={p.agentName} className="h-3.5 w-auto object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                </div>
+              )}
               <span
                 className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
                 onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
               >
                 {p.agentName}
               </span>
+              {p.verified && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 shrink-0">
+                  <BadgeCheck className="w-2.5 h-2.5 text-teal-500" /> موثّق
+                </span>
+              )}
             </div>
           )}
 
@@ -1133,18 +1115,18 @@ export default function SearchPage() {
           {(p.rooms != null || p.bathrooms != null || p.area != null) && (
             <div className="flex items-center gap-2.5 mb-2 flex-wrap">
               {p.rooms != null && (
-                <span className="flex items-center gap-0.5 text-[11px] text-zinc-600">
-                  <BedDouble className="w-3 h-3 text-zinc-400 shrink-0" />{p.rooms} غرف
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-400">
+                  <BedDouble className="w-3 h-3 text-zinc-300 shrink-0" />{p.rooms} غرف
                 </span>
               )}
               {p.bathrooms != null && (
-                <span className="flex items-center gap-0.5 text-[11px] text-zinc-600">
-                  <Bath className="w-3 h-3 text-zinc-400 shrink-0" />{p.bathrooms} حمام
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-400">
+                  <Bath className="w-3 h-3 text-zinc-300 shrink-0" />{p.bathrooms} حمام
                 </span>
               )}
               {p.area != null && (
-                <span className="flex items-center gap-0.5 text-[11px] text-zinc-600">
-                  <Maximize2 className="w-3 h-3 text-zinc-400 shrink-0" />{Number(p.area).toLocaleString("ar-EG")} م²
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-400">
+                  <Maximize2 className="w-3 h-3 text-zinc-300 shrink-0" />{Number(p.area).toLocaleString("ar-EG")} م²
                 </span>
               )}
             </div>
@@ -1248,37 +1230,6 @@ export default function SearchPage() {
             <Heart className={`w-3.5 h-3.5 ${saved.has(p.id) ? "fill-white" : ""}`} />
           </button>
 
-          {/* Provider logo — premium circular overlay */}
-          {(() => {
-            const gLogoSrc = p.agentLogo || p.agentAvatar;
-            return (gLogoSrc || p.agentName) ? (
-              <div
-                className="absolute bottom-3 left-3 z-20"
-                onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
-                title={p.agentName ?? undefined}
-              >
-                <div className={`w-12 h-12 rounded-full border-[2.5px] border-white shadow-[0_2px_12px_rgba(0,0,0,0.32)] overflow-hidden bg-white transition-transform duration-150 ${p.providerId ? "cursor-pointer hover:scale-110" : ""}`}>
-                  {gLogoSrc ? (
-                    <img
-                      src={gLogoSrc}
-                      alt={p.agentName ?? ""}
-                      className="w-full h-full object-cover"
-                      onError={e => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          p.agentName
-                            ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.agentName!)}&background=0d9488&color=fff&size=96&bold=true`
-                            : "";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-base">
-                      {p.agentName?.charAt(0) ?? <Building2 className="w-5 h-5 opacity-90" />}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : null;
-          })()}
         </PropertyImageGallery>
         <div className="p-3.5">
           {/* Price — right-aligned (justify-start = visual right in RTL) */}
@@ -1293,10 +1244,10 @@ export default function SearchPage() {
             )}
           </div>
           <h2 className="font-bold text-sm text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">{p.title}</h2>
-          <div className="flex items-center gap-2 text-xs text-zinc-600 mb-2 flex-wrap">
-            {p.rooms != null && <span className="flex items-center gap-1 font-semibold"><BedDouble className="w-3 h-3 text-zinc-400" />{p.rooms} غرف</span>}
-            {p.bathrooms != null && <span className="flex items-center gap-1 font-semibold"><Bath className="w-3 h-3 text-zinc-400" />{p.bathrooms} حمام</span>}
-            {p.area != null && <span className="flex items-center gap-1 font-semibold"><Maximize2 className="w-3 h-3 text-zinc-400" />{Number(p.area).toLocaleString("ar-EG")} م²</span>}
+          <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2 flex-wrap">
+            {p.rooms != null && <span className="flex items-center gap-1"><BedDouble className="w-3 h-3 text-zinc-300" />{p.rooms} غرف</span>}
+            {p.bathrooms != null && <span className="flex items-center gap-1"><Bath className="w-3 h-3 text-zinc-300" />{p.bathrooms} حمام</span>}
+            {p.area != null && <span className="flex items-center gap-1"><Maximize2 className="w-3 h-3 text-zinc-300" />{Number(p.area).toLocaleString("ar-EG")} م²</span>}
           </div>
           {(p.finishing || p.furnished) && (
             <div className="flex flex-wrap gap-1 mb-2">
@@ -1308,12 +1259,16 @@ export default function SearchPage() {
             <MapPin className="w-3 h-3 text-primary shrink-0" />
             <span className="line-clamp-1 font-medium">{loc}</span>
           </div>
-          <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5 gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              {p.agentLogo && (
+                <div className="h-5 px-1 rounded border border-zinc-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 60 }}>
+                  <img src={p.agentLogo} alt={p.agentName ?? ""} className="h-3.5 w-auto object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                </div>
+              )}
               <span className="flex items-center gap-1 text-[11px] text-zinc-500"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
-              <span className="text-[10px] text-zinc-400 font-mono">#{p.id}</span>
             </div>
-            <span className="text-[11px] text-zinc-600 font-bold">{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات</span>
+            <span className="text-[11px] text-zinc-500 font-semibold shrink-0">{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات</span>
           </div>
         </div>
       </motion.article>
