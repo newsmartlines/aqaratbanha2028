@@ -8,6 +8,7 @@ import {
   adminStaffTable, usersTable,
 } from "@workspace/db";
 import { adminOnly } from "../middleware/adminOnly";
+import { sql } from "drizzle-orm";
 import path from "path";
 import fs from "fs/promises";
 import { existsSync, createReadStream } from "fs";
@@ -26,15 +27,26 @@ router.use("/admin/updates", adminOnly);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Navigate up: routes → src → api-server → artifacts → workspace
+// routes → src → api-server → artifacts → workspace
 const WORKSPACE_ROOT = path.resolve(__dirname, "../../../..");
-const BACKUPS_DIR = path.join(WORKSPACE_ROOT, "backups");
-const PACKAGES_DIR = path.join(WORKSPACE_ROOT, "update-packages");
-const VERSION_FILE = path.join(WORKSPACE_ROOT, "version.json");
-const UPLOADS_DIR = path.join(WORKSPACE_ROOT, "uploads");
-// Jobs are persisted to disk so they survive API-server restarts triggered by
-// tsx watch when source files are replaced during an install.
-const JOBS_DIR = path.join(os.tmpdir(), "aqarat-jobs");
+const BACKUPS_DIR    = path.join(WORKSPACE_ROOT, "backups");
+const PACKAGES_DIR   = path.join(WORKSPACE_ROOT, "update-packages");
+const SNAPSHOTS_DIR  = path.join(WORKSPACE_ROOT, "snapshots");
+const VERSION_FILE   = path.join(WORKSPACE_ROOT, "version.json");
+const UPLOADS_DIR    = path.join(WORKSPACE_ROOT, "uploads");
+const MIGRATIONS_SRC = path.join(WORKSPACE_ROOT, "lib/db/migrations");
+const JOBS_DIR       = "/tmp/aqarat-jobs";
+
+/**
+ * Source roots tracked for incremental diffing.
+ * prefix  = directory name inside the package's changes/ folder
+ * abs     = absolute path on disk
+ */
+const SOURCE_ROOTS = [
+  { prefix: "api-server-src", abs: path.join(WORKSPACE_ROOT, "artifacts/api-server/src") },
+  { prefix: "marketplace-src", abs: path.join(WORKSPACE_ROOT, "artifacts/marketplace/src") },
+  { prefix: "lib",             abs: path.join(WORKSPACE_ROOT, "lib") },
+] as const;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -58,9 +70,32 @@ interface Job {
   completedAt?: string;
 }
 
-interface PackageManifest {
+interface Snapshot {
   version: string;
-  type: "full" | "incremental";
+  createdAt: string;
+  /** relKey → sha256 content hash */
+  files: Record<string, string>;
+  /** Ordered list of migration filenames applied through this version */
+  appliedMigrations: string[];
+}
+
+interface IncrementalManifest {
+  schemaVersion: "2";
+  type: "incremental";
+  platform: string;
+  fromVersion: string;
+  toVersion: string;
+  changelog: string;
+  createdAt: string;
+  checksum: string;
+  signature: string;
+  changes: { added: string[]; modified: string[]; deleted: string[] };
+  migrations: string[];
+}
+
+interface LegacyManifest {
+  schemaVersion?: "1";
+  type: "full";
   platform: string;
   fromVersion: string;
   toVersion: string;
@@ -72,15 +107,13 @@ interface PackageManifest {
   requiresMigration: boolean;
 }
 
-// ── Job Registry ──────────────────────────────────────────────────────────────
-// Jobs are stored both in-memory AND on disk so they survive API server
-// restarts that tsx watch triggers when source files are replaced mid-install.
+type AnyManifest = IncrementalManifest | LegacyManifest;
+
+// ── Job Registry (disk-persistent) ───────────────────────────────────────────
 
 const jobs = new Map<string, Job>();
 
-function jobFilePath(id: string) {
-  return path.join(JOBS_DIR, `${id}.json`);
-}
+function jobFilePath(id: string) { return path.join(JOBS_DIR, `${id}.json`); }
 
 async function persistJob(job: Job) {
   try {
@@ -90,28 +123,20 @@ async function persistJob(job: Job) {
 }
 
 async function loadJobFromDisk(id: string): Promise<Job | undefined> {
-  try {
-    return JSON.parse(await fs.readFile(jobFilePath(id), "utf8")) as Job;
-  } catch {
-    return undefined;
-  }
+  try { return JSON.parse(await fs.readFile(jobFilePath(id), "utf8")) as Job; }
+  catch { return undefined; }
 }
 
 function startJob(type: Job["type"], fn: (job: Job) => Promise<any>): string {
   const id = crypto.randomUUID();
-  const job: Job = {
-    id, type, status: "running", progress: 0,
-    logs: [], startedAt: new Date().toISOString(),
-  };
+  const job: Job = { id, type, status: "running", progress: 0, logs: [], startedAt: new Date().toISOString() };
   jobs.set(id, job);
   persistJob(job);
 
   fn(job)
     .then(result => {
-      job.status = "success";
-      job.progress = 100;
-      job.result = result;
-      job.completedAt = new Date().toISOString();
+      job.status = "success"; job.progress = 100;
+      job.result = result; job.completedAt = new Date().toISOString();
       persistJob(job);
     })
     .catch(err => {
@@ -128,27 +153,24 @@ function startJob(type: Job["type"], fn: (job: Job) => Promise<any>): string {
 function log(job: Job, msg: string, progress?: number) {
   job.logs.push(`[${new Date().toISOString().slice(11, 19)}] ${msg}`);
   if (progress !== undefined) job.progress = progress;
-  persistJob(job); // persist after every log so progress survives restarts
+  persistJob(job);
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── General Helpers ───────────────────────────────────────────────────────────
 
 async function ensureDirs() {
-  await fs.mkdir(BACKUPS_DIR, { recursive: true });
-  await fs.mkdir(PACKAGES_DIR, { recursive: true });
+  for (const d of [BACKUPS_DIR, PACKAGES_DIR, SNAPSHOTS_DIR]) {
+    await fs.mkdir(d, { recursive: true });
+  }
 }
 
 async function getVersion(): Promise<VersionInfo> {
   if (existsSync(VERSION_FILE)) {
-    try {
-      return JSON.parse(await fs.readFile(VERSION_FILE, "utf8"));
-    } catch {}
+    try { return JSON.parse(await fs.readFile(VERSION_FILE, "utf8")); } catch {}
   }
   const initial: VersionInfo = {
-    version: "1.0.0",
-    buildDate: new Date().toISOString(),
-    installedAt: new Date().toISOString(),
-    platform: "عقارات بنها",
+    version: "1.0.0", buildDate: new Date().toISOString(),
+    installedAt: new Date().toISOString(), platform: "عقارات بنها",
   };
   await fs.writeFile(VERSION_FILE, JSON.stringify(initial, null, 2));
   return initial;
@@ -162,36 +184,7 @@ function bumpVersion(current: string, type: "patch" | "minor" | "major"): string
 }
 
 function sign(data: string): string {
-  return crypto
-    .createHmac("sha256", process.env.SESSION_SECRET ?? "fallback-secret")
-    .update(data)
-    .digest("hex");
-}
-
-async function checksumFile(filePath: string): Promise<string> {
-  const content = await fs.readFile(filePath);
-  return crypto.createHash("sha256").update(content).digest("hex");
-}
-
-/**
- * Compute a checksum over ALL files under `sourceDir` using their
- * RELATIVE paths + contents.  This is path-independent, so the same
- * source tree produces the same hash regardless of which /tmp/… prefix
- * it lives under — fixing the mismatch between package creation and
- * package installation that happened when sha256sum embedded absolute paths.
- */
-async function computeSourceChecksum(sourceDir: string): Promise<string> {
-  const { stdout } = await execCmd(
-    `find "${sourceDir}" -type f | sort`,
-  ).catch(() => ({ stdout: "" }));
-  const files = stdout.trim().split("\n").filter(Boolean);
-  const hash = crypto.createHash("sha256");
-  for (const absPath of files) {
-    const relPath = path.relative(sourceDir, absPath);
-    const content = await fs.readFile(absPath).catch(() => Buffer.alloc(0));
-    hash.update(relPath).update(":").update(content);
-  }
-  return hash.digest("hex");
+  return crypto.createHmac("sha256", process.env.SESSION_SECRET ?? "fallback-secret").update(data).digest("hex");
 }
 
 async function getDiskUsage(dir: string): Promise<number> {
@@ -199,9 +192,7 @@ async function getDiskUsage(dir: string): Promise<number> {
   try {
     const { stdout } = await execCmd(`du -sb "${dir}" 2>/dev/null || echo "0"`);
     return parseInt(stdout.split("\t")[0]) || 0;
-  } catch {
-    return 0;
-  }
+  } catch { return 0; }
 }
 
 async function listZipFiles(dir: string): Promise<Array<{ name: string; size: number; createdAt: string }>> {
@@ -216,23 +207,188 @@ async function listZipFiles(dir: string): Promise<Array<{ name: string; size: nu
   return result;
 }
 
-// ── DB Table Catalog (mirrors backup.ts) ─────────────────────────────────────
+// ── Incremental Diff Engine ───────────────────────────────────────────────────
+
+/**
+ * Walk all source roots and build a map of relKey → sha256(content).
+ * relKey format: "{prefix}/{relativePath}"  e.g. "marketplace-src/pages/Home.tsx"
+ * Migrations subdir is excluded from lib/ (tracked separately).
+ */
+async function computeAllFileHashes(): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  for (const root of SOURCE_ROOTS) {
+    await walkDir(root.abs, root.abs, root.prefix, result);
+  }
+  return result;
+}
+
+async function walkDir(
+  baseDir: string,
+  currentDir: string,
+  prefix: string,
+  out: Map<string, string>,
+) {
+  if (!existsSync(currentDir)) return;
+  let entries: import("fs").Dirent[];
+  try { entries = await fs.readdir(currentDir, { withFileTypes: true }); }
+  catch { return; }
+
+  for (const entry of entries) {
+    const fullPath = path.join(currentDir, entry.name);
+    const relFromBase = path.relative(baseDir, fullPath);
+
+    // Skip noise
+    if (["node_modules", ".git", "dist", ".cache", "__pycache__"].includes(entry.name)) continue;
+    // Skip migrations subdir inside lib/ — tracked separately
+    if (prefix === "lib" && relFromBase.startsWith("db/migrations")) continue;
+
+    if (entry.isDirectory()) {
+      await walkDir(baseDir, fullPath, prefix, out);
+    } else if (entry.isFile()) {
+      const relKey = `${prefix}/${relFromBase}`;
+      try {
+        const content = await fs.readFile(fullPath);
+        out.set(relKey, crypto.createHash("sha256").update(content).digest("hex"));
+      } catch {}
+    }
+  }
+}
+
+interface FileDiff {
+  added: string[];
+  modified: string[];
+  deleted: string[];
+}
+
+function computeDiff(oldFiles: Record<string, string>, newFiles: Map<string, string>): FileDiff {
+  const oldMap = new Map(Object.entries(oldFiles));
+  const added: string[] = [], modified: string[] = [], deleted: string[] = [];
+
+  for (const [key, hash] of newFiles) {
+    if (!oldMap.has(key)) added.push(key);
+    else if (oldMap.get(key) !== hash) modified.push(key);
+  }
+  for (const key of oldMap.keys()) {
+    if (!newFiles.has(key)) deleted.push(key);
+  }
+  return { added, modified, deleted };
+}
+
+/** Resolve a package relKey to its absolute path on disk */
+function resolveRelKey(relKey: string): string | null {
+  for (const root of SOURCE_ROOTS) {
+    if (relKey.startsWith(root.prefix + "/")) {
+      const rel = relKey.slice(root.prefix.length + 1);
+      return path.join(root.abs, rel);
+    }
+  }
+  return null;
+}
+
+// ── Snapshot Management ───────────────────────────────────────────────────────
+
+async function saveSnapshot(snap: Snapshot) {
+  await fs.mkdir(SNAPSHOTS_DIR, { recursive: true });
+  await fs.writeFile(
+    path.join(SNAPSHOTS_DIR, `v${snap.version}.json`),
+    JSON.stringify(snap, null, 2),
+  );
+  // Also write "latest" pointer
+  await fs.writeFile(path.join(SNAPSHOTS_DIR, "latest.json"), JSON.stringify(snap, null, 2));
+}
+
+async function loadLatestSnapshot(): Promise<Snapshot | null> {
+  const p = path.join(SNAPSHOTS_DIR, "latest.json");
+  if (!existsSync(p)) return null;
+  try { return JSON.parse(await fs.readFile(p, "utf8")) as Snapshot; }
+  catch { return null; }
+}
+
+// ── Migration Helpers ─────────────────────────────────────────────────────────
+
+async function listMigrationFiles(): Promise<string[]> {
+  if (!existsSync(MIGRATIONS_SRC)) return [];
+  const all = (await fs.readdir(MIGRATIONS_SRC)).filter(f => f.endsWith(".sql")).sort();
+  return all;
+}
+
+async function runMigration(sqlText: string, filename: string, job: Job): Promise<void> {
+  // Drizzle migrations use "--> statement-breakpoint" to separate statements
+  const statements = sqlText
+    .split("--> statement-breakpoint")
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  for (const stmt of statements) {
+    try {
+      await db.execute(sql.raw(stmt));
+    } catch (err: any) {
+      // Common idempotency errors — skip silently
+      const msg = err?.message ?? "";
+      if (
+        msg.includes("already exists") ||
+        msg.includes("duplicate column") ||
+        msg.includes("duplicate key")
+      ) {
+        log(job, `  ⏭️ تجاهل (موجود مسبقاً): ${filename}`);
+        return;
+      }
+      throw new Error(`Migration ${filename} فشل: ${msg}`);
+    }
+  }
+}
+
+// ── Package Checksum (path-independent) ──────────────────────────────────────
+
+async function computeIncrementalChecksum(
+  changesDir: string,
+  migrationsDir: string,
+  deletedJson: string,
+): Promise<string> {
+  const hash = crypto.createHash("sha256");
+
+  // Hash changed/added files by relPath + content
+  if (existsSync(changesDir)) {
+    const { stdout } = await execCmd(`find "${changesDir}" -type f | sort`).catch(() => ({ stdout: "" }));
+    for (const absPath of stdout.trim().split("\n").filter(Boolean)) {
+      const rel = path.relative(changesDir, absPath);
+      const content = await fs.readFile(absPath).catch(() => Buffer.alloc(0));
+      hash.update(rel).update(":").update(content);
+    }
+  }
+
+  // Hash migrations
+  if (existsSync(migrationsDir)) {
+    const { stdout } = await execCmd(`find "${migrationsDir}" -type f | sort`).catch(() => ({ stdout: "" }));
+    for (const absPath of stdout.trim().split("\n").filter(Boolean)) {
+      const content = await fs.readFile(absPath).catch(() => Buffer.alloc(0));
+      hash.update(path.basename(absPath)).update(":").update(content);
+    }
+  }
+
+  // Hash deleted list
+  hash.update("deleted:").update(deletedJson);
+
+  return hash.digest("hex");
+}
+
+// ── DB Table Catalog ──────────────────────────────────────────────────────────
 
 const DB_TABLES = [
-  { key: "regions",       dbName: "regions",        fetch: () => db.select().from(regionsTable) },
-  { key: "cities",        dbName: "cities",          fetch: () => db.select().from(citiesTable) },
-  { key: "areas",         dbName: "areas",           fetch: () => db.select().from(areasTable) },
-  { key: "featuredAreas", dbName: "featured_areas",  fetch: () => db.select().from(featuredAreasTable) },
-  { key: "categories",    dbName: "categories",      fetch: () => db.select().from(categoriesTable) },
-  { key: "subcategories", dbName: "subcategories",   fetch: () => db.select().from(subcategoriesTable) },
-  { key: "properties",    dbName: "properties",      fetch: () => db.select().from(propertiesTable) },
-  { key: "siteSettings",  dbName: "site_settings",   fetch: () => db.select().from(siteSettingsTable) },
-  { key: "emailTemplates",dbName: "email_templates", fetch: () => db.select().from(emailTemplatesTable) },
-  { key: "billingPlans",  dbName: "billing_plans",   fetch: () => db.select().from(billingPlansTable) },
-  { key: "commissionRules",dbName:"commission_rules", fetch: () => db.select().from(commissionRulesTable) },
-  { key: "packages",      dbName: "packages",        fetch: () => db.select().from(packagesTable) },
-  { key: "adminStaff",    dbName: "admin_staff",     fetch: () => db.select().from(adminStaffTable) },
-  { key: "users",         dbName: "users",           fetch: async () => {
+  { key: "regions",        dbName: "regions",          fetch: () => db.select().from(regionsTable) },
+  { key: "cities",         dbName: "cities",            fetch: () => db.select().from(citiesTable) },
+  { key: "areas",          dbName: "areas",             fetch: () => db.select().from(areasTable) },
+  { key: "featuredAreas",  dbName: "featured_areas",    fetch: () => db.select().from(featuredAreasTable) },
+  { key: "categories",     dbName: "categories",        fetch: () => db.select().from(categoriesTable) },
+  { key: "subcategories",  dbName: "subcategories",     fetch: () => db.select().from(subcategoriesTable) },
+  { key: "properties",     dbName: "properties",        fetch: () => db.select().from(propertiesTable) },
+  { key: "siteSettings",   dbName: "site_settings",     fetch: () => db.select().from(siteSettingsTable) },
+  { key: "emailTemplates", dbName: "email_templates",   fetch: () => db.select().from(emailTemplatesTable) },
+  { key: "billingPlans",   dbName: "billing_plans",     fetch: () => db.select().from(billingPlansTable) },
+  { key: "commissionRules",dbName: "commission_rules",  fetch: () => db.select().from(commissionRulesTable) },
+  { key: "packages",       dbName: "packages",          fetch: () => db.select().from(packagesTable) },
+  { key: "adminStaff",     dbName: "admin_staff",       fetch: () => db.select().from(adminStaffTable) },
+  { key: "users",          dbName: "users",             fetch: async () => {
     const rows = await db.select().from(usersTable);
     return rows.map(({ passwordHash: _, ...safe }) => safe);
   }},
@@ -254,13 +410,11 @@ async function runCreateBackup(job: Job, label = "manual"): Promise<{ filename: 
   const filename = `backup-${ts}-${label}.zip`;
   const zipPath = path.join(BACKUPS_DIR, filename);
   const tempDir = path.join(os.tmpdir(), `aqarat-backup-${ts}`);
-
   await fs.mkdir(tempDir, { recursive: true });
 
   try {
     log(job, "📦 تصدير بيانات قاعدة البيانات...", 10);
     const tables = await exportAllTables();
-
     const dbDir = path.join(tempDir, "database");
     await fs.mkdir(dbDir, { recursive: true });
     await fs.writeFile(
@@ -275,17 +429,21 @@ async function runCreateBackup(job: Job, label = "manual"): Promise<{ filename: 
       await execCmd(`cp -r "${UPLOADS_DIR}" "${path.join(tempDir, "uploads")}"`).catch(() => {});
     }
 
+    // Also backup the current snapshot so we can restore diff context
+    const latestSnap = path.join(SNAPSHOTS_DIR, "latest.json");
+    if (existsSync(latestSnap)) {
+      await fs.copyFile(latestSnap, path.join(tempDir, "snapshot.json")).catch(() => {});
+    }
+
     log(job, "📝 كتابة معلومات النسخة...", 45);
     const dbHash = crypto.createHash("sha256").update(JSON.stringify(tables)).digest("hex");
     const manifest = {
-      type: "backup",
-      label,
+      type: "backup", label,
       createdAt: new Date().toISOString(),
       appVersion: appVersion.version,
       platform: "عقارات بنها",
-      checksum: dbHash,
-      signature: sign(dbHash),
-      tablesCounts: Object.fromEntries(Object.entries(tables).map(([k, v]) => [k, v.length])),
+      checksum: dbHash, signature: sign(dbHash),
+      tablesCounts: Object.fromEntries(Object.entries(tables).map(([k, v]) => [k, (v as any[]).length])),
     };
     await fs.writeFile(path.join(tempDir, "manifest.json"), JSON.stringify(manifest, null, 2));
 
@@ -300,81 +458,94 @@ async function runCreateBackup(job: Job, label = "manual"): Promise<{ filename: 
   }
 }
 
-// ── Core: Create Update Package ───────────────────────────────────────────────
+// ── Core: Create Incremental Package ─────────────────────────────────────────
 
 async function runCreatePackage(
   job: Job,
-  opts: { bumpType: "patch" | "minor" | "major"; changelog: string; includeDb: boolean },
-): Promise<{ filename: string; version: string; size: number }> {
+  opts: { bumpType: "patch" | "minor" | "major"; changelog: string },
+): Promise<{ filename: string; version: string; size: number; changes: FileDiff; migrations: string[] }> {
   await ensureDirs();
   const current = await getVersion();
   const newVersion = bumpVersion(current.version, opts.bumpType);
   const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const filename = `update-v${newVersion}-${ts}.zip`;
+  const filename = `update-incremental-v${newVersion}-${ts}.zip`;
   const zipPath = path.join(PACKAGES_DIR, filename);
   const tempDir = path.join(os.tmpdir(), `aqarat-pkg-${ts}`);
-
   await fs.mkdir(tempDir, { recursive: true });
 
   try {
-    log(job, `📋 تجهيز حزمة التحديث v${newVersion}...`, 5);
+    // 1. Load last snapshot (baseline for diff)
+    log(job, "🔍 تحميل لقطة الإصدار الأخير للمقارنة...", 5);
+    const lastSnap = await loadLatestSnapshot();
+    const baseFiles: Record<string, string> = lastSnap?.files ?? {};
+    const baseMigrations: string[] = lastSnap?.appliedMigrations ?? [];
 
-    const sourceDir = path.join(tempDir, "source");
-    await fs.mkdir(sourceDir, { recursive: true });
+    // 2. Hash all current source files
+    log(job, "📊 فحص التغييرات في الكود...", 10);
+    const currentHashes = await computeAllFileHashes();
 
-    log(job, "📂 نسخ كود الـ Backend...", 15);
-    await execCmd(
-      `cp -r "${WORKSPACE_ROOT}/artifacts/api-server/src" "${path.join(sourceDir, "api-server-src")}"`,
+    // 3. Compute diff
+    const diff = computeDiff(baseFiles, currentHashes);
+    const totalChanged = diff.added.length + diff.modified.length + diff.deleted.length;
+
+    log(job,
+      `📋 التغييرات: ${diff.added.length} ملف جديد — ${diff.modified.length} معدَّل — ${diff.deleted.length} محذوف`,
+      15,
     );
 
-    log(job, "📂 نسخ كود الـ Frontend...", 30);
-    await execCmd(
-      `cp -r "${WORKSPACE_ROOT}/artifacts/marketplace/src" "${path.join(sourceDir, "marketplace-src")}"`,
-    );
-
-    log(job, "📂 نسخ المكتبات المشتركة...", 40);
-    await execCmd(
-      `cp -r "${WORKSPACE_ROOT}/lib" "${path.join(sourceDir, "lib")}"`,
-    );
-
-    // Copy package.json files for dependency resolution
-    await fs.copyFile(
-      path.join(WORKSPACE_ROOT, "package.json"),
-      path.join(tempDir, "root-package.json"),
-    ).catch(() => {});
-
-    if (opts.includeDb) {
-      log(job, "💾 تصدير بيانات قاعدة البيانات...", 50);
-      const tables = await exportAllTables();
-      const dbDir = path.join(tempDir, "database");
-      await fs.mkdir(dbDir, { recursive: true });
-      await fs.writeFile(
-        path.join(dbDir, "data.json"),
-        JSON.stringify({ exportedAt: new Date().toISOString(), tables }, null, 2),
-      );
+    if (totalChanged === 0) {
+      log(job, "⚠️ لا توجد تغييرات في الكود منذ الإصدار الأخير — الحزمة ستحتوي على الترحيلات فقط إن وجدت");
     }
 
-    log(job, "📝 كتابة ملف الإصدار...", 60);
-    const newVersionInfo: VersionInfo = {
-      version: newVersion,
-      buildDate: new Date().toISOString(),
-      installedAt: current.installedAt,
-      platform: "عقارات بنها",
-      changelog: opts.changelog,
-    };
-    await fs.writeFile(path.join(tempDir, "version.json"), JSON.stringify(newVersionInfo, null, 2));
+    // 4. Find pending migrations (added since last snapshot)
+    log(job, "🗄️ فحص ترحيلات قاعدة البيانات الجديدة...", 20);
+    const allMigrations = await listMigrationFiles();
+    const pendingMigrations = allMigrations.filter(m => !baseMigrations.includes(m));
+    if (pendingMigrations.length > 0) {
+      log(job, `  📄 ترحيلات جديدة: ${pendingMigrations.join(", ")}`);
+    } else {
+      log(job, "  ✓ لا توجد ترحيلات جديدة");
+    }
 
-    log(job, "🔐 حساب التوقيع الرقمي...", 70);
-    const checksum = await computeSourceChecksum(path.join(tempDir, "source"));
+    // 5. Write changed/added files to changes/
+    log(job, "📂 تجميع الملفات المتغيرة...", 30);
+    const changesDir = path.join(tempDir, "changes");
+    await fs.mkdir(changesDir, { recursive: true });
+
+    for (const relKey of [...diff.added, ...diff.modified]) {
+      const srcAbs = resolveRelKey(relKey);
+      if (!srcAbs || !existsSync(srcAbs)) continue;
+      const destPath = path.join(changesDir, relKey);
+      await fs.mkdir(path.dirname(destPath), { recursive: true });
+      await fs.copyFile(srcAbs, destPath);
+    }
+
+    // 6. Write deleted file list
+    await fs.writeFile(path.join(tempDir, "deleted.json"), JSON.stringify(diff.deleted, null, 2));
+
+    // 7. Copy pending migrations
+    const migrationsDir = path.join(tempDir, "migrations");
+    if (pendingMigrations.length > 0) {
+      await fs.mkdir(migrationsDir, { recursive: true });
+      for (const m of pendingMigrations) {
+        const src = path.join(MIGRATIONS_SRC, m);
+        if (existsSync(src)) await fs.copyFile(src, path.join(migrationsDir, m));
+      }
+    }
+
+    // 8. Compute path-independent checksum
+    log(job, "🔐 حساب التوقيع الرقمي...", 60);
+    const checksum = await computeIncrementalChecksum(
+      changesDir,
+      migrationsDir,
+      JSON.stringify(diff.deleted),
+    );
     const signature = sign(checksum);
 
-    // Count files
-    const { stdout: countOut } = await execCmd(`find "${tempDir}/source" -type f | wc -l`);
-    const fileCount = parseInt(countOut.trim()) || 0;
-
-    const manifest: PackageManifest = {
-      version: "1.0",
-      type: "full",
+    // 9. Write manifest
+    const manifest: IncrementalManifest = {
+      schemaVersion: "2",
+      type: "incremental",
       platform: "عقارات بنها",
       fromVersion: current.version,
       toVersion: newVersion,
@@ -382,23 +553,43 @@ async function runCreatePackage(
       createdAt: new Date().toISOString(),
       checksum,
       signature,
-      files: [`source/ (${fileCount} files)`, "version.json"],
-      requiresMigration: false,
+      changes: diff,
+      migrations: pendingMigrations,
     };
-    if (opts.includeDb) manifest.files.push("database/data.json");
-
     await fs.writeFile(path.join(tempDir, "manifest.json"), JSON.stringify(manifest, null, 2));
 
-    log(job, "🗜️ ضغط الحزمة...", 80);
+    // 10. Zip
+    log(job, "🗜️ ضغط الحزمة...", 70);
     await execCmd(`cd "${tempDir}" && zip -r "${zipPath}" . -x "*.DS_Store" -x "*/.git/*"`);
 
-    // Update version.json on disk (for this environment)
-    newVersionInfo.installedAt = new Date().toISOString();
+    const stat = await fs.stat(zipPath);
+    const sizeMB = (stat.size / 1024 / 1024).toFixed(3);
+
+    // 11. Save new snapshot (with ALL current hashes + ALL migrations)
+    log(job, "💾 حفظ لقطة الإصدار الجديد...", 85);
+    const newSnap: Snapshot = {
+      version: newVersion,
+      createdAt: new Date().toISOString(),
+      files: Object.fromEntries(currentHashes),
+      appliedMigrations: allMigrations,
+    };
+    await saveSnapshot(newSnap);
+
+    // 12. Update local version.json
+    const newVersionInfo: VersionInfo = {
+      version: newVersion,
+      buildDate: new Date().toISOString(),
+      installedAt: new Date().toISOString(),
+      platform: "عقارات بنها",
+      changelog: opts.changelog,
+    };
     await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
 
-    const stat = await fs.stat(zipPath);
-    log(job, `✅ تم إنشاء حزمة التحديث v${newVersion} (${(stat.size / 1024 / 1024).toFixed(2)} MB)`, 100);
-    return { filename, version: newVersion, size: stat.size };
+    log(job,
+      `✅ تم إنشاء حزمة تدريجية v${newVersion} (${sizeMB} MB) — ${totalChanged} ملف متغير، ${pendingMigrations.length} ترحيل`,
+      100,
+    );
+    return { filename, version: newVersion, size: stat.size, changes: diff, migrations: pendingMigrations };
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
@@ -406,101 +597,239 @@ async function runCreatePackage(
 
 // ── Core: Install Package ─────────────────────────────────────────────────────
 
+let installRunning = false;
+
 async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ version: string }> {
   const tempDir = path.join(os.tmpdir(), `aqarat-install-${Date.now()}`);
-  let backupFile: string | null = null;
 
   try {
     log(job, "📂 فك ضغط الحزمة...", 5);
     await fs.mkdir(tempDir, { recursive: true });
     await execCmd(`unzip -q "${uploadedPath}" -d "${tempDir}"`);
 
-    log(job, "🔍 التحقق من صحة الحزمة...", 15);
+    // ── Validate manifest ─────────────────────────────────────────────────────
     const manifestPath = path.join(tempDir, "manifest.json");
-    if (!existsSync(manifestPath)) throw new Error("حزمة التحديث غير صالحة: manifest.json مفقود");
+    if (!existsSync(manifestPath)) throw new Error("حزمة غير صالحة: manifest.json مفقود");
 
-    const manifest: PackageManifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+    const manifest: AnyManifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
     if (manifest.platform !== "عقارات بنها") throw new Error("الحزمة غير متوافقة مع هذا النظام");
     if (!manifest.checksum || !manifest.signature) throw new Error("معلومات الأمان مفقودة من الحزمة");
 
-    log(job, "🔐 التحقق من التوقيع الرقمي...", 20);
-    const computedChecksum = await computeSourceChecksum(path.join(tempDir, "source"));
-    const computedSignature = sign(computedChecksum);
+    const isIncremental = manifest.type === "incremental";
+    log(job, `📋 نوع الحزمة: ${isIncremental ? "تدريجية (incremental)" : "كاملة (legacy)"} — من v${manifest.fromVersion} إلى v${manifest.toVersion}`, 10);
 
-    if (computedSignature !== manifest.signature) {
-      // Warn only — don't hard-fail.  Old packages signed with the sha256sum
-      // method (embedded absolute paths) will always differ here; new packages
-      // created with computeSourceChecksum will match.
-      log(job, "⚠️ تحذير: التوقيع الرقمي لا يتطابق — قد تكون الحزمة قديمة أو أُنشئت بنسخة مختلفة. جارٍ المتابعة...");
+    // ── Version compatibility check ──────────────────────────────────────────
+    const currentVersion = await getVersion();
+    if (manifest.fromVersion !== currentVersion.version) {
+      log(job, `⚠️ تحذير: الحزمة مصممة للترقية من v${manifest.fromVersion} لكن الإصدار الحالي هو v${currentVersion.version} — جارٍ المتابعة...`);
+    }
+
+    // ── Verify signature ─────────────────────────────────────────────────────
+    log(job, "🔐 التحقق من التوقيع الرقمي...", 15);
+    let verified = false;
+    if (isIncremental) {
+      const computedChecksum = await computeIncrementalChecksum(
+        path.join(tempDir, "changes"),
+        path.join(tempDir, "migrations"),
+        await fs.readFile(path.join(tempDir, "deleted.json"), "utf8").catch(() => "[]"),
+      );
+      verified = sign(computedChecksum) === manifest.signature;
     } else {
-      log(job, "✅ التوقيع الرقمي صحيح");
+      // Legacy full package: hash source/ directory
+      const { stdout: fileList } = await execCmd(
+        `find "${tempDir}/source" -type f | sort`,
+      ).catch(() => ({ stdout: "" }));
+      const files = fileList.trim().split("\n").filter(Boolean);
+      const hash = crypto.createHash("sha256");
+      for (const f of files) {
+        const rel = path.relative(path.join(tempDir, "source"), f);
+        const content = await fs.readFile(f).catch(() => Buffer.alloc(0));
+        hash.update(rel).update(":").update(content);
+      }
+      verified = sign(hash.digest("hex")) === manifest.signature;
     }
 
-    log(job, "💾 إنشاء نسخة احتياطية قبل التحديث...", 30);
-    const backupResult = await runCreateBackup(job, "pre-install");
-    backupFile = path.join(BACKUPS_DIR, backupResult.filename);
-
-    log(job, "📋 تطبيق ملفات الكود...", 55);
-    const sourceDir = path.join(tempDir, "source");
-
-    // ── Apply frontend source FIRST (does NOT trigger tsx restart) ──────────
-    const marketSrc = path.join(sourceDir, "marketplace-src");
-    if (existsSync(marketSrc)) {
-      const dest = path.join(WORKSPACE_ROOT, "artifacts/marketplace/src");
-      await execCmd(`rm -rf "${dest}" && cp -rp "${marketSrc}" "${dest}"`);
-      log(job, "✓ تم تطبيق كود الـ Frontend", 65);
+    if (verified) {
+      log(job, "✅ التوقيع الرقمي صحيح — الحزمة موثوقة");
+    } else {
+      log(job, "⚠️ التوقيع لا يتطابق (الحزمة قد تكون أقدم من نظام التوقيع الحالي) — جارٍ المتابعة...");
     }
 
-    // ── Apply lib SECOND (does NOT trigger tsx restart) ──────────────────────
-    const libSrc = path.join(sourceDir, "lib");
-    if (existsSync(libSrc)) {
-      const dest = path.join(WORKSPACE_ROOT, "lib");
-      await execCmd(`rm -rf "${dest}" && cp -rp "${libSrc}" "${dest}"`);
-      log(job, "✓ تم تطبيق المكتبات المشتركة", 75);
-    }
+    // ── Create pre-install backup ─────────────────────────────────────────────
+    log(job, "💾 إنشاء نسخة احتياطية شاملة قبل التحديث...", 20);
+    await runCreateBackup(job, "pre-install");
 
-    // Apply DB data if included
-    const dbData = path.join(tempDir, "database", "data.json");
-    if (existsSync(dbData)) {
-      log(job, "💾 بيانات DB متاحة — استخدم صفحة النسخ الاحتياطي للاستعادة", 80);
-    }
-
-    log(job, "📝 تحديث ملف الإصدار...", 85);
-    const newVersionInfo = JSON.parse(
-      await fs.readFile(path.join(tempDir, "version.json"), "utf8").catch(() => "null"),
-    ) ?? { version: manifest.toVersion };
-    newVersionInfo.installedAt = new Date().toISOString();
-    await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
-
-    // ── Mark job complete on disk BEFORE applying backend ───────────────────
-    // tsx watch will restart the API server when backend .ts files change,
-    // clearing the in-memory jobs Map.  Writing success to disk first means
-    // the restart-tolerant GET /job/:id endpoint will still return success.
-    log(job, `✅ تم تثبيت التحديث v${manifest.toVersion} بنجاح`, 95);
-    log(job, "🔄 جارٍ تطبيق كود الـ Backend — سيُعاد تشغيل الخادم تلقائياً...");
-    job.status = "success";
-    job.completedAt = new Date().toISOString();
-    await persistJob(job);
-
-    // ── Apply backend LAST (triggers tsx restart — that's OK now) ───────────
-    const apiSrc = path.join(sourceDir, "api-server-src");
-    if (existsSync(apiSrc)) {
-      const dest = path.join(WORKSPACE_ROOT, "artifacts/api-server/src");
-      await execCmd(`rm -rf "${dest}" && cp -rp "${apiSrc}" "${dest}"`);
+    // ── Apply changes ─────────────────────────────────────────────────────────
+    if (isIncremental) {
+      await applyIncrementalPackage(job, manifest as IncrementalManifest, tempDir);
+    } else {
+      await applyLegacyPackage(job, manifest as LegacyManifest, tempDir);
     }
 
     return { version: manifest.toVersion };
   } catch (err: any) {
     log(job, `❌ فشل التثبيت: ${err?.message}`);
-    if (backupFile && existsSync(backupFile)) {
-      log(job, "⏪ جارٍ التراجع إلى النسخة السابقة تلقائياً...");
-      // Rollback would require re-extracting the backup — signal the admin
-      log(job, "⚠️ استخدم زر التراجع في قسم النسخ الاحتياطي للاستعادة اليدوية");
-    }
+    log(job, "⚠️ يمكنك التراجع من تبويب «النسخ الاحتياطي» باختيار النسخة المُنشأة قبيل التثبيت");
     throw err;
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
     await fs.unlink(uploadedPath).catch(() => {});
+  }
+}
+
+async function applyIncrementalPackage(job: Job, manifest: IncrementalManifest, tempDir: string) {
+  const changesDir = path.join(tempDir, "changes");
+  const migrationsDir = path.join(tempDir, "migrations");
+  const isFx = manifest.changes;
+
+  const totalFiles = (isFx.added?.length ?? 0) + (isFx.modified?.length ?? 0);
+  const totalMig   = manifest.migrations?.length ?? 0;
+
+  log(job,
+    `📋 سيتم تطبيق: ${isFx.added?.length ?? 0} ملف جديد، ${isFx.modified?.length ?? 0} معدَّل، ${isFx.deleted?.length ?? 0} محذوف، ${totalMig} ترحيل`,
+    40,
+  );
+
+  // ── 1. Apply Frontend changes (no tsx restart) ───────────────────────────
+  let frontendCount = 0, libCount = 0, backendKeys: string[] = [];
+
+  for (const relKey of [...(isFx.added ?? []), ...(isFx.modified ?? [])]) {
+    const srcInPkg = path.join(changesDir, relKey);
+    const destAbs  = resolveRelKey(relKey);
+    if (!destAbs || !existsSync(srcInPkg)) continue;
+
+    if (relKey.startsWith("api-server-src/")) {
+      backendKeys.push(relKey); // defer
+    } else {
+      await fs.mkdir(path.dirname(destAbs), { recursive: true });
+      await fs.copyFile(srcInPkg, destAbs);
+      if (relKey.startsWith("marketplace-src/")) frontendCount++;
+      else libCount++;
+    }
+  }
+
+  // ── 2. Delete removed files (non-backend first) ──────────────────────────
+  const deleted: string[] = isFx.deleted ?? [];
+  const backendDeleted = deleted.filter(k => k.startsWith("api-server-src/"));
+  const otherDeleted   = deleted.filter(k => !k.startsWith("api-server-src/"));
+
+  for (const relKey of otherDeleted) {
+    const destAbs = resolveRelKey(relKey);
+    if (destAbs) await fs.unlink(destAbs).catch(() => {});
+  }
+
+  if (frontendCount) log(job, `✓ Frontend: ${frontendCount} ملف مطبَّق`, 52);
+  if (libCount)      log(job, `✓ المكتبات المشتركة: ${libCount} ملف مطبَّق`, 55);
+
+  // ── 3. Run migrations ─────────────────────────────────────────────────────
+  if (totalMig > 0) {
+    log(job, "🗄️ تطبيق ترحيلات قاعدة البيانات...", 58);
+    // Also copy migration files to local migrations dir so they're available for future diffs
+    await fs.mkdir(MIGRATIONS_SRC, { recursive: true });
+    for (const migFile of manifest.migrations) {
+      const srcMig = path.join(migrationsDir, migFile);
+      if (!existsSync(srcMig)) continue;
+      const sqlText = await fs.readFile(srcMig, "utf8");
+      log(job, `  ⚙️ ${migFile}...`);
+      await runMigration(sqlText, migFile, job);
+      // Copy to local migrations dir
+      await fs.copyFile(srcMig, path.join(MIGRATIONS_SRC, migFile)).catch(() => {});
+      log(job, `  ✓ ${migFile}`);
+    }
+    log(job, "✓ جميع الترحيلات مطبَّقة", 68);
+  }
+
+  // ── 4. Update version.json + save snapshot BEFORE touching backend ────────
+  log(job, "📝 تحديث ملف الإصدار...", 72);
+  const newVersionInfo: VersionInfo = {
+    version: manifest.toVersion,
+    buildDate: manifest.createdAt,
+    installedAt: new Date().toISOString(),
+    platform: "عقارات بنها",
+    changelog: manifest.changelog,
+  };
+  await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
+
+  // Compute updated hashes for snapshot
+  const updatedHashes = await computeAllFileHashes();
+  const allMigrations = await listMigrationFiles();
+  const newSnap: Snapshot = {
+    version: manifest.toVersion,
+    createdAt: new Date().toISOString(),
+    files: Object.fromEntries(updatedHashes),
+    appliedMigrations: allMigrations,
+  };
+  await saveSnapshot(newSnap);
+
+  // ── 5. Mark job done on disk BEFORE applying backend ─────────────────────
+  // tsx watch will restart the server when backend files change → job Map is
+  // cleared. Persisting success first means the disk-fallback GET /job/:id
+  // returns success even after restart.
+  log(job,
+    `✅ تم تثبيت التحديث v${manifest.toVersion} بنجاح — ${totalFiles} ملف مُطبَّق، ${totalMig} ترحيل`,
+    90,
+  );
+  if (backendKeys.length > 0 || backendDeleted.length > 0) {
+    log(job, "🔄 جارٍ تطبيق كود الـ Backend — سيُعاد تشغيل الخادم تلقائياً بعد لحظات...");
+  }
+
+  job.status = "success";
+  job.completedAt = new Date().toISOString();
+  await persistJob(job);
+
+  // ── 6. Apply Backend changes LAST (triggers tsx restart) ──────────────────
+  for (const relKey of backendKeys) {
+    const srcInPkg = path.join(tempDir, "changes", relKey);
+    const destAbs  = resolveRelKey(relKey);
+    if (!destAbs || !existsSync(srcInPkg)) continue;
+    await fs.mkdir(path.dirname(destAbs), { recursive: true });
+    await fs.copyFile(srcInPkg, destAbs);
+  }
+  for (const relKey of backendDeleted) {
+    const destAbs = resolveRelKey(relKey);
+    if (destAbs) await fs.unlink(destAbs).catch(() => {});
+  }
+}
+
+async function applyLegacyPackage(job: Job, manifest: LegacyManifest, tempDir: string) {
+  log(job, "⚠️ الحزمة من النوع الكامل (قديم) — سيتم تطبيق جميع الملفات المصدرية", 40);
+  const sourceDir = path.join(tempDir, "source");
+
+  // Frontend first
+  const marketSrc = path.join(sourceDir, "marketplace-src");
+  if (existsSync(marketSrc)) {
+    const dest = path.join(WORKSPACE_ROOT, "artifacts/marketplace/src");
+    await execCmd(`rm -rf "${dest}" && cp -rp "${marketSrc}" "${dest}"`);
+    log(job, "✓ Frontend مُطبَّق", 60);
+  }
+
+  // Lib second
+  const libSrc = path.join(sourceDir, "lib");
+  if (existsSync(libSrc)) {
+    const dest = path.join(WORKSPACE_ROOT, "lib");
+    await execCmd(`rm -rf "${dest}" && cp -rp "${libSrc}" "${dest}"`);
+    log(job, "✓ المكتبات المشتركة مُطبَّقة", 68);
+  }
+
+  // Version + snapshot before backend
+  const versionSrc = path.join(tempDir, "version.json");
+  const newVersionInfo = existsSync(versionSrc)
+    ? JSON.parse(await fs.readFile(versionSrc, "utf8"))
+    : { version: manifest.toVersion, platform: "عقارات بنها", buildDate: new Date().toISOString() };
+  newVersionInfo.installedAt = new Date().toISOString();
+  await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
+
+  log(job, `✅ تم تثبيت التحديث v${manifest.toVersion} بنجاح`, 85);
+  log(job, "🔄 جارٍ تطبيق كود الـ Backend — سيُعاد تشغيل الخادم...");
+  job.status = "success";
+  job.completedAt = new Date().toISOString();
+  await persistJob(job);
+
+  // Backend last
+  const apiSrc = path.join(sourceDir, "api-server-src");
+  if (existsSync(apiSrc)) {
+    const dest = path.join(WORKSPACE_ROOT, "artifacts/api-server/src");
+    await execCmd(`rm -rf "${dest}" && cp -rp "${apiSrc}" "${dest}"`);
   }
 }
 
@@ -530,12 +859,18 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
       await execCmd(`rm -rf "${UPLOADS_DIR}" && cp -rp "${uploadsBackup}" "${UPLOADS_DIR}"`);
     }
 
-    // Restore database (write JSON to a temp location then use restore-upload API internally)
+    // Restore snapshot if included in backup
+    const snapBackup = path.join(tempDir, "snapshot.json");
+    if (existsSync(snapBackup)) {
+      await fs.mkdir(SNAPSHOTS_DIR, { recursive: true });
+      await fs.copyFile(snapBackup, path.join(SNAPSHOTS_DIR, "latest.json")).catch(() => {});
+    }
+
+    // Restore database
     const dbDataPath = path.join(tempDir, "database", "data.json");
     if (existsSync(dbDataPath)) {
       log(job, "💾 استعادة قاعدة البيانات...", 60);
       const dbData = JSON.parse(await fs.readFile(dbDataPath, "utf8"));
-      const { sql } = await import("drizzle-orm");
 
       for (const t of DB_TABLES) {
         const rows: any[] = dbData.tables?.[t.key] ?? [];
@@ -550,15 +885,14 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
               v === null ? "NULL" :
               typeof v === "boolean" ? (v ? "TRUE" : "FALSE") :
               typeof v === "number" ? String(v) :
-              `'${String(v).replace(/'/g, "''")}'`
+              `'${String(v).replace(/'/g, "''")}'`,
             ).join(", ");
             await db.execute(sql.raw(`INSERT INTO "${t.dbName}" (${colsSql}) VALUES (${valsSql}) ON CONFLICT (id) DO NOTHING`));
           }
-          // Reset sequence
           await db.execute(sql.raw(`SELECT setval(pg_get_serial_sequence('"${t.dbName}"', 'id'), COALESCE((SELECT MAX(id) FROM "${t.dbName}"), 1))`)).catch(() => {});
-          log(job, `  ✓ ${t.key}: ${rows.length} صف`, undefined);
+          log(job, `  ✓ ${t.key}: ${rows.length} صف`);
         } catch (err: any) {
-          log(job, `  ⚠️ ${t.key}: ${err?.message}`, undefined);
+          log(job, `  ⚠️ ${t.key}: ${err?.message}`);
         }
       }
     }
@@ -569,25 +903,21 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
   }
 }
 
-// ── Multer for uploads ────────────────────────────────────────────────────────
+// ── Multer ────────────────────────────────────────────────────────────────────
 
 const uploadStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const tmp = path.join(os.tmpdir(), "aqarat-uploads");
     fs.mkdir(tmp, { recursive: true }).then(() => cb(null, tmp)).catch(cb);
   },
-  filename: (_req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
+  filename: (_req, file, cb) => { cb(null, `${Date.now()}-${file.originalname}`); },
 });
 
 const upload = multer({
   storage: uploadStorage,
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
+  limits: { fileSize: 500 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (!file.originalname.endsWith(".zip")) {
-      return cb(new Error("يُسمح بملفات ZIP فقط"));
-    }
+    if (!file.originalname.endsWith(".zip")) return cb(new Error("يُسمح بملفات ZIP فقط"));
     cb(null, true);
   },
 });
@@ -597,42 +927,80 @@ const upload = multer({
 // GET /api/admin/updates/info
 router.get("/admin/updates/info", async (_req, res) => {
   try {
-    const version = await getVersion();
-    const backups = await listZipFiles(BACKUPS_DIR);
+    const version  = await getVersion();
+    const backups  = await listZipFiles(BACKUPS_DIR);
     const packages = await listZipFiles(PACKAGES_DIR);
-    const backupBytes = await getDiskUsage(BACKUPS_DIR);
-    const pkgBytes = await getDiskUsage(PACKAGES_DIR);
+    const snap     = await loadLatestSnapshot();
 
     res.json({
       success: true,
       data: {
         version,
-        backups: { count: backups.length, latestAt: backups[0]?.createdAt ?? null, diskBytes: backupBytes },
-        packages: { count: packages.length, latestAt: packages[0]?.createdAt ?? null, diskBytes: pkgBytes },
-        workspaceRoot: WORKSPACE_ROOT,
+        snapshot: snap ? { version: snap.version, createdAt: snap.createdAt, fileCount: Object.keys(snap.files).length, migrationCount: snap.appliedMigrations.length } : null,
+        backups:  { count: backups.length,  latestAt: backups[0]?.createdAt  ?? null, diskBytes: await getDiskUsage(BACKUPS_DIR) },
+        packages: { count: packages.length, latestAt: packages[0]?.createdAt ?? null, diskBytes: await getDiskUsage(PACKAGES_DIR) },
       },
     });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err?.message });
-  }
+  } catch (err: any) { res.status(500).json({ success: false, error: err?.message }); }
+});
+
+// GET /api/admin/updates/diff  — preview what would go into the next incremental package
+router.get("/admin/updates/diff", async (_req, res) => {
+  try {
+    const snap = await loadLatestSnapshot();
+    const baseFiles: Record<string, string> = snap?.files ?? {};
+    const baseMigrations: string[] = snap?.appliedMigrations ?? [];
+
+    const currentHashes   = await computeAllFileHashes();
+    const diff            = computeDiff(baseFiles, currentHashes);
+    const allMigrations   = await listMigrationFiles();
+    const pendingMigs     = allMigrations.filter(m => !baseMigrations.includes(m));
+    const currentVersion  = await getVersion();
+
+    res.json({
+      success: true,
+      data: {
+        baseVersion: snap?.version ?? null,
+        currentVersion: currentVersion.version,
+        hasSnapshot: !!snap,
+        diff: {
+          added:    diff.added.length,
+          modified: diff.modified.length,
+          deleted:  diff.deleted.length,
+          total:    diff.added.length + diff.modified.length + diff.deleted.length,
+        },
+        addedFiles:    diff.added,
+        modifiedFiles: diff.modified,
+        deletedFiles:  diff.deleted,
+        pendingMigrations: pendingMigs,
+        hasChanges: diff.added.length + diff.modified.length + diff.deleted.length + pendingMigs.length > 0,
+      },
+    });
+  } catch (err: any) { res.status(500).json({ success: false, error: err?.message }); }
 });
 
 // GET /api/admin/updates/backups
 router.get("/admin/updates/backups", async (_req, res) => {
-  try {
-    res.json({ success: true, data: await listZipFiles(BACKUPS_DIR) });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err?.message });
-  }
+  try { res.json({ success: true, data: await listZipFiles(BACKUPS_DIR) }); }
+  catch (err: any) { res.status(500).json({ success: false, error: err?.message }); }
 });
 
 // GET /api/admin/updates/packages
 router.get("/admin/updates/packages", async (_req, res) => {
   try {
-    res.json({ success: true, data: await listZipFiles(PACKAGES_DIR) });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err?.message });
-  }
+    const list = await listZipFiles(PACKAGES_DIR);
+    // Enhance with type info by reading manifest from each zip
+    const enhanced = await Promise.all(list.map(async (pkg) => {
+      try {
+        const { stdout } = await execCmd(`unzip -p "${path.join(PACKAGES_DIR, pkg.name)}" manifest.json 2>/dev/null`);
+        const m: AnyManifest = JSON.parse(stdout);
+        return { ...pkg, type: m.type, fromVersion: m.fromVersion, toVersion: m.toVersion, changelog: m.changelog };
+      } catch {
+        return { ...pkg, type: "unknown" };
+      }
+    }));
+    res.json({ success: true, data: enhanced });
+  } catch (err: any) { res.status(500).json({ success: false, error: err?.message }); }
 });
 
 // POST /api/admin/updates/backup
@@ -644,21 +1012,15 @@ router.post("/admin/updates/backup", async (req, res) => {
 
 // POST /api/admin/updates/create-package
 router.post("/admin/updates/create-package", async (req, res) => {
-  const { bumpType = "patch", changelog = "", includeDb = false } = req.body as {
+  const { bumpType = "patch", changelog = "" } = req.body as {
     bumpType?: "patch" | "minor" | "major";
     changelog?: string;
-    includeDb?: boolean;
   };
-  const jobId = startJob("create-package", job =>
-    runCreatePackage(job, { bumpType, changelog, includeDb }),
-  );
+  const jobId = startJob("create-package", job => runCreatePackage(job, { bumpType, changelog }));
   res.json({ success: true, jobId });
 });
 
-// POST /api/admin/updates/install
-// Guard: only one install may run at a time to prevent concurrent uploads
-// from flooding disk I/O and producing "upstream unavailable" errors.
-let installRunning = false;
+// POST /api/admin/updates/install — incremental or legacy full package
 router.post("/admin/updates/install", upload.single("package"), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, error: "لم يتم رفع أي ملف" });
   if (installRunning) {
@@ -667,11 +1029,8 @@ router.post("/admin/updates/install", upload.single("package"), async (req, res)
   }
   installRunning = true;
   const jobId = startJob("install", async (job) => {
-    try {
-      return await runInstallPackage(job, req.file!.path);
-    } finally {
-      installRunning = false;
-    }
+    try { return await runInstallPackage(job, req.file!.path); }
+    finally { installRunning = false; }
   });
   res.json({ success: true, jobId });
 });
@@ -679,7 +1038,7 @@ router.post("/admin/updates/install", upload.single("package"), async (req, res)
 // POST /api/admin/updates/rollback
 router.post("/admin/updates/rollback", async (req, res) => {
   const { filename } = req.body as { filename: string };
-  if (!filename) return res.status(400).json({ success: false, error: "اسم ملف النسخة الاحتياطية مطلوب" });
+  if (!filename) return res.status(400).json({ success: false, error: "اسم الملف مطلوب" });
   if (filename.includes("..") || filename.includes("/")) {
     return res.status(400).json({ success: false, error: "اسم الملف غير صالح" });
   }
@@ -687,13 +1046,11 @@ router.post("/admin/updates/rollback", async (req, res) => {
   res.json({ success: true, jobId });
 });
 
-// GET /api/admin/updates/job/:id
-// Falls back to disk so the status survives a tsx-triggered server restart.
+// GET /api/admin/updates/job/:id  — falls back to disk after tsx restart
 router.get("/admin/updates/job/:id", async (req, res) => {
-  const id = String(req.params.id);
-  let job = jobs.get(id) ?? await loadJobFromDisk(id);
+  const id  = String(req.params.id);
+  let   job = jobs.get(id) ?? await loadJobFromDisk(id);
   if (!job) return res.status(404).json({ success: false, error: "Job not found" });
-  // Re-cache in memory for subsequent fast lookups
   jobs.set(id, job);
   res.json({ success: true, data: job });
 });
@@ -733,7 +1090,7 @@ router.delete("/admin/updates/backup/:name", async (req, res) => {
   const fp = path.join(BACKUPS_DIR, name);
   if (!existsSync(fp)) return res.status(404).json({ success: false, error: "الملف غير موجود" });
   await fs.unlink(fp);
-  res.json({ success: true, message: "تم حذف النسخة الاحتياطية" });
+  res.json({ success: true });
 });
 
 // DELETE /api/admin/updates/package/:name
@@ -745,7 +1102,7 @@ router.delete("/admin/updates/package/:name", async (req, res) => {
   const fp = path.join(PACKAGES_DIR, name);
   if (!existsSync(fp)) return res.status(404).json({ success: false, error: "الملف غير موجود" });
   await fs.unlink(fp);
-  res.json({ success: true, message: "تم حذف حزمة التحديث" });
+  res.json({ success: true });
 });
 
 export default router;
