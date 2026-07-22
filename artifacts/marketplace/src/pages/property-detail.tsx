@@ -455,7 +455,7 @@ export default function PropertyDetail() {
                           onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-100" />
+                        <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
                     </div>
@@ -476,7 +476,7 @@ export default function PropertyDetail() {
                         onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-100" />
+                      <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
                     )}
                   </div>
                 ))}
@@ -505,7 +505,7 @@ export default function PropertyDetail() {
                           )}
                         </>
                       ) : (
-                        <div className="w-full h-full bg-gray-100" />
+                        <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
                     </div>
@@ -527,7 +527,7 @@ export default function PropertyDetail() {
                         onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-100" />
+                      <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
                     )}
                   </div>
                 ))}
