@@ -276,6 +276,7 @@ function getUrlParams() {
     city: sp.get("city") ?? null,
     district: sp.get("district") ?? null,
     subcategoryId: sp.get("subcategoryId") ? Number(sp.get("subcategoryId")) : null,
+    page: Math.max(1, parseInt(sp.get("page") ?? "1") || 1),
   };
 }
 
@@ -284,8 +285,6 @@ export default function PropertiesPage() {
 
   const initParams = getUrlParams();
 
-  const [allProps, setAllProps] = useState<DisplayProp[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(initParams.q);
   const [selectedType, setSelectedType] = useState<string | null>(initParams.type);
   const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
@@ -331,7 +330,7 @@ export default function PropertiesPage() {
     }
   }, [areaMin, areaMax]);
   const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initParams.page);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"newest" | "featured" | "price_asc" | "price_desc" | "area" | "popular">("newest");
@@ -428,11 +427,34 @@ export default function PropertiesPage() {
     });
   }, [dbFeatures, dbServices, selectedSubKind]);
 
-  useEffect(() => {
-    api.properties.list({})
-      .then((rows) => setAllProps((rows as unknown as DbProp[]).map((r) => mapDbProp(r, FALLBACK))))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  // ── Site settings (for admin-configured page size) ────────────────────────
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: () => api.settings.list(),
+    staleTime: 5 * 60_000,
+  });
+
+  // ── All properties (full fetch for faceted counts) ─────────────────────────
+  const { data: allPropsRaw = [], isLoading: loading } = useQuery({
+    queryKey: ["properties-all"],
+    queryFn: () => api.properties.list({}) as Promise<DbProp[]>,
+    staleTime: 30_000,
+  });
+
+  const allProps = useMemo(
+    () => (allPropsRaw as unknown as DbProp[]).map(r => mapDbProp(r, FALLBACK)),
+    [allPropsRaw]
+  );
+
+  // ── Navigate to a specific page (updates state + URL) ─────────────────────
+  const goToPage = useCallback((num: number) => {
+    setCurrentPage(num);
+    const sp = new URLSearchParams(window.location.search);
+    if (num === 1) sp.delete("page");
+    else sp.set("page", String(num));
+    const qs = sp.toString();
+    window.history.pushState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const toggleFavMut = useMutation({
@@ -620,18 +642,39 @@ export default function PropertiesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, FILTER_DEPS);
 
-  const ITEMS_PER_PAGE = 30;
+  // Page size from admin settings (default 12, min 6, max 100)
+  const ITEMS_PER_PAGE = Math.min(100, Math.max(6, parseInt(siteSettings?.listingsPerPage ?? "12") || 12));
 
-  // Reset to page 1 when filters change
-  useEffect(() => { setCurrentPage(1); }, [filtered]);
+  // Reset to page 1 when filter selection changes (not when data first loads)
+  const filterStateKey = [
+    search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts.join(","),
+    selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths,
+    selectedFloor, priceMin, priceMax, areaMin, areaMax,
+    String(selectedFeaturedOnly), String(selectedVerifiedOnly), selectedFeatures.join(","),
+    selectedRecency, sortBy,
+  ].join("|");
+  const prevFilterKey = useRef(filterStateKey);
+  useEffect(() => {
+    if (prevFilterKey.current === filterStateKey) return;
+    prevFilterKey.current = filterStateKey;
+    const sp = new URLSearchParams(window.location.search);
+    sp.delete("page");
+    window.history.replaceState(null, "", window.location.pathname + (sp.toString() ? "?" + sp.toString() : ""));
+    setCurrentPage(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStateKey]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedItems = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const PaginationBar = () => totalPages <= 1 ? null : (
     <div className="flex items-center justify-center gap-1.5 mt-8 flex-wrap" dir="rtl">
+      {/* Page info */}
+      <span className="text-xs text-gray-400 ms-1">
+        صفحة {currentPage} من {totalPages} ({filtered.length} نتيجة)
+      </span>
       <button
-        onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onClick={() => goToPage(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
         className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all bg-white"
       >السابق</button>
@@ -647,12 +690,12 @@ export default function PropertiesPage() {
         ) : (
           <button
             key={item}
-            onClick={() => { setCurrentPage(item as number); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            onClick={() => goToPage(item as number)}
             className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${currentPage === item ? "bg-primary text-white shadow-sm" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
           >{item}</button>
         ))}
       <button
-        onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
         className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all bg-white"
       >التالي</button>

@@ -124,15 +124,19 @@ router.get("/properties", async (req, res) => {
   try {
     const q = req.query as Record<string, string>;
     const {
-      search, category, subCategory, city, district, compound, street,
+      search, category, subCategory, city, district, districts, compound, street,
       status, providerId, featured, urgent, listingType,
       priceMin, priceMax, areaMin, areaMax,
-      rooms, bathrooms, floor,
+      rooms, bathrooms, floor, floorMin,
       ageMin, ageMax,
       finishing, condition, furnished, direction, facade,
       paymentMethod, rentDuration, advertiserType,
       features,
       sortBy,
+      verified,
+      createdSince,
+      page,
+      limit,
     } = q;
 
     const conditions: any[] = [];
@@ -166,7 +170,6 @@ router.get("/properties", async (req, res) => {
     if (areaMax) conditions.push(sql`CAST(${propertiesTable.area} AS numeric) <= ${parseFloat(areaMax)}`);
     if (rooms) conditions.push(sql`${propertiesTable.rooms} >= ${parseInt(rooms)}`);
     if (bathrooms) conditions.push(sql`${propertiesTable.bathrooms} >= ${parseInt(bathrooms)}`);
-    if (floor) conditions.push(eq(propertiesTable.floor, parseInt(floor)));
 
     const currentYear = new Date().getFullYear();
     if (ageMin) conditions.push(sql`${propertiesTable.buildYear} <= ${currentYear - parseInt(ageMin)}`);
@@ -187,7 +190,6 @@ router.get("/properties", async (req, res) => {
         ilike(propertiesTable.address, `%${city}%`),
       ));
     }
-    if (district) conditions.push(ilike(propertiesTable.district, `%${district}%`));
     if (compound) conditions.push(ilike(propertiesTable.compound, `%${compound}%`));
     if (street) conditions.push(ilike(propertiesTable.street, `%${street}%`));
 
@@ -198,6 +200,23 @@ router.get("/properties", async (req, res) => {
       }
     }
 
+    // ── Extra filters ────────────────────────────────────────────────────────
+    if (floor && !floorMin) conditions.push(eq(propertiesTable.floor, parseInt(floor)));
+    if (floorMin) conditions.push(sql`${propertiesTable.floor} >= ${parseInt(floorMin)}`);
+    if (verified === "true") conditions.push(eq(providersTable.verified, true));
+    if (createdSince) conditions.push(sql`${propertiesTable.createdAt} >= ${new Date(createdSince)}`);
+    // Multi-district filter: `districts` (comma-sep) takes precedence over single `district`
+    if (districts) {
+      const dList = districts.split(",").map(d => d.trim()).filter(Boolean);
+      if (dList.length === 1) {
+        conditions.push(ilike(propertiesTable.district, `%${dList[0]}%`));
+      } else if (dList.length > 1) {
+        conditions.push(or(...dList.map(d => ilike(propertiesTable.district, `%${d}%`))));
+      }
+    } else if (district) {
+      conditions.push(ilike(propertiesTable.district, `%${district}%`));
+    }
+
     let orderClause: any = sql`COALESCE(${propertiesTable.approvedAt}, ${propertiesTable.createdAt}) DESC NULLS LAST`;
     if (sortBy === "price_asc") orderClause = sql`CAST(${propertiesTable.price} AS numeric) ASC NULLS LAST`;
     else if (sortBy === "price_desc") orderClause = sql`CAST(${propertiesTable.price} AS numeric) DESC NULLS LAST`;
@@ -205,7 +224,26 @@ router.get("/properties", async (req, res) => {
     else if (sortBy === "area_asc") orderClause = sql`CAST(${propertiesTable.area} AS numeric) ASC NULLS LAST`;
     else if (sortBy === "area_desc") orderClause = sql`CAST(${propertiesTable.area} AS numeric) DESC NULLS LAST`;
 
-    const rows = await db
+    const whereClause = conditions.length ? and(...conditions) : undefined;
+
+    // ── Pagination ───────────────────────────────────────────────────────────
+    const pageNum  = Math.max(1, parseInt(page ?? "1") || 1);
+    const rawLimit = parseInt(limit ?? "0") || 0;  // 0 = no limit / no pagination
+    const limitNum = rawLimit > 0 ? Math.min(100, rawLimit) : 0;
+    const paginate = limitNum > 0;
+
+    // Total count (for meta) — only when paginating
+    let total = 0;
+    if (paginate) {
+      const [countRow] = await db
+        .select({ count: sql<number>`COUNT(*)::int` })
+        .from(propertiesTable)
+        .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
+        .where(whereClause);
+      total = countRow?.count ?? 0;
+    }
+
+    const baseQuery = db
       .select({
         ...getTableColumns(propertiesTable),
         agentName: usersTable.name,
@@ -218,8 +256,12 @@ router.get("/properties", async (req, res) => {
       .from(propertiesTable)
       .leftJoin(providersTable, eq(propertiesTable.providerId, providersTable.id))
       .leftJoin(usersTable, eq(providersTable.userId, usersTable.id))
-      .where(conditions.length ? and(...conditions) : undefined)
+      .where(whereClause)
       .orderBy(sql`${propertiesTable.featured} DESC NULLS LAST`, sql`${propertiesTable.urgent} DESC NULLS LAST`, orderClause);
+
+    const rows = paginate
+      ? await baseQuery.limit(limitNum).offset((pageNum - 1) * limitNum)
+      : await baseQuery;
 
     // Apply smart ranking (boost scores from active promotions)
     const ranked = await applySmartRanking(rows.map(r => ({
@@ -229,7 +271,20 @@ router.get("/properties", async (req, res) => {
       viewCount: r.viewCount ?? 0,
     })));
 
-    res.json({ success: true, data: ranked });
+    if (paginate) {
+      res.json({
+        success: true,
+        data: ranked,
+        meta: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
+    } else {
+      res.json({ success: true, data: ranked });
+    }
   } catch (err: any) {
     res.status(500).json({ success: false, error: err?.message ?? "Failed to fetch properties" });
   }

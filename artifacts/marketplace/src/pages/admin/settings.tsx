@@ -913,6 +913,48 @@ export default function AdminSettings() {
         <TabsContent value="platform">
           <div className="space-y-6">
 
+            {/* Listings Per Page */}
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart2 className="w-5 h-5 text-teal-600" /> عدد العقارات في كل صفحة
+                </CardTitle>
+                <CardDescription>
+                  تحديد عدد العقارات التي تظهر في صفحة نتائج البحث — يؤثر على سرعة التصفح وسهولة التنقل
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { value: "12", label: "12 عقار", desc: "أسرع تحميل" },
+                    { value: "18", label: "18 عقار", desc: "متوازن" },
+                    { value: "24", label: "24 عقار", desc: "عرض أكثر" },
+                  ].map(opt => {
+                    const active = (form.listingsPerPage ?? "12") === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => setForm(f => ({ ...f, listingsPerPage: opt.value }))}
+                        className={`flex flex-col items-center px-6 py-4 rounded-xl border-2 transition-all ${active ? "border-teal-500 bg-teal-50 text-teal-800" : "border-slate-200 bg-white text-slate-600 hover:border-teal-300"}`}
+                      >
+                        <span className="text-2xl font-black">{opt.value}</span>
+                        <span className="text-sm font-semibold mt-0.5">{opt.label}</span>
+                        <span className="text-xs text-slate-400 mt-0.5">{opt.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <Button
+                  onClick={() => handleSave({ listingsPerPage: form.listingsPerPage ?? "12" })}
+                  disabled={saveMutation.isPending}
+                  className="bg-teal-600 hover:bg-teal-700"
+                >
+                  {saveMutation.isPending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Save className="w-4 h-4 me-2" />}
+                  حفظ إعداد عدد العقارات
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Services Module Master Switch */}
             <Card className={`shadow-sm border-2 transition-colors ${servicesEnabled ? "border-teal-200" : "border-rose-200 bg-rose-50/30"}`}>
               <CardHeader>

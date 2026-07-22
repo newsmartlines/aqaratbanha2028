@@ -37,6 +37,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   featuredSectionCustomCount: "12",
   featuredSectionColumns: "3",
   featuredSectionSort: "newest",
+  listingsPerPage: "12",
   siteName: "عقارات بنها",
   siteNameEn: "Aqarat Banha",
   logoUrl: "",
