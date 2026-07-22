@@ -475,8 +475,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
                           {timeAgo(property.createdAt) || "—"}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1 font-semibold">
-                            <Eye className="w-3 h-3 shrink-0" />
+                          <span className="font-semibold">
                             {(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات
                           </span>
                           <button

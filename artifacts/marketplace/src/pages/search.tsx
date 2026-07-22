@@ -1097,7 +1097,7 @@ export default function SearchPage() {
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-1 min-w-0">
               <MapPin className="w-3 h-3 text-primary shrink-0" />
-              <span className="text-[11px] font-medium text-zinc-700 truncate">{loc}</span>
+              <span className="text-[11px] font-medium text-zinc-600 truncate">{loc}</span>
               {p.compound && <span className="text-[10px] text-zinc-400 shrink-0 truncate">· {p.compound}</span>}
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/8 text-primary shrink-0 whitespace-nowrap">
@@ -1133,18 +1133,18 @@ export default function SearchPage() {
           {(p.rooms != null || p.bathrooms != null || p.area != null) && (
             <div className="flex items-center gap-2.5 mb-2 flex-wrap">
               {p.rooms != null && (
-                <span className="flex items-center gap-0.5 text-[11px] text-zinc-700">
-                  <BedDouble className="w-3 h-3 text-zinc-500 shrink-0" />{p.rooms} غرف
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-600">
+                  <BedDouble className="w-3 h-3 text-zinc-400 shrink-0" />{p.rooms} غرف
                 </span>
               )}
               {p.bathrooms != null && (
-                <span className="flex items-center gap-0.5 text-[11px] text-zinc-700">
-                  <Bath className="w-3 h-3 text-zinc-500 shrink-0" />{p.bathrooms} حمام
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-600">
+                  <Bath className="w-3 h-3 text-zinc-400 shrink-0" />{p.bathrooms} حمام
                 </span>
               )}
               {p.area != null && (
-                <span className="flex items-center gap-0.5 text-[11px] text-zinc-700">
-                  <Maximize2 className="w-3 h-3 text-zinc-500 shrink-0" />{Number(p.area).toLocaleString("ar-EG")} م²
+                <span className="flex items-center gap-0.5 text-[11px] text-zinc-600">
+                  <Maximize2 className="w-3 h-3 text-zinc-400 shrink-0" />{Number(p.area).toLocaleString("ar-EG")} م²
                 </span>
               )}
             </div>
@@ -1169,12 +1169,12 @@ export default function SearchPage() {
                 <span className="text-[11px] font-semibold text-zinc-600">السعر عند الاتصال</span>
               )}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="flex items-center gap-0.5 text-[10px] text-zinc-600">
+                <span className="flex items-center gap-0.5 text-[10px] text-zinc-500">
                   <Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}
                 </span>
                 {p.viewCount > 0 && (
-                  <span className="flex items-center gap-0.5 text-[10px] text-zinc-700 font-semibold">
-                    <Eye className="w-2.5 h-2.5" />{p.viewCount.toLocaleString("ar-EG")} مشاهدات
+                  <span className="text-[10px] text-zinc-500 font-semibold">
+                    {p.viewCount.toLocaleString("ar-EG")} مشاهدات
                   </span>
                 )}
               </div>
@@ -1281,22 +1281,22 @@ export default function SearchPage() {
           })()}
         </PropertyImageGallery>
         <div className="p-3.5">
-          {/* Price — right-aligned */}
-          <div className="mb-2 flex justify-end items-baseline gap-1.5">
+          {/* Price — right-aligned (justify-start = visual right in RTL) */}
+          <div className="mb-2 flex justify-start items-baseline gap-1.5">
             {priceStr ? (
               <>
+                <span className="text-sm font-bold text-gray-600">ج.م</span>
                 <span dir="ltr" className="text-black font-black text-xl leading-none">{priceStr}</span>
-                <span className="text-sm font-bold text-gray-700">ج.م</span>
               </>
             ) : (
-              <span className="text-sm font-semibold text-zinc-600">السعر عند الاتصال</span>
+              <span className="text-sm font-semibold text-zinc-500">السعر عند الاتصال</span>
             )}
           </div>
           <h2 className="font-bold text-sm text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">{p.title}</h2>
-          <div className="flex items-center gap-2 text-xs text-zinc-700 mb-2 flex-wrap">
-            {p.rooms != null && <span className="flex items-center gap-1 font-semibold"><BedDouble className="w-3 h-3 text-zinc-500" />{p.rooms} غرف</span>}
-            {p.bathrooms != null && <span className="flex items-center gap-1 font-semibold"><Bath className="w-3 h-3 text-zinc-500" />{p.bathrooms} حمام</span>}
-            {p.area != null && <span className="flex items-center gap-1 font-semibold"><Maximize2 className="w-3 h-3 text-zinc-500" />{Number(p.area).toLocaleString("ar-EG")} م²</span>}
+          <div className="flex items-center gap-2 text-xs text-zinc-600 mb-2 flex-wrap">
+            {p.rooms != null && <span className="flex items-center gap-1 font-semibold"><BedDouble className="w-3 h-3 text-zinc-400" />{p.rooms} غرف</span>}
+            {p.bathrooms != null && <span className="flex items-center gap-1 font-semibold"><Bath className="w-3 h-3 text-zinc-400" />{p.bathrooms} حمام</span>}
+            {p.area != null && <span className="flex items-center gap-1 font-semibold"><Maximize2 className="w-3 h-3 text-zinc-400" />{Number(p.area).toLocaleString("ar-EG")} م²</span>}
           </div>
           {(p.finishing || p.furnished) && (
             <div className="flex flex-wrap gap-1 mb-2">
@@ -1304,16 +1304,16 @@ export default function SearchPage() {
               {p.furnished && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600">{FURNISHED_OPTS.find(o => o.value === p.furnished)?.label ?? p.furnished}</span>}
             </div>
           )}
-          <div className="flex items-center gap-1 text-xs text-zinc-700 mb-2.5">
+          <div className="flex items-center gap-1 text-xs text-zinc-600 mb-2.5">
             <MapPin className="w-3 h-3 text-primary shrink-0" />
             <span className="line-clamp-1 font-medium">{loc}</span>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5">
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px] text-zinc-600"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
-              <span className="text-[10px] text-zinc-500 font-mono">#{p.id}</span>
+              <span className="flex items-center gap-1 text-[11px] text-zinc-500"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
+              <span className="text-[10px] text-zinc-400 font-mono">#{p.id}</span>
             </div>
-            <span className="flex items-center gap-1 text-[11px] text-zinc-700 font-bold"><Eye className="w-2.5 h-2.5" />{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات</span>
+            <span className="text-[11px] text-zinc-600 font-bold">{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات</span>
           </div>
         </div>
       </motion.article>

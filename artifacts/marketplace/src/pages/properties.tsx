@@ -1636,9 +1636,9 @@ export default function PropertiesPage() {
                             <div>
                               {/* Price */}
                               <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100">
-                                <div>
-                                  <p className="text-black font-black text-xl leading-none">{p.price}</p>
-                                  <p className="text-gray-500 text-[11px] mt-0.5">جنيه</p>
+                                <div className="flex items-baseline gap-1.5">
+                                  <span className="text-sm font-bold text-gray-600">ج.م</span>
+                                  <p className="text-black font-black text-xl leading-none" dir="ltr">{p.price}</p>
                                 </div>
                                 {p.verified && (
                                   <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200">
@@ -1650,16 +1650,16 @@ export default function PropertiesPage() {
                               <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-1">
                                 {p.title}
                               </h3>
-                              <div className="flex items-center gap-1 text-gray-800 text-xs">
+                              <div className="flex items-center gap-1 text-gray-600 text-xs">
                                 <MapPin className="w-3 h-3 text-primary shrink-0" />
                                 <span className="truncate">{p.location}</span>
                               </div>
 
                               {/* Specs — always show beds */}
-                              <div className="flex items-center gap-2.5 text-gray-900 text-xs">
-                                <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-gray-600" />{p.beds || "—"} غرف</span>
-                                {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-gray-600" />{p.baths} حمام</span>}
-                                {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-gray-600" />{p.area}م²</span>}
+                              <div className="flex items-center gap-2.5 text-gray-600 text-xs">
+                                <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-gray-400" />{p.beds || "—"} غرف</span>
+                                {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-gray-400" />{p.baths} حمام</span>}
+                                {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-gray-400" />{p.area}م²</span>}
                               </div>
 
                               {/* Agent + actions */}
