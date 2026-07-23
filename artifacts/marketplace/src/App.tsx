@@ -119,11 +119,7 @@ function roleHome(role: string): string {
   return "/";
 }
 
-const PageLoader = () => (
-  <div className="min-h-[50vh] flex items-center justify-center text-muted-foreground text-sm" dir="rtl">
-    جاري التحميل...
-  </div>
-);
+const PageLoader = () => null;
 
 function RoleProtectedRoute({
   component: Component,
