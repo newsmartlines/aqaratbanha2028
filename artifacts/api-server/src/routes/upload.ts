@@ -192,4 +192,48 @@ router.post("/upload/brochure", async (req: Request, res: any) => {
   });
 });
 
+// Font uploader (TTF / OTF / WOFF / WOFF2 — up to 5 MB)
+const fontDir = path.join(process.cwd(), "uploads", "fonts");
+fs.mkdirSync(fontDir, { recursive: true });
+
+const fontUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, fontDir),
+    filename(_req, file, cb) {
+      const ext = path.extname(file.originalname).toLowerCase().replace(/[^.a-z0-9]/g, "") || ".ttf";
+      cb(null, crypto.randomBytes(16).toString("hex") + ext);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter(_req, file, cb) {
+    const allowed = [
+      "font/ttf", "font/otf", "font/woff", "font/woff2",
+      "application/font-woff", "application/font-woff2",
+      "application/x-font-ttf", "application/x-font-otf",
+      "application/octet-stream", // some browsers send this for fonts
+    ];
+    const ext = path.extname(file.originalname).toLowerCase();
+    const validExt = [".ttf", ".otf", ".woff", ".woff2"].includes(ext);
+    if (allowed.includes(file.mimetype) || validExt) cb(null, true);
+    else cb(new Error("يُسمح فقط بملفات الخطوط: TTF، OTF، WOFF، WOFF2"));
+  },
+});
+
+router.post("/upload/font", async (req: Request, res: any) => {
+  if (!(await requireAuth(req))) {
+    return res.status(401).json({ success: false, error: "يجب تسجيل الدخول أولاً" });
+  }
+  fontUpload.single("font")(req as any, res as any, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, error: `خطأ في الرفع: ${err.message}` });
+    }
+    if (err) return res.status(400).json({ success: false, error: String(err.message) });
+
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ success: false, error: "لم يتم إرسال أي ملف" });
+
+    res.json({ success: true, data: { url: `/uploads/fonts/${file.filename}`, originalName: file.originalname } });
+  });
+});
+
 export default router;

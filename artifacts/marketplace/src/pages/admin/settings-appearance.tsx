@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Save, Palette, Type, Loader2, Check, Sparkles, RefreshCw } from "lucide-react";
+import { Save, Palette, Type, Loader2, Check, Sparkles, RefreshCw, Upload, X } from "lucide-react";
 import { api, type SiteSettings } from "@/lib/api";
-import { applyThemeToRoot, loadGoogleFont } from "@/components/ThemeProvider";
+import { applyThemeToRoot, loadGoogleFont, loadCustomFont, isCustomFontUrl } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 
 /* ─── Color utils ─────────────────────────────────────────────── */
@@ -117,13 +117,40 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
   const [theme, setTheme] = useState<ThemeState>(() => getInitial(settings));
   const [saving, setSaving] = useState(false);
   const [liveApplied, setLiveApplied] = useState(false);
+  const [fontUploading, setFontUploading] = useState(false);
+  const [customFontName, setCustomFontName] = useState<string | null>(() => {
+    const f = settings.fontFamily;
+    return f && isCustomFontUrl(f) ? f.split("/").pop() ?? "خط مخصص" : null;
+  });
+  const fontInputRef = useRef<HTMLInputElement>(null);
 
   const applyLive = useCallback((t: ThemeState) => {
     applyThemeToRoot(t as unknown as Record<string, string>);
-    loadGoogleFont(t.fontFamily);
+    if (!isCustomFontUrl(t.fontFamily)) loadGoogleFont(t.fontFamily);
     setLiveApplied(true);
     setTimeout(() => setLiveApplied(false), 1500);
   }, []);
+
+  const handleFontUpload = async (file: File) => {
+    setFontUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("font", file);
+      const res = await fetch("/upload/font", { method: "POST", body: fd, credentials: "include" });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "فشل الرفع");
+      const url: string = json.data.url;
+      const name: string = json.data.originalName ?? file.name;
+      loadCustomFont(url);
+      setCustomFontName(name);
+      updateTheme({ fontFamily: url });
+      toast({ title: "✅ تم رفع الخط", description: `تم تطبيق "${name}" على الموقع` });
+    } catch (e: any) {
+      toast({ title: "فشل رفع الخط", description: e.message, variant: "destructive" });
+    } finally {
+      setFontUploading(false);
+    }
+  };
 
   const updateTheme = (patch: Partial<ThemeState>) => {
     const next = { ...theme, ...patch };
@@ -371,9 +398,10 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
             <Type className="w-4 h-4 text-primary" />
             نوع الخط
           </CardTitle>
-          <CardDescription>اختر خط الموقع — يُطبَّق على كل النصوص العربية</CardDescription>
+          <CardDescription>اختر خطاً جاهزاً أو ارفع خطاً مخصصاً — يُطبَّق على كل النصوص العربية</CardDescription>
         </CardHeader>
-        <CardContent className="pt-5">
+        <CardContent className="pt-5 space-y-5">
+          {/* Built-in Google Fonts */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {ARABIC_FONTS.map(font => {
               const active = theme.fontFamily === font.value;
@@ -382,6 +410,7 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
                   key={font.value}
                   onClick={() => {
                     loadGoogleFont(font.value);
+                    setCustomFontName(null);
                     updateTheme({ fontFamily: font.value });
                   }}
                   className={`relative p-4 rounded-2xl border-2 text-right transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
@@ -407,6 +436,72 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
                 </button>
               );
             })}
+          </div>
+
+          {/* Custom font upload */}
+          <div className="border-t border-slate-100 pt-4">
+            <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-primary" />
+              رفع خط مخصص (TTF / OTF / WOFF / WOFF2)
+            </p>
+
+            {/* Active custom font indicator */}
+            {customFontName && isCustomFontUrl(theme.fontFamily) && (
+              <div className="flex items-center gap-2 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <Check className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm font-medium text-primary flex-1 truncate">{customFontName}</span>
+                <button
+                  onClick={() => {
+                    setCustomFontName(null);
+                    updateTheme({ fontFamily: "Tajawal" });
+                  }}
+                  className="text-slate-400 hover:text-red-500 transition-colors"
+                  title="إزالة الخط المخصص"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Drop zone / upload button */}
+            <div
+              className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all hover:border-primary hover:bg-primary/5 ${
+                isCustomFontUrl(theme.fontFamily) ? "border-primary/40 bg-primary/5" : "border-slate-200"
+              }`}
+              onClick={() => fontInputRef.current?.click()}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file) handleFontUpload(file);
+              }}
+            >
+              <input
+                ref={fontInputRef}
+                type="file"
+                accept=".ttf,.otf,.woff,.woff2"
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFontUpload(file);
+                  e.target.value = "";
+                }}
+              />
+              {fontUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  <p className="text-sm text-slate-500">جارٍ رفع الخط...</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">اضغط لرفع خط أو اسحب الملف هنا</p>
+                  <p className="text-xs text-slate-400">يدعم TTF، OTF، WOFF، WOFF2 — حجم أقصى 5 ميغا</p>
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

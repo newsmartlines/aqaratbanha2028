@@ -61,7 +61,9 @@ const USER_TYPES: Record<string, string> = {
   company: "شركات",
   vip: "VIP / بريميوم",
 };
-const DURATION_TYPES: Record<string, string> = { monthly: "شهري", quarterly: "ربع سنوي", yearly: "سنوي", lifetime: "مدى الحياة" };
+const DURATION_TYPES: Record<string, string> = { minutes: "دقائق", days: "أيام", monthly: "شهري", quarterly: "ربع سنوي", yearly: "سنوي", lifetime: "مدى الحياة" };
+// Units that need a numeric duration value input in the form
+const DURATION_NEEDS_VALUE = new Set(["minutes", "days"]);
 const LIMIT_LABELS: Record<keyof Limits, string> = {
   properties: "العقارات", photos: "الصور", videos: "الفيديوهات",
   featuredAds: "إعلانات مميزة / شهر", pinnedAds: "إعلانات مثبتة", messages: "الرسائل", leads: "الطلبات",
@@ -364,7 +366,10 @@ export default function PlansCommissions() {
                         <div className="my-3">
                           <span className="text-2xl font-black text-slate-900">{Number(price).toLocaleString("ar")}</span>
                           <span className="text-slate-400 text-sm me-1"> {plan.currency}</span>
-                          <span className="text-slate-400 text-xs">/ {yearlyPricing ? "سنة" : DURATION_TYPES[plan.durationType] ?? "شهر"}</span>
+                          {DURATION_NEEDS_VALUE.has(plan.durationType)
+                            ? <span className="text-slate-400 text-xs">/ {plan.durationDays} {DURATION_TYPES[plan.durationType]}</span>
+                            : <span className="text-slate-400 text-xs">/ {yearlyPricing ? "سنة" : DURATION_TYPES[plan.durationType] ?? "شهر"}</span>
+                          }
                           {plan.trialDays > 0 && <div className="mt-0.5 text-xs text-emerald-600 font-medium">تجربة مجانية {plan.trialDays} يوم</div>}
                         </div>
 
@@ -648,10 +653,22 @@ export default function PlansCommissions() {
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <Label>نوع المدة</Label>
-                  <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background" value={planModal.data.durationType ?? "monthly"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, durationType: e.target.value } }))}>
+                  <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background" value={planModal.data.durationType ?? "days"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, durationType: e.target.value } }))}>
                     {Object.entries(DURATION_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
                 </div>
+                {DURATION_NEEDS_VALUE.has(planModal.data.durationType ?? "days") && (
+                  <div className="space-y-1.5">
+                    <Label>قيمة المدة ({DURATION_TYPES[planModal.data.durationType] ?? ""})</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder={planModal.data.durationType === "minutes" ? "60" : "30"}
+                      value={planModal.data.durationDays ?? ""}
+                      onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, durationDays: Number(e.target.value) } }))}
+                    />
+                  </div>
+                )}
                 <div className="space-y-1.5">
                   <Label>نوع المستخدم</Label>
                   <select className="w-full h-9 rounded-md border border-input px-3 text-sm bg-background" value={planModal.data.userType ?? "all"} onChange={e => setPlanModal(m => ({ ...m, data: { ...m.data, userType: e.target.value } }))}>
