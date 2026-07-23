@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,7 +13,7 @@ import {
 import { useT, useLanguage, commonDict } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, mediaUrl } from "@/lib/api";
-import { PropertyDetailDrawer, type ExtendedProperty } from "@/components/admin/PropertyDetailDrawer";
+import { type ExtendedProperty } from "@/components/admin/PropertyDetailDrawer";
 import toast from "react-hot-toast";
 
 const dict = {
@@ -93,8 +92,6 @@ export default function AdminDashboard() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  const [selectedProp, setSelectedProp] = useState<ExtendedProperty | null>(null);
-
   const { data: stats } = useQuery<AdminStats>({
     queryKey: ["admin-stats"],
     queryFn: async () => {
@@ -126,27 +123,6 @@ export default function AdminDashboard() {
     },
     onError: () => toast.error("فشل اعتماد الإعلان"),
   });
-
-  const handleStatusFromDrawer = (id: number, _newStatus: string) => {
-    queryClient.setQueryData<ExtendedProperty[]>(["admin-pending-properties"], prev =>
-      (prev ?? []).filter(p => p.id !== id)
-    );
-    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-    setSelectedProp(null);
-  };
-
-  const handleFeaturedFromDrawer = (id: number, featured: boolean) => {
-    queryClient.setQueryData<ExtendedProperty[]>(["admin-pending-properties"], prev =>
-      (prev ?? []).map(p => p.id === id ? { ...p, featured } : p)
-    );
-  };
-
-  const handleDeleteFromDrawer = (id: number) => {
-    queryClient.setQueryData<ExtendedProperty[]>(["admin-pending-properties"], prev =>
-      (prev ?? []).filter(p => p.id !== id)
-    );
-    setSelectedProp(null);
-  };
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   const monthLabels = useT({
@@ -253,7 +229,7 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={prop.id}
-                    onClick={() => setSelectedProp(prop)}
+                    onClick={() => navigate(`/property/${prop.id}?admin=1`)}
                     className="bg-white rounded-2xl border border-amber-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group overflow-hidden flex flex-col"
                   >
                     {/* Image */}
@@ -308,7 +284,7 @@ export default function AdminDashboard() {
                     {/* Action bar */}
                     <div className="flex gap-1.5 px-3.5 pb-3.5">
                       <button
-                        onClick={e => { e.stopPropagation(); setSelectedProp(prop); }}
+                        onClick={e => { e.stopPropagation(); navigate(`/property/${prop.id}?admin=1`); }}
                         className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-slate-600 border border-slate-200 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 rounded-xl py-2 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -323,7 +299,7 @@ export default function AdminDashboard() {
                         موافقة
                       </button>
                       <button
-                        onClick={e => { e.stopPropagation(); setSelectedProp(prop); }}
+                        onClick={e => { e.stopPropagation(); navigate(`/property/${prop.id}?admin=1`); }}
                         className="flex items-center justify-center text-xs font-bold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 rounded-xl py-2 px-2.5 transition-colors"
                         title="رفض"
                       >
@@ -421,15 +397,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* ── Property Detail Drawer ── */}
-      <PropertyDetailDrawer
-        property={selectedProp}
-        onClose={() => setSelectedProp(null)}
-        onStatusChange={handleStatusFromDrawer}
-        onToggleFeatured={handleFeaturedFromDrawer}
-        onDelete={handleDeleteFromDrawer}
-      />
 
     </AdminLayout>
   );
