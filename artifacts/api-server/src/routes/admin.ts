@@ -107,7 +107,7 @@ router.get("/admin/companies", async (req, res) => {
 
 router.get("/admin/companies/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [company] = await db
       .select({
         id: providersTable.id,
@@ -187,7 +187,7 @@ router.post("/admin/companies", async (req, res) => {
 
 router.put("/admin/companies/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { bio, logo, avatar, city, district, address, phone, whatsapp, categoryId, coveredAreas, active, verified, featured, approved, suspended, latitude, longitude } = req.body;
     const updates: Record<string, unknown> = {};
     if (bio !== undefined) updates.bio = bio;
@@ -218,7 +218,7 @@ router.put("/admin/companies/:id", async (req, res) => {
 
 router.delete("/admin/companies/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(providersTable).where(eq(providersTable.id, id));
     res.json({ success: true });
   } catch (e) {
@@ -228,7 +228,7 @@ router.delete("/admin/companies/:id", async (req, res) => {
 
 router.patch("/admin/companies/:id/toggle-active", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [current] = await db.select({ active: providersTable.active }).from(providersTable).where(eq(providersTable.id, id));
     if (!current) return res.status(404).json({ success: false, error: "Company not found" });
     const [updated] = await db.update(providersTable).set({ active: !current.active }).where(eq(providersTable.id, id)).returning();
@@ -240,7 +240,7 @@ router.patch("/admin/companies/:id/toggle-active", async (req, res) => {
 
 router.patch("/admin/companies/:id/covered-areas", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { areas } = req.body;
     if (!Array.isArray(areas)) return res.status(400).json({ success: false, error: "areas must be an array" });
     const [updated] = await db.update(providersTable).set({ coveredAreas: JSON.stringify(areas) }).where(eq(providersTable.id, id)).returning();
@@ -288,7 +288,7 @@ router.post("/admin/categories", async (req, res) => {
 
 router.put("/admin/categories/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { nameAr, nameEn, slug, icon, description, image, status } = req.body;
     const updates: Record<string, unknown> = {};
     if (nameAr !== undefined) updates.nameAr = nameAr;
@@ -308,7 +308,7 @@ router.put("/admin/categories/:id", async (req, res) => {
 
 router.patch("/admin/categories/:id/toggle-status", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [current] = await db.select({ status: categoriesTable.status }).from(categoriesTable).where(eq(categoriesTable.id, id));
     if (!current) return res.status(404).json({ success: false, error: "Category not found" });
     const newStatus = current.status === "active" ? "inactive" : "active";
@@ -321,7 +321,7 @@ router.patch("/admin/categories/:id/toggle-status", async (req, res) => {
 
 router.delete("/admin/categories/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(categoriesTable).where(eq(categoriesTable.id, id));
     res.json({ success: true });
   } catch (e) {
@@ -358,7 +358,7 @@ router.post("/admin/subcategories", async (req, res) => {
 
 router.put("/admin/subcategories/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { categoryId, nameAr, nameEn, slug, icon, status } = req.body;
     const updates: Record<string, unknown> = {};
     if (categoryId !== undefined) updates.categoryId = parseInt(categoryId);
@@ -377,7 +377,7 @@ router.put("/admin/subcategories/:id", async (req, res) => {
 
 router.patch("/admin/subcategories/:id/toggle-status", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [current] = await db.select({ status: subcategoriesTable.status }).from(subcategoriesTable).where(eq(subcategoriesTable.id, id));
     if (!current) return res.status(404).json({ success: false, error: "Subcategory not found" });
     const newStatus = current.status === "active" ? "inactive" : "active";
@@ -390,7 +390,7 @@ router.patch("/admin/subcategories/:id/toggle-status", async (req, res) => {
 
 router.delete("/admin/subcategories/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(subcategoriesTable).where(eq(subcategoriesTable.id, id));
     res.json({ success: true });
   } catch (e) {
@@ -445,7 +445,7 @@ router.get("/admin/users", async (req, res) => {
 
 router.get("/admin/users/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [user] = await db
       .select({
         id: usersTable.id,
@@ -473,7 +473,7 @@ router.get("/admin/users/:id", async (req, res) => {
 
 router.put("/admin/users/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { name, email, phone, role, status, regionId, cityId } = req.body;
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
@@ -502,7 +502,7 @@ router.put("/admin/users/:id", async (req, res) => {
 
 router.delete("/admin/users/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(usersTable).where(eq(usersTable.id, id));
     res.json({ success: true });
   } catch (e) {

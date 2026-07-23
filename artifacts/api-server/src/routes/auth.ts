@@ -378,7 +378,7 @@ router.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
     res.json({
       success: true,
       message: "تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني",
-      dev_reset_token: process.env.NODE_ENV !== "production" ? resetToken : undefined,
+      ...(process.env.NODE_ENV !== "production" && { dev_reset_token: resetToken }),
     });
   } catch {
     res.status(500).json({ success: false, error: "فشلت عملية إعادة التعيين" });

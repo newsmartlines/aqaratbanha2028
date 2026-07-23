@@ -74,10 +74,16 @@ app.use(compression());
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const rawCorsOrigin = process.env.CORS_ORIGIN;
-let corsOrigin: string | string[] | boolean = true;
-if (rawCorsOrigin) {
+let corsOrigin: string | string[] | boolean;
+if (rawCorsOrigin && rawCorsOrigin !== "*") {
   const origins = rawCorsOrigin.split(",").map((s) => s.trim()).filter(Boolean);
   corsOrigin = origins.length === 1 ? origins[0] : origins;
+} else if (!isProd) {
+  // Allow all origins in development for convenience
+  corsOrigin = true;
+} else {
+  // In production without explicit CORS_ORIGIN, restrict to same origin
+  corsOrigin = false;
 }
 app.use(cors({ origin: corsOrigin, credentials: true }));
 

@@ -918,7 +918,7 @@ async function runRollback(job: Job, backupFilename: string): Promise<void> {
 const uploadStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const tmp = path.join(os.tmpdir(), "aqarat-uploads");
-    fs.mkdir(tmp, { recursive: true }).then(() => cb(null, tmp)).catch(cb);
+    fs.mkdir(tmp, { recursive: true }).then(() => cb(null, tmp)).catch((err: unknown) => cb(err instanceof Error ? err : new Error(String(err)), ""));
   },
   filename: (_req, file, cb) => { cb(null, `${Date.now()}-${file.originalname}`); },
 });

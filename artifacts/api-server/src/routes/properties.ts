@@ -294,7 +294,7 @@ router.get("/properties", async (req, res) => {
 // ── GET /api/properties/:id ────────────────────────────────────────────────
 router.get("/properties/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!property) return res.status(404).json({ success: false, error: "Not found" });
@@ -358,7 +358,7 @@ router.get("/properties/:id", async (req, res) => {
 // ── POST /api/properties/:id/view — deduplicated view count ───────────────
 router.post("/properties/:id/view", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const sessionId: string = req.body?.sessionId ?? req.ip ?? "anon";
 
@@ -409,7 +409,7 @@ router.post("/properties/:id/view", async (req, res) => {
 // ── POST /api/properties/:id/phone-click — increment phone click count ────
 router.post("/properties/:id/phone-click", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.update(propertiesTable)
       .set({ phoneClickCount: sql`${propertiesTable.phoneClickCount} + 1` })
       .where(eq(propertiesTable.id, id));
@@ -422,7 +422,7 @@ router.post("/properties/:id/phone-click", async (req, res) => {
 // ── POST /api/properties/:id/whatsapp-click — increment whatsapp click count ─
 router.post("/properties/:id/whatsapp-click", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.update(propertiesTable)
       .set({ whatsappClickCount: sql`${propertiesTable.whatsappClickCount} + 1` })
       .where(eq(propertiesTable.id, id));
@@ -512,7 +512,7 @@ router.put("/properties/:id", async (req, res) => {
     const session = await requireAuth(req);
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
 
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const [existing] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     if (!existing) return res.status(404).json({ success: false, error: "Property not found" });
@@ -599,7 +599,7 @@ router.delete("/properties/:id", async (req, res) => {
     const session = await requireAuth(req);
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
 
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
     const [toDelete] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
     await db.delete(propertiesTable).where(eq(propertiesTable.id, id));
@@ -656,7 +656,7 @@ router.get("/user/properties", async (req, res) => {
 // ── PATCH /api/properties/:id/status — admin only ─────────────────────────
 router.patch("/properties/:id/status", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { status, rejectionReason } = req.body;
 
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
@@ -711,7 +711,7 @@ router.patch("/properties/:id/renew", async (req, res) => {
     const session = await requireAuth(req);
     if (!session) return res.status(401).json({ success: false, error: "Not authenticated" });
 
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (isNaN(id)) return res.status(400).json({ success: false, error: "Invalid id" });
 
     const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
@@ -797,7 +797,7 @@ router.delete("/property-favorites/:propertyId", async (req, res) => {
     const session = await requireAuth(req);
     if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
     const userId = session.userId;
-    const propertyId = parseInt(req.params.propertyId);
+    const propertyId = parseInt(String(req.params.propertyId));
     await db.delete(propertyFavoritesTable)
       .where(and(eq(propertyFavoritesTable.userId, userId), eq(propertyFavoritesTable.propertyId, propertyId)));
     res.json({ success: true });
@@ -846,7 +846,7 @@ router.delete("/saved-searches/:id", async (req, res) => {
   try {
     const session = await requireAuth(req);
     if (!session) return res.status(401).json({ success: false, error: "Unauthorized" });
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(savedSearchesTable)
       .where(and(eq(savedSearchesTable.id, id), eq(savedSearchesTable.userId, session.userId)));
     res.json({ success: true });

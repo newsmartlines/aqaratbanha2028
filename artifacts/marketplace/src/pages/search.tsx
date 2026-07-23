@@ -31,7 +31,7 @@ import {
   Phone, SlidersHorizontal, Check, Clock,
   Building2, Home, TreePine, Factory, Zap,
   Car, Trees, Waves, Shield, Wifi, Flame, Wind,
-  UtensilsCrossed, Star, ArrowUpDown, RotateCcw, ChevronUp,
+  UtensilsCrossed, Star, ArrowUpDown, RotateCcw, ChevronUp, BadgeCheck,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";

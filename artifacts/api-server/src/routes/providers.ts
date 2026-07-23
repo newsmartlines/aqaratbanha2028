@@ -226,7 +226,7 @@ router.get("/admin/providers", async (req, res) => {
 
 router.get("/providers/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     if (!Number.isFinite(id) || id < 1) {
       return res.status(400).json({ success: false, error: "Invalid provider id" });
     }
@@ -397,7 +397,7 @@ router.post("/admin/providers", async (req, res) => {
 // Provider stats — reviews, subscription (provider-scoped)
 router.get("/providers/:id/stats", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [reviewsResult, subscriptionResult, propertiesResult] = await Promise.all([
       db.select().from(reviewsTable).where(eq(reviewsTable.providerId, id)),
       db
@@ -495,7 +495,7 @@ router.get("/providers/:id/stats", async (req, res) => {
 // Subscription history for a provider
 router.get("/providers/:id/subscriptions-history", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const rows = await db
       .select({
         id: subscriptionsTable.id,
@@ -555,7 +555,7 @@ router.get("/providers/:id/subscriptions-history", async (req, res) => {
 // Track interaction (phone / whatsapp / message)
 router.post("/providers/:id/interactions", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { type } = req.body;
     if (!["phone", "whatsapp", "message"].includes(type)) {
       return res.status(400).json({ success: false, error: "Invalid type" });
@@ -570,7 +570,7 @@ router.post("/providers/:id/interactions", async (req, res) => {
 // Get interaction counts for a provider (only the provider themselves)
 router.get("/providers/:id/interactions", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const rows = await db
       .select({
         type: interactionsTable.type,
@@ -602,7 +602,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
       });
     }
 
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     if (!Number.isFinite(id) || id < 1) {
       return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });
     }
@@ -824,7 +824,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
 
 router.patch("/providers/:id/approve", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [updated] = await db
       .update(providersTable)
       .set({ approved: true, suspended: false, active: true })
@@ -854,7 +854,7 @@ router.patch("/providers/:id/approve", adminOnly, async (req, res) => {
 
 router.patch("/providers/:id/reject", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [updated] = await db.update(providersTable).set({ approved: false, suspended: false }).where(eq(providersTable.id, id)).returning();
     res.json({ success: true, data: updated });
   } catch {
@@ -864,7 +864,7 @@ router.patch("/providers/:id/reject", adminOnly, async (req, res) => {
 
 router.patch("/providers/:id/suspend", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [updated] = await db.update(providersTable).set({ suspended: true }).where(eq(providersTable.id, id)).returning();
     res.json({ success: true, data: updated });
   } catch {

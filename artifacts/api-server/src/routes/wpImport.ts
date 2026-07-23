@@ -341,8 +341,35 @@ function parseSQL(content: string): { users: ParsedUser[]; properties: ParsedPro
   return { users, properties };
 }
 
+// ── SSRF Guard ────────────────────────────────────────────────────────────────
+// Only allow public http/https URLs; block private/loopback/link-local ranges.
+function isSafeImageUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+    const host = u.hostname.toLowerCase();
+    // Block loopback, private RFC-1918, link-local, and metadata endpoints
+    if (
+      host === "localhost" ||
+      host === "0.0.0.0" ||
+      /^127\./.test(host) ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+      /^169\.254\./.test(host) ||
+      host === "::1" ||
+      host.endsWith(".local") ||
+      host === "metadata.google.internal"
+    ) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ── Image Downloader ───────────────────────────────────────────────────────────
 function downloadImage(url: string): Promise<string | null> {
+  if (!isSafeImageUrl(url)) return Promise.resolve(null);
   return new Promise(resolve => {
     try {
       const ext = (url.split(".").pop()?.split("?")[0] || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").substring(0, 4) || "jpg";
@@ -351,7 +378,13 @@ function downloadImage(url: string): Promise<string | null> {
       const proto = url.startsWith("https") ? https : http;
       const req = proto.get(url, { timeout: 10000 }, res => {
         if (res.statusCode !== 200) { res.resume(); return resolve(null); }
+        // Enforce max download size (5 MB) to prevent resource exhaustion
+        let bytes = 0;
         const out = fs.createWriteStream(dest);
+        res.on("data", (chunk: Buffer) => {
+          bytes += chunk.length;
+          if (bytes > 5 * 1024 * 1024) { req.destroy(); out.destroy(); fs.unlink(dest, () => {}); resolve(null); }
+        });
         res.pipe(out);
         out.on("finish", () => resolve("/uploads/properties/" + fname));
         out.on("error", () => resolve(null));

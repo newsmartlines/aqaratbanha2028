@@ -39,7 +39,7 @@ router.get("/users", async (_req, res) => {
 
 router.get("/users/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [user] = await db
       .select({
         id: usersTable.id,
@@ -131,7 +131,7 @@ router.put("/users/:id", async (req, res) => {
 
 router.patch("/users/:id/status", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { status } = req.body;
     const allowed = ["active", "suspended"];
     if (!allowed.includes(status)) return res.status(400).json({ success: false, error: "Invalid status" });
@@ -148,7 +148,7 @@ router.patch("/users/:id/status", adminOnly, async (req, res) => {
 
 router.delete("/users/:id", adminOnly, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     await db.delete(usersTable).where(eq(usersTable.id, id));
     res.json({ success: true });
   } catch {
@@ -161,7 +161,7 @@ router.delete("/users/:id", adminOnly, async (req, res) => {
 // GET /users/:userId/subscriptions-history
 router.get("/users/:userId/subscriptions-history", async (req, res) => {
   try {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(String(req.params.userId), 10);
     if (!Number.isFinite(userId) || userId < 1)
       return res.status(400).json({ success: false, error: "معرّف المستخدم غير صالح" });
 
@@ -221,7 +221,7 @@ router.get("/users/:userId/subscriptions-history", async (req, res) => {
 // POST /users/:userId/subscribe — user subscribes to a billing plan (free or paid)
 router.post("/users/:userId/subscribe", async (req, res) => {
   try {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(String(req.params.userId), 10);
     if (!Number.isFinite(userId) || userId < 1)
       return res.status(400).json({ success: false, error: "معرّف المستخدم غير صالح" });
 
@@ -302,7 +302,7 @@ router.post("/users/:userId/subscribe", async (req, res) => {
 // GET /users/:userId/current-subscription — active subscription for a user
 router.get("/users/:userId/current-subscription", async (req, res) => {
   try {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(String(req.params.userId), 10);
     if (!Number.isFinite(userId) || userId < 1)
       return res.status(400).json({ success: false, error: "معرّف المستخدم غير صالح" });
 
