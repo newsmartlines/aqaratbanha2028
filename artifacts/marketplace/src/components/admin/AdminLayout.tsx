@@ -82,7 +82,7 @@ const MENU_GROUPS: MenuGroup[] = [
     items: [
       { icon: Building2, label: "العقارات",              href: "/admin/properties",              perm: null },
       { icon: Tags,      label: "التصنيفات العقارية",    href: "/admin/real-estate-categories",  perm: "categories" },
-      { icon: Star,      label: "مميزات وخدمات العقار",  href: "/admin/property-features",       perm: null },
+      { icon: Star,      label: "مميزات العقار",           href: "/admin/property-features",       perm: null },
       { icon: Layers3,   label: "حقول أنواع العقار",     href: "/admin/property-type-configs",   perm: null },
       { icon: Stamp,     label: "الصورة المائية",        href: "/admin/watermark",               perm: null },
     ],

@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-07-23T13:09:12.843Z",
+  "exportedAt": "2026-07-23T13:09:57.328Z",
   "tables": {
     "siteSettings": [
       {
@@ -69,7 +69,7 @@
         "id": 11,
         "key": "themePreset",
         "value": "crimson",
-        "updatedAt": "2026-07-23T13:09:12.491Z"
+        "updatedAt": "2026-07-23T13:09:57.292Z"
       },
       {
         "id": 12,
@@ -123,31 +123,31 @@
         "id": 20,
         "key": "primaryColorHsl",
         "value": "0 72% 45%",
-        "updatedAt": "2026-07-23T13:09:12.754Z"
+        "updatedAt": "2026-07-23T13:09:57.301Z"
       },
       {
         "id": 21,
         "key": "secondaryColorHsl",
         "value": "0 35% 92%",
-        "updatedAt": "2026-07-23T13:09:12.816Z"
+        "updatedAt": "2026-07-23T13:09:57.306Z"
       },
       {
         "id": 22,
         "key": "accentColorHsl",
         "value": "35 85% 58%",
-        "updatedAt": "2026-07-23T13:09:12.820Z"
+        "updatedAt": "2026-07-23T13:09:57.309Z"
       },
       {
         "id": 23,
         "key": "fontFamily",
-        "value": "Tajawal",
-        "updatedAt": "2026-07-23T13:09:12.825Z"
+        "value": "Changa",
+        "updatedAt": "2026-07-23T13:09:57.315Z"
       },
       {
         "id": 24,
         "key": "borderRadius",
         "value": "0.25rem",
-        "updatedAt": "2026-07-23T13:09:12.830Z"
+        "updatedAt": "2026-07-23T13:09:57.320Z"
       }
     ]
   }

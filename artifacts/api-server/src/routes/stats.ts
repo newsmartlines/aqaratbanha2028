@@ -45,7 +45,12 @@ router.get("/admin/stats", adminOnly, async (_req, res) => {
       [pendingProviders],
       [users],
       [activeProperties],
+      [propertiesForSale],
+      [propertiesForRent],
+      [pendingProperties],
       [revenueRow],
+      categoryRows,
+      monthlyRows,
     ] = await Promise.all([
       db.select({ count: sql<number>`cast(count(*) as int)` }).from(providersTable),
       db
@@ -65,9 +70,42 @@ router.get("/admin/stats", adminOnly, async (_req, res) => {
         .from(propertiesTable)
         .where(eq(propertiesTable.status, "active")),
       db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(propertiesTable)
+        .where(and(eq(propertiesTable.status, "active"), eq(propertiesTable.listingType, "sale"))),
+      db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(propertiesTable)
+        .where(and(eq(propertiesTable.status, "active"), eq(propertiesTable.listingType, "rent"))),
+      db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(propertiesTable)
+        .where(eq(propertiesTable.status, "pending")),
+      db
         .select({ total: sql<string>`COALESCE(SUM(CAST(amount AS NUMERIC)), 0)::text` })
         .from(paymentTransactionsTable)
         .where(eq(paymentTransactionsTable.status, "paid")),
+      // Top categories (active properties grouped by mainCategory)
+      db
+        .select({
+          category: propertiesTable.mainCategory,
+          count: sql<number>`cast(count(*) as int)`,
+        })
+        .from(propertiesTable)
+        .where(eq(propertiesTable.status, "active"))
+        .groupBy(propertiesTable.mainCategory)
+        .orderBy(sql`count(*) desc`)
+        .limit(6),
+      // Monthly new listings (last 6 months)
+      db
+        .select({
+          month: sql<string>`to_char(created_at, 'YYYY-MM')`,
+          count: sql<number>`cast(count(*) as int)`,
+        })
+        .from(propertiesTable)
+        .where(sql`created_at >= now() - interval '6 months'`)
+        .groupBy(sql`to_char(created_at, 'YYYY-MM')`)
+        .orderBy(sql`to_char(created_at, 'YYYY-MM') asc`),
     ]);
 
     res.json({
@@ -78,7 +116,12 @@ router.get("/admin/stats", adminOnly, async (_req, res) => {
         pendingProviders: pendingProviders?.count ?? 0,
         totalUsers: users?.count ?? 0,
         activeProperties: activeProperties?.count ?? 0,
+        propertiesForSale: propertiesForSale?.count ?? 0,
+        propertiesForRent: propertiesForRent?.count ?? 0,
+        pendingProperties: pendingProperties?.count ?? 0,
         totalRevenue: parseFloat(revenueRow?.total ?? "0"),
+        topCategories: categoryRows,
+        monthlyListings: monthlyRows,
       },
     });
   } catch (e: any) {
