@@ -3,3 +3,4 @@
 - [listings.ts schema mismatch](listings-schema.md) — propertiesTable has `images` (not `mainImage`) and `mainCategory` text (not `categoryId` FK); no category join is possible via a FK column.
 - [Unified Dashboard Architecture](unified-dashboard.md) — Single dashboard at /dashboard/* for both user+provider; role rendering via useRole() hook; nav config in SHARED_NAV/PROVIDER_NAV/USER_NAV arrays in DashboardLayout.
 - [Property Status Lifecycle](property-status-lifecycle.md) — 6 statuses: pending/updated_after_rejection/approved(active)/rejected/expired/draft; editing a rejected prop → updated_after_rejection (not pending); approval sets expiresAt=+30days; renew via PATCH /properties/:id/renew.
+- [Production Audit Findings](production-audit.md) — Express 5 req.params type, SSRF in wpImport, CORS prod default, missing indexes pattern.
