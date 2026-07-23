@@ -136,7 +136,7 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
     try {
       const fd = new FormData();
       fd.append("font", file);
-      const res = await fetch("/upload/font", { method: "POST", body: fd, credentials: "include" });
+      const res = await fetch("/api/upload/font", { method: "POST", body: fd, credentials: "include" });
       const json = await res.json();
       if (!json.success) throw new Error(json.error ?? "فشل الرفع");
       const url: string = json.data.url;
