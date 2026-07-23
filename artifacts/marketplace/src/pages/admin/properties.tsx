@@ -709,7 +709,7 @@ export default function AdminProperties() {
                             size="sm"
                             variant="outline"
                             className="h-7 px-2.5 text-xs text-slate-600 border-slate-200 hover:bg-slate-100 gap-1 font-semibold"
-                            onClick={() => setSelectedProp(p as unknown as ExtendedProperty)}
+                            onClick={() => setLocation(`/property/${p.id}?admin=1`)}
                           >
                             <Eye className="w-3 h-3" /> مشاهدة
                           </Button>

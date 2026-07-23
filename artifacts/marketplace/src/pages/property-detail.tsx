@@ -14,6 +14,7 @@ import {
   MapPin, Phone, MessageCircle, Share2, Heart, CheckCircle2,
   ChevronLeft, Play, X, Calendar,
   Layers, Car, Home, TrendingUp, Eye, Clock, Loader2, Scale, ShieldCheck,
+  XCircle, AlertCircle, Check, Star, Trash2,
 } from "lucide-react";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { FeatureIconByName } from "@/components/FeatureIcon";
@@ -23,6 +24,33 @@ import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store
 import { AdBanner } from "@/components/AdBanner";
 import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
 import { MarketAnalyticsSection } from "@/components/MarketAnalyticsSection";
+import toast from "react-hot-toast";
+
+/* ── Admin bar constants ────────────────────────────────────────────────── */
+const ADMIN_REJECT_CHIPS = [
+  { id: "photos",  label: "📷 الصور غير واضحة أو منخفضة الجودة" },
+  { id: "price",   label: "💰 السعر مبالغ فيه أو غير واقعي" },
+  { id: "info",    label: "⚠️ معلومات مضللة أو غير دقيقة" },
+  { id: "addr",    label: "📍 العنوان غير صحيح أو غير محدد" },
+  { id: "dup",     label: "🔄 الإعلان مكرر أو موجود مسبقاً" },
+  { id: "contact", label: "📞 بيانات التواصل مفقودة أو خاطئة" },
+  { id: "policy",  label: "🚫 المحتوى ينتهك سياسة المنصة" },
+];
+const ADMIN_STATUS_STYLE: Record<string, string> = {
+  approved: "bg-emerald-500/20 text-emerald-200 border-emerald-500/30",
+  active:   "bg-emerald-500/20 text-emerald-200 border-emerald-500/30",
+  pending:  "bg-amber-500/20  text-amber-200  border-amber-500/30",
+  updated_after_rejection: "bg-violet-500/20 text-violet-200 border-violet-500/30",
+  rejected: "bg-red-500/20   text-red-200   border-red-500/30",
+  expired:  "bg-gray-500/20  text-gray-300  border-gray-500/30",
+  draft:    "bg-gray-500/20  text-gray-300  border-gray-500/30",
+};
+const ADMIN_STATUS_LABEL: Record<string, string> = {
+  approved: "منشور", active: "منشور",
+  pending: "قيد المراجعة",
+  updated_after_rejection: "✏️ أُعيد بعد الرفض",
+  rejected: "مرفوض", expired: "منتهي", draft: "مسودة",
+};
 
 
 const DEFAULT_IMG = NO_IMAGE_PLACEHOLDER;
@@ -156,6 +184,7 @@ export default function PropertyDetail() {
   const id = parseInt(params.id ?? "0");
 
   const [property, setProperty] = useState<PropertyView | null>(null);
+  const [rawProp, setRawProp] = useState<Record<string, unknown> | null>(null);
   const [similar, setSimilar] = useState<PropertyView[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -180,7 +209,17 @@ export default function PropertyDetail() {
   const [msgSent, setMsgSent] = useState(false);
   const [msgError, setMsgError] = useState("");
 
+  // Admin bar state
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [rejectMode, setRejectMode] = useState(false);
+  const [rejectChips, setRejectChips] = useState<string[]>([]);
+  const [rejectNote, setRejectNote] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+
   const { user } = useAuth();
+  const isAdminMode = user?.role === "admin" &&
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("admin") === "1";
 
   const viewTracked = useRef(false);
   const { items: compareItems, isIn: isInCompare } = useCompare();
@@ -199,6 +238,7 @@ export default function PropertyDetail() {
         if (!raw || !raw.id) { setNotFound(true); return; }
         const mapped = mapDbToView(raw);
         setProperty(mapped);
+        setRawProp(raw);
 
         // Track view once per property per 24h
         if (!viewTracked.current) {
@@ -269,6 +309,69 @@ export default function PropertyDetail() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  /* ── Admin action handlers ─────────────────────────────────────────────── */
+  const refetchRaw = async () => {
+    try {
+      const res = await api.properties.get(id) as { data?: Record<string, unknown> };
+      const fresh = res?.data ?? (res as unknown as Record<string, unknown>);
+      if (fresh?.id) {
+        setRawProp(fresh);
+        setProperty(mapDbToView(fresh));
+      }
+    } catch {}
+  };
+
+  const handleAdminApprove = async () => {
+    setAdminLoading(true);
+    try {
+      await api.properties.patchStatus(id, "approved");
+      await refetchRaw();
+      toast.success("✅ تمت الموافقة على الإعلان ونُشر");
+    } catch { toast.error("فشل الاعتماد"); }
+    finally { setAdminLoading(false); }
+  };
+
+  const handleAdminRejectConfirm = async () => {
+    setAdminLoading(true);
+    try {
+      const labels = rejectChips.map(cid => ADMIN_REJECT_CHIPS.find(c => c.id === cid)?.label ?? "").filter(Boolean);
+      const parts = [...labels];
+      if (rejectNote.trim()) parts.push(rejectNote.trim());
+      const reason = parts.join("\n") || "لا يتوافق مع شروط النشر";
+      await api.properties.patchStatus(id, "rejected", reason);
+      await refetchRaw();
+      setRejectMode(false); setRejectChips([]); setRejectNote("");
+      toast.success("❌ تم رفض الإعلان وإشعار المعلن");
+    } catch { toast.error("فشل الرفض"); }
+    finally { setAdminLoading(false); }
+  };
+
+  const handleAdminToggleFeatured = async () => {
+    const newVal = !(rawProp?.featured as boolean);
+    setAdminLoading(true);
+    try {
+      await api.properties.update(id, { featured: newVal });
+      await refetchRaw();
+      toast.success(newVal ? "⭐ تم تمييز الإعلان" : "تم إلغاء التمييز");
+    } catch { toast.error("فشل التحديث"); }
+    finally { setAdminLoading(false); }
+  };
+
+  const handleAdminDelete = async () => {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      setTimeout(() => setDeleteConfirm(false), 4000);
+      return;
+    }
+    setAdminLoading(true);
+    try {
+      await api.properties.delete(id);
+      toast.success("تم حذف الإعلان");
+      setLocation("/admin/properties");
+    } catch { toast.error("فشل الحذف"); }
+    finally { setAdminLoading(false); }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
@@ -293,8 +396,160 @@ export default function PropertyDetail() {
   const prevImg = () => setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const nextImg = () => setActiveImg((i) => (i + 1) % gallery.length);
 
+  const adminStatus    = (rawProp?.status as string) ?? "";
+  const adminFeatured  = !!(rawProp?.featured as boolean);
+  const adminStatusCls = ADMIN_STATUS_STYLE[adminStatus] ?? "bg-gray-500/20 text-gray-300 border-gray-500/30";
+  const adminStatusLbl = ADMIN_STATUS_LABEL[adminStatus] ?? adminStatus;
+
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className={`min-h-screen bg-gray-50${isAdminMode ? " pt-[56px]" : ""}`} dir="rtl">
+
+      {/* ══════════════════════════════════════════════════════════════════
+          ADMIN PREVIEW BAR — only shown when accessed with ?admin=1
+      ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminMode && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-[#0f172a] border-b border-white/10 shadow-xl" dir="rtl">
+          {/* Main toolbar row */}
+          <div className="flex items-center gap-3 px-4 h-14">
+            {/* Back */}
+            <button
+              onClick={() => setLocation("/admin/properties")}
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors shrink-0 font-medium"
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span className="hidden sm:inline">إدارة العقارات</span>
+            </button>
+
+            <span className="text-slate-700 text-xs">/</span>
+
+            {/* Status badge */}
+            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border shrink-0 ${adminStatusCls}`}>
+              {adminStatusLbl}
+            </span>
+
+            {/* Title */}
+            <span className="text-white text-sm font-semibold truncate flex-1 hidden sm:block">
+              {property.title}
+            </span>
+
+            {/* Stats */}
+            <div className="flex items-center gap-3 text-xs text-slate-400 shrink-0 hidden md:flex">
+              <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {(rawProp?.viewCount as number ?? 0).toLocaleString("ar-EG")}</span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 ms-auto">
+              {/* Featured toggle */}
+              <button
+                onClick={handleAdminToggleFeatured}
+                disabled={adminLoading}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${adminFeatured ? "bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30" : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"}`}
+              >
+                <Star className={`w-3.5 h-3.5 ${adminFeatured ? "fill-amber-400 text-amber-400" : ""}`} />
+                <span className="hidden sm:inline">{adminFeatured ? "إلغاء التمييز" : "تمييز"}</span>
+              </button>
+
+              {/* Delete */}
+              <button
+                onClick={handleAdminDelete}
+                disabled={adminLoading}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${deleteConfirm ? "bg-red-600 text-white border-red-500" : "bg-white/5 text-red-400 border-red-500/20 hover:bg-red-500/10"}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{deleteConfirm ? "تأكيد الحذف؟" : "حذف"}</span>
+              </button>
+
+              {/* Reject */}
+              {adminStatus !== "rejected" && !rejectMode && (
+                <button
+                  onClick={() => setRejectMode(true)}
+                  disabled={adminLoading}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">رفض</span>
+                </button>
+              )}
+
+              {/* Approve */}
+              {adminStatus !== "approved" && adminStatus !== "active" && !rejectMode && (
+                <button
+                  onClick={handleAdminApprove}
+                  disabled={adminLoading}
+                  className="flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 shadow-sm shadow-emerald-900/40"
+                >
+                  {adminLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  اعتماد ونشر
+                </button>
+              )}
+
+              {/* Already approved */}
+              {(adminStatus === "approved" || adminStatus === "active") && !rejectMode && (
+                <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  منشور
+                </span>
+              )}
+
+              {/* Cancel reject */}
+              {rejectMode && (
+                <button
+                  onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+                  className="text-xs text-slate-400 hover:text-white px-2 py-1.5 transition-colors"
+                >
+                  إلغاء
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Rejection picker — expanded below toolbar */}
+          {rejectMode && (
+            <div className="bg-[#1e293b] border-t border-white/10 px-4 py-3 space-y-3">
+              <p className="text-xs font-bold text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5" />
+                اختر سبب الرفض (يمكن اختيار أكثر من سبب)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ADMIN_REJECT_CHIPS.map(chip => {
+                  const sel = rejectChips.includes(chip.id);
+                  return (
+                    <button
+                      key={chip.id}
+                      type="button"
+                      onClick={() => setRejectChips(prev => sel ? prev.filter(x => x !== chip.id) : [...prev, chip.id])}
+                      className={`relative text-xs px-3 py-1.5 rounded-xl border-2 transition-all font-medium ${sel ? "border-rose-500 bg-rose-500/20 text-rose-200" : "border-white/10 bg-white/5 text-slate-300 hover:border-rose-500/40"}`}
+                    >
+                      {sel && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-white" />
+                        </span>
+                      )}
+                      {chip.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={rejectNote}
+                  onChange={e => setRejectNote(e.target.value)}
+                  placeholder="ملاحظة إضافية للمعلن (اختياري)..."
+                  className="flex-1 text-sm bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500/50"
+                />
+                <button
+                  onClick={handleAdminRejectConfirm}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold py-2 px-5 rounded-xl transition-colors disabled:opacity-50"
+                >
+                  {adminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                  تأكيد الرفض
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <Header />
 
       {/* ── Breadcrumb ── */}
