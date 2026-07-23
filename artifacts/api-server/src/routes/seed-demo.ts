@@ -7,11 +7,12 @@ import {
 } from "@workspace/db";
 import { eq, count } from "drizzle-orm";
 import { forceSeedSection } from "../lib/seed";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
 
-// ── GET /admin/seed-status — counts of all seeded entities ───────────────────
-router.get("/admin/seed-status", async (_req, res) => {
+// ── GET /admin/seed-status — counts of all seeded entities (admin only) ───────
+router.get("/admin/seed-status", adminOnly, async (_req, res) => {
   try {
     const [regions] = await db.select({ n: count() }).from(regionsTable);
     const [cities] = await db.select({ n: count() }).from(citiesTable);
@@ -47,14 +48,14 @@ router.get("/admin/seed-status", async (_req, res) => {
         hasEgyptLocations: egyptRegion.length > 0,
       },
     });
-  } catch (err: any) {
-    console.error("[seed-status]", err);
-    res.status(500).json({ success: false, error: err?.message ?? "فشل جلب الإحصائيات" });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "فشل جلب الإحصائيات";
+    res.status(500).json({ success: false, error: message });
   }
 });
 
-// ── POST /admin/seed-demo — run seed for a specific section ──────────────────
-router.post("/admin/seed-demo", async (req, res) => {
+// ── POST /admin/seed-demo — run seed for a specific section (admin only) ──────
+router.post("/admin/seed-demo", adminOnly, async (req, res) => {
   try {
     const { section } = req.body as { section: string };
     if (!section) {
@@ -62,9 +63,9 @@ router.post("/admin/seed-demo", async (req, res) => {
     }
     const result = await forceSeedSection(section);
     res.json({ success: result.ok, message: result.message });
-  } catch (err: any) {
-    console.error("[seed-demo POST]", err);
-    res.status(500).json({ success: false, error: err?.message ?? "حدث خطأ غير متوقع" });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "حدث خطأ غير متوقع";
+    res.status(500).json({ success: false, error: message });
   }
 });
 

@@ -100,8 +100,8 @@ export default function AdminGoogleKit() {
   const qc = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: api.settings.list,
+    queryKey: ["admin-site-settings"],
+    queryFn: api.settings.adminList,
   });
 
   const [ga4Id, setGa4Id] = useState("");
@@ -142,6 +142,7 @@ export default function AdminGoogleKit() {
   const saveMutation = useMutation({
     mutationFn: (data: Record<string, string>) => api.settings.save(data),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-site-settings"] });
       qc.invalidateQueries({ queryKey: ["site-settings"] });
       toast({ title: "تم الحفظ!", description: "تم حفظ الإعدادات بنجاح." });
     },

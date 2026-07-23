@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,7 +16,11 @@ export const chatLeadsTable = pgTable("chat_leads", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("chat_leads_session_id_idx").on(t.sessionId),
+  index("chat_leads_status_idx").on(t.status),
+  index("chat_leads_property_id_idx").on(t.propertyId),
+]);
 
 export const insertChatLeadSchema = createInsertSchema(chatLeadsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertChatLead = z.infer<typeof insertChatLeadSchema>;

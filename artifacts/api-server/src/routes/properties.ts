@@ -10,6 +10,7 @@ import {
 import { eq, desc, and, or, ilike, sql, getTableColumns, lt, gt, inArray } from "drizzle-orm";
 import { getSession } from "./auth";
 import { applySmartRanking } from "../lib/promotionEngine";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
 
@@ -652,8 +653,8 @@ router.get("/user/properties", async (req, res) => {
   }
 });
 
-// ── PATCH /api/properties/:id/status ──────────────────────────────────────
-router.patch("/properties/:id/status", async (req, res) => {
+// ── PATCH /api/properties/:id/status — admin only ─────────────────────────
+router.patch("/properties/:id/status", adminOnly, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status, rejectionReason } = req.body;

@@ -516,8 +516,8 @@ export default function AdminChatbot() {
   const defaultTab = new URLSearchParams(search).get("tab") ?? "settings";
 
   const { data: settings, isLoading } = useQuery<SiteSettings>({
-    queryKey: ["site-settings"],
-    queryFn: api.settings.list,
+    queryKey: ["admin-site-settings"],
+    queryFn: api.settings.adminList,
     staleTime: 10_000,
   });
 
@@ -581,7 +581,7 @@ export default function AdminChatbot() {
       chatbotAiSystemPrompt: aiSystemPrompt.trim(),
       chatbotAiTemperature: aiTemperature,
     }),
-    onSuccess: () => { toast.success("تم حفظ إعدادات المساعد الذكي ✓"); qc.invalidateQueries({ queryKey: ["site-settings"] }); },
+    onSuccess: () => { toast.success("تم حفظ إعدادات المساعد الذكي ✓"); qc.invalidateQueries({ queryKey: ["admin-site-settings"] }); qc.invalidateQueries({ queryKey: ["site-settings"] }); },
     onError: () => toast.error("فشل الحفظ، حاول مرة أخرى"),
   });
 

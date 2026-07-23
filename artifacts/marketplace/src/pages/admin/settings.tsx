@@ -159,8 +159,8 @@ export default function AdminSettings() {
   };
 
   const { data: settings, isLoading } = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: api.settings.list,
+    queryKey: ["admin-site-settings"],
+    queryFn: api.settings.adminList,
   });
 
   useEffect(() => {
@@ -186,6 +186,7 @@ export default function AdminSettings() {
   const saveMutation = useMutation({
     mutationFn: (data: Partial<SiteSettings>) => api.settings.save(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-site-settings"] });
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       uiToast({ title: t("saved"), description: t("savedDesc") });
     },

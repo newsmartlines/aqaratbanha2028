@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -114,6 +115,7 @@ function getInitial(settings: Partial<SiteSettings>): ThemeState {
 
 export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> }) {
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [theme, setTheme] = useState<ThemeState>(() => getInitial(settings));
   const [saving, setSaving] = useState(false);
   const [liveApplied, setLiveApplied] = useState(false);
@@ -171,6 +173,8 @@ export function AppearanceTab({ settings }: { settings: Partial<SiteSettings> })
     setSaving(true);
     try {
       await api.settings.save(theme as unknown as Partial<SiteSettings>);
+      qc.invalidateQueries({ queryKey: ["admin-site-settings"] });
+      qc.invalidateQueries({ queryKey: ["site-settings"] });
       toast({ title: "✅ تم حفظ الثيم", description: "التغييرات مطبّقة الآن على الموقع بالكامل." });
     } catch {
       toast({ title: "فشل الحفظ", variant: "destructive" });

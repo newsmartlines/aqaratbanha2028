@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable, paymentsTable, supportTicketsTable } from "@workspace/db";
 import { eq, ne, and, desc } from "drizzle-orm";
 import { getSession } from "./auth";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
 
@@ -128,7 +129,7 @@ router.put("/users/:id", async (req, res) => {
   }
 });
 
-router.patch("/users/:id/status", async (req, res) => {
+router.patch("/users/:id/status", adminOnly, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status } = req.body;
@@ -145,7 +146,7 @@ router.patch("/users/:id/status", async (req, res) => {
   }
 });
 
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/:id", adminOnly, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(usersTable).where(eq(usersTable.id, id));

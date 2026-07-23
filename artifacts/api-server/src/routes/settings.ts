@@ -5,8 +5,72 @@ import { eq } from "drizzle-orm";
 import { autoExportGroup } from "../lib/auto-export";
 import { writeAuditLog } from "../lib/auditLog";
 import { invalidateSetting } from "../lib/settingsCache";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
+
+// Keys that must never be sent to the browser (not even to admins via the public endpoint)
+const SENSITIVE_KEYS = new Set<string>([
+  "googleClientSecret",
+  "smtpPassword",
+  "openaiApiKey",
+  "stripeSecretKey",
+]);
+
+// Keys that the public GET /settings endpoint may expose (allowlist for unauthenticated callers)
+const PUBLIC_KEYS = new Set<string>([
+  "siteName",
+  "siteNameEn",
+  "logoUrl",
+  "faviconUrl",
+  "heroImage",
+  "primaryColor",
+  "themePreset",
+  "primaryColorHsl",
+  "secondaryColorHsl",
+  "accentColorHsl",
+  "fontFamily",
+  "borderRadius",
+  "heroTitle",
+  "heroSubtitle",
+  "ctaText",
+  "ctaButtonText",
+  "aboutContent",
+  "contactEmail",
+  "contactPhone",
+  "contactWhatsapp",
+  "contactAddress",
+  "workingHours",
+  "faqContent",
+  "featuredSectionTitle",
+  "featuredSectionSubtitle",
+  "featuredSectionTypes",
+  "featuredSectionCount",
+  "featuredSectionCustomCount",
+  "featuredSectionColumns",
+  "featuredSectionSort",
+  "listingsPerPage",
+  "subscriptionsEnabled",
+  "servicesModuleEnabled",
+  "paymentGateway",
+  "vodafoneCashEnabled",
+  "vodafoneCashNumber",
+  "vodafoneCashName",
+  "fawryEnabled",
+  "fawryCode",
+  "fawryMerchantName",
+  "instaPayEnabled",
+  "instaPayIPA",
+  "instaPayName",
+  "bankTransferEnabled",
+  "bankName",
+  "bankAccountName",
+  "bankAccountNumber",
+  "bankIBAN",
+  "paymentInstructions",
+  // Google Sign-In client ID is public (used in OAuth flows)
+  "googleClientId",
+]);
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   googleClientId: "",
@@ -67,9 +131,45 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   ctaButtonText: "تصفح العقارات الآن",
 };
 
+// ── GET /settings — public endpoint (safe keys only) ──────────────────────────
 router.get("/settings", async (_req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.set("Pragma", "no-cache");
+  try {
+    const rows = await db.select().from(siteSettingsTable);
+    const all: Record<string, string> = { ...DEFAULT_SETTINGS };
+    for (const row of rows) {
+      all[row.key] = row.value ?? "";
+    }
+    // Only expose public keys to unauthenticated callers
+    const safe: Record<string, string> = {};
+    for (const key of PUBLIC_KEYS) {
+      if (all[key] !== undefined) safe[key] = all[key];
+    }
+    res.json({ success: true, data: safe });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to load settings" });
+  }
+});
+
+// ── GET /settings/:key — individual key lookup (public-safe only) ──────────────
+router.get("/settings/:key", async (req, res) => {
+  const key = req.params.key;
+  if (SENSITIVE_KEYS.has(key)) {
+    return res.status(403).json({ success: false, error: "Forbidden" });
+  }
+  try {
+    const row = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, key)).limit(1);
+    const value = row[0]?.value ?? DEFAULT_SETTINGS[key] ?? null;
+    res.json({ success: true, data: { key, value } });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to load setting" });
+  }
+});
+
+// ── GET /admin/settings — admin-only: returns all settings including sensitive ─
+router.get("/admin/settings", adminOnly, async (_req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   try {
     const rows = await db.select().from(siteSettingsTable);
     const settings: Record<string, string> = { ...DEFAULT_SETTINGS };
@@ -77,22 +177,13 @@ router.get("/settings", async (_req, res) => {
       settings[row.key] = row.value ?? "";
     }
     res.json({ success: true, data: settings });
-  } catch (e) {
+  } catch {
     res.status(500).json({ success: false, error: "Failed to load settings" });
   }
 });
 
-router.get("/settings/:key", async (req, res) => {
-  try {
-    const row = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.key, req.params.key)).limit(1);
-    const value = row[0]?.value ?? DEFAULT_SETTINGS[req.params.key] ?? null;
-    res.json({ success: true, data: { key: req.params.key, value } });
-  } catch (e) {
-    res.status(500).json({ success: false, error: "Failed to load setting" });
-  }
-});
-
-router.post("/settings", async (req, res) => {
+// ── POST /settings — admin only ────────────────────────────────────────────────
+router.post("/settings", adminOnly, async (req, res) => {
   try {
     const updates: Record<string, string> = req.body;
     for (const [key, value] of Object.entries(updates)) {
@@ -130,7 +221,7 @@ router.post("/settings", async (req, res) => {
     // Write-through: persist settings changes to seed file immediately
     autoExportGroup("settings");
     res.json({ success: true, data: {} });
-  } catch (e) {
+  } catch {
     res.status(500).json({ success: false, error: "Failed to save settings" });
   }
 });

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type SiteSettings } from "@/lib/api";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -132,13 +132,14 @@ function SerpPreview({ title, description, url }: { title: string; description: 
 ══════════════════════════════════════════════ */
 export default function AdminSeo() {
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [tab, setTab] = useState("dashboard");
   const [saving, setSaving] = useState(false);
 
   /* Load settings from DB */
   const { data: dbSettings } = useQuery<SiteSettings>({
-    queryKey: ["site-settings"],
-    queryFn: () => api.settings.list(),
+    queryKey: ["admin-site-settings"],
+    queryFn: () => api.settings.adminList(),
     staleTime: 2 * 60_000,
   });
 
@@ -205,6 +206,8 @@ export default function AdminSeo() {
         robotsTxt,
         seoRedirects: JSON.stringify(redirects),
       });
+      qc.invalidateQueries({ queryKey: ["admin-site-settings"] });
+      qc.invalidateQueries({ queryKey: ["site-settings"] });
       toast({ title: "✅ تم الحفظ", description: msg });
     } catch {
       toast({ title: "فشل الحفظ", description: "تعذّر حفظ إعدادات السيو", variant: "destructive" });

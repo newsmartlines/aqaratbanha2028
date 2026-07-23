@@ -4,6 +4,7 @@ import { providersTable, usersTable, reviewsTable, categoriesTable, packagesTabl
 import { citiesTable, regionsTable } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { adminOnly } from "../middleware/adminOnly";
+import { getSession } from "./auth";
 
 const router = Router();
 
@@ -286,8 +287,47 @@ router.get("/providers/:id", async (req, res) => {
 
 router.put("/providers/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
+    if (Number.isNaN(id) || id <= 0) {
+      return res.status(400).json({ success: false, error: "Invalid provider id" });
+    }
+
+    // Must be authenticated — either the provider owns this profile or is admin
+    const token =
+      (req.cookies as Record<string, string> | undefined)?.session ??
+      (req.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, "");
+    if (!token) return res.status(401).json({ success: false, error: "Unauthorized" });
+    const session = await getSession(token);
+    if (!session) return res.status(401).json({ success: false, error: "Session expired" });
+
+    // Check ownership: look up the provider and verify the session user owns it (or is admin)
+    const [existingProvider] = await db
+      .select({ id: providersTable.id, userId: providersTable.userId })
+      .from(providersTable)
+      .where(eq(providersTable.id, id))
+      .limit(1);
+    if (!existingProvider) return res.status(404).json({ success: false, error: "Provider not found" });
+
+    const [sessionUser] = await db
+      .select({ id: usersTable.id, role: usersTable.role })
+      .from(usersTable)
+      .where(eq(usersTable.id, session.userId))
+      .limit(1);
+    if (!sessionUser) return res.status(401).json({ success: false, error: "User not found" });
+
+    const isOwner = existingProvider.userId === session.userId;
+    const isAdmin = sessionUser.role === "admin";
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
     const { bio, avatar, banner, logo, city, district, phone, whatsapp, categoryId, verified, featured, latitude, longitude, contactMethods } = req.body;
+
+    // Non-admin providers cannot set verified/featured flags
+    if (!isAdmin) {
+      delete req.body.verified;
+      delete req.body.featured;
+    }
     const updateData: Record<string, unknown> = {};
     if (bio !== undefined) updateData.bio = bio;
     if (avatar !== undefined) updateData.avatar = avatar;
@@ -782,7 +822,7 @@ router.post("/providers/:id/subscribe", async (req, res) => {
   }
 });
 
-router.patch("/providers/:id/approve", async (req, res) => {
+router.patch("/providers/:id/approve", adminOnly, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const [updated] = await db
@@ -812,7 +852,7 @@ router.patch("/providers/:id/approve", async (req, res) => {
   }
 });
 
-router.patch("/providers/:id/reject", async (req, res) => {
+router.patch("/providers/:id/reject", adminOnly, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const [updated] = await db.update(providersTable).set({ approved: false, suspended: false }).where(eq(providersTable.id, id)).returning();
@@ -822,7 +862,7 @@ router.patch("/providers/:id/reject", async (req, res) => {
   }
 });
 
-router.patch("/providers/:id/suspend", async (req, res) => {
+router.patch("/providers/:id/suspend", adminOnly, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const [updated] = await db.update(providersTable).set({ suspended: true }).where(eq(providersTable.id, id)).returning();

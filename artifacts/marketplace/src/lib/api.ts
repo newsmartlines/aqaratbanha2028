@@ -819,6 +819,8 @@ export const api = {
 
   settings: {
     list: () => fetchJson<SiteSettings>(`/settings`),
+    /** Admin-only: returns full settings including sensitive keys */
+    adminList: () => fetchJson<SiteSettings>(`/admin/settings`),
     update: (data: unknown) => fetchJson(`/settings`, { method: "POST", body: JSON.stringify(data) }),
     save: (data: unknown) => fetchJson(`/settings`, { method: "POST", body: JSON.stringify(data) }),
   },
