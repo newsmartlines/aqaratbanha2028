@@ -54,23 +54,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom"],
-          "vendor-query": ["@tanstack/react-query"],
-          "vendor-router": ["wouter"],
-          "vendor-motion": ["framer-motion"],
-          "vendor-leaflet": ["leaflet", "react-leaflet", "@react-leaflet/core"],
-          "vendor-ui": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-tooltip",
-            "@radix-ui/react-popover",
-            "@radix-ui/react-avatar",
-            "@radix-ui/react-progress",
-            "@radix-ui/react-label",
-          ],
+        manualChunks(id) {
+          // Vendor bundles
+          if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) return "vendor-react";
+          if (id.includes("node_modules/@tanstack/react-query")) return "vendor-query";
+          if (id.includes("node_modules/wouter")) return "vendor-router";
+          if (id.includes("node_modules/framer-motion")) return "vendor-motion";
+          if (id.includes("node_modules/leaflet") || id.includes("node_modules/react-leaflet") || id.includes("node_modules/@react-leaflet")) return "vendor-leaflet";
+          if (id.includes("node_modules/@radix-ui")) return "vendor-ui";
+          // Bundle all admin pages into one chunk — loaded once, instant on every subsequent admin nav
+          if (id.includes("/src/pages/admin/")) return "admin";
+          // Bundle dashboard pages together
+          if (id.includes("/src/pages/dashboard/") || (id.includes("/src/pages/") && id.match(/checkout|subscription-pay|listing-pay/))) return "dashboard";
         },
       },
     },

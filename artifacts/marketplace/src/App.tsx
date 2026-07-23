@@ -119,7 +119,23 @@ function roleHome(role: string): string {
   return "/";
 }
 
-const PageLoader = () => null;
+function PageLoader() {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5 overflow-hidden">
+      <div
+        className="h-full bg-teal-500 animate-pulse"
+        style={{ animation: "page-progress 1.2s ease-in-out infinite" }}
+      />
+      <style>{`
+        @keyframes page-progress {
+          0%   { width: 0%;   margin-left: 0; }
+          50%  { width: 70%;  margin-left: 15%; }
+          100% { width: 0%;   margin-left: 100%; }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 function RoleProtectedRoute({
   component: Component,
