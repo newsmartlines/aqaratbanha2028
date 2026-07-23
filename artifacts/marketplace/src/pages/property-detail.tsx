@@ -398,155 +398,267 @@ export default function PropertyDetail() {
 
   const adminStatus    = (rawProp?.status as string) ?? "";
   const adminFeatured  = !!(rawProp?.featured as boolean);
-  const adminStatusCls = ADMIN_STATUS_STYLE[adminStatus] ?? "bg-gray-500/20 text-gray-300 border-gray-500/30";
-  const adminStatusLbl = ADMIN_STATUS_LABEL[adminStatus] ?? adminStatus;
+  const adminRejReason = (rawProp?.rejectionReason as string) ?? "";
+  const isApproved     = adminStatus === "approved" || adminStatus === "active";
+  const isRejected     = adminStatus === "rejected";
+  const isPending      = adminStatus === "pending" || adminStatus === "updated_after_rejection";
+
+  const statusConfig: Record<string, { label: string; dot: string; text: string }> = {
+    approved:                { label: "منشور",              dot: "bg-emerald-400", text: "text-emerald-700" },
+    active:                  { label: "منشور",              dot: "bg-emerald-400", text: "text-emerald-700" },
+    pending:                 { label: "قيد المراجعة",       dot: "bg-amber-400",   text: "text-amber-700"  },
+    updated_after_rejection: { label: "أُعيد بعد الرفض",   dot: "bg-violet-400",  text: "text-violet-700" },
+    rejected:                { label: "مرفوض",              dot: "bg-red-400",     text: "text-red-700"    },
+    expired:                 { label: "منتهي الصلاحية",     dot: "bg-gray-400",    text: "text-gray-600"   },
+    draft:                   { label: "مسودة",              dot: "bg-gray-400",    text: "text-gray-600"   },
+  };
+  const sc = statusConfig[adminStatus] ?? { label: adminStatus, dot: "bg-gray-400", text: "text-gray-600" };
 
   return (
-    <div className={`min-h-screen bg-gray-50${isAdminMode ? " pt-[56px]" : ""}`} dir="rtl">
+    <div className={`min-h-screen bg-gray-50${isAdminMode ? " pt-[52px] pb-[88px]" : ""}`} dir="rtl">
 
       {/* ══════════════════════════════════════════════════════════════════
-          ADMIN PREVIEW BAR — only shown when accessed with ?admin=1
+          ADMIN TOP NAV — slim breadcrumb bar
       ═══════════════════════════════════════════════════════════════════ */}
       {isAdminMode && (
-        <div className="fixed top-0 left-0 right-0 z-[60] bg-[#0f172a] border-b border-white/10 shadow-xl" dir="rtl">
-          {/* Main toolbar row */}
-          <div className="flex items-center gap-3 px-4 h-14">
-            {/* Back */}
+        <div className="fixed top-0 left-0 right-0 z-[60] h-[52px] bg-white border-b border-slate-200 shadow-sm flex items-center px-4 gap-3" dir="rtl">
+          {/* Back */}
+          <button
+            onClick={() => setLocation("/admin/properties")}
+            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-teal-700 transition-colors font-medium shrink-0"
+          >
+            <ArrowRight className="w-4 h-4" />
+            <span>إدارة العقارات</span>
+          </button>
+          <span className="text-slate-300">/</span>
+          <span className="text-sm text-slate-800 font-semibold truncate flex-1">{property.title}</span>
+
+          {/* Status pill */}
+          <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full shrink-0 ${sc.text} bg-current/10`}
+                style={{ backgroundColor: sc.dot.replace("bg-", "").includes("emerald") ? "#d1fae5" : sc.dot.replace("bg-", "").includes("amber") ? "#fef3c7" : sc.dot.replace("bg-", "").includes("red") ? "#fee2e2" : sc.dot.replace("bg-", "").includes("violet") ? "#ede9fe" : "#f1f5f9" }}>
+            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+            {sc.label}
+          </span>
+
+          {/* Secondary actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
-              onClick={() => setLocation("/admin/properties")}
-              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors shrink-0 font-medium"
+              onClick={handleAdminToggleFeatured}
+              disabled={adminLoading}
+              title={adminFeatured ? "إلغاء التمييز" : "تمييز الإعلان"}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${adminFeatured ? "bg-amber-50 border-amber-200 text-amber-500" : "bg-white border-slate-200 text-slate-400 hover:text-amber-500 hover:border-amber-200"}`}
             >
-              <ArrowRight className="w-4 h-4" />
-              <span className="hidden sm:inline">إدارة العقارات</span>
+              <Star className={`w-4 h-4 ${adminFeatured ? "fill-amber-400" : ""}`} />
             </button>
+            <button
+              onClick={() => setLocation(`/admin/properties/${id}/edit`)}
+              title="تعديل"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border bg-white border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-200 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button
+              onClick={handleAdminDelete}
+              disabled={adminLoading}
+              title="حذف الإعلان"
+              className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${deleteConfirm ? "bg-red-600 border-red-600 text-white" : "bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200"}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
-            <span className="text-slate-700 text-xs">/</span>
+      {/* ══════════════════════════════════════════════════════════════════
+          ADMIN BOTTOM ACTION BAR — decision panel
+      ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-slate-200 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]" dir="rtl">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
 
-            {/* Status badge */}
-            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border shrink-0 ${adminStatusCls}`}>
-              {adminStatusLbl}
-            </span>
-
-            {/* Title */}
-            <span className="text-white text-sm font-semibold truncate flex-1 hidden sm:block">
-              {property.title}
-            </span>
-
-            {/* Stats */}
-            <div className="flex items-center gap-3 text-xs text-slate-400 shrink-0 hidden md:flex">
-              <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {(rawProp?.viewCount as number ?? 0).toLocaleString("ar-EG")}</span>
+            {/* Left: property summary */}
+            <div className="hidden md:flex flex-col min-w-0 flex-1">
+              <span className="text-xs text-slate-400 font-medium">الإعلان #{id}</span>
+              <span className="text-sm font-bold text-slate-800 truncate">{property.title}</span>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 ms-auto">
-              {/* Featured toggle */}
-              <button
-                onClick={handleAdminToggleFeatured}
-                disabled={adminLoading}
-                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${adminFeatured ? "bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30" : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"}`}
-              >
-                <Star className={`w-3.5 h-3.5 ${adminFeatured ? "fill-amber-400 text-amber-400" : ""}`} />
-                <span className="hidden sm:inline">{adminFeatured ? "إلغاء التمييز" : "تمييز"}</span>
-              </button>
+            {/* Rejection reason banner — shown when already rejected */}
+            {isRejected && adminRejReason && (
+              <div className="flex-1 flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 min-w-0">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700 line-clamp-2">{adminRejReason}</p>
+              </div>
+            )}
 
-              {/* Delete */}
-              <button
-                onClick={handleAdminDelete}
-                disabled={adminLoading}
-                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${deleteConfirm ? "bg-red-600 text-white border-red-500" : "bg-white/5 text-red-400 border-red-500/20 hover:bg-red-500/10"}`}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{deleteConfirm ? "تأكيد الحذف؟" : "حذف"}</span>
-              </button>
+            {/* Approved banner */}
+            {isApproved && (
+              <div className="flex-1 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-emerald-800">الإعلان منشور ومتاح للعموم</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">يمكنك إلغاء النشر أو رفض الإعلان في أي وقت</p>
+                </div>
+              </div>
+            )}
 
-              {/* Reject */}
-              {adminStatus !== "rejected" && !rejectMode && (
+            <div className="flex items-center gap-2.5 shrink-0 ms-auto">
+              {/* REJECT button */}
+              {!isRejected && (
                 <button
                   onClick={() => setRejectMode(true)}
                   disabled={adminLoading}
-                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 font-bold text-sm hover:bg-red-100 hover:border-red-300 transition-all disabled:opacity-50 active:scale-95"
                 >
-                  <XCircle className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">رفض</span>
+                  <XCircle className="w-4.5 h-4.5" />
+                  رفض الإعلان
                 </button>
               )}
 
-              {/* Approve */}
-              {adminStatus !== "approved" && adminStatus !== "active" && !rejectMode && (
+              {/* RE-PUBLISH button (when rejected) */}
+              {isRejected && (
                 <button
                   onClick={handleAdminApprove}
                   disabled={adminLoading}
-                  className="flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 shadow-sm shadow-emerald-900/40"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-teal-200 bg-teal-50 text-teal-700 font-bold text-sm hover:bg-teal-100 transition-all disabled:opacity-50 active:scale-95"
                 >
-                  {adminLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  اعتماد ونشر
+                  {adminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  إعادة النشر
                 </button>
               )}
 
-              {/* Already approved */}
-              {(adminStatus === "approved" || adminStatus === "active") && !rejectMode && (
-                <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  منشور
-                </span>
+              {/* APPROVE button */}
+              {!isApproved && (
+                <button
+                  onClick={handleAdminApprove}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 px-7 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-200 transition-all disabled:opacity-50 active:scale-95"
+                >
+                  {adminLoading
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <CheckCircle2 className="w-4 h-4" />}
+                  الموافقة على النشر
+                </button>
               )}
 
-              {/* Cancel reject */}
-              {rejectMode && (
+              {/* UN-PUBLISH button (when approved) */}
+              {isApproved && (
                 <button
-                  onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
-                  className="text-xs text-slate-400 hover:text-white px-2 py-1.5 transition-colors"
+                  onClick={() => setRejectMode(true)}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all disabled:opacity-50 active:scale-95"
                 >
-                  إلغاء
+                  <XCircle className="w-4 h-4" />
+                  إلغاء النشر
                 </button>
               )}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Rejection picker — expanded below toolbar */}
-          {rejectMode && (
-            <div className="bg-[#1e293b] border-t border-white/10 px-4 py-3 space-y-3">
-              <p className="text-xs font-bold text-rose-300 flex items-center gap-2">
-                <AlertCircle className="w-3.5 h-3.5" />
-                اختر سبب الرفض (يمكن اختيار أكثر من سبب)
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {ADMIN_REJECT_CHIPS.map(chip => {
-                  const sel = rejectChips.includes(chip.id);
-                  return (
-                    <button
-                      key={chip.id}
-                      type="button"
-                      onClick={() => setRejectChips(prev => sel ? prev.filter(x => x !== chip.id) : [...prev, chip.id])}
-                      className={`relative text-xs px-3 py-1.5 rounded-xl border-2 transition-all font-medium ${sel ? "border-rose-500 bg-rose-500/20 text-rose-200" : "border-white/10 bg-white/5 text-slate-300 hover:border-rose-500/40"}`}
-                    >
-                      {sel && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </span>
-                      )}
-                      {chip.label}
-                    </button>
-                  );
-                })}
+      {/* ══════════════════════════════════════════════════════════════════
+          REJECT MODAL
+      ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminMode && rejectMode && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" dir="rtl">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">رفض الإعلان</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">سيتم إشعار المعلن بالأسباب فور تأكيد الرفض</p>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <input
+              <button
+                onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              {/* Property title preview */}
+              <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2.5">
+                <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="text-sm text-slate-700 font-medium truncate">{property.title}</span>
+              </div>
+
+              {/* Reason chips */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2.5">
+                  أسباب الرفض <span className="text-slate-400 font-normal normal-case">(اختر واحداً أو أكثر)</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {ADMIN_REJECT_CHIPS.map(chip => {
+                    const sel = rejectChips.includes(chip.id);
+                    return (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={() => setRejectChips(prev => sel ? prev.filter(x => x !== chip.id) : [...prev, chip.id])}
+                        className={`relative flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border-2 transition-all font-medium select-none ${
+                          sel
+                            ? "border-red-400 bg-red-50 text-red-700 shadow-sm"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        {sel && (
+                          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow">
+                            <Check className="w-2.5 h-2.5 text-white" />
+                          </span>
+                        )}
+                        {chip.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+                  ملاحظة إضافية <span className="text-slate-400 font-normal normal-case">(اختياري)</span>
+                </p>
+                <textarea
                   value={rejectNote}
                   onChange={e => setRejectNote(e.target.value)}
-                  placeholder="ملاحظة إضافية للمعلن (اختياري)..."
-                  className="flex-1 text-sm bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500/50"
+                  placeholder="اكتب تفاصيل إضافية لمساعدة المعلن على تصحيح إعلانه..."
+                  rows={3}
+                  className="w-full text-sm border-2 border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:border-red-300 placeholder-slate-400 transition-colors"
                 />
-                <button
-                  onClick={handleAdminRejectConfirm}
-                  disabled={adminLoading}
-                  className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold py-2 px-5 rounded-xl transition-colors disabled:opacity-50"
-                >
-                  {adminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                  تأكيد الرفض
-                </button>
               </div>
             </div>
-          )}
+
+            {/* Footer */}
+            <div className="flex gap-3 px-6 pb-5">
+              <button
+                onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+                className="flex-1 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleAdminRejectConfirm}
+                disabled={adminLoading || (rejectChips.length === 0 && !rejectNote.trim())}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-red-200 active:scale-95"
+              >
+                {adminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                تأكيد الرفض وإشعار المعلن
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
