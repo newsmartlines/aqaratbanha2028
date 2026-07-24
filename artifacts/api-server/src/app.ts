@@ -15,6 +15,54 @@ import { adminAuditMiddleware } from "./middleware/adminAudit";
 
 const app: Express = express();
 
+// ── Production secret validation (fail-fast before any routes are registered) ─
+// Called here so the process exits with a clear message instead of silently
+// serving requests with a weak or missing secret.
+const isProd = process.env.NODE_ENV === "production";
+
+function validateSecrets(): void {
+  const secret = process.env.SESSION_SECRET ?? "";
+  const MIN_LENGTH = 64;
+
+  if (isProd) {
+    if (!secret) {
+      console.error(
+        "[FATAL] SESSION_SECRET is not set. " +
+        "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('hex'))\" " +
+        "and set it as a secret before starting in production.",
+      );
+      process.exit(1);
+    }
+    if (secret.length < MIN_LENGTH) {
+      console.error(
+        `[FATAL] SESSION_SECRET is too short (${secret.length} chars). ` +
+        `Production requires at least ${MIN_LENGTH} characters. ` +
+        "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('hex'))\"",
+      );
+      process.exit(1);
+    }
+    // Reject well-known placeholder values
+    const WEAK = new Set([
+      "change-this-to-a-long-random-secret-string",
+      "secret",
+      "password",
+      "changeme",
+      "your-secret",
+      "SESSION_SECRET",
+    ]);
+    if (WEAK.has(secret.toLowerCase())) {
+      console.error("[FATAL] SESSION_SECRET appears to be a placeholder. Set a real secret before deploying.");
+      process.exit(1);
+    }
+  } else if (!secret) {
+    console.warn(
+      "[WARN] SESSION_SECRET is not set. This is fine locally but MUST be set before deploying to production.",
+    );
+  }
+}
+
+validateSecrets();
+
 // ── Trust proxy (Replit edge / Cloudflare / nginx) ───────────────────────────
 // Use hop count of 1 (not `true`) to satisfy express-rate-limit's proxy validation
 app.set("trust proxy", 1);
@@ -32,7 +80,6 @@ app.use(
 
 // ── HTTP Security Headers (Helmet) ────────────────────────────────────────────
 // OWASP: prevents XSS, clickjacking, sniffing, MIME confusion, etc.
-const isProd = process.env.NODE_ENV === "production";
 
 const cspDirectives: Record<string, string[] | null> = {
   "default-src":               ["'self'"],
@@ -73,19 +120,59 @@ app.use(
 app.use(compression());
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
+//
+// Resolution order:
+//   1. CORS_ORIGIN env var (comma-separated list of exact origins) — always wins.
+//      Set this in production to your real domain(s), e.g.:
+//      CORS_ORIGIN=https://aqaratbanha.com,https://www.aqaratbanha.com
+//   2. Development: allow localhost:* and *.replit.dev automatically.
+//   3. Production without CORS_ORIGIN: same-origin only (most restrictive).
+//
+// "*" is never forwarded to the browser — it is treated as "not set".
+
 const rawCorsOrigin = process.env.CORS_ORIGIN;
-let corsOrigin: string | string[] | boolean;
-if (rawCorsOrigin && rawCorsOrigin !== "*") {
-  const origins = rawCorsOrigin.split(",").map((s) => s.trim()).filter(Boolean);
-  corsOrigin = origins.length === 1 ? origins[0] : origins;
-} else if (!isProd) {
-  // Allow all origins in development for convenience
-  corsOrigin = true;
-} else {
-  // In production without explicit CORS_ORIGIN, restrict to same origin
-  corsOrigin = false;
+
+// A pattern that matches Replit preview/dev domains and localhost for development.
+const DEV_ORIGIN_RE = /^(https?:\/\/localhost(:\d+)?|https:\/\/[a-z0-9-]+-\d+-[a-z0-9]+(-\d+)?\.spock\.replit\.dev|https?:\/\/[^/]+\.replit\.dev)$/i;
+
+function buildCorsOrigin(): string | string[] | RegExp | ((origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void) | false {
+  // Explicit allowlist always takes priority (strip "*" — wildcard is never safe with credentials)
+  if (rawCorsOrigin && rawCorsOrigin.trim() !== "*") {
+    const explicit = rawCorsOrigin.split(",").map((s) => s.trim()).filter(Boolean);
+    if (explicit.length > 0) {
+      const explicitSet = new Set(explicit);
+      // In development also admit Replit dev domains alongside the explicit list
+      if (!isProd) {
+        return (origin, cb) => {
+          if (!origin || explicitSet.has(origin) || DEV_ORIGIN_RE.test(origin)) return cb(null, true);
+          cb(null, false);
+        };
+      }
+      // Production: exact allowlist only
+      return (origin, cb) => {
+        // Same-origin (no Origin header) is always permitted
+        if (!origin || explicitSet.has(origin)) return cb(null, true);
+        cb(new Error(`CORS: origin '${origin}' not allowed`));
+      };
+    }
+  }
+
+  if (!isProd) {
+    // Development: allow all origins (localhost, Replit previews, etc.)
+    console.warn("[CORS] Development mode — all origins allowed. Set CORS_ORIGIN before going to production.");
+    return true;
+  }
+
+  // Production without explicit CORS_ORIGIN: same-origin only (no cross-origin at all)
+  console.warn(
+    "[CORS] Production mode — CORS_ORIGIN is not set. Cross-origin requests will be blocked. " +
+    "Set CORS_ORIGIN=https://yourdomain.com if your frontend is on a different origin.",
+  );
+  return false;
 }
-app.use(cors({ origin: corsOrigin, credentials: true }));
+
+const corsOrigin = buildCorsOrigin();
+app.use(cors({ origin: corsOrigin as any, credentials: true }));
 
 // ── Cookie & Body parsers (with size limits) ──────────────────────────────────
 app.use(cookieParser());

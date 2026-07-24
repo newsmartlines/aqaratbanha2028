@@ -73,12 +73,15 @@ async function consumeResetToken(token: string): Promise<{ userId: number; email
 
 // ── Cookie helper ────────────────────────────────────────────────────────────
 
+const SESSION_IS_PROD = process.env.NODE_ENV === "production";
+
 function setSessionCookie(res: Response, token: string) {
   res.cookie("session", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: SESSION_TTL_MS,
+    httpOnly: true,                    // never accessible via JS (mitigates XSS)
+    sameSite: "lax",                   // CSRF protection; "strict" would break OAuth redirects
+    secure: SESSION_IS_PROD,           // HTTPS-only in production
+    path: "/",                         // restrict to site root
+    maxAge: SESSION_TTL_MS,            // 30 days in milliseconds
   });
 }
 

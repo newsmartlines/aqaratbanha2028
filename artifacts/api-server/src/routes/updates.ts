@@ -184,7 +184,9 @@ function bumpVersion(current: string, type: "patch" | "minor" | "major"): string
 }
 
 function sign(data: string): string {
-  return crypto.createHmac("sha256", process.env.SESSION_SECRET ?? "fallback-secret").update(data).digest("hex");
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET is not set — cannot sign data");
+  return crypto.createHmac("sha256", secret).update(data).digest("hex");
 }
 
 async function getDiskUsage(dir: string): Promise<number> {
