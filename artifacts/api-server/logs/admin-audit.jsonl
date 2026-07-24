@@ -52,3 +52,4 @@
 {"ts":"2026-07-24T00:12:34.739Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/6/toggle","status":200,"durationMs":22}
 {"ts":"2026-07-24T00:12:34.822Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/7/toggle","status":200,"durationMs":19}
 {"ts":"2026-07-24T00:12:34.900Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/8/toggle","status":200,"durationMs":19}
+{"ts":"2026-07-24T00:29:52.164Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/ads/seed","status":200,"durationMs":38}
