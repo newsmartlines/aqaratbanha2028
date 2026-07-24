@@ -43,3 +43,12 @@
 {"ts":"2026-07-22T00:14:19.796Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/install","status":200,"durationMs":3494,"body":{}}
 {"ts":"2026-07-22T00:28:42.642Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/create-package","status":200,"durationMs":65,"body":{"bumpType":"patch","changelog":"اصلاححححح"}}
 {"ts":"2026-07-22T00:29:13.042Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/updates/install","status":200,"durationMs":1428,"body":{}}
+{"ts":"2026-07-24T00:12:25.644Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"POST","path":"/admin/ads/seed","status":200,"durationMs":47}
+{"ts":"2026-07-24T00:12:34.351Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/1/toggle","status":200,"durationMs":35}
+{"ts":"2026-07-24T00:12:34.446Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/2/toggle","status":200,"durationMs":22}
+{"ts":"2026-07-24T00:12:34.514Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/3/toggle","status":200,"durationMs":18}
+{"ts":"2026-07-24T00:12:34.575Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/4/toggle","status":200,"durationMs":20}
+{"ts":"2026-07-24T00:12:34.655Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/5/toggle","status":200,"durationMs":18}
+{"ts":"2026-07-24T00:12:34.739Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/6/toggle","status":200,"durationMs":22}
+{"ts":"2026-07-24T00:12:34.822Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/7/toggle","status":200,"durationMs":19}
+{"ts":"2026-07-24T00:12:34.900Z","ip":"127.0.0.1","userId":1,"email":"admin@aqaratbanha.com","method":"PATCH","path":"/admin/ads/8/toggle","status":200,"durationMs":19}

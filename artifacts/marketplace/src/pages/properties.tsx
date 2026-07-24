@@ -56,6 +56,7 @@ import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
+import { AdBanner } from "@/components/AdBanner";
 
 type DbProp = {
   id: number;
@@ -879,6 +880,8 @@ export default function PropertiesPage() {
 
       {/* ── Main Layout ── */}
       <div className="container mx-auto px-4">
+        {/* Ad: أعلى صفحة التصنيفات */}
+        <AdBanner position="categories_top" className="mb-6 mt-4" />
         <div className="flex gap-6">
 
           {/* ═══════════════════════════════════════

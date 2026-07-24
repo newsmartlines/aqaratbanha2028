@@ -20,19 +20,11 @@ export interface AdSpot {
   customHtml?: string | null;
 }
 
-/* ── Global ad cache (shared across all instances) ─────────────── */
-let adsCache: AdSpot[] | null = null;
-let adsPromise: Promise<AdSpot[]> | null = null;
-
+/* ── Fetch active ads — React Query handles caching & invalidation ── */
 async function fetchAds(): Promise<AdSpot[]> {
-  if (adsCache) return adsCache;
-  if (!adsPromise) {
-    adsPromise = fetch("/api/ads", { credentials: "include" })
-      .then(r => r.json())
-      .then(j => { adsCache = j.data ?? []; return adsCache!; })
-      .catch(() => { adsCache = []; return []; });
-  }
-  return adsPromise;
+  const r = await fetch("/api/ads", { credentials: "include" });
+  const j = await r.json();
+  return j.data ?? [];
 }
 
 /* ── Track impression / click ───────────────────────────────────── */

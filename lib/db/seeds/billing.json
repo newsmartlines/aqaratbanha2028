@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "billing",
   "label": "الفواتير والاشتراكات",
-  "exportedAt": "2026-07-22T00:28:42.637Z",
+  "exportedAt": "2026-07-24T00:13:18.771Z",
   "tables": {
     "billingPlans": [
       {
@@ -26,8 +26,8 @@
         "limits": "{\"properties\":3,\"photos\":10,\"videos\":0,\"featuredAds\":0,\"pinnedAds\":0,\"messages\":20,\"leads\":10}",
         "features": "{\"homepageDisplay\":false,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":false,\"seo\":false,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-21T23:32:54.702Z",
-        "updatedAt": "2026-07-21T23:32:54.702Z"
+        "createdAt": "2026-07-23T23:54:36.476Z",
+        "updatedAt": "2026-07-23T23:54:36.476Z"
       },
       {
         "id": 2,
@@ -50,8 +50,8 @@
         "limits": "{\"properties\":10,\"photos\":20,\"videos\":2,\"featuredAds\":3,\"pinnedAds\":1,\"messages\":100,\"leads\":50}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":false,\"verifiedBadge\":false,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":false,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-21T23:32:54.711Z",
-        "updatedAt": "2026-07-21T23:32:54.711Z"
+        "createdAt": "2026-07-23T23:54:36.483Z",
+        "updatedAt": "2026-07-23T23:54:36.483Z"
       },
       {
         "id": 3,
@@ -74,8 +74,8 @@
         "limits": "{\"properties\":30,\"photos\":30,\"videos\":5,\"featuredAds\":10,\"pinnedAds\":3,\"messages\":500,\"leads\":200}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":false,\"prioritySupport\":false,\"analytics\":true,\"seo\":true,\"aiTools\":false,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-21T23:32:54.717Z",
-        "updatedAt": "2026-07-21T23:32:54.717Z"
+        "createdAt": "2026-07-23T23:54:36.494Z",
+        "updatedAt": "2026-07-23T23:54:36.494Z"
       },
       {
         "id": 4,
@@ -98,8 +98,8 @@
         "limits": "{\"properties\":100,\"photos\":50,\"videos\":10,\"featuredAds\":30,\"pinnedAds\":10,\"messages\":-1,\"leads\":-1}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":false}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-21T23:32:54.723Z",
-        "updatedAt": "2026-07-21T23:32:54.723Z"
+        "createdAt": "2026-07-23T23:54:36.499Z",
+        "updatedAt": "2026-07-23T23:54:36.499Z"
       },
       {
         "id": 5,
@@ -122,8 +122,8 @@
         "limits": "{\"properties\":-1,\"photos\":-1,\"videos\":-1,\"featuredAds\":-1,\"pinnedAds\":-1,\"messages\":-1,\"leads\":-1}",
         "features": "{\"homepageDisplay\":true,\"topSearch\":true,\"verifiedBadge\":true,\"premiumBadge\":true,\"prioritySupport\":true,\"analytics\":true,\"seo\":true,\"aiTools\":true,\"autoBoost\":true}",
         "commissionPercent": "0.00",
-        "createdAt": "2026-07-21T23:32:54.729Z",
-        "updatedAt": "2026-07-21T23:32:54.729Z"
+        "createdAt": "2026-07-23T23:54:36.502Z",
+        "updatedAt": "2026-07-23T23:54:36.502Z"
       }
     ],
     "commissionRules": [],
@@ -139,7 +139,7 @@
         "featuredAllowed": 0,
         "topBadge": false,
         "priorityRank": 0,
-        "createdAt": "2026-07-21T23:32:54.747Z"
+        "createdAt": "2026-07-23T23:54:36.522Z"
       },
       {
         "id": 2,
@@ -152,7 +152,7 @@
         "featuredAllowed": 3,
         "topBadge": false,
         "priorityRank": 1,
-        "createdAt": "2026-07-21T23:32:54.747Z"
+        "createdAt": "2026-07-23T23:54:36.522Z"
       },
       {
         "id": 3,
@@ -165,7 +165,7 @@
         "featuredAllowed": null,
         "topBadge": true,
         "priorityRank": 2,
-        "createdAt": "2026-07-21T23:32:54.747Z"
+        "createdAt": "2026-07-23T23:54:36.522Z"
       }
     ]
   }

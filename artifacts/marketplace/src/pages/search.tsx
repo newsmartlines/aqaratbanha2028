@@ -25,6 +25,7 @@ import { useLocation } from "wouter";
 import { PropertyImageGallery } from "@/components/property-image-gallery";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
+import { AdBanner } from "@/components/AdBanner";
 import {
   Search, MapPin, LayoutGrid, List as ListIcon, X, Loader2,
   BedDouble, Bath, Maximize2, Crown, Eye, Heart, ChevronDown,
@@ -1444,6 +1445,9 @@ export default function SearchPage() {
             </div>
           </div>
 
+          {/* Ad: أعلى نتائج البحث */}
+          <AdBanner position="search_top" className="mb-4" />
+
           {/* Results */}
           {isFetching && results.length === 0 ? (
             <Skeleton />
@@ -1458,11 +1462,23 @@ export default function SearchPage() {
             </div>
           ) : viewMode === "list" ? (
             <div className="flex flex-col gap-3">
-              {results.map((p, i) => <ListCard key={p.id} p={p} idx={i} />)}
+              {results.flatMap((p, i) => {
+                const card = <ListCard key={p.id} p={p} idx={i} />;
+                const showInline = (i + 1) % 5 === 0 && i < results.length - 1;
+                return showInline
+                  ? [card, <AdBanner key={`inline-${i}`} position="search_inline" />]
+                  : [card];
+              })}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {results.map((p, i) => <GridCard key={p.id} p={p} idx={i} />)}
+              {results.flatMap((p, i) => {
+                const card = <GridCard key={p.id} p={p} idx={i} />;
+                const showInline = (i + 1) % 6 === 0 && i < results.length - 1;
+                return showInline
+                  ? [card, <div key={`inline-${i}`} className="col-span-full"><AdBanner position="search_inline" /></div>]
+                  : [card];
+              })}
             </div>
           )}
         </main>
