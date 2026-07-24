@@ -240,28 +240,27 @@ export default function AdminSettings() {
     } finally { setSmtpTesting(false); }
   };
 
+  // ── Hooks that must run unconditionally (before any early return) ──────────
+  const search = useSearch();
+  const initialTab = useMemo(() => new URLSearchParams(search).get("tab") ?? "general", [search]);
+  const [spotlightSearch, setSpotlightSearch] = useState("");
+  const { data: allPropertiesRaw = [] } = useQuery<any[]>({
+    queryKey: ["admin-all-properties-spotlight"],
+    queryFn: () => api.properties.list({ status: "active" }),
+    staleTime: 2 * 60_000,
+  });
+
   if (isLoading) return (
     <AdminLayout title={t("pageTitle")}>
       <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-teal-600" /></div>
     </AdminLayout>
   );
 
-  const search = useSearch();
-  const initialTab = useMemo(() => new URLSearchParams(search).get("tab") ?? "general", [search]);
-
   const isMaintenance = form.maintenanceMode === "true";
   const requireApproval = form.requireProviderApproval !== "false";
   const allowRegistration = form.allowRegistration !== "false";
   const servicesEnabled = form.servicesModuleEnabled !== "false";
   const subsEnabled = form.subscriptionsEnabled !== "false";
-
-  const [spotlightSearch, setSpotlightSearch] = useState("");
-
-  const { data: allPropertiesRaw = [] } = useQuery<any[]>({
-    queryKey: ["admin-all-properties-spotlight"],
-    queryFn: () => api.properties.list({ status: "active" }),
-    staleTime: 2 * 60_000,
-  });
 
   const filteredSpotlightProps = allPropertiesRaw.filter(p =>
     !spotlightSearch || (p.title ?? "").includes(spotlightSearch) || String(p.id).includes(spotlightSearch)
