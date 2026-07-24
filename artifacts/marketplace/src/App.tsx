@@ -468,6 +468,34 @@ function SseConnector() {
   return null;
 }
 
+/* ── AdSense Auto Ads global loader ────────────────────────────────────── */
+function AdSenseAutoAdsLoader() {
+  const settings = useSiteSettings();
+  const publisherId = settings?.adsensePublisherId || "";
+  const autoAdsEnabled = settings?.adsenseAutoAdsEnabled === "true";
+
+  useEffect(() => {
+    if (!publisherId || !autoAdsEnabled) return;
+    // Check if already loaded
+    if (document.querySelector(`script[src*="pagead2.googlesyndication.com"]`)) return;
+    const s = document.createElement("script");
+    s.async = true;
+    s.crossOrigin = "anonymous";
+    s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`;
+    document.head.appendChild(s);
+    // Enable page-level Auto Ads
+    try {
+      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      (window as any).adsbygoogle.push({
+        google_ad_client: publisherId,
+        enable_page_level_ads: true,
+      });
+    } catch {}
+  }, [publisherId, autoAdsEnabled]);
+
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -477,6 +505,7 @@ function App() {
             <TooltipProvider>
               <SseConnector />
               <FaviconUpdater />
+              <AdSenseAutoAdsLoader />
               <ThemeProvider />
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <ScrollRestorer />

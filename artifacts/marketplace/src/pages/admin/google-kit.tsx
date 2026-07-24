@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Save, Loader2, CheckCircle2, ExternalLink, Eye, EyeOff,
   BarChart3, Map, Shield, KeyRound, Bell, Tag, Search,
-  AlertTriangle, Info,
+  AlertTriangle, Info, DollarSign,
 } from "lucide-react";
 
 /* ── helpers ────────────────────────────────────────────────────── */
@@ -119,6 +119,8 @@ export default function AdminGoogleKit() {
   const [fbPixelEnabled, setFbPixelEnabled] = useState(false);
   const [fcmServerKey, setFcmServerKey] = useState("");
   const [fcmEnabled, setFcmEnabled] = useState(false);
+  const [adsensePublisherId, setAdsensePublisherId] = useState("");
+  const [adsenseAutoAdsEnabled, setAdsenseAutoAdsEnabled] = useState(false);
 
   useEffect(() => {
     if (!settings) return;
@@ -137,6 +139,8 @@ export default function AdminGoogleKit() {
     setFbPixelEnabled(settings.fbPixelEnabled === "true");
     setFcmServerKey(settings.fcmServerKey ?? "");
     setFcmEnabled(settings.fcmEnabled === "true");
+    setAdsensePublisherId(settings.adsensePublisherId ?? "");
+    setAdsenseAutoAdsEnabled(settings.adsenseAutoAdsEnabled === "true");
   }, [settings]);
 
   const saveMutation = useMutation({
@@ -427,6 +431,61 @@ export default function AdminGoogleKit() {
           <div className="flex items-center justify-between">
             <DocsLink href="https://console.firebase.google.com" label="Firebase Console" />
             <SaveBtn data={{ fcmServerKey, fcmEnabled: fcmEnabled ? "true" : "false" }} />
+          </div>
+        </Section>
+
+        {/* ── Google AdSense ── */}
+        <Section
+          icon={<DollarSign className="w-5 h-5 text-green-600" />}
+          title="Google AdSense"
+          desc="عرض إعلانات جوجل التلقائية على الموقع وتحقيق دخل من الزيارات"
+          badge={adsenseAutoAdsEnabled && adsensePublisherId ? "✓ مُفعَّل" : "غير مُفعَّل"}
+        >
+          <HowTo steps={[
+            "اذهب إلى adsense.google.com وسجّل موقعك",
+            "انتظر موافقة جوجل على الموقع",
+            "من لوحة AdSense → Account → Account information",
+            "انسخ Publisher ID (يبدأ بـ ca-pub-)",
+            "فعّل Auto Ads لعرض الإعلانات تلقائياً في أفضل مواضع الصفحة",
+          ]} />
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Publisher ID</Label>
+              <Input
+                dir="ltr"
+                value={adsensePublisherId}
+                onChange={e => setAdsensePublisherId(e.target.value)}
+                placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+              />
+              <p className="text-xs text-slate-500">
+                يُستخدم هذا المعرّف أيضاً كـ fallback تلقائي لجميع مواضع الإعلانات غير المُعيَّن لها Publisher ID خاص
+              </p>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+              <div>
+                <p className="text-sm font-medium">تفعيل Auto Ads</p>
+                <p className="text-xs text-slate-500">جوجل يختار تلقائياً أفضل مواضع الإعلانات في كل صفحة</p>
+              </div>
+              <Switch checked={adsenseAutoAdsEnabled} onCheckedChange={setAdsenseAutoAdsEnabled} />
+            </div>
+            {adsensePublisherId && !adsensePublisherId.startsWith("ca-pub-") && (
+              <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                Publisher ID يجب أن يبدأ بـ ca-pub- — تحقق من القيمة المُدخلة
+              </div>
+            )}
+            {adsensePublisherId && adsensePublisherId.startsWith("ca-pub-") && (
+              <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                {adsenseAutoAdsEnabled
+                  ? "Auto Ads مُفعَّل — سيتم تحميل سكريبت AdSense تلقائياً في كل صفحة"
+                  : "Publisher ID محفوظ — الإعلانات ستعمل في مواضع الإعلانات المضبوطة يدوياً"}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between">
+            <DocsLink href="https://adsense.google.com" label="Google AdSense" />
+            <SaveBtn data={{ adsensePublisherId, adsenseAutoAdsEnabled: adsenseAutoAdsEnabled ? "true" : "false" }} />
           </div>
         </Section>
 

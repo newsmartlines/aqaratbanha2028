@@ -70,11 +70,17 @@ const PUBLIC_KEYS = new Set<string>([
   "paymentInstructions",
   // Google Sign-In client ID is public (used in OAuth flows)
   "googleClientId",
+  // AdSense — publisher ID and auto-ads flag must be public (loaded by frontend)
+  "adsensePublisherId",
+  "adsenseAutoAdsEnabled",
 ]);
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   googleClientId: "",
   googleClientSecret: "",
+  // ── AdSense ─────────────────────────────────────────────────────────────
+  adsensePublisherId: "",
+  adsenseAutoAdsEnabled: "false",
   servicesModuleEnabled: "true",
   subscriptionsEnabled: "true",
   // ── Payment gateway ─────────────────────────────────────────────

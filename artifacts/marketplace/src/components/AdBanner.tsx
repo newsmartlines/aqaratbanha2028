@@ -8,6 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, memo } from "react";
 import { ExternalLink, Megaphone } from "lucide-react";
+import { api } from "@/lib/api";
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
 export interface AdSpot {
@@ -87,13 +88,16 @@ function loadGPT() {
 }
 
 /* ── AdSense unit ───────────────────────────────────────────────────────── */
-const AdSenseUnit = memo(({ ad }: { ad: AdSpot }) => {
+const AdSenseUnit = memo(({ ad, globalPublisherId }: { ad: AdSpot; globalPublisherId?: string }) => {
   const ref = useRef<HTMLDivElement>(null);
   const pushed = useRef(false);
 
+  // Use per-ad publisher ID first; fall back to the global site-wide one
+  const publisherId = ad.adsensePublisherId || globalPublisherId || "";
+
   useEffect(() => {
-    if (!ad.adsensePublisherId || pushed.current) return;
-    loadAdSense(ad.adsensePublisherId);
+    if (!publisherId || pushed.current) return;
+    loadAdSense(publisherId);
     pushed.current = true;
     // push after script loads (short delay)
     const t = setTimeout(() => {
@@ -101,14 +105,16 @@ const AdSenseUnit = memo(({ ad }: { ad: AdSpot }) => {
       catch {}
     }, 300);
     return () => clearTimeout(t);
-  }, [ad.adsensePublisherId]);
+  }, [publisherId]);
+
+  if (!publisherId) return null;
 
   return (
     <div ref={ref} className="w-full overflow-hidden" style={{ minHeight: 90, contain: "layout" }}>
       <ins
         className="adsbygoogle"
         style={{ display: "block", width: "100%", height: "auto" }}
-        data-ad-client={ad.adsensePublisherId || ""}
+        data-ad-client={publisherId}
         data-ad-slot={ad.adsenseSlotId || ""}
         data-ad-format={ad.adsenseFormat || "auto"}
         data-full-width-responsive={ad.adsenseResponsive ? "true" : "false"}
@@ -309,6 +315,15 @@ export function AdBanner({ position, className = "", listingType, categorySlug }
     gcTime: 10 * 60_000,
   });
 
+  // Fetch global AdSense publisher ID from site settings
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: api.settings.list,
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
+  });
+  const globalPublisherId = siteSettings?.adsensePublisherId || "";
+
   const ad = ads.find(a => a.position === position);
 
   // Intersection Observer — only render/track when visible
@@ -351,7 +366,7 @@ export function AdBanner({ position, className = "", listingType, categorySlug }
 
     // ── Google AdSense ──
     if (type === "adsense") {
-      return <AdSenseUnit ad={ad} />;
+      return <AdSenseUnit ad={ad} globalPublisherId={globalPublisherId} />;
     }
 
     // ── Google Ad Manager ──
