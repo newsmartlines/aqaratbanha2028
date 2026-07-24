@@ -185,8 +185,18 @@ function bumpVersion(current: string, type: "patch" | "minor" | "major"): string
 
 function sign(data: string): string {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) throw new Error("SESSION_SECRET is not set — cannot sign data");
-  return crypto.createHmac("sha256", secret).update(data).digest("hex");
+  // In production: hard failure — a missing secret must never be silently ignored.
+  // In development: fall back to a local-only placeholder so the server starts
+  // without needing a .env file, but log a reminder.
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SESSION_SECRET is not set — cannot sign data in production");
+    }
+    console.warn("[sign] SESSION_SECRET not set — using dev placeholder. Set it in .env for production.");
+  }
+  return crypto.createHmac("sha256", secret ?? "dev-only-placeholder-not-for-production")
+    .update(data)
+    .digest("hex");
 }
 
 async function getDiskUsage(dir: string): Promise<number> {
