@@ -18,6 +18,40 @@ export function mediaUrl(url: string | null | undefined, fallback = ""): string 
   return `${APP_BASE}${path}`;
 }
 
+/**
+ * Derive responsive WebP variant URLs from a master upload URL.
+ *
+ * When our image pipeline processes an upload it writes four files:
+ *   {hash}.webp        — master (≤ 2048 px)
+ *   {hash}_lg.webp     — large  (≤ 1600 px)
+ *   {hash}_md.webp     — medium (≤  900 px)
+ *   {hash}_thumb.webp  — thumb  (≤  400 px)
+ *
+ * Pass the master URL (as returned by the upload API or stored in the DB) and
+ * get back all four resolved URLs ready for use in <picture> srcset attributes.
+ *
+ * Returns `null` for external URLs, legacy JPEG/PNG uploads, or null inputs so
+ * callers can gracefully fall back to a plain <img src=...>.
+ */
+export function mediaVariants(url: string | null | undefined): {
+  original: string;
+  large:    string;
+  medium:   string;
+  thumb:    string;
+} | null {
+  if (!url) return null;
+  const resolved = mediaUrl(url);
+  // Only our hashed WebP uploads have variants (32 hex chars before .webp)
+  if (!resolved.match(/\/uploads\/[^/]+\/[a-f0-9]{32}\.webp$/)) return null;
+  const base = resolved.replace(/\.webp$/, "");
+  return {
+    original: resolved,
+    large:    `${base}_lg.webp`,
+    medium:   `${base}_md.webp`,
+    thumb:    `${base}_thumb.webp`,
+  };
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,

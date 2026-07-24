@@ -1,0 +1,90 @@
+Failed to load resource: the server responded with a status of 401 (Unauthorized)
+8c178cf9-d8fe-4e1a-a03f-41e346cc1120-00-2gidw40lcidmg.worf.replit.dev/:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+8c178cf9-d8fe-4e1a-a….worf.replit.dev/:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+8c178cf9-d8fe-4e1a-a03f-41e346cc1120-00-2gidw40lcidmg.worf.replit.dev/:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+client:745 WebSocket connection to 'wss://8c178cf9-d8fe-4e1a-a03f-41e346cc1120-00-2gidw40lcidmg.worf.replit.dev/?token=OD6JcbzpEInV' failed: 
+(anonymous) @ client:745
+client:755 WebSocket connection to 'wss://localhost:5000/?token=OD6JcbzpEInV' failed: 
+(anonymous) @ client:755
+client:765 [vite] failed to connect to websocket.
+your current setup:
+  (browser) 8c178cf9-d8fe-4e1a-a03f-41e346cc1120-00-2gidw40lcidmg.worf.replit.dev/ <--[HTTP]--> localhost:5000/ (server)
+  (browser) 8c178cf9-d8fe-4e1a-a03f-41e346cc1120-00-2gidw40lcidmg.worf.replit.dev:/ <--[WebSocket (failing)]--> localhost:5000/ (server)
+Check out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .
+connect @ client:765
+react-dom_client.js?v=15129719:4146 React has detected a change in the order of Hooks called by AdminSettings. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useState                   useState
+2. useEffect                  useEffect
+3. useContext                 useContext
+4. useContext                 useContext
+5. useContext                 useContext
+6. useState                   useState
+7. useState                   useState
+8. useState                   useState
+9. useState                   useState
+10. useState                  useState
+11. useState                  useState
+12. useState                  useState
+13. useState                  useState
+14. useState                  useState
+15. useState                  useState
+16. useState                  useState
+17. useState                  useState
+18. useState                  useState
+19. useState                  useState
+20. useState                  useState
+21. useRef                    useRef
+22. useRef                    useRef
+23. useRef                    useRef
+24. useContext                useContext
+25. useContext                useContext
+26. useContext                useContext
+27. useEffect                 useEffect
+28. useState                  useState
+29. useCallback               useCallback
+30. useSyncExternalStore      useSyncExternalStore
+31. useEffect                 useEffect
+32. useEffect                 useEffect
+33. useEffect                 useEffect
+34. useContext                useContext
+35. useState                  useState
+36. useEffect                 useEffect
+37. useCallback               useCallback
+38. useSyncExternalStore      useSyncExternalStore
+39. useCallback               useCallback
+40. undefined                 useContext
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+updateHookTypesDev @ react-dom_client.js?v=15129719:4146
+react-dom_client.js?v=15129719:6264 Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (react-dom_client.js?v=15129719:4344:19)
+    at updateSyncExternalStore (react-dom_client.js?v=15129719:4583:53)
+    at Object.useSyncExternalStore (react-dom_client.js?v=15129719:16812:18)
+    at exports.useSyncExternalStore (chunk-EXQZNUU2.js?v=2e0fce26:930:36)
+    at useLocationProperty (wouter.js?v=7dfebfb4:152:79)
+    at Object.useSearch [as searchHook] (wouter.js?v=7dfebfb4:154:41)
+    at useSearch2 (wouter.js?v=7dfebfb4:234:32)
+    at AdminSettings (settings.tsx:249:18)
+    at react-stack-bottom-frame (react-dom_client.js?v=15129719:17424:20)
+    at renderWithHooks (react-dom_client.js?v=15129719:4206:24)
+
+The above error occurred in the <AdminSettings> component.
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+
+defaultOnCaughtError @ react-dom_client.js?v=15129719:6264
+ErrorBoundary.tsx:24 [ErrorBoundary] Caught error: Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (react-dom_client.js?v=15129719:4344:19)
+    at updateSyncExternalStore (react-dom_client.js?v=15129719:4583:53)
+    at Object.useSyncExternalStore (react-dom_client.js?v=15129719:16812:18)
+    at exports.useSyncExternalStore (chunk-EXQZNUU2.js?v=2e0fce26:930:36)
+    at useLocationProperty (wouter.js?v=7dfebfb4:152:79)
+    at Object.useSearch [as searchHook] (wouter.js?v=7dfebfb4:154:41)
+    at useSearch2 (wouter.js?v=7dfebfb4:234:32)
+    at AdminSettings (settings.tsx:249:18)
+    at react-stack-bottom-frame (react-dom_client.js?v=15129719:17424:20)
+    at renderWithHooks (react-dom_client.js?v=15129719:4206:24) Object
+(anonymous) @ ErrorBoundary.tsx:24

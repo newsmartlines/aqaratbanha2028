@@ -131,11 +131,29 @@ const uploadsDir = process.env.UPLOADS_DIR
   ? path.resolve(process.env.UPLOADS_DIR)
   : path.join(process.cwd(), "uploads");
 
-// Serve uploads with no-cache headers (private content)
+// Serve uploads with long-lived immutable cache headers.
+// Filenames are random 32-char hex hashes so they are content-addressed —
+// the content never changes once written, making immutable caching safe.
+// WebP images and other public assets get a 1-year cache; private/sensitive
+// files (brochures, fonts) remain short-lived.
 app.use("/uploads", express.static(uploadsDir, {
-  setHeaders(res) {
+  setHeaders(res, filePath) {
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Cache-Control", "private, max-age=3600");
+
+    const isWebp = filePath.endsWith(".webp");
+    const isPdf  = filePath.endsWith(".pdf");
+
+    if (isWebp) {
+      // Hashed filenames → content-addressed → safe for 1-year immutable cache
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.setHeader("Content-Type", "image/webp");
+    } else if (isPdf) {
+      // Brochures: short-lived, not indexed
+      res.setHeader("Cache-Control", "private, max-age=3600");
+    } else {
+      // Legacy uploads (pre-WebP) and fonts
+      res.setHeader("Cache-Control", "public, max-age=86400");
+    }
   },
 }));
 

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
 
@@ -88,13 +89,14 @@ export function PropertyImageGallery({
           className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] will-change-transform"
           style={{ transform: `translateX(${(i - idx) * 100}%)` }}
         >
-          <img
+          <OptimizedImage
             src={src}
             alt={i === 0 ? alt : `${alt} — صورة ${i + 1}`}
+            priority={i === 0}
             loading={i === 0 ? "eager" : "lazy"}
-            decoding="async"
+            fallback={fallback}
             className="w-full h-full object-cover"
-            onError={e => { e.currentTarget.src = fallback; }}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 900px"
           />
         </div>
       ))}
@@ -119,9 +121,7 @@ export function PropertyImageGallery({
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          <div
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1"
-          >
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1">
             {Array.from({ length: visibleDots }, (_, dot) => (
               <button
                 key={dot}
