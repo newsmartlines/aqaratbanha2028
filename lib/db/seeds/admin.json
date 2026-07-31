@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "group": "admin",
+  "label": "المستخدمون والإدارة",
+  "exportedAt": "2026-05-27T23:18:42.296Z",
+  "tables": {
+    "adminStaff": [],
+    "users": [
+      {
+        "id": "1",
+        "name": "Admin",
+        "email": "admin@aqaratbanha.com",
+        "phone": null,
+        "role": "admin",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:19.929162"
+      },
+      {
+        "id": "2",
+        "name": "أحمد عبدالله",
+        "email": "ahmed@aqaratbanha.com",
+        "phone": null,
+        "role": "provider",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:20.009508"
+      },
+      {
+        "id": "3",
+        "name": "سارة الغامدي",
+        "email": "sara@aqaratbanha.com",
+        "phone": null,
+        "role": "provider",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:20.021637"
+      },
+      {
+        "id": "4",
+        "name": "نواف العتيبي",
+        "email": "nawaf@aqaratbanha.com",
+        "phone": null,
+        "role": "provider",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:20.033886"
+      },
+      {
+        "id": "5",
+        "name": "أم خالد",
+        "email": "oumkhalid@aqaratbanha.com",
+        "phone": null,
+        "role": "provider",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:20.049468"
+      },
+      {
+        "id": "6",
+        "name": "منى الشهري",
+        "email": "mona@aqaratbanha.com",
+        "phone": null,
+        "role": "provider",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:20.061306"
+      },
+      {
+        "id": "7",
+        "name": "هنود القرني",
+        "email": "hanood@aqaratbanha.com",
+        "phone": null,
+        "role": "provider",
+        "avatar": null,
+        "status": "active",
+        "region_id": null,
+        "city_id": null,
+        "created_at": "2026-05-27 22:57:20.074773"
+      }
+    ]
+  }
+}

@@ -1,0 +1,2035 @@
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+
+/** Dubizzle-style smart scroll: sidebar scrolls independently;
+ *  when it hits its boundary the page scroll takes over. */
+function useSidebarSmartScroll(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const atTop    = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+      const goingUp  = e.deltaY < 0;
+      const goingDown = e.deltaY > 0;
+      if ((goingUp && atTop) || (goingDown && atBottom)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      el.scrollTop += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [ref]);
+}
+import { useLocation } from "wouter";
+import { PropertyImageGallery } from "@/components/property-image-gallery";
+import { motion, AnimatePresence } from "framer-motion";
+import { Header } from "@/components/Header";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SmartSearch } from "@/components/SmartSearch";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { DisableAutoPan } from "@/components/DisableAutoPan";
+import L from "leaflet";
+import {
+  Search, MapPin, BedDouble, Bath, Maximize2, Building2,
+  Heart, Map, Grid3X3, X, ChevronDown, ChevronUp, Check,
+  SlidersHorizontal, TrendingUp, CheckCircle2, Loader2, Bell, BellOff,
+  LayoutList, Scale, GitCompare, Eye, Clock, Flag, Layers, Phone, BadgeCheck, Crown,
+} from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { api, type Category, type Area, type Subcategory } from "@/lib/api";
+import {
+  getFieldRulesForMainCategory,
+  getFieldRulesForCategorySlug,
+  type FieldConfigRow,
+} from "@/lib/property-field-rules";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FeatureIcon } from "@/components/FeatureIcon";
+import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
+import { useAuth } from "@/lib/auth-context";
+import toast from "react-hot-toast";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
+import { PromotionBadge, getPromotionCardStyle, type ActivePromotion } from "@/components/PromotionBadge";
+import { AdBanner } from "@/components/AdBanner";
+
+type DbProp = {
+  id: number;
+  title: string;
+  listingType: string;
+  mainCategory: string;
+  subCategory: string | null;
+  featured: boolean | null;
+  urgent?: boolean | null;
+  images: string | null;
+  address: string | null;
+  district: string | null;
+  rooms: number | null;
+  bathrooms: number | null;
+  area: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  price: string | null;
+  status: string | null;
+  finishing: string | null;
+  furnished: string | null;
+  paymentMethod: string | null;
+  features: string | null;
+  contactMethods: string | null;
+  floor: number | null;
+  createdAt: string | null;
+  approvedAt: string | null;
+  viewCount: number | null;
+  agentName?: string | null;
+  agentAvatar?: string | null;
+  agentLogo?: string | null;
+  verified?: boolean | null;
+  providerPhone?: string | null;
+  providerWhatsapp?: string | null;
+  providerId?: number | null;
+  activePromotion?: { type: string; boostScore: number; expiresAt: string | null } | null;
+  rankScore?: number | null;
+};
+
+type DisplayProp = {
+  id: number;
+  title: string;
+  type: string;
+  kind: string;
+  subCategory: string;
+  featured: boolean;
+  urgent: boolean;
+  img: string;
+  imgs: string[];
+  location: string;
+  district: string;
+  beds: number;
+  baths: number;
+  area: number;
+  lat: number;
+  lng: number;
+  hasCoords: boolean;
+  price: string;
+  priceNum: number;
+  finishing: string;
+  furnished: string;
+  paymentMethod: string;
+  features: string[];
+  contactMethods: string[];
+  floor: number | null;
+  createdAt: string | null;
+  approvedAt: string | null;
+  viewCount: number;
+  agentName: string;
+  agentAvatar: string;
+  agentLogo: string;
+  verified: boolean;
+  phone: string;
+  whatsapp: string;
+  providerId: number | null;
+  activePromotion: { type: string; boostScore: number; expiresAt: string | null } | null;
+  rankScore: number;
+};
+
+function tryJsonArr(val: string | null | undefined): string[] {
+  if (!val) return [];
+  try {
+    const parsed = JSON.parse(val);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+  } catch {}
+  if (typeof val === "string" && val.startsWith("http")) return [val];
+  return [];
+}
+
+const LISTING_TYPE_AR: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
+
+function mapDbProp(row: DbProp, fallback: string): DisplayProp {
+  const imgs = tryJsonArr(row.images);
+  return {
+    id: row.id,
+    title: row.title,
+    type: LISTING_TYPE_AR[row.listingType] ?? row.listingType,
+    kind: row.mainCategory,
+    subCategory: row.subCategory ?? "",
+    featured: row.featured ?? false,
+    urgent: row.urgent ?? false,
+    img: imgs[0] ?? fallback,
+    imgs,
+    location: row.address ?? "",
+    district: row.district ?? "",
+    beds: row.rooms ?? 0,
+    baths: row.bathrooms ?? 0,
+    agentName: row.agentName ?? "",
+    agentAvatar: row.agentAvatar ?? "",
+    agentLogo: row.agentLogo ?? "",
+    verified: row.verified ?? false,
+    providerId: (row as any).providerId ?? null,
+    phone: (row as any).phone ?? row.providerPhone ?? "",
+    whatsapp: (row as any).whatsapp ?? row.providerWhatsapp ?? "",
+    contactMethods: tryJsonArr((row as any).contactMethods),
+    area: row.area ? parseFloat(row.area) : 0,
+    hasCoords: !!(row.latitude && row.longitude),
+    lat: row.latitude ? parseFloat(row.latitude) : NaN,
+    lng: row.longitude ? parseFloat(row.longitude) : NaN,
+    price: row.price ? Number(row.price).toLocaleString("en-US") + " ج.م" : "السعر عند الطلب",
+    priceNum: row.price ? parseFloat(row.price) : 0,
+    finishing: row.finishing ?? "",
+    furnished: row.furnished ?? "",
+    paymentMethod: row.paymentMethod ?? "",
+    features: tryJsonArr(row.features),
+    floor: row.floor ?? null,
+    createdAt: row.createdAt ?? null,
+    approvedAt: (row as any).approvedAt ?? null,
+    viewCount: row.viewCount ?? 0,
+    activePromotion: (row as any).activePromotion ?? null,
+    rankScore: (row as any).rankScore ?? 0,
+  };
+}
+
+function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return "الآن";
+  if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+  if (diff < 604800) return `منذ ${Math.floor(diff / 86400)} ${Math.floor(diff / 86400) === 1 ? "يوم" : "أيام"}`;
+  if (diff < 2592000) return `منذ ${Math.floor(diff / 604800)} ${Math.floor(diff / 604800) === 1 ? "أسبوع" : "أسابيع"}`;
+  return `منذ ${Math.floor(diff / 2592000)} شهر`;
+}
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const FALLBACK = NO_IMAGE_PLACEHOLDER;
+const MAP_CENTER: [number, number] = [24.7136, 46.6753];
+
+const CITIES: string[] = [];
+const KINDS = ["فيلا", "شقة", "مكتب", "دوبلكس", "أرض"];
+const TYPES = ["للبيع", "للإيجار"];
+
+const STATIC_SUBCATS: Record<string, string[]> = {
+  residential: ["شقة", "فيلا", "دوبلكس", "روف", "شاليه", "استوديو", "عمارة"],
+  commercial:  ["محل", "مكتب", "معرض", "مستودع", "عيادة", "فندق"],
+  land:        ["أرض سكنية", "أرض تجارية", "مزرعة", "أرض صناعية"],
+  industrial:  ["مصنع", "مستودع صناعي", "ورشة"],
+};
+const BEDS_OPTIONS = [1, 2, 3, 4, 5];
+const BATHS_OPTIONS = [1, 2, 3, 4];
+const FLOOR_OPTIONS = ["أرضي", "1", "2", "3", "4", "5+"];
+/** Format a raw numeric string with thousand-separators for display */
+function fmtNum(v: string): string {
+  const n = v.replace(/\D/g, "");
+  if (!n) return "";
+  return Number(n).toLocaleString("en-US");
+}
+/** Strip everything except digits from an input value */
+function digitsOnly(v: string): string { return v.replace(/\D/g, ""); }
+const RECENCY_OPTIONS = [
+  { label: "اليوم", hours: 24 },
+  { label: "هذا الأسبوع", hours: 168 },
+  { label: "هذا الشهر", hours: 720 },
+];
+type DynFeature = { id: number; name: string; icon: string | null; status: string; applicableTypes?: string | null };
+const FINISHING_OPTIONS = ["مشطب", "سوبر لوكس", "لوكس", "نص تشطيب", "خام"];
+const FURNISHED_OPTIONS = ["مفروش", "مفروش جزئياً", "غير مفروش"];
+const PAYMENT_OPTIONS = ["نقدي", "تقسيط", "نقدي أو تقسيط", "بنكي"];
+
+function FilterSection({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-gray-100 pb-4 mb-4">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full text-right mb-3"
+      >
+        <span className="font-bold text-gray-800 text-sm">{title}</span>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+      </button>
+      {open && <div>{children}</div>}
+    </div>
+  );
+}
+
+function Chip({ label, active, onClick, count }: { label: string; active: boolean; onClick: () => void; count?: number }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all inline-flex items-center gap-1 ${active ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
+    >
+      {label}
+      {count !== undefined && (
+        <span className={`text-[10px] font-normal tabular-nums ${active ? "opacity-70" : "opacity-45"}`}>{count}</span>
+      )}
+    </button>
+  );
+}
+
+function getUrlParams() {
+  const sp = new URLSearchParams(window.location.search);
+  const listingTypeMap: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
+  const rawListingType = sp.get("listingType");
+  const typeFromListing = rawListingType ? (listingTypeMap[rawListingType] ?? null) : null;
+  return {
+    q: sp.get("q") ?? "",
+    mainCategory: sp.get("mainCategory") ?? null,
+    type: typeFromListing ?? sp.get("type") ?? null,
+    price: sp.get("price") ?? null,
+    city: sp.get("city") ?? null,
+    district: sp.get("district") ?? null,
+    subcategoryId: sp.get("subcategoryId") ? Number(sp.get("subcategoryId")) : null,
+    page: Math.max(1, parseInt(sp.get("page") ?? "1") || 1),
+  };
+}
+
+export default function PropertiesPage() {
+  const [, setLocation] = useLocation();
+
+  const initParams = getUrlParams();
+
+  const [search, setSearch] = useState(initParams.q);
+  const [selectedType, setSelectedType] = useState<string | null>(initParams.type);
+  const [selectedKind, setSelectedKind] = useState<string | null>(initParams.mainCategory);
+  const [selectedSubKind, setSelectedSubKind] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>(initParams.city);
+  const [selectedDistricts, setSelectedDistricts] = useState<string[]>(
+    initParams.district ? [initParams.district] : []
+  );
+  const toggleDistrict = (name: string) =>
+    setSelectedDistricts(prev =>
+      prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]
+    );
+  const [districtDropOpen, setDistrictDropOpen] = useState(false);
+  const [selectedFinishing, setSelectedFinishing] = useState<string | null>(null);
+  const [selectedFurnished, setSelectedFurnished] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
+  const [selectedBeds, setSelectedBeds] = useState<number | null>(null);
+  const [selectedBaths, setSelectedBaths] = useState<number | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
+  const [selectedFeaturedOnly, setSelectedFeaturedOnly] = useState(false);
+  const [selectedVerifiedOnly, setSelectedVerifiedOnly] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedRecency, setSelectedRecency] = useState<number | null>(null);
+  const [reportPropertyId, setReportPropertyId] = useState<number | null>(null);
+  const [reportEmail, setReportEmail] = useState("");
+  const [reportMessage, setReportMessage] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [priceMin, setPriceMin] = useState<string>("");
+  const [priceMax, setPriceMax] = useState<string>("");
+  const [areaMin, setAreaMin]   = useState<string>("");
+  const [areaMax, setAreaMax]   = useState<string>("");
+
+  // Auto-correct: if min > max, snap max up to min immediately
+  useEffect(() => {
+    if (priceMin && priceMax && Number(priceMin) > Number(priceMax)) {
+      setPriceMax(priceMin);
+    }
+  }, [priceMin, priceMax]);
+
+  useEffect(() => {
+    if (areaMin && areaMax && Number(areaMin) > Number(areaMax)) {
+      setAreaMax(areaMin);
+    }
+  }, [areaMin, areaMax]);
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
+  const [currentPage, setCurrentPage] = useState(initParams.page);
+  const [liked, setLiked] = useState<Set<number>>(new Set());
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<"newest" | "featured" | "price_asc" | "price_desc" | "area" | "popular">("newest");
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [saveSearchName, setSaveSearchName] = useState("بحث محفوظ");
+  const [saveSearchEmail, setSaveSearchEmail] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { items: compareItems, isIn: isInCompare } = useCompare();
+
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  useSidebarSmartScroll(sidebarRef);
+
+  const { data: reCategories = [] } = useQuery<Category[]>({
+    queryKey: ["re-categories"],
+    queryFn: () => api.categories.listByType("real_estate"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const selectedCatObj = reCategories.find((c) => (c.slug ?? String(c.id)) === selectedKind);
+  const { data: subCategories = [] } = useQuery<Subcategory[]>({
+    queryKey: ["re-subcategories", selectedCatObj?.id],
+    queryFn: () => api.subcategories.listByCategory(selectedCatObj!.id),
+    enabled: !!selectedCatObj,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Initialise selectedSubKind from URL ?subcategoryId= once subcategories have loaded
+  useEffect(() => {
+    const initSubcategoryId = initParams.subcategoryId;
+    if (!initSubcategoryId || !subCategories.length || selectedSubKind) return;
+    const match = subCategories.find((s) => s.id === initSubcategoryId);
+    if (match) setSelectedSubKind(match.nameAr);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subCategories]);
+
+  const { data: banhaAreas = [] } = useQuery<Area[]>({
+    queryKey: ["areas", 2],
+    queryFn: () => api.locations.getAreasByCity(2),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: myFavIds = [] } = useQuery<number[]>({
+    queryKey: ["property-favorites-ids"],
+    queryFn: async () => {
+      if (!user) return [];
+      const rows = await api.propertyFavorites.list();
+      return (rows as any[]).map((r: any) => r.propertyId);
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (myFavIds.length) setLiked(new Set(myFavIds));
+  }, [myFavIds]);
+
+  const { data: dbFeatures = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-features-filter"],
+    queryFn: () => api.propertyFeatures.listByType("feature"),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: dbServices = [] } = useQuery<DynFeature[]>({
+    queryKey: ["property-services-filter"],
+    queryFn: () => api.propertyFeatures.listByType("service"),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: fieldConfigs = [] } = useQuery<FieldConfigRow[]>({
+    queryKey: ["property-field-configs"],
+    queryFn:  () => api.propertyFieldConfigs.list(),
+    staleTime: 10 * 60_000,
+  });
+
+  const propFieldRules = useMemo(() => {
+    if (selectedSubKind) return getFieldRulesForMainCategory(selectedSubKind, fieldConfigs);
+    if (selectedKind)    return getFieldRulesForCategorySlug(selectedKind, fieldConfigs);
+    return null;
+  }, [selectedSubKind, selectedKind, fieldConfigs]);
+
+  const allDynFeatures = useMemo(() => {
+    const all = [
+      ...dbFeatures.filter((f) => f.status === "active"),
+      ...dbServices.filter((f) => f.status === "active"),
+    ];
+    if (!selectedSubKind) return all;
+    return all.filter((f) => {
+      if (!f.applicableTypes) return true;
+      try {
+        const types = JSON.parse(f.applicableTypes) as string[];
+        return types.length === 0 || types.includes(selectedSubKind);
+      } catch { return true; }
+    });
+  }, [dbFeatures, dbServices, selectedSubKind]);
+
+  // ── Site settings (for admin-configured page size) ────────────────────────
+  const { data: siteSettings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: () => api.settings.list(),
+    staleTime: 5 * 60_000,
+  });
+
+  // ── All properties (full fetch for faceted counts) ─────────────────────────
+  const { data: allPropsRaw = [], isLoading: loading } = useQuery({
+    queryKey: ["properties-all"],
+    queryFn: () => api.properties.list({}) as Promise<DbProp[]>,
+    staleTime: 30_000,
+  });
+
+  const allProps = useMemo(
+    () => (allPropsRaw as unknown as DbProp[]).map(r => mapDbProp(r, FALLBACK)),
+    [allPropsRaw]
+  );
+
+  // ── Navigate to a specific page (updates state + URL) ─────────────────────
+  const goToPage = useCallback((num: number) => {
+    setCurrentPage(num);
+    const sp = new URLSearchParams(window.location.search);
+    if (num === 1) sp.delete("page");
+    else sp.set("page", String(num));
+    const qs = sp.toString();
+    window.history.pushState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const toggleFavMut = useMutation({
+    mutationFn: async ({ id, add }: { id: number; add: boolean }) => {
+      if (!user) { toast.error("سجّل الدخول أولاً لإضافة للمفضلة"); return; }
+      if (add) await api.propertyFavorites.add(id);
+      else await api.propertyFavorites.remove(id);
+    },
+    onSuccess: (_, { id, add }) => {
+      setLiked(prev => { const s = new Set(prev); add ? s.add(id) : s.delete(id); return s; });
+      queryClient.invalidateQueries({ queryKey: ["property-favorites-ids"] });
+      queryClient.invalidateQueries({ queryKey: ["property-favorites"] });
+      toast.success(add ? "أُضيف للمفضلة" : "حُذف من المفضلة");
+    },
+    onError: () => toast.error("حدث خطأ، حاول مرة أخرى"),
+  });
+
+  const saveSearchMut = useMutation({
+    mutationFn: () => {
+      if (!user) { toast.error("سجّل الدخول لحفظ البحث"); throw new Error(""); }
+      const filters: Record<string, any> = {};
+      if (selectedKind) filters.mainCategory = selectedKind;
+      if (selectedType) filters.listingType = selectedType;
+      if (selectedCity) filters.city = selectedCity;
+      if (priceMax) filters.maxPrice = Number(priceMax);
+      if (priceMin) filters.minPrice = Number(priceMin);
+      return api.savedSearches.create({ name: saveSearchName, email: saveSearchEmail || undefined, filters, notifyEmail: true, notifyApp: true });
+    },
+    onSuccess: () => { setSaveSearchOpen(false); toast.success("تم حفظ البحث! سنُعلمك عند توفر عقارات تطابقه"); },
+    onError: () => toast.error("حدث خطأ أثناء حفظ البحث"),
+  });
+
+  const availableCities = useMemo(() =>
+    [...new Set(allProps.map(p => p.location).filter(Boolean))].sort(), [allProps]);
+
+  const filtered = useMemo(() => {
+    const now = Date.now();
+    let list = allProps.filter((p) => {
+      if (search && !p.title.includes(search) && !p.location.includes(search) && !p.district.includes(search)) return false;
+      if (selectedType && p.type !== selectedType) return false;
+      if (selectedKind && !selectedSubKind && p.kind !== selectedKind) return false;
+      if (selectedSubKind && p.subCategory !== selectedSubKind) return false;
+      if (selectedCity && !p.location.includes(selectedCity)) return false;
+      if (selectedDistricts.length > 0 && !selectedDistricts.some(d => p.district === d || p.location.includes(d))) return false;
+      if (selectedFinishing && p.finishing !== selectedFinishing) return false;
+      if (selectedFurnished && p.furnished !== selectedFurnished) return false;
+      if (selectedPayment && p.paymentMethod !== selectedPayment) return false;
+      if (selectedBeds && p.beds < selectedBeds) return false;
+      if (selectedBaths && p.baths < selectedBaths) return false;
+      if (selectedFloor) {
+        const floorVal = selectedFloor === "أرضي" ? 0 : selectedFloor === "5+" ? null : Number(selectedFloor);
+        if (selectedFloor === "5+") { if ((p.floor ?? 0) < 5) return false; }
+        else if (floorVal !== null && p.floor !== floorVal) return false;
+      }
+      const pMin = Number(priceMin); const pMax = Number(priceMax);
+      if (priceMin && p.priceNum < pMin) return false;
+      if (priceMax && p.priceNum > pMax) return false;
+      const aMin = Number(areaMin);  const aMax = Number(areaMax);
+      if (areaMin && p.area < aMin) return false;
+      if (areaMax && p.area > aMax) return false;
+      if (selectedFeaturedOnly && !p.featured) return false;
+      if (selectedVerifiedOnly && !p.verified) return false;
+      if (selectedFeatures.length > 0) {
+        const pf = p.features.join(" ");
+        if (!selectedFeatures.every(f => pf.includes(f))) return false;
+      }
+      if (selectedRecency !== null) {
+        const hours = RECENCY_OPTIONS[selectedRecency].hours;
+        if (!p.createdAt) return false;
+        if ((now - new Date(p.createdAt).getTime()) > hours * 3600 * 1000) return false;
+      }
+      return true;
+    });
+    // Sort
+    const dateOf = (p: DisplayProp) =>
+      new Date(p.approvedAt ?? p.createdAt ?? 0).getTime();
+
+    if (sortBy === "newest")
+      list = [...list].sort((a, b) => dateOf(b) - dateOf(a));
+    else if (sortBy === "featured")
+      list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured) || dateOf(b) - dateOf(a));
+    else if (sortBy === "price_asc")
+      list = [...list].sort((a, b) => a.priceNum - b.priceNum);
+    else if (sortBy === "price_desc")
+      list = [...list].sort((a, b) => b.priceNum - a.priceNum);
+    else if (sortBy === "area")
+      list = [...list].sort((a, b) => b.area - a.area);
+    else if (sortBy === "popular")
+      list = [...list].sort((a, b) => b.viewCount - a.viewCount);
+
+    return list;
+  }, [allProps, search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedFeatures, selectedRecency, sortBy]);
+
+  // ── Faceted counts: each dimension counted with all OTHER filters applied ──
+  const FILTER_DEPS = [allProps, search, selectedType, selectedKind, selectedSubKind, selectedDistricts, selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths, selectedFloor, priceMin, priceMax, areaMin, areaMax, selectedFeaturedOnly, selectedVerifiedOnly, selectedFeatures, selectedRecency] as const;
+
+  function applyBaseFilters(
+    list: DisplayProp[],
+    opts: { excludeType?: boolean; excludeKind?: boolean; excludeSubKind?: boolean; excludeDistricts?: boolean },
+    deps: {
+      search: string; selectedType: string | null; selectedKind: string | null;
+      selectedSubKind: string | null; selectedDistricts: string[];
+      selectedFinishing: string | null; selectedFurnished: string | null; selectedPayment: string | null;
+      selectedBeds: number | null; selectedBaths: number | null; selectedFloor: string | null;
+      priceMin: string; priceMax: string; areaMin: string; areaMax: string;
+      selectedFeaturedOnly: boolean; selectedVerifiedOnly: boolean; selectedFeatures: string[]; selectedRecency: number | null;
+    }
+  ): DisplayProp[] {
+    const now = Date.now();
+    return list.filter((p) => {
+      const { search: s, selectedType: sT, selectedKind: sK, selectedSubKind: sSK, selectedDistricts: sD,
+        selectedFinishing: sFin, selectedFurnished: sFur, selectedPayment: sPay, selectedBeds: sBeds,
+        selectedBaths: sBaths, selectedFloor: sFloor, priceMin: pMin, priceMax: pMax,
+        areaMin: aMin, areaMax: aMax, selectedFeaturedOnly: sFeat, selectedVerifiedOnly: sVer, selectedFeatures: sFeats, selectedRecency: sRec } = deps;
+      if (s && !p.title.includes(s) && !p.location.includes(s) && !p.district.includes(s)) return false;
+      if (!opts.excludeType && sT && p.type !== sT) return false;
+      if (!opts.excludeKind && !opts.excludeSubKind && sK && !sSK && p.kind !== sK) return false;
+      if (!opts.excludeSubKind && sSK && p.subCategory !== sSK) return false;
+      if (!opts.excludeDistricts && sD.length > 0 && !sD.some(d => p.district === d || p.location.includes(d))) return false;
+      if (sFin && p.finishing !== sFin) return false;
+      if (sFur && p.furnished !== sFur) return false;
+      if (sPay && p.paymentMethod !== sPay) return false;
+      if (sBeds && p.beds < sBeds) return false;
+      if (sBaths && p.baths < sBaths) return false;
+      if (sFloor) {
+        const fv = sFloor === "أرضي" ? 0 : sFloor === "5+" ? null : Number(sFloor);
+        if (sFloor === "5+") { if ((p.floor ?? 0) < 5) return false; }
+        else if (fv !== null && p.floor !== fv) return false;
+      }
+      if (pMin && p.priceNum < Number(pMin)) return false;
+      if (pMax && p.priceNum > Number(pMax)) return false;
+      if (aMin && p.area < Number(aMin)) return false;
+      if (aMax && p.area > Number(aMax)) return false;
+      if (sFeat && !p.featured) return false;
+      if (sVer && !p.verified) return false;
+      if (sFeats.length > 0) { const pf = p.features.join(" "); if (!sFeats.every(f => pf.includes(f))) return false; }
+      if (sRec !== null) {
+        const hours = RECENCY_OPTIONS[sRec].hours;
+        if (!p.createdAt || (now - new Date(p.createdAt).getTime()) > hours * 3600 * 1000) return false;
+      }
+      return true;
+    });
+  }
+
+  const facetDeps = {
+    search, selectedType, selectedKind, selectedSubKind, selectedDistricts,
+    selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths,
+    selectedFloor, priceMin, priceMax, areaMin, areaMax,
+    selectedFeaturedOnly, selectedVerifiedOnly, selectedFeatures, selectedRecency,
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsByType = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeType: true }, facetDeps))
+      m[p.type] = (m[p.type] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsByKind = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeKind: true, excludeSubKind: true }, facetDeps))
+      m[p.kind] = (m[p.kind] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsBySubKind = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeSubKind: true }, facetDeps))
+      if (p.subCategory) m[p.subCategory] = (m[p.subCategory] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const countsByDistrict = useMemo<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const p of applyBaseFilters(allProps, { excludeDistricts: true }, facetDeps))
+      if (p.district) m[p.district] = (m[p.district] ?? 0) + 1;
+    return m;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, FILTER_DEPS);
+
+  // Page size from admin settings (default 12, min 6, max 100)
+  const ITEMS_PER_PAGE = Math.min(100, Math.max(6, parseInt(siteSettings?.listingsPerPage ?? "12") || 12));
+
+  // Reset to page 1 when filter selection changes (not when data first loads)
+  const filterStateKey = [
+    search, selectedType, selectedKind, selectedSubKind, selectedCity, selectedDistricts.join(","),
+    selectedFinishing, selectedFurnished, selectedPayment, selectedBeds, selectedBaths,
+    selectedFloor, priceMin, priceMax, areaMin, areaMax,
+    String(selectedFeaturedOnly), String(selectedVerifiedOnly), selectedFeatures.join(","),
+    selectedRecency, sortBy,
+  ].join("|");
+  const prevFilterKey = useRef(filterStateKey);
+  useEffect(() => {
+    if (prevFilterKey.current === filterStateKey) return;
+    prevFilterKey.current = filterStateKey;
+    const sp = new URLSearchParams(window.location.search);
+    sp.delete("page");
+    window.history.replaceState(null, "", window.location.pathname + (sp.toString() ? "?" + sp.toString() : ""));
+    setCurrentPage(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStateKey]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedItems = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const PaginationBar = () => totalPages <= 1 ? null : (
+    <div className="flex items-center justify-center gap-1.5 mt-8 flex-wrap" dir="rtl">
+      {/* Page info */}
+      <span className="text-xs text-gray-400 ms-1">
+        صفحة {currentPage} من {totalPages} ({filtered.length} نتيجة)
+      </span>
+      <button
+        onClick={() => goToPage(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1}
+        className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all bg-white"
+      >السابق</button>
+      {Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter(p => totalPages <= 7 || p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+        .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+          if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+          acc.push(p);
+          return acc;
+        }, [])
+        .map((item, idx) => item === "..." ? (
+          <span key={`e${idx}`} className="px-2 text-gray-400 text-sm">…</span>
+        ) : (
+          <button
+            key={item}
+            onClick={() => goToPage(item as number)}
+            className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${currentPage === item ? "bg-primary text-white shadow-sm" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+          >{item}</button>
+        ))}
+      <button
+        onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
+        className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all bg-white"
+      >التالي</button>
+    </div>
+  );
+
+  const activeCount = [
+    selectedType, selectedKind, selectedSubKind, selectedCity,
+    selectedFinishing, selectedFurnished, selectedPayment,
+    selectedBeds !== null ? 1 : null, selectedBaths !== null ? 1 : null,
+    selectedFloor, priceMin || priceMax || null, areaMin || areaMax || null,
+    selectedFeaturedOnly ? 1 : null, selectedVerifiedOnly ? 1 : null, selectedRecency !== null ? 1 : null,
+    ...selectedFeatures,
+  ].filter(Boolean).length + selectedDistricts.length;
+
+  const clearAll = () => {
+    setSelectedType(null); setSelectedKind(null); setSelectedSubKind(null); setSelectedCity(null); setSelectedDistricts([]);
+    setSelectedFinishing(null); setSelectedFurnished(null); setSelectedPayment(null);
+    setSelectedBeds(null); setSelectedBaths(null); setSelectedFloor(null);
+    setPriceMin(""); setPriceMax(""); setAreaMin(""); setAreaMax("");
+    setSelectedFeaturedOnly(false); setSelectedVerifiedOnly(false); setSelectedFeatures([]); setSelectedRecency(null); setSearch("");
+  };
+
+  const submitReport = async () => {
+    if (!reportEmail.trim() || !reportMessage.trim()) { toast.error("برجاء ملء جميع الحقول"); return; }
+    setReportLoading(true);
+    try {
+      await fetch("/api/property-reports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId: reportPropertyId, email: reportEmail, message: reportMessage }) });
+      toast.success("تم إرسال البلاغ بنجاح ✓");
+      setReportPropertyId(null); setReportEmail(""); setReportMessage("");
+    } catch { toast.error("حدث خطأ، حاول مرة أخرى"); }
+    finally { setReportLoading(false); }
+  };
+
+  const toggleLike = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const add = !liked.has(id);
+    toggleFavMut.mutate({ id, add });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
+        <Header />
+        <div className="flex flex-col items-center gap-3 text-gray-400 mt-20">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-sm">جارٍ تحميل العقارات...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white" dir="rtl">
+      <Header />
+
+      {/* ── Top Search Bar (Dubizzle-style) ── */}
+      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-16 z-30">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 shrink-0">
+              <button onClick={() => setLocation("/")} className="hover:text-primary transition-colors">الرئيسية</button>
+              <span>/</span>
+              <span className="text-gray-700 font-medium">عقارات</span>
+            </div>
+
+            {/* Smart Search — grows to fill available space */}
+            <div className="flex-1 min-w-[200px]">
+              <SmartSearch
+                value={search}
+                onChange={setSearch}
+                placeholder="ابحث بالمدينة أو الحي أو العقار..."
+                variant="bar"
+              />
+            </div>
+
+            {/* Sort */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="h-10 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 text-gray-600 focus:outline-none focus:border-primary/40 cursor-pointer"
+            >
+              <option value="newest">🕐 الأحدث أولاً</option>
+              <option value="featured">⭐ المميزة أولاً</option>
+              <option value="popular">🔥 الأكثر مشاهدة</option>
+              <option value="price_asc">💰 السعر: الأقل أولاً</option>
+              <option value="price_desc">💰 السعر: الأعلى أولاً</option>
+              <option value="area">📐 المساحة: الأكبر أولاً</option>
+            </select>
+
+            {/* Save search button */}
+            <button
+              onClick={() => setSaveSearchOpen(v => !v)}
+              className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary flex items-center gap-1.5 transition-all whitespace-nowrap"
+              title="احفظ هذا البحث"
+            >
+              <Bell className="w-4 h-4" />
+              حفظ البحث
+            </button>
+
+            {/* Mobile filter button — shown on tablet/mobile only */}
+            <button
+              onClick={() => setMobileFiltersOpen(true)}
+              className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary flex items-center gap-1.5 transition-all lg:hidden whitespace-nowrap"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              فلاتر{activeCount > 0 && ` (${activeCount})`}
+            </button>
+
+            {/* View toggle */}
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-700"}`}
+                title="عرض قائمة"
+              >
+                <LayoutList className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-700"}`}
+                title="عرض شبكة"
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("map")}
+                className={`p-2 rounded-lg transition-all ${viewMode === "map" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-700"}`}
+                title="عرض خريطة"
+              >
+                <Map className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+
+          {/* ── Save Search Panel ── */}
+          <AnimatePresence>
+            {saveSearchOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-3 items-center py-3 border-t border-gray-100 mt-3">
+                  <Bell className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-sm font-semibold text-gray-700">احفظ هذا البحث وسنُعلمك عند إضافة عقارات تطابقه:</span>
+                  <Input
+                    value={saveSearchName}
+                    onChange={e => setSaveSearchName(e.target.value)}
+                    placeholder="اسم البحث"
+                    className="h-9 rounded-xl text-sm w-40"
+                  />
+                  <Input
+                    value={saveSearchEmail}
+                    onChange={e => setSaveSearchEmail(e.target.value)}
+                    placeholder="بريدك الإلكتروني (اختياري)"
+                    type="email"
+                    className="h-9 rounded-xl text-sm w-56"
+                  />
+                  <button
+                    onClick={() => saveSearchMut.mutate()}
+                    disabled={saveSearchMut.isPending}
+                    className="h-9 px-4 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-all flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    {saveSearchMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
+                    حفظ
+                  </button>
+                  <button onClick={() => setSaveSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+
+      {/* ── Main Layout ── */}
+      <div className="container mx-auto px-4">
+        {/* Ad: أعلى صفحة التصنيفات */}
+        <AdBanner position="categories_top" className="mb-6 mt-4" />
+        <div className="flex gap-6">
+
+          {/* ═══════════════════════════════════════
+              RIGHT SIDEBAR — Filters
+          ═══════════════════════════════════════ */}
+          <aside className="w-80 shrink-0 hidden lg:flex lg:flex-col py-6">
+            {/* Smart-scroll inner: sticky + independent wheel scroll */}
+            <div
+              ref={sidebarRef}
+              className="sticky top-[136px] max-h-[calc(100vh-152px)] overflow-y-auto no-scrollbar [overscroll-behavior:contain]"
+            >
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-primary" />
+                  <span className="font-extrabold text-gray-900 text-sm">الفلاتر</span>
+                  {activeCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">{activeCount}</span>
+                  )}
+                </div>
+                {activeCount > 0 && (
+                  <button onClick={clearAll} className="text-xs text-primary hover:underline font-semibold">مسح الكل</button>
+                )}
+              </div>
+
+              <div className="px-5 pt-4 pb-5">
+
+                {/* ── شركات موثقة ── */}
+                <div className="mb-3 pb-3 border-b border-gray-100">
+                  <label className="flex items-center justify-between cursor-pointer group">
+                    <span className="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                      <BadgeCheck className="w-4 h-4 text-teal-500" /> شركات موثقة
+                    </span>
+                    <div
+                      onClick={() => setSelectedVerifiedOnly(v => !v)}
+                      className={`w-10 h-6 rounded-full transition-all relative cursor-pointer ${selectedVerifiedOnly ? "bg-teal-500" : "bg-gray-200"}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${selectedVerifiedOnly ? "right-1" : "left-1"}`} />
+                    </div>
+                  </label>
+                </div>
+
+                {/* ── العقارات المميزة فقط ── */}
+                <div className="mb-4 pb-4 border-b border-gray-100">
+                  <label className="flex items-center justify-between cursor-pointer group">
+                    <span className="font-bold text-gray-800 text-sm">عقارات مميزة فقط</span>
+                    <div
+                      onClick={() => setSelectedFeaturedOnly(v => !v)}
+                      className={`w-10 h-6 rounded-full transition-all relative cursor-pointer ${selectedFeaturedOnly ? "bg-primary" : "bg-gray-200"}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${selectedFeaturedOnly ? "right-1" : "left-1"}`} />
+                    </div>
+                  </label>
+                </div>
+
+                {/* ── نوع الصفقة ── */}
+                <FilterSection title="نوع الصفقة">
+                  <div className="flex gap-2">
+                    {TYPES.map((t) => {
+                      const cnt = countsByType[t] ?? 0;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setSelectedType(selectedType === t ? null : t)}
+                          className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 ${selectedType === t ? "bg-primary text-white border-primary shadow-sm" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"}`}
+                        >
+                          {t}
+                          <span className={`text-[11px] font-normal tabular-nums ${selectedType === t ? "opacity-70" : "opacity-50"}`}>{cnt}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FilterSection>
+
+                {/* ── نوع العقار ── */}
+                <FilterSection title="نوع العقار">
+                  <div className="flex flex-wrap gap-2">
+                    {reCategories.length > 0
+                      ? reCategories.map((c) => {
+                          const slug = c.slug ?? String(c.id);
+                          return (
+                            <Chip key={slug} label={c.nameAr} active={selectedKind === slug}
+                              count={countsByKind[slug] ?? 0}
+                              onClick={() => { setSelectedKind(selectedKind === slug ? null : slug); setSelectedSubKind(null); }} />
+                          );
+                        })
+                      : KINDS.map((k) => (
+                          <Chip key={k} label={k} active={selectedKind === k}
+                            count={countsByKind[k] ?? 0}
+                            onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
+                        ))
+                    }
+                  </div>
+                  {selectedKind && (() => {
+                    const dbSubs = subCategories.map(s => s.nameAr);
+                    const activeSubs = dbSubs.length > 0 ? dbSubs : (STATIC_SUBCATS[selectedKind] ?? []);
+                    if (activeSubs.length === 0) return null;
+                    const allSubCount = Object.values(countsBySubKind).reduce((s, n) => s + n, 0);
+                    return (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-400 mb-2 font-semibold">التصنيف الفرعي:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Chip label="الكل" active={!selectedSubKind} count={allSubCount} onClick={() => setSelectedSubKind(null)} />
+                          {activeSubs.map(name => (
+                            <Chip key={name} label={name} active={selectedSubKind === name}
+                              count={countsBySubKind[name] ?? 0}
+                              onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </FilterSection>
+
+                {/* ── الحي / المنطقة — multi-select dropdown ── */}
+                {banhaAreas.length > 0 && (
+                  <FilterSection title="الحي / المنطقة">
+                    <div className="relative">
+                      {/* Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setDistrictDropOpen(o => !o)}
+                        className="w-full flex items-center justify-between gap-2 h-9 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 hover:border-primary/40 focus:outline-none transition-colors"
+                      >
+                        <span className="truncate text-right flex-1">
+                          {selectedDistricts.length === 0
+                            ? "كل الأحياء"
+                            : selectedDistricts.length === 1
+                              ? selectedDistricts[0]
+                              : `${selectedDistricts.length} أحياء مختارة`}
+                        </span>
+                        {selectedDistricts.length === 0 && (
+                          <span className="text-xs text-gray-400 tabular-nums shrink-0">{Object.values(countsByDistrict).reduce((s, n) => s + n, 0)}</span>
+                        )}
+                        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${districtDropOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      {/* Dropdown */}
+                      {districtDropOpen && (
+                        <div className="absolute z-50 mt-1 w-full rounded-xl border border-gray-100 bg-white shadow-xl max-h-60 overflow-y-auto">
+                          {/* Clear option */}
+                          {selectedDistricts.length > 0 && (
+                            <button
+                              onClick={() => { setSelectedDistricts([]); setDistrictDropOpen(false); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary font-semibold hover:bg-primary/5 border-b border-gray-100"
+                            >
+                              <X className="w-3 h-3" /> إزالة الاختيار
+                            </button>
+                          )}
+                          {banhaAreas.map((a) => {
+                            const active = selectedDistricts.includes(a.nameAr);
+                            const cnt = countsByDistrict[a.nameAr] ?? 0;
+                            return (
+                              <button
+                                key={a.id}
+                                onClick={() => toggleDistrict(a.nameAr)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-right transition-colors ${active ? "bg-primary/8 text-primary" : "hover:bg-gray-50 text-gray-700"}`}
+                              >
+                                <span className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${active ? "bg-primary border-primary" : "border-gray-300"}`}>
+                                  {active && <Check className="w-2.5 h-2.5 text-white" />}
+                                </span>
+                                <span className="flex-1 text-right">{a.nameAr}</span>
+                                <span className={`text-xs tabular-nums shrink-0 ${active ? "text-primary/70" : "text-gray-400"}`}>{cnt}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Selected chips */}
+                      {selectedDistricts.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {selectedDistricts.map(d => (
+                            <span
+                              key={d}
+                              onClick={() => toggleDistrict(d)}
+                              className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20"
+                            >
+                              {d} <X className="w-2.5 h-2.5" />
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </FilterSection>
+                )}
+
+                {/* ── نطاق السعر ── */}
+                <FilterSection title="نطاق السعر (جنيه)">
+                  <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <div className="flex-1">
+                      <input
+                        type="text" inputMode="numeric" placeholder="حد أقصى"
+                        value={fmtNum(priceMax)}
+                        onChange={e => setPriceMax(digitsOnly(e.target.value))}
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                      />
+                    </div>
+                    <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                    <div className="flex-1">
+                      <input
+                        type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                        value={fmtNum(priceMin)}
+                        onChange={e => setPriceMin(digitsOnly(e.target.value))}
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                      />
+                    </div>
+                  </div>
+                </FilterSection>
+
+                {/* ── المساحة ── */}
+                <FilterSection title="المساحة (م²)">
+                  <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <div className="flex-1">
+                      <input
+                        type="text" inputMode="numeric" placeholder="حد أقصى"
+                        value={fmtNum(areaMax)}
+                        onChange={e => setAreaMax(digitsOnly(e.target.value))}
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                      />
+                    </div>
+                    <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                    <div className="flex-1">
+                      <input
+                        type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                        value={fmtNum(areaMin)}
+                        onChange={e => setAreaMin(digitsOnly(e.target.value))}
+                        className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                      />
+                    </div>
+                  </div>
+                </FilterSection>
+
+                {/* ── عدد الغرف ── */}
+                {(!propFieldRules || propFieldRules.rooms) && (
+                <FilterSection title="عدد غرف النوم">
+                  <div className="flex flex-wrap gap-1.5">
+                    {BEDS_OPTIONS.map((b) => (
+                      <button key={b} onClick={() => setSelectedBeds(selectedBeds === b ? null : b)}
+                        className={`w-11 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBeds === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>
+                        {b}+
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
+                )}
+
+                {/* ── عدد الحمامات ── */}
+                {(!propFieldRules || propFieldRules.bathrooms) && (
+                <FilterSection title="عدد الحمامات">
+                  <div className="flex flex-wrap gap-1.5">
+                    {BATHS_OPTIONS.map((b) => (
+                      <button key={b} onClick={() => setSelectedBaths(selectedBaths === b ? null : b)}
+                        className={`w-11 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBaths === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>
+                        {b}+
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
+                )}
+
+                {/* ── رقم الطابق ── */}
+                {(!propFieldRules || propFieldRules.floor) && (
+                <FilterSection title="رقم الطابق" defaultOpen={false}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {FLOOR_OPTIONS.map((f) => (
+                      <button key={f} onClick={() => setSelectedFloor(selectedFloor === f ? null : f)}
+                        className={`px-3 h-9 rounded-xl text-sm font-bold border-2 transition-all ${selectedFloor === f ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
+                )}
+
+                {/* ── التشطيب ── */}
+                {(!propFieldRules || propFieldRules.finishing) && (
+                <FilterSection title="حالة التشطيب">
+                  <div className="flex flex-wrap gap-1.5">
+                    {FINISHING_OPTIONS.map((v) => (
+                      <Chip key={v} label={v} active={selectedFinishing === v}
+                        onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
+                    ))}
+                  </div>
+                </FilterSection>
+                )}
+
+                {/* ── التأثيث ── */}
+                {(!propFieldRules || propFieldRules.furnished) && (
+                <FilterSection title="التأثيث">
+                  <div className="flex flex-wrap gap-1.5">
+                    {FURNISHED_OPTIONS.map((v) => (
+                      <Chip key={v} label={v} active={selectedFurnished === v}
+                        onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
+                    ))}
+                  </div>
+                </FilterSection>
+                )}
+
+                {/* ── نظام الدفع ── */}
+                <FilterSection title="نظام الدفع">
+                  <div className="flex flex-wrap gap-1.5">
+                    {PAYMENT_OPTIONS.map((v) => (
+                      <Chip key={v} label={v} active={selectedPayment === v}
+                        onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* ── الميزات والمرافق ── */}
+                {allDynFeatures.length > 0 && (
+                <FilterSection title="الميزات والمرافق" defaultOpen={true}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {allDynFeatures.map((f) => {
+                      const active = selectedFeatures.includes(f.name);
+                      return (
+                        <button
+                          key={f.id}
+                          onClick={() => setSelectedFeatures(prev =>
+                            active ? prev.filter(x => x !== f.name) : [...prev, f.name]
+                          )}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                            active
+                              ? "bg-primary text-white border-primary shadow-sm"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"
+                          }`}
+                        >
+                          <FeatureIcon name={f.icon} className="w-3 h-3 shrink-0" />
+                          {f.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FilterSection>
+                )}
+
+                {/* ── تاريخ الإضافة ── */}
+                <FilterSection title="تاريخ الإضافة" defaultOpen={true}>
+                  <div className="flex flex-col gap-2">
+                    {RECENCY_OPTIONS.map((r, i) => (
+                      <label key={i} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div onClick={() => setSelectedRecency(selectedRecency === i ? null : i)}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${selectedRecency === i ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                          {selectedRecency === i && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <span onClick={() => setSelectedRecency(selectedRecency === i ? null : i)}
+                          className={`text-sm transition-colors cursor-pointer ${selectedRecency === i ? "text-primary font-semibold" : "text-gray-600"}`}>{r.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
+
+
+                {/* CTA */}
+                {activeCount > 0 && (
+                  <Button onClick={clearAll} variant="outline" className="w-full rounded-xl text-sm mt-1 border-primary/30 text-primary hover:bg-primary/5">
+                    <X className="w-3.5 h-3.5 ml-1" />
+                    إزالة كل الفلاتر ({activeCount})
+                  </Button>
+                )}
+              </div>
+            </div>
+            </div>
+          </aside>
+
+          {/* ═══════════════════════════════════════
+              LEFT — Results
+          ═══════════════════════════════════════ */}
+          <div className="flex-1 min-w-0 py-6">
+            {/* Results header */}
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-gray-600 text-sm">
+                  تم العثور على <span className="font-extrabold text-gray-900 text-base">{filtered.length}</span> عقار
+                  {totalPages > 1 && (
+                    <span className="text-gray-500 text-xs mr-1">
+                      — صفحة {currentPage} من {totalPages}
+                    </span>
+                  )}
+                </span>
+                {/* Active filter chips */}
+                {selectedType && (
+                  <span onClick={() => setSelectedType(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedType} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedKind && (
+                  <span onClick={() => { setSelectedKind(null); setSelectedSubKind(null); }} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedCatObj?.nameAr ?? selectedKind} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedSubKind && (
+                  <span onClick={() => setSelectedSubKind(null)} className="inline-flex items-center gap-1 bg-teal-100 text-teal-700 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-teal-200">
+                    {selectedSubKind} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedCity && (
+                  <span onClick={() => setSelectedCity(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedCity} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedDistricts.map(d => (
+                  <span key={d} onClick={() => toggleDistrict(d)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {d} <X className="w-3 h-3" />
+                  </span>
+                ))}
+                {selectedFinishing && (
+                  <span onClick={() => setSelectedFinishing(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedFinishing} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedFurnished && (
+                  <span onClick={() => setSelectedFurnished(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedFurnished} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedPayment && (
+                  <span onClick={() => setSelectedPayment(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedPayment} <X className="w-3 h-3" />
+                  </span>
+                )}
+                {selectedBeds !== null && (
+                  <span onClick={() => setSelectedBeds(null)} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {selectedBeds}+ غرف <X className="w-3 h-3" />
+                  </span>
+                )}
+                {(priceMin || priceMax) && (
+                  <span onClick={() => { setPriceMin(""); setPriceMax(""); }} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {priceMin ? fmtNum(priceMin) : "٠"} – {priceMax ? fmtNum(priceMax) : "∞"} جنيه <X className="w-3 h-3" />
+                  </span>
+                )}
+                {(areaMin || areaMax) && (
+                  <span onClick={() => { setAreaMin(""); setAreaMax(""); }} className="inline-flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-primary/20">
+                    {areaMin ? fmtNum(areaMin) : "٠"} – {areaMax ? fmtNum(areaMax) : "∞"} م² <X className="w-3 h-3" />
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {/* ── LIST VIEW ── */}
+              {viewMode === "list" && (
+                <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {filtered.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center bg-white rounded-3xl border border-gray-200">
+                      <Building2 className="w-16 h-16 text-gray-200" />
+                      <p className="text-xl font-bold text-gray-400">لا توجد عقارات مطابقة</p>
+                      <p className="text-sm text-gray-400">جرّب تعديل الفلاتر أو مسحها</p>
+                      <Button onClick={clearAll} variant="outline" className="rounded-full mt-1">مسح الفلاتر</Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {paginatedItems.map((p, idx) => (
+                        <motion.div
+                          key={p.id}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: idx * 0.03 }}
+                        >
+                          <div
+                            className={`group bg-white rounded-2xl border overflow-hidden hover:border-primary/30 transition-all duration-300 cursor-pointer flex flex-row relative ${
+                              p.activePromotion ? "" : p.featured ? "border-amber-300 ring-1 ring-amber-200" : "border-gray-200"
+                            }`}
+                            style={getPromotionCardStyle(p.activePromotion)}
+                            onClick={() => setLocation(`/property/${p.id}`)}
+                            onMouseEnter={() => setHoveredId(p.id)}
+                            onMouseLeave={() => setHoveredId(null)}
+                          >
+                            {/* ── Image ── */}
+                            <PropertyImageGallery
+                              images={p.imgs}
+                              alt={p.title}
+                              fallback={FALLBACK}
+                              className="shrink-0 w-64 sm:w-80 min-h-[230px]"
+                            >
+                              {/* Like button */}
+                              <button
+                                className={`absolute top-2 left-2 z-20 w-7 h-7 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/80 border-white/50 text-gray-500 hover:bg-rose-500/80 hover:text-white"}`}
+                                onClick={(e) => toggleLike(p.id, e)}
+                              >
+                                <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
+                              </button>
+                              {/* Promotion badge (replaces hardcoded featured badge) */}
+                              {(p.activePromotion || p.featured) && (
+                                <div className="absolute bottom-2 left-2 z-20 pointer-events-none">
+                                  <PromotionBadge
+                                    promotion={p.activePromotion ?? (p.featured ? { type: "featured_homepage", boostScore: 500, expiresAt: null } : null)}
+                                  />
+                                </div>
+                              )}
+                            </PropertyImageGallery>
+
+                            {/* ── Content ── */}
+                            <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
+                              {/* Price + verified badge */}
+                              <div className="flex items-center justify-between gap-2 mb-3">
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
+                                  <span className="text-xs font-bold text-gray-600">ج.م</span>
+                                  {p.type === "للإيجار" && <span className="text-[11px] text-gray-500">/ شهر</span>}
+                                </div>
+                                {p.verified && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200 shrink-0">
+                                    <BadgeCheck className="w-3 h-3 text-teal-500 shrink-0" /> موثّق
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1 mb-2.5">
+                                {p.title}
+                              </h3>
+
+                              {/* Location */}
+                              <div className="flex items-center gap-1 text-gray-500 text-xs mb-3">
+                                <MapPin className="w-3 h-3 text-primary shrink-0" />
+                                <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
+                              </div>
+
+                              {/* Specs row */}
+                              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                                <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                  <BedDouble className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                  <span>{p.beds || "—"}</span>
+                                  <span>غرف</span>
+                                </div>
+                                {p.baths > 0 && (
+                                  <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                    <Bath className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                    <span>{p.baths}</span>
+                                    <span>حمام</span>
+                                  </div>
+                                )}
+                                {p.area > 0 && (
+                                  <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                    <Maximize2 className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                    <span>{p.area}</span>
+                                    <span>م²</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Tags: finishing / floor / furnished / payment */}
+                              {(p.finishing || p.floor != null || p.furnished || p.paymentMethod) && (
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                  {p.finishing && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">{p.finishing}</span>
+                                  )}
+                                  {p.floor != null && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                                      {p.floor === 0 ? "دور أرضي" : `دور ${p.floor}`}
+                                    </span>
+                                  )}
+                                  {p.furnished && p.furnished !== "غير مفروش" && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">{p.furnished}</span>
+                                  )}
+                                  {p.paymentMethod && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">{p.paymentMethod}</span>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Bottom row: agent + time + views + contact buttons */}
+                              <div className="mt-auto pt-2 border-t border-gray-100 flex items-center gap-2">
+                                {/* Agent info */}
+                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                  {p.agentLogo && (
+                                    <div className="h-6 px-1.5 rounded border border-gray-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 68 }}>
+                                      <img
+                                        src={p.agentLogo}
+                                        alt={p.agentName}
+                                        className="h-4 w-auto object-contain"
+                                        onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                      />
+                                    </div>
+                                  )}
+                                  {p.agentName && (
+                                    <span className="text-[11px] font-semibold text-gray-600 truncate">{p.agentName}</span>
+                                  )}
+                                  {p.createdAt && (
+                                    <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(p.createdAt)}</span>
+                                  )}
+                                  {(p.viewCount ?? 0) > 0 && (
+                                    <span className="flex items-center gap-0.5 text-gray-400 text-[10px] shrink-0">
+                                      <Eye className="w-2.5 h-2.5" />{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Contact buttons */}
+                                {(() => {
+                                  const cm = p.contactMethods;
+                                  const showWA  = p.whatsapp && (cm.length === 0 || cm.includes("whatsapp"));
+                                  const showCall = p.phone  && (cm.length === 0 || cm.includes("call"));
+                                  const showEmail = cm.includes("email");
+                                  if (!showWA && !showCall && !showEmail) return null;
+                                  return (
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      {showWA && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                          className="flex items-center gap-1 h-8 px-3 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all"
+                                        >
+                                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                          واتساب
+                                        </button>
+                                      )}
+                                      {showCall && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                                          className="flex items-center gap-1 h-8 px-3 rounded-lg border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all"
+                                        >
+                                          <Phone className="w-3.5 h-3.5 shrink-0" />
+                                          اتصال
+                                        </button>
+                                      )}
+                                      {showEmail && (
+                                        <a
+                                          href="mailto:?"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="flex items-center gap-1 h-8 px-3 rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold transition-all"
+                                        >
+                                          ✉ إيميل
+                                        </a>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                  <PaginationBar />
+                </motion.div>
+              )}
+
+              {/* ── GRID VIEW ── */}
+              {viewMode === "grid" && (
+                <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {filtered.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center bg-white rounded-3xl border border-gray-200">
+                      <Building2 className="w-16 h-16 text-gray-200" />
+                      <p className="text-xl font-bold text-gray-400">لا توجد عقارات مطابقة</p>
+                      <p className="text-sm text-gray-400">جرّب تعديل الفلاتر أو مسحها</p>
+                      <Button onClick={clearAll} variant="outline" className="rounded-full mt-1">مسح الفلاتر</Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                      {paginatedItems.map((p, idx) => (
+                        <motion.div
+                          key={p.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.35, delay: idx * 0.04 }}
+                        >
+                          <div
+                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary/30 transition-all duration-300 cursor-pointer"
+                            onClick={() => setLocation(`/property/${p.id}`)}
+                            onMouseEnter={() => setHoveredId(p.id)}
+                            onMouseLeave={() => setHoveredId(null)}
+                          >
+                            {/* Image */}
+                            <PropertyImageGallery
+                              images={p.imgs}
+                              alt={p.title}
+                              fallback={FALLBACK}
+                              className="h-64"
+                            >
+                              <button
+                                className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${liked.has(p.id) ? "bg-rose-500 border-rose-400 text-white" : "bg-white/20 border-white/30 text-white hover:bg-rose-500/80"}`}
+                                onClick={(e) => toggleLike(p.id, e)}
+                              >
+                                <Heart className={`w-3.5 h-3.5 ${liked.has(p.id) ? "fill-white" : ""}`} />
+                              </button>
+                              {/* Promotion badge */}
+                              {(p.activePromotion || p.featured) && (
+                                <div className="absolute bottom-2.5 left-2.5 z-20 pointer-events-none">
+                                  <PromotionBadge
+                                    promotion={p.activePromotion ?? (p.featured ? { type: "featured_homepage", boostScore: 500, expiresAt: null } : null)}
+                                  />
+                                </div>
+                              )}
+                            </PropertyImageGallery>
+
+                            {/* Body */}
+                            <div>
+                              {/* Price */}
+                              <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100">
+                                <div className="flex items-baseline gap-1.5">
+                                  <span className="text-sm font-bold text-gray-600">ج.م</span>
+                                  <p className="text-black font-black text-xl leading-none" dir="ltr">{p.price}</p>
+                                </div>
+                                {p.verified && (
+                                  <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200">
+                                    <BadgeCheck className="w-3 h-3 text-teal-500" /> موثّق
+                                  </span>
+                                )}
+                              </div>
+                              <div className="p-4 flex flex-col gap-3">
+                              <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-1">
+                                {p.title}
+                              </h3>
+                              <div className="flex items-center gap-1 text-gray-600 text-xs">
+                                <MapPin className="w-3 h-3 text-primary shrink-0" />
+                                <span className="truncate">{p.location}</span>
+                              </div>
+
+                              {/* Specs — always show beds */}
+                              <div className="flex items-center gap-2.5 text-gray-400 text-xs">
+                                <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-gray-300" />{p.beds || "—"} غرف</span>
+                                {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-gray-300" />{p.baths} حمام</span>}
+                                {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-gray-300" />{p.area}م²</span>}
+                              </div>
+
+                              {/* Agent + views */}
+                              <div className="flex items-center gap-2 pt-2 mt-1 border-t border-gray-100">
+                                {p.agentLogo ? (
+                                  <div className="h-6 px-1.5 rounded border border-gray-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 68 }}>
+                                    <img src={p.agentLogo} alt={p.agentName} className="h-4 w-auto object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                                  </div>
+                                ) : null}
+                                {p.agentName && (
+                                  <span className="text-[11px] text-gray-600 font-semibold truncate flex-1">{p.agentName}</span>
+                                )}
+                                {!p.agentName && <span className="flex-1" />}
+                                {(p.viewCount ?? 0) > 0 && (
+                                  <span className="flex items-center gap-0.5 text-[10px] text-gray-400 shrink-0">
+                                    <Eye className="w-2.5 h-2.5" />{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* تواصل مع المعلن */}
+                              {(() => {
+                                const cm = p.contactMethods;
+                                const showWA   = !!(p.whatsapp && (cm.length === 0 || cm.includes("whatsapp")));
+                                const showCall = !!(p.phone    && (cm.length === 0 || cm.includes("call")));
+                                const showEmail = cm.includes("email");
+                                if (!showWA && !showCall && !showEmail) return null;
+                                return (
+                                  <div className="mt-2 pt-2 border-t border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 mb-1.5 text-right">تواصل مع المعلن</p>
+                                    <div className="flex gap-2 flex-wrap">
+                                      {showWA && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${p.whatsapp.replace(/\D/g,"")}`, "_blank"); }}
+                                          className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-sm"
+                                        >
+                                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.563 4.14 1.54 5.879L.057 23.882l6.162-1.615A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.016-1.38l-.36-.214-3.727.977.996-3.638-.235-.374A9.79 9.79 0 012.182 12c0-5.423 4.395-9.818 9.818-9.818 5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818z"/></svg>
+                                          واتساب
+                                        </button>
+                                      )}
+                                      {showCall && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${p.phone}`; }}
+                                          className={`flex items-center justify-center gap-1.5 h-9 rounded-xl border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/40 hover:bg-primary/5 text-xs font-bold transition-all ${showWA ? "px-4" : "flex-1"}`}
+                                        >
+                                          <Phone className="w-3.5 h-3.5 shrink-0" />
+                                          اتصال
+                                        </button>
+                                      )}
+                                      {showEmail && (
+                                        <a href="mailto:?" onClick={(e) => e.stopPropagation()} className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold transition-all">
+                                          ✉
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                  <PaginationBar />
+                </motion.div>
+              )}
+
+              {/* ── MAP VIEW ── */}
+              {viewMode === "map" && (
+                <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <div className="flex gap-4 h-[calc(100vh-260px)] min-h-[520px]">
+                    {/* Scrollable list */}
+                    <div className="w-72 shrink-0 overflow-y-auto space-y-3" style={{ scrollbarWidth: "thin" }}>
+                      {filtered.length === 0 && (
+                        <div className="text-center py-12 text-gray-400 text-sm">
+                          <Building2 className="w-10 h-10 mx-auto mb-3 text-gray-200" />
+                          لا توجد عقارات مطابقة
+                        </div>
+                      )}
+                      {filtered.map((p) => (
+                        <div
+                          key={p.id}
+                          className={`bg-white rounded-xl border overflow-hidden cursor-pointer transition-all ${hoveredId === p.id ? "border-primary shadow-md" : "border-gray-200 hover:border-primary/30 hover:shadow-sm"}`}
+                          onClick={() => setLocation(`/property/${p.id}`)}
+                          onMouseEnter={() => setHoveredId(p.id)}
+                          onMouseLeave={() => setHoveredId(null)}
+                        >
+                          <div className="flex">
+                            <div className="w-24 h-20 shrink-0 overflow-hidden">
+                              <img src={p.img} alt={p.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
+                            </div>
+                            <div className="p-2.5 flex-1 min-w-0">
+                              <p className="text-gray-900 font-extrabold text-sm leading-none mb-0.5">{p.price}</p>
+                              <p className="font-semibold text-gray-900 text-xs leading-snug mb-1 line-clamp-1">{p.title}</p>
+                              <div className="flex items-center gap-1 text-gray-400 text-[10px] mb-1">
+                                <MapPin className="w-2.5 h-2.5 text-primary" /><span className="truncate">{p.location}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                                {p.beds > 0 && <span>{p.beds} غرف</span>}
+                                <span>{p.area}م²</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Map */}
+                    <div className="flex-1 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+                      <MapContainer center={MAP_CENTER} zoom={6} className="h-full w-full">
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        />
+                        <DisableAutoPan />
+                        {filtered.filter(p => p.hasCoords && !isNaN(p.lat) && !isNaN(p.lng)).map((p) => (
+                          <Marker
+                            key={p.id}
+                            position={[p.lat, p.lng]}
+                            eventHandlers={{
+                              mouseover: () => setHoveredId(p.id),
+                              mouseout: () => setHoveredId(null),
+                              click: () => setLocation(`/property/${p.id}`),
+                            }}
+                          >
+                            <Popup>
+                              <div className="text-right min-w-[180px]" dir="rtl" onClick={() => setLocation(`/property/${p.id}`)}>
+                                <img src={p.img} alt={p.title} className="w-full h-20 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
+                                <p className="font-extrabold text-gray-900 text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
+                                <p className="font-bold text-gray-900 text-xs mb-0.5">{p.title}</p>
+                                <p className="text-xs text-gray-500">{p.location}</p>
+                                <p className="text-xs text-primary font-semibold mt-1.5 cursor-pointer">عرض التفاصيل ←</p>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        ))}
+                      </MapContainer>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mobile Filters Sheet ── */}
+      <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+        <SheetContent side="right" className="w-80 max-w-full p-0 flex flex-col overflow-hidden" dir="rtl">
+          <SheetHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
+            <SheetTitle className="flex items-center gap-2 text-sm font-extrabold text-gray-900 m-0">
+              <SlidersHorizontal className="w-4 h-4 text-primary" />
+              الفلاتر
+              {activeCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">{activeCount}</span>
+              )}
+            </SheetTitle>
+            {activeCount > 0 && (
+              <button onClick={clearAll} className="text-xs text-primary hover:underline font-semibold">مسح الكل</button>
+            )}
+          </SheetHeader>
+
+          <div className="filters-scroll-area flex-1 overflow-y-auto px-5 pt-4 pb-5">
+            {/* Transaction Type */}
+            <FilterSection title="نوع الصفقة">
+              <div className="flex flex-col gap-2">
+                {TYPES.map((t) => {
+                  const cnt = countsByType[t] ?? 0;
+                  return (
+                    <label key={t} className="flex items-center gap-2.5 cursor-pointer group">
+                      <div onClick={() => setSelectedType(selectedType === t ? null : t)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${selectedType === t ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                        {selectedType === t && <div className="w-2 h-2 rounded-sm bg-white" />}
+                      </div>
+                      <span onClick={() => setSelectedType(selectedType === t ? null : t)} className={`flex-1 text-sm transition-colors ${selectedType === t ? "text-primary font-semibold" : "text-gray-600"}`}>{t}</span>
+                      <span className="text-xs text-gray-400 tabular-nums">{cnt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </FilterSection>
+
+            {/* Property Kind */}
+            <FilterSection title="نوع العقار">
+              <div className="flex flex-wrap gap-2">
+                {reCategories.length > 0
+                  ? reCategories.map((c) => {
+                      const slug = c.slug ?? String(c.id);
+                      return <Chip key={slug} label={c.nameAr} active={selectedKind === slug} count={countsByKind[slug] ?? 0} onClick={() => { const next = selectedKind === slug ? null : slug; setSelectedKind(next); setSelectedSubKind(null); }} />;
+                    })
+                  : KINDS.map((k) => <Chip key={k} label={k} active={selectedKind === k} count={countsByKind[k] ?? 0} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />)
+                }
+              </div>
+              {selectedKind && subCategories.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 mb-2 font-semibold">تخصيص أكثر:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {subCategories.map((s) => <Chip key={s.id} label={s.nameAr} active={selectedSubKind === s.nameAr} count={countsBySubKind[s.nameAr] ?? 0} onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)} />)}
+                  </div>
+                </div>
+              )}
+            </FilterSection>
+
+            {/* Price Range */}
+            <FilterSection title="نطاق السعر (جنيه)">
+              <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <div className="flex-1">
+                  <input
+                    type="text" inputMode="numeric" placeholder="حد أقصى"
+                    value={fmtNum(priceMax)}
+                    onChange={e => setPriceMax(digitsOnly(e.target.value))}
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                  />
+                </div>
+                <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                <div className="flex-1">
+                  <input
+                    type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                    value={fmtNum(priceMin)}
+                    onChange={e => setPriceMin(digitsOnly(e.target.value))}
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                  />
+                </div>
+              </div>
+            </FilterSection>
+
+            {/* Bedrooms */}
+            {(!propFieldRules || propFieldRules.rooms) && (
+            <FilterSection title="عدد غرف النوم">
+              <div className="flex flex-wrap gap-1.5">
+                {BEDS_OPTIONS.map((b) => (
+                  <button key={b} onClick={() => setSelectedBeds(selectedBeds === b ? null : b)} className={`w-10 h-10 rounded-xl text-sm font-bold border-2 transition-all ${selectedBeds === b ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-primary/50"}`}>{b}+</button>
+                ))}
+              </div>
+            </FilterSection>
+            )}
+
+            {/* Area */}
+            <FilterSection title="المساحة (م²)" defaultOpen={true}>
+              <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <div className="flex-1">
+                  <input
+                    type="text" inputMode="numeric" placeholder="حد أقصى"
+                    value={fmtNum(areaMax)}
+                    onChange={e => setAreaMax(digitsOnly(e.target.value))}
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                  />
+                </div>
+                <div className="flex items-center px-2 border-x border-gray-200 text-gray-400 text-xs font-semibold select-none">إلى</div>
+                <div className="flex-1">
+                  <input
+                    type="text" inputMode="numeric" placeholder="الحد الأدنى"
+                    value={fmtNum(areaMin)}
+                    onChange={e => setAreaMin(digitsOnly(e.target.value))}
+                    className="w-full h-11 px-3 text-sm text-center text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                  />
+                </div>
+              </div>
+            </FilterSection>
+
+            {/* District — multi-select */}
+            {banhaAreas.length > 0 && (
+              <FilterSection title="الحي / المنطقة">
+                <div className="flex flex-col gap-2 max-h-52 overflow-y-auto no-scrollbar">
+                  {banhaAreas.map((a) => {
+                    const active = selectedDistricts.includes(a.nameAr);
+                    const cnt = countsByDistrict[a.nameAr] ?? 0;
+                    return (
+                      <label key={a.id} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div onClick={() => toggleDistrict(a.nameAr)} className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${active ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                          {active && <div className="w-2 h-2 rounded-sm bg-white" />}
+                        </div>
+                        <span onClick={() => toggleDistrict(a.nameAr)} className={`flex-1 text-sm transition-colors cursor-pointer ${active ? "text-primary font-semibold" : "text-gray-600"}`}>{a.nameAr}</span>
+                        <span className={`text-xs tabular-nums shrink-0 ${active ? "text-primary/70" : "text-gray-400"}`}>{cnt}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* Finishing */}
+            {(!propFieldRules || propFieldRules.finishing) && (
+            <FilterSection title="التشطيب" defaultOpen={true}>
+              <div className="flex flex-wrap gap-2">
+                {["سوبر لوكس", "لوكس", "عادي", "نص تشطيب", "بدون تشطيب"].map((v) => (
+                  <Chip key={v} label={v} active={selectedFinishing === v} onClick={() => setSelectedFinishing(selectedFinishing === v ? null : v)} />
+                ))}
+              </div>
+            </FilterSection>
+            )}
+
+            {/* Furnished */}
+            {(!propFieldRules || propFieldRules.furnished) && (
+            <FilterSection title="التأثيث" defaultOpen={true}>
+              <div className="flex flex-wrap gap-2">
+                {["مفروش بالكامل", "نص تشطيب", "غير مفروش"].map((v) => (
+                  <Chip key={v} label={v} active={selectedFurnished === v} onClick={() => setSelectedFurnished(selectedFurnished === v ? null : v)} />
+                ))}
+              </div>
+            </FilterSection>
+            )}
+
+            {/* Payment */}
+            <FilterSection title="نظام الدفع" defaultOpen={true}>
+              <div className="flex flex-wrap gap-2">
+                {["كاش", "تقسيط", "كاش أو تقسيط"].map((v) => (
+                  <Chip key={v} label={v} active={selectedPayment === v} onClick={() => setSelectedPayment(selectedPayment === v ? null : v)} />
+                ))}
+              </div>
+            </FilterSection>
+
+            {/* Features - dynamic from DB */}
+            {allDynFeatures.length > 0 && (
+              <FilterSection title="الميزات والمرافق" defaultOpen={true}>
+                <div className="flex flex-wrap gap-1.5">
+                  {allDynFeatures.map((f) => {
+                    const active = selectedFeatures.includes(f.name);
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => setSelectedFeatures(prev =>
+                          active ? prev.filter(x => x !== f.name) : [...prev, f.name]
+                        )}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                          active
+                            ? "bg-primary text-white border-primary shadow-sm"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-primary/50 hover:text-primary"
+                        }`}
+                      >
+                        <FeatureIcon name={f.icon} className="w-3 h-3 shrink-0" />
+                        {f.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FilterSection>
+            )}
+          </div>
+
+          {/* Mobile Sheet footer */}
+          <div className="shrink-0 px-5 pt-3 pb-5 border-t border-gray-100 flex gap-2">
+            {activeCount > 0 && (
+              <Button onClick={() => { clearAll(); }} variant="outline" className="flex-1 rounded-xl text-sm border-primary/30 text-primary hover:bg-primary/5">
+                <X className="w-3.5 h-3.5 ml-1" />
+                مسح الفلاتر
+              </Button>
+            )}
+            <Button onClick={() => setMobileFiltersOpen(false)} className="flex-1 rounded-xl text-sm bg-primary hover:bg-primary/90 text-white">
+              عرض {filtered.length} عقار
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── Floating Compare Bar ── */}
+      <AnimatePresence>
+        {compareItems.length > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border shadow-2xl"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-1 overflow-x-auto">
+                <Scale className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-bold text-gray-900 shrink-0">مقارنة ({compareItems.length}/4)</span>
+                <div className="flex items-center gap-2 mr-2">
+                  {compareItems.map(item => (
+                    <div key={item.id} className="flex items-center gap-1.5 bg-primary/8 rounded-xl px-3 py-1.5 shrink-0">
+                      <img src={item.image} alt="" className="w-7 h-7 rounded-lg object-cover" onError={e => { e.currentTarget.style.display = "none"; }} />
+                      <span className="text-xs font-semibold text-gray-800 max-w-[100px] truncate">{item.title}</span>
+                      <button onClick={() => removeFromCompare(item.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => setLocation("/compare")} disabled={compareItems.length < 2} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 disabled:opacity-40 transition-all">
+                  قارن الآن
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <RealEstateFooter />
+
+      {/* ── Report Dialog ── */}
+      <Dialog open={reportPropertyId !== null} onOpenChange={(o) => { if (!o) { setReportPropertyId(null); setReportEmail(""); setReportMessage(""); } }}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-600">
+              <Flag className="w-4 h-4" />
+              الإبلاغ عن إساءة
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rep-email">البريد الإلكتروني</Label>
+              <Input id="rep-email" type="email" placeholder="example@email.com" value={reportEmail} onChange={(e) => setReportEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rep-msg">تفاصيل البلاغ</Label>
+              <Textarea id="rep-msg" rows={4} placeholder="اكتب تفاصيل المشكلة هنا..." value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} className="resize-none" />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 flex-row-reverse">
+            <Button onClick={submitReport} disabled={reportLoading} className="bg-rose-600 hover:bg-rose-700 text-white">
+              {reportLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال البلاغ"}
+            </Button>
+            <Button variant="outline" onClick={() => { setReportPropertyId(null); setReportEmail(""); setReportMessage(""); }}>
+              إلغاء
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -1,0 +1,54 @@
+import { Router } from "express";
+import { db } from "@workspace/db";
+import { packagesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+import { adminOnly } from "../middleware/adminOnly";
+import { subscriptionsEnabled } from "../lib/settingsCache";
+
+const router = Router();
+
+router.get("/packages", async (_req, res) => {
+  try {
+    // Return empty list when subscriptions are globally disabled
+    if (!(await subscriptionsEnabled())) {
+      return res.json({ success: true, data: [] });
+    }
+    const packages = await db.select().from(packagesTable).orderBy(packagesTable.price);
+    res.json({ success: true, data: packages });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to fetch packages" });
+  }
+});
+
+router.post("/packages", adminOnly, async (req, res) => {
+  try {
+    const { nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank } = req.body;
+    const [pkg] = await db.insert(packagesTable).values({ nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank }).returning();
+    res.json({ success: true, data: pkg });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to create package" });
+  }
+});
+
+router.put("/packages/:id", adminOnly, async (req, res) => {
+  try {
+    const id = parseInt(String(req.params.id));
+    const { nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank } = req.body;
+    const [pkg] = await db.update(packagesTable).set({ nameAr, nameEn, price, durationDays, maxListings, featuredAllowed, topBadge, priorityRank }).where(eq(packagesTable.id, id)).returning();
+    res.json({ success: true, data: pkg });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to update package" });
+  }
+});
+
+router.delete("/packages/:id", adminOnly, async (req, res) => {
+  try {
+    const id = parseInt(String(req.params.id));
+    await db.delete(packagesTable).where(eq(packagesTable.id, id));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to delete package" });
+  }
+});
+
+export default router;

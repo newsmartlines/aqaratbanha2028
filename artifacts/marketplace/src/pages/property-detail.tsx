@@ -1,0 +1,1788 @@
+import { useState, useEffect, useRef } from "react";
+import { useLocation, useParams, Link } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
+import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { PropertyMap } from "@/components/PropertyMap";
+import {
+  BedDouble, Bath, Maximize2, Building2, ArrowLeft, ArrowRight,
+  MapPin, Phone, MessageCircle, Share2, Heart, CheckCircle2,
+  ChevronLeft, Play, X, Calendar,
+  Layers, Car, Home, TrendingUp, Eye, Clock, Loader2, Scale, ShieldCheck,
+  XCircle, AlertCircle, Check, Star, Trash2,
+} from "lucide-react";
+import { RealEstateFooter } from "@/components/RealEstateFooter";
+import { FeatureIconByName } from "@/components/FeatureIcon";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { useCompare, addToCompare, removeFromCompare } from "@/lib/compare-store";
+import { AdBanner } from "@/components/AdBanner";
+import { NO_IMAGE_PLACEHOLDER } from "@/lib/no-image-placeholder";
+import { PromotionBadge } from "@/components/PromotionBadge";
+import { MarketAnalyticsSection } from "@/components/MarketAnalyticsSection";
+import toast from "react-hot-toast";
+
+/* ── Admin bar constants ────────────────────────────────────────────────── */
+const ADMIN_REJECT_CHIPS = [
+  { id: "photos",  label: "📷 الصور غير واضحة أو منخفضة الجودة" },
+  { id: "price",   label: "💰 السعر مبالغ فيه أو غير واقعي" },
+  { id: "info",    label: "⚠️ معلومات مضللة أو غير دقيقة" },
+  { id: "addr",    label: "📍 العنوان غير صحيح أو غير محدد" },
+  { id: "dup",     label: "🔄 الإعلان مكرر أو موجود مسبقاً" },
+  { id: "contact", label: "📞 بيانات التواصل مفقودة أو خاطئة" },
+  { id: "policy",  label: "🚫 المحتوى ينتهك سياسة المنصة" },
+];
+const ADMIN_STATUS_STYLE: Record<string, string> = {
+  approved: "bg-emerald-500/20 text-emerald-200 border-emerald-500/30",
+  active:   "bg-emerald-500/20 text-emerald-200 border-emerald-500/30",
+  pending:  "bg-amber-500/20  text-amber-200  border-amber-500/30",
+  updated_after_rejection: "bg-violet-500/20 text-violet-200 border-violet-500/30",
+  rejected: "bg-red-500/20   text-red-200   border-red-500/30",
+  expired:  "bg-gray-500/20  text-gray-300  border-gray-500/30",
+  draft:    "bg-gray-500/20  text-gray-300  border-gray-500/30",
+};
+const ADMIN_STATUS_LABEL: Record<string, string> = {
+  approved: "منشور", active: "منشور",
+  pending: "قيد المراجعة",
+  updated_after_rejection: "✏️ أُعيد بعد الرفض",
+  rejected: "مرفوض", expired: "منتهي", draft: "مسودة",
+};
+
+
+const DEFAULT_IMG = NO_IMAGE_PLACEHOLDER;
+
+function tryJson<T>(val: string | null | undefined, fallback: T): T {
+  if (!val) return fallback;
+  try { return JSON.parse(val) as T; } catch { return fallback; }
+}
+
+function extractYouTubeId(url: string): string {
+  if (!url) return "";
+  const m = url.match(/(?:v=|\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : "";
+}
+
+type PropertyView = {
+  id: number;
+  title: string;
+  type: string;
+  listingTypeRaw: string;
+  kind: string;
+  featured: boolean;
+  urgent?: boolean;
+  activePromotion?: { type: string; boostScore: number; expiresAt: string | null } | null;
+  address: string;
+  location: string;
+  beds: number;
+  baths: number;
+  area: number;
+  floors: number;
+  garage: number;
+  year: number;
+  gallery: string[];
+  videoId: string;
+  lat: number;
+  lng: number;
+  description: string;
+  amenities: string[];
+  nearbyServices: string[];
+  contactMethods: string[];
+  phoneClickCount: number;
+  price: string;
+  priceNum: number;
+  agentPhone: string;
+  agentWhatsapp: string;
+  mainCategory: string;
+  agentName: string;
+  agentAvatar: string;
+  agentLogo: string;
+  agentCity: string;
+  agentDistrict: string;
+  agentMemberSince: string | null;
+  providerId: number | null;
+  ownerUserId: number | null;
+  viewCount: number;
+  createdAt: string | null;
+  cityId: number | null;
+  regionId: number | null;
+  district: string | null;
+  subCategory: string | null;
+  cityNameAr: string | null;
+  regionNameAr: string | null;
+};
+
+function mapDbToView(p: Record<string, unknown>): PropertyView {
+  const images = tryJson<string[]>(p.images as string, []);
+  const features = tryJson<string[]>(p.features as string, []);
+  const nearbyServices = tryJson<string[]>(p.nearbyServices as string, []);
+  const contactMethods = tryJson<string[]>(p.contactMethods as string, []);
+  const priceNum = parseFloat((p.price as string) ?? "0") || 0;
+  const gallery = images.length > 0 ? images : [DEFAULT_IMG];
+
+  const listingTypeAr: Record<string, string> = {
+    sale: "للبيع", rent: "للإيجار", investment: "للاستثمار",
+    للبيع: "للبيع", للإيجار: "للإيجار", للاستثمار: "للاستثمار",
+  };
+  const mainCategoryAr: Record<string, string> = {
+    residential: "سكني", commercial: "تجاري", land: "أرض",
+    administrative: "إداري", industrial: "صناعي", hotel: "فندقي",
+    agricultural: "زراعي", medical: "طبي", educational: "تعليمي",
+    سكني: "سكني", تجاري: "تجاري", أرض: "أرض", إداري: "إداري",
+  };
+
+  return {
+    id: p.id as number,
+    title: (p.title as string) ?? "",
+    type: listingTypeAr[(p.listingType as string) ?? ""] ?? (p.listingType as string) ?? "للبيع",
+    listingTypeRaw: (p.listingType as string) ?? "sale",
+    kind: mainCategoryAr[(p.mainCategory as string) ?? ""] ?? (p.mainCategory as string) ?? "سكني",
+    featured: (p.featured as boolean) ?? false,
+    address: (p.address as string) ?? "",
+    location: (p.address as string) ?? "",
+    beds: (p.rooms as number) ?? 0,
+    baths: (p.bathrooms as number) ?? 0,
+    area: parseFloat((p.area as string) ?? "0") || 0,
+    floors: (p.totalFloors as number) ?? (p.floor as number) ?? 0,
+    garage: 0,
+    year: (p.buildYear as number) ?? 0,
+    gallery,
+    videoId: extractYouTubeId((p.videoUrl as string) ?? ""),
+    lat: (() => { const v = parseFloat(String(p.latitude ?? "")); return isFinite(v) && v !== 0 ? v : NaN; })(),
+    lng: (() => { const v = parseFloat(String(p.longitude ?? "")); return isFinite(v) && v !== 0 ? v : NaN; })(),
+    description: (p.description as string) ?? "",
+    amenities: Array.isArray(features) ? features : [],
+    nearbyServices: Array.isArray(nearbyServices) ? nearbyServices : [],
+    contactMethods: Array.isArray(contactMethods) ? contactMethods : [],
+    phoneClickCount: (p.phoneClickCount as number) ?? 0,
+    price: priceNum > 0 ? priceNum.toLocaleString("en-US") : "غير محدد",
+    priceNum,
+    agentPhone: (p.phone as string) ?? "",
+    agentWhatsapp: (p.whatsapp as string) ?? "",
+    mainCategory: (p.mainCategory as string) ?? "",
+    agentName: (p.agentName as string) ?? "",
+    agentAvatar: (p.agentAvatar as string) ?? "",
+    agentLogo: (p.agentLogo as string) ?? "",
+    agentCity: (p.agentCity as string) ?? "",
+    agentDistrict: (p.agentDistrict as string) ?? "",
+    agentMemberSince: (p.agentMemberSince as string) ?? null,
+    providerId: (p.providerId as number) ?? null,
+    ownerUserId: (p.ownerUserId as number) ?? null,
+    viewCount: (p.viewCount as number) ?? 0,
+    createdAt: (p.createdAt as string) ?? null,
+    cityId: (p.cityId as number) ?? null,
+    regionId: (p.regionId as number) ?? null,
+    district: (p.district as string) ?? null,
+    subCategory: (p.subCategory as string) ?? null,
+    cityNameAr: (p.cityNameAr as string) ?? (p.agentCity as string) ?? null,
+    regionNameAr: (p.regionNameAr as string) ?? null,
+    urgent: (p.urgent as boolean) ?? false,
+    activePromotion: (p.activePromotion as { type: string; boostScore: number; expiresAt: string | null } | null) ?? null,
+  };
+}
+
+export default function PropertyDetail() {
+  const params = useParams<{ id: string }>();
+  const [, setLocation] = useLocation();
+  const id = parseInt(params.id ?? "0");
+
+  const [property, setProperty] = useState<PropertyView | null>(null);
+  const [rawProp, setRawProp] = useState<Record<string, unknown> | null>(null);
+  const [similar, setSimilar] = useState<PropertyView[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  const [activeImg, setActiveImg] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const [compareMsg, setCompareMsg] = useState<"added" | "already" | "full" | "type_mismatch" | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportEmail, setReportEmail] = useState("");
+  const [reportMessage, setReportMessage] = useState("");
+  const [reportSending, setReportSending] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgContent, setMsgContent] = useState("");
+  const [msgSending, setMsgSending] = useState(false);
+  const [msgSent, setMsgSent] = useState(false);
+  const [msgError, setMsgError] = useState("");
+
+  // Admin bar state
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [rejectMode, setRejectMode] = useState(false);
+  const [rejectChips, setRejectChips] = useState<string[]>([]);
+  const [rejectNote, setRejectNote] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  const { user } = useAuth();
+  const isAdminMode = user?.role === "admin" &&
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("admin") === "1";
+
+  const viewTracked = useRef(false);
+  const { items: compareItems, isIn: isInCompare } = useCompare();
+
+  useEffect(() => {
+    if (!id) { setNotFound(true); setLoading(false); return; }
+    setLoading(true);
+    setActiveImg(0);
+    viewTracked.current = false;
+    window.scrollTo({ top: 0 });
+
+    api.properties.get(id)
+      .then((res: unknown) => {
+        const d = res as { data?: Record<string, unknown>; success?: boolean };
+        const raw = d?.data ?? (res as Record<string, unknown>);
+        if (!raw || !raw.id) { setNotFound(true); return; }
+        const mapped = mapDbToView(raw);
+        setProperty(mapped);
+        setRawProp(raw);
+
+        // Track view once per property per 24h
+        if (!viewTracked.current) {
+          viewTracked.current = true;
+
+          // Save to localStorage for "recently viewed" section
+          try {
+            const key = "rve_ids";
+            const existing: number[] = JSON.parse(localStorage.getItem(key) ?? "[]");
+            const updated = [id, ...existing.filter(x => x !== id)].slice(0, 10);
+            localStorage.setItem(key, JSON.stringify(updated));
+          } catch {}
+
+          // Client-side 24h cooldown — prevents redundant API calls on fast re-visits
+          const cooldownKey = `pvw_${id}`;
+          const lastSeen = parseInt(localStorage.getItem(cooldownKey) ?? "0", 10);
+          const shouldTrack = Date.now() - lastSeen > 24 * 60 * 60 * 1000;
+
+          if (shouldTrack) {
+            // Retrieve/create a persistent session ID for this browser
+            let sessionId = localStorage.getItem("re_session_id");
+            if (!sessionId) {
+              sessionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+              localStorage.setItem("re_session_id", sessionId);
+            }
+
+            fetch(`/api/properties/${id}/view`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ sessionId }),
+            })
+              .then(r => r.json())
+              .then((json: { success?: boolean; counted?: boolean; viewCount?: number }) => {
+                if (json.counted) {
+                  localStorage.setItem(cooldownKey, String(Date.now()));
+                }
+                if (typeof json.viewCount === "number") {
+                  setProperty(prev => prev ? { ...prev, viewCount: json.viewCount! } : prev);
+                }
+              })
+              .catch(() => {});
+          }
+        }
+
+        // Update page title and inject JSON-LD structured data for SEO
+        document.title = `${mapped.title} | دليل عقارات بنها`;
+
+        const existingLd = document.getElementById("property-jsonld");
+        if (existingLd) existingLd.remove();
+        const ldScript = document.createElement("script");
+        ldScript.id = "property-jsonld";
+        ldScript.type = "application/ld+json";
+        const listingType = raw.listingType === "rent" ? "ForRent" : "ForSale";
+        ldScript.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "RealEstateListing",
+          "name": mapped.title,
+          "description": mapped.description ?? undefined,
+          "url": window.location.href,
+          "image": mapped.gallery[0] ?? undefined,
+          "offers": {
+            "@type": "Offer",
+            "price": mapped.priceNum > 0 ? mapped.priceNum : undefined,
+            "priceCurrency": "EGP",
+            "availability": `https://schema.org/${listingType}`,
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": mapped.district ?? "بنها",
+            "addressCountry": "EG",
+          },
+        });
+        document.head.appendChild(ldScript);
+
+        // Fetch similar
+        if (mapped.mainCategory) {
+          api.properties.list({ mainCategory: mapped.mainCategory, limit: 4 })
+            .then((rows: unknown) => {
+              const arr = (rows as Record<string, unknown>[]) ?? [];
+              setSimilar(
+                arr
+                  .filter((r) => (r.id as number) !== id)
+                  .slice(0, 3)
+                  .map(mapDbToView)
+              );
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  // Restore page title when navigating away
+  useEffect(() => {
+    return () => {
+      document.title = "دليل عقارات بنها";
+      document.getElementById("property-jsonld")?.remove();
+    };
+  }, []);
+
+  const handleShare = () => {
+    navigator.clipboard?.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  /* ── Admin action handlers ─────────────────────────────────────────────── */
+  const refetchRaw = async () => {
+    try {
+      const res = await api.properties.get(id) as { data?: Record<string, unknown> };
+      const fresh = res?.data ?? (res as unknown as Record<string, unknown>);
+      if (fresh?.id) {
+        setRawProp(fresh);
+        setProperty(mapDbToView(fresh));
+      }
+    } catch {}
+  };
+
+  const handleAdminApprove = async () => {
+    setAdminLoading(true);
+    try {
+      await api.properties.patchStatus(id, "approved");
+      await refetchRaw();
+      toast.success("✅ تمت الموافقة على الإعلان ونُشر");
+    } catch { toast.error("فشل الاعتماد"); }
+    finally { setAdminLoading(false); }
+  };
+
+  const handleAdminRejectConfirm = async () => {
+    setAdminLoading(true);
+    try {
+      const labels = rejectChips.map(cid => ADMIN_REJECT_CHIPS.find(c => c.id === cid)?.label ?? "").filter(Boolean);
+      const parts = [...labels];
+      if (rejectNote.trim()) parts.push(rejectNote.trim());
+      const reason = parts.join("\n") || "لا يتوافق مع شروط النشر";
+      await api.properties.patchStatus(id, "rejected", reason);
+      await refetchRaw();
+      setRejectMode(false); setRejectChips([]); setRejectNote("");
+      toast.success("❌ تم رفض الإعلان وإشعار المعلن");
+    } catch { toast.error("فشل الرفض"); }
+    finally { setAdminLoading(false); }
+  };
+
+  const handleAdminToggleFeatured = async () => {
+    const newVal = !(rawProp?.featured as boolean);
+    setAdminLoading(true);
+    try {
+      await api.properties.update(id, { featured: newVal });
+      await refetchRaw();
+      toast.success(newVal ? "⭐ تم تمييز الإعلان" : "تم إلغاء التمييز");
+    } catch { toast.error("فشل التحديث"); }
+    finally { setAdminLoading(false); }
+  };
+
+  const handleAdminDelete = async () => {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      setTimeout(() => setDeleteConfirm(false), 4000);
+      return;
+    }
+    setAdminLoading(true);
+    try {
+      await api.properties.delete(id);
+      toast.success("تم حذف الإعلان");
+      setLocation("/admin/properties");
+    } catch { toast.error("فشل الحذف"); }
+    finally { setAdminLoading(false); }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
+        <Loader2 className="w-10 h-10 text-teal-500 animate-spin" />
+        <p className="text-slate-500">جارٍ تحميل بيانات العقار...</p>
+      </div>
+    );
+  }
+
+  if (notFound || !property) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
+        <Building2 className="w-16 h-16 text-muted-foreground/30" />
+        <p className="text-xl font-bold text-muted-foreground">العقار غير موجود</p>
+        <Button onClick={() => setLocation("/")} className="rounded-full">العودة للرئيسية</Button>
+      </div>
+    );
+  }
+
+  const gallery = property.gallery;
+
+  const prevImg = () => setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
+  const nextImg = () => setActiveImg((i) => (i + 1) % gallery.length);
+
+  const adminStatus    = (rawProp?.status as string) ?? "";
+  const adminFeatured  = !!(rawProp?.featured as boolean);
+  const adminRejReason = (rawProp?.rejectionReason as string) ?? "";
+  const isApproved     = adminStatus === "approved" || adminStatus === "active";
+  const isRejected     = adminStatus === "rejected";
+  const isPending      = adminStatus === "pending" || adminStatus === "updated_after_rejection";
+
+  const statusConfig: Record<string, { label: string; dot: string; text: string }> = {
+    approved:                { label: "منشور",              dot: "bg-emerald-400", text: "text-emerald-700" },
+    active:                  { label: "منشور",              dot: "bg-emerald-400", text: "text-emerald-700" },
+    pending:                 { label: "قيد المراجعة",       dot: "bg-amber-400",   text: "text-amber-700"  },
+    updated_after_rejection: { label: "أُعيد بعد الرفض",   dot: "bg-violet-400",  text: "text-violet-700" },
+    rejected:                { label: "مرفوض",              dot: "bg-red-400",     text: "text-red-700"    },
+    expired:                 { label: "منتهي الصلاحية",     dot: "bg-gray-400",    text: "text-gray-600"   },
+    draft:                   { label: "مسودة",              dot: "bg-gray-400",    text: "text-gray-600"   },
+  };
+  const sc = statusConfig[adminStatus] ?? { label: adminStatus, dot: "bg-gray-400", text: "text-gray-600" };
+
+  return (
+    <div className={`min-h-screen bg-gray-50${isAdminMode ? " pt-[52px] pb-[88px]" : ""}`} dir="rtl">
+
+      {/* ══════════════════════════════════════════════════════════════════
+          ADMIN TOP NAV — slim breadcrumb bar
+      ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminMode && (
+        <div className="fixed top-0 left-0 right-0 z-[60] h-[52px] bg-white border-b border-slate-200 shadow-sm flex items-center px-4 gap-3" dir="rtl">
+          {/* Back */}
+          <button
+            onClick={() => setLocation("/admin/properties")}
+            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-teal-700 transition-colors font-medium shrink-0"
+          >
+            <ArrowRight className="w-4 h-4" />
+            <span>إدارة العقارات</span>
+          </button>
+          <span className="text-slate-300">/</span>
+          <span className="text-sm text-slate-800 font-semibold truncate flex-1">{property.title}</span>
+
+          {/* Status pill */}
+          <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full shrink-0 ${sc.text} bg-current/10`}
+                style={{ backgroundColor: sc.dot.replace("bg-", "").includes("emerald") ? "#d1fae5" : sc.dot.replace("bg-", "").includes("amber") ? "#fef3c7" : sc.dot.replace("bg-", "").includes("red") ? "#fee2e2" : sc.dot.replace("bg-", "").includes("violet") ? "#ede9fe" : "#f1f5f9" }}>
+            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+            {sc.label}
+          </span>
+
+          {/* Secondary actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={handleAdminToggleFeatured}
+              disabled={adminLoading}
+              title={adminFeatured ? "إلغاء التمييز" : "تمييز الإعلان"}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${adminFeatured ? "bg-amber-50 border-amber-200 text-amber-500" : "bg-white border-slate-200 text-slate-400 hover:text-amber-500 hover:border-amber-200"}`}
+            >
+              <Star className={`w-4 h-4 ${adminFeatured ? "fill-amber-400" : ""}`} />
+            </button>
+            <button
+              onClick={() => setLocation(`/admin/properties/${id}/edit`)}
+              title="تعديل"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border bg-white border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-200 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button
+              onClick={handleAdminDelete}
+              disabled={adminLoading}
+              title="حذف الإعلان"
+              className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${deleteConfirm ? "bg-red-600 border-red-600 text-white" : "bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200"}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          ADMIN BOTTOM ACTION BAR — decision panel
+      ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-slate-200 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]" dir="rtl">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+
+            {/* Left: property summary */}
+            <div className="hidden md:flex flex-col min-w-0 flex-1">
+              <span className="text-xs text-slate-400 font-medium">الإعلان #{id}</span>
+              <span className="text-sm font-bold text-slate-800 truncate">{property.title}</span>
+            </div>
+
+            {/* Rejection reason banner — shown when already rejected */}
+            {isRejected && adminRejReason && (
+              <div className="flex-1 flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 min-w-0">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700 line-clamp-2">{adminRejReason}</p>
+              </div>
+            )}
+
+            {/* Approved banner */}
+            {isApproved && (
+              <div className="flex-1 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-emerald-800">الإعلان منشور ومتاح للعموم</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">يمكنك إلغاء النشر أو رفض الإعلان في أي وقت</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2.5 shrink-0 ms-auto">
+              {/* REJECT button */}
+              {!isRejected && (
+                <button
+                  onClick={() => setRejectMode(true)}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 font-bold text-sm hover:bg-red-100 hover:border-red-300 transition-all disabled:opacity-50 active:scale-95"
+                >
+                  <XCircle className="w-4.5 h-4.5" />
+                  رفض الإعلان
+                </button>
+              )}
+
+              {/* RE-PUBLISH button (when rejected) */}
+              {isRejected && (
+                <button
+                  onClick={handleAdminApprove}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-teal-200 bg-teal-50 text-teal-700 font-bold text-sm hover:bg-teal-100 transition-all disabled:opacity-50 active:scale-95"
+                >
+                  {adminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  إعادة النشر
+                </button>
+              )}
+
+              {/* APPROVE button */}
+              {!isApproved && (
+                <button
+                  onClick={handleAdminApprove}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 px-7 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-200 transition-all disabled:opacity-50 active:scale-95"
+                >
+                  {adminLoading
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <CheckCircle2 className="w-4 h-4" />}
+                  الموافقة على النشر
+                </button>
+              )}
+
+              {/* UN-PUBLISH button (when approved) */}
+              {isApproved && (
+                <button
+                  onClick={() => setRejectMode(true)}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all disabled:opacity-50 active:scale-95"
+                >
+                  <XCircle className="w-4 h-4" />
+                  إلغاء النشر
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          REJECT MODAL
+      ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminMode && rejectMode && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" dir="rtl">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">رفض الإعلان</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">سيتم إشعار المعلن بالأسباب فور تأكيد الرفض</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              {/* Property title preview */}
+              <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2.5">
+                <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="text-sm text-slate-700 font-medium truncate">{property.title}</span>
+              </div>
+
+              {/* Reason chips */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2.5">
+                  أسباب الرفض <span className="text-slate-400 font-normal normal-case">(اختر واحداً أو أكثر)</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {ADMIN_REJECT_CHIPS.map(chip => {
+                    const sel = rejectChips.includes(chip.id);
+                    return (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={() => setRejectChips(prev => sel ? prev.filter(x => x !== chip.id) : [...prev, chip.id])}
+                        className={`relative flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border-2 transition-all font-medium select-none ${
+                          sel
+                            ? "border-red-400 bg-red-50 text-red-700 shadow-sm"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        {sel && (
+                          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow">
+                            <Check className="w-2.5 h-2.5 text-white" />
+                          </span>
+                        )}
+                        {chip.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+                  ملاحظة إضافية <span className="text-slate-400 font-normal normal-case">(اختياري)</span>
+                </p>
+                <textarea
+                  value={rejectNote}
+                  onChange={e => setRejectNote(e.target.value)}
+                  placeholder="اكتب تفاصيل إضافية لمساعدة المعلن على تصحيح إعلانه..."
+                  rows={3}
+                  className="w-full text-sm border-2 border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:border-red-300 placeholder-slate-400 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 px-6 pb-5">
+              <button
+                onClick={() => { setRejectMode(false); setRejectChips([]); setRejectNote(""); }}
+                className="flex-1 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleAdminRejectConfirm}
+                disabled={adminLoading || (rejectChips.length === 0 && !rejectNote.trim())}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-red-200 active:scale-95"
+              >
+                {adminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                تأكيد الرفض وإشعار المعلن
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Header />
+
+      {/* ── Breadcrumb ── */}
+      <div className="bg-white border-b border-border sticky top-0 z-30">
+        <div className="container mx-auto px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto">
+          <Link href="/" className="hover:text-primary transition-colors shrink-0 whitespace-nowrap">الرئيسية</Link>
+          <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+          <Link href="/properties" className="hover:text-primary transition-colors shrink-0 whitespace-nowrap">نتائج البحث</Link>
+          {property.kind && (
+            <>
+              <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+              <Link
+                href={`/properties?mainCategory=${encodeURIComponent(property.mainCategory)}`}
+                className="hover:text-primary transition-colors shrink-0 whitespace-nowrap"
+              >
+                {property.kind}
+              </Link>
+            </>
+          )}
+          {property.subCategory && (
+            <>
+              <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+              <Link
+                href={`/properties?mainCategory=${encodeURIComponent(property.mainCategory)}`}
+                className="hover:text-primary transition-colors shrink-0 whitespace-nowrap"
+              >
+                {property.subCategory}
+              </Link>
+            </>
+          )}
+          {property.type && (
+            <>
+              <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+              <Link
+                href={`/properties?mainCategory=${encodeURIComponent(property.mainCategory)}&listingType=${encodeURIComponent(property.listingTypeRaw)}`}
+                className="hover:text-primary transition-colors shrink-0 whitespace-nowrap"
+              >
+                {property.type}
+              </Link>
+            </>
+          )}
+          <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+          <span className="text-gray-900 font-medium truncate">{property.title}</span>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* ── Top action bar ── */}
+        <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <Badge className={`rounded-full text-xs font-bold px-3 py-1 ${property.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>
+                {property.type}
+              </Badge>
+              <Badge variant="outline" className="rounded-full text-xs">{property.kind}</Badge>
+              {(property.activePromotion || property.featured) && (
+                <PromotionBadge
+                  size="md"
+                  promotion={property.activePromotion ?? (property.featured ? { type: "featured_homepage", boostScore: 500, expiresAt: null } : null)}
+                />
+              )}
+              {property.urgent && !property.activePromotion && !property.featured && (
+                <PromotionBadge
+                  size="md"
+                  promotion={{ type: "urgent_badge", boostScore: 50, expiresAt: null }}
+                />
+              )}
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">{property.title}</h1>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-sm mt-2">
+              <MapPin className="w-4 h-4 text-primary shrink-0" />
+              <span>{property.address}</span>
+            </div>
+            <div className="mt-1.5">
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-gray-100 rounded-full px-2.5 py-1 font-mono font-semibold">
+                رقم الإعلان: <span className="text-gray-700">#{property.id}</span>
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Compare button */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  const result = addToCompare({
+                    id: property.id,
+                    title: property.title,
+                    price: property.price,
+                    priceNum: property.priceNum,
+                    image: property.gallery[0],
+                    location: property.location,
+                    beds: property.beds,
+                    baths: property.baths,
+                    area: property.area,
+                    type: property.type,
+                    kind: property.kind,
+                    year: property.year,
+                    finishing: "",
+                  });
+                  setCompareMsg(result);
+                  setTimeout(() => setCompareMsg(null), 2500);
+                }}
+                className={`h-10 px-3 rounded-full border flex items-center gap-1.5 text-sm font-semibold transition-all ${
+                  isInCompare(property.id)
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+                }`}
+              >
+                <Scale className="w-4 h-4" />
+                <span className="hidden sm:inline">مقارنة</span>
+              </button>
+              <AnimatePresence>
+                {compareMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                    className={`absolute top-12 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap text-xs font-bold px-3 py-1.5 rounded-full shadow-md ${
+                      compareMsg === "added" ? "bg-primary text-white" :
+                      compareMsg === "already" ? "bg-amber-500 text-white" :
+                      "bg-red-500 text-white"
+                    }`}
+                  >
+                    {compareMsg === "added" && "✓ أُضيف للمقارنة"}
+                    {compareMsg === "already" && "موجود بالفعل"}
+                    {compareMsg === "full" && "الحد الأقصى 4 عقارات"}
+                    {compareMsg === "type_mismatch" && "لا يمكن مقارنة بيع مع إيجار"}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <button
+              onClick={() => setLiked(!liked)}
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${liked ? "bg-rose-50 border-rose-300 text-rose-500" : "bg-white border-border text-muted-foreground hover:border-rose-300 hover:text-rose-400"}`}
+            >
+              <Heart className={`w-4 h-4 ${liked ? "fill-rose-500" : ""}`} />
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-10 h-10 rounded-full border border-border bg-white text-muted-foreground hover:text-primary hover:border-primary/30 flex items-center justify-center transition-all relative"
+            >
+              <Share2 className="w-4 h-4" />
+              {copied && (
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-full px-2 py-1 whitespace-nowrap">
+                  تم النسخ!
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Mosaic Hero Gallery ── */}
+        <div className="relative mb-8 rounded-3xl overflow-hidden shadow-md">
+          {gallery.length === 1 ? (
+            /* Single image — full width */
+            <div
+              className="relative h-[420px] md:h-[520px] cursor-zoom-in group"
+              onClick={() => { setLightboxIdx(0); setLightbox(true); }}
+            >
+              <img
+                src={gallery[0]}
+                alt={property.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+            </div>
+          ) : (
+            /* Mosaic: main large image + up to 4 thumbnails */
+            <div className="grid grid-cols-2 md:grid-cols-[3fr_2fr] h-[420px] md:h-[520px] gap-1">
+              {/* Main image */}
+              <div
+                className="relative overflow-hidden cursor-zoom-in group"
+                onClick={() => { setLightboxIdx(0); setLightbox(true); }}
+              >
+                <img
+                  src={gallery[0]}
+                  alt={property.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+              </div>
+
+              {/* Side grid — 2 rows × 2 cols on md+, 2 rows × 1 col on mobile */}
+              <div className="grid grid-rows-2 gap-1">
+                <div className="grid grid-cols-2 gap-1 hidden md:grid">
+                  {[1, 2].map((idx) => (
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden cursor-zoom-in group"
+                      onClick={() => { setLightboxIdx(idx); setLightbox(true); }}
+                    >
+                      {gallery[idx] ? (
+                        <img
+                          src={gallery[idx]}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                        />
+                      ) : (
+                        <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+                {/* mobile: just two stacked images */}
+                {[1, 2].map((idx) => (
+                  <div
+                    key={`mob-${idx}`}
+                    className="relative overflow-hidden cursor-zoom-in group md:hidden"
+                    onClick={() => { setLightboxIdx(idx); setLightbox(true); }}
+                  >
+                    {gallery[idx] ? (
+                      <img
+                        src={gallery[idx]}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                      />
+                    ) : (
+                      <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-2 gap-1 hidden md:grid">
+                  {[3, 4].map((idx) => (
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden cursor-zoom-in group"
+                      onClick={() => { setLightboxIdx(Math.min(idx, gallery.length - 1)); setLightbox(true); }}
+                    >
+                      {gallery[idx] ? (
+                        <>
+                          <img
+                            src={gallery[idx]}
+                            alt=""
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                          />
+                          {/* "show all" overlay on the last visible tile */}
+                          {idx === 4 && gallery.length > 5 && (
+                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 pointer-events-none">
+                              <Eye className="w-6 h-6 text-white" />
+                              <span className="text-white text-sm font-bold">+{gallery.length - 5} صورة</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* mobile bottom row */}
+                {[3, 4].map((idx) => (
+                  <div
+                    key={`mob2-${idx}`}
+                    className="relative overflow-hidden cursor-zoom-in group md:hidden"
+                    onClick={() => { setLightboxIdx(Math.min(idx, gallery.length - 1)); setLightbox(true); }}
+                  >
+                    {gallery[idx] ? (
+                      <img
+                        src={gallery[idx]}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+                      />
+                    ) : (
+                      <img src={DEFAULT_IMG} alt="لا توجد صورة" className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Show-all button */}
+          <button
+            onClick={() => { setLightboxIdx(0); setLightbox(true); }}
+            className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-white/60 text-gray-900 text-sm font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-white transition-all"
+          >
+            <Eye className="w-4 h-4" />
+            عرض كل الصور ({gallery.length})
+          </button>
+
+          {/* Video button */}
+          {property.videoId && (
+            <button
+              onClick={() => setShowVideo(true)}
+              className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-primary transition-all"
+            >
+              <Play className="w-3.5 h-3.5 fill-white" />
+              مشاهدة الفيديو
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* ── LEFT COLUMN ── */}
+          <div className="lg:col-span-2 space-y-8">
+
+            {/* Specs */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">مواصفات العقار</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {property.beds > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <BedDouble className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.beds}</span>
+                    <span className="text-xs text-muted-foreground">غرف النوم</span>
+                  </div>
+                )}
+                {property.baths > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Bath className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.baths}</span>
+                    <span className="text-xs text-muted-foreground">دورات المياه</span>
+                  </div>
+                )}
+                {property.area > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Maximize2 className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.area}</span>
+                    <span className="text-xs text-muted-foreground">م² المساحة</span>
+                  </div>
+                )}
+                {property.floors > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Layers className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.floors}</span>
+                    <span className="text-xs text-muted-foreground">الطوابق</span>
+                  </div>
+                )}
+                {property.garage > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Car className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.garage}</span>
+                    <span className="text-xs text-muted-foreground">مواقف السيارات</span>
+                  </div>
+                )}
+                {property.year > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Calendar className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.year}</span>
+                    <span className="text-xs text-muted-foreground">سنة البناء</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Description */}
+            {property.description && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">وصف العقار</h2>
+                <p className="text-gray-600 leading-relaxed text-base">{property.description}</p>
+              </div>
+            )}
+
+            {/* مميزات العقار */}
+            {property.amenities.length > 0 && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">مميزات العقار</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[...new Set(property.amenities)].map((a, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-teal-50/60 border border-teal-100 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0">
+                        <FeatureIconByName featureName={a} className="w-3.5 h-3.5 text-teal-600" />
+                      </div>
+                      <span className="font-medium">{a}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* الخدمات القريبة */}
+            {property.nearbyServices.length > 0 && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">الخدمات القريبة</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[...new Set(property.nearbyServices)].map((s, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-blue-50/60 border border-blue-100 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0">
+                        <FeatureIconByName featureName={s} className="w-3.5 h-3.5 text-blue-600" />
+                      </div>
+                      <span className="font-medium">{s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Video */}
+            {property.videoId && (
+              <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-border flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Play className="w-4 h-4 text-primary fill-primary" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">جولة افتراضية بالفيديو</h2>
+                </div>
+                <div className="relative aspect-video bg-gray-900">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${property.videoId}?autoplay=0&rel=0`}
+                    title="جولة العقار"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Map */}
+            <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">الموقع على الخريطة</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
+                </div>
+              </div>
+              {(!isNaN(property.lat) && !isNaN(property.lng)) ? (
+                <PropertyMap lat={property.lat} lng={property.lng} />
+              ) : (
+                <div className="h-36 flex flex-col items-center justify-center gap-2 text-gray-400 bg-gray-50">
+                  <MapPin className="w-7 h-7 text-gray-300" />
+                  <p className="text-sm font-medium">لم يتم تحديد موقع هذا العقار على الخريطة</p>
+                  {property.address && (
+                    <p className="text-xs text-gray-400">{property.address}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── RIGHT COLUMN ── */}
+          <div className="space-y-6">
+
+            {/* ── Agent Info Card (TOP) ── */}
+            {(property.agentName || property.agentCity) && (
+              <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+                {/* Header strip */}
+                <div className="bg-gradient-to-l from-teal-600 to-teal-500 px-5 pt-5 pb-10 relative">
+                  <p className="text-white/80 text-xs font-medium mb-0.5">صاحب الإعلان</p>
+                  <p className="text-white font-extrabold text-lg leading-tight truncate">
+                    {property.agentName || "المعلن"}
+                  </p>
+                </div>
+
+                {/* Avatar — overlapping the header */}
+                <div className="px-5 pb-5">
+                  <div className="flex items-end justify-between -mt-8 mb-4">
+                    <div className="relative shrink-0">
+                      {(property.agentAvatar || property.agentLogo) ? (
+                        <img
+                          src={property.agentAvatar || property.agentLogo}
+                          alt={property.agentName}
+                          className="w-16 h-16 rounded-2xl object-cover border-3 border-white shadow-md"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(property.agentName)}&background=0d9488&color=fff&size=64`;
+                          }}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-2xl font-extrabold text-teal-600 border-2 border-white">
+                          {property.agentName ? property.agentName.charAt(0) : "م"}
+                        </div>
+                      )}
+                      <span className="absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-2 border-white bg-gray-400" title="غير متصل" />
+                    </div>
+                    <span className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 rounded-full px-3 py-1.5 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                      المستخدم غير متصل
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm mb-4">
+                    {property.agentMemberSince && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>عضو منذ:{" "}
+                          <span className="font-semibold text-gray-800">
+                            {(() => {
+                              const months = Math.max(1, Math.round((Date.now() - new Date(property.agentMemberSince).getTime()) / (1000 * 60 * 60 * 24 * 30)));
+                              return months < 12 ? `${months} شهر` : `${Math.round(months / 12)} سنة`;
+                            })()}
+                          </span>
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>نوع الحساب: <span className="font-semibold text-gray-800">قطاع الأعمال</span></span>
+                    </div>
+                    {(property.agentCity || property.agentDistrict) && (
+                      <div className="flex items-start gap-2 text-gray-600">
+                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                        <span className="font-semibold text-gray-800">
+                          {[property.agentCity, property.agentDistrict].filter(Boolean).join(" ـ ")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {property.providerId && (
+                    <a
+                      href={`/advertiser/${property.providerId}`}
+                      onClick={(e) => { e.preventDefault(); setLocation(`/advertiser/${property.providerId}`); }}
+                      className="flex items-center justify-between w-full border border-primary/30 text-primary text-sm font-bold rounded-xl px-4 py-2.5 hover:bg-primary/5 transition-colors"
+                    >
+                      <span>شاهد كل إعلاناتي</span>
+                      <ArrowLeft className="w-4 h-4 shrink-0" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Price Card ── */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <div className="mb-6">
+                <p className="text-xs text-muted-foreground mb-1">السعر</p>
+                <p dir="ltr" className="text-3xl font-extrabold text-gray-900">{property.price}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">جنيه مصري</p>
+                {property.area > 0 && property.priceNum > 0 && (
+                  <p className="text-xs text-muted-foreground mt-2 bg-gray-50 rounded-xl px-3 py-2 inline-block">
+                    ≈ <span dir="ltr">{Math.round(property.priceNum / property.area).toLocaleString("en-US")} ج.م / م²</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2 mb-6 text-sm">
+                {[
+                  { icon: Home, label: "نوع العقار", value: property.kind },
+                  { icon: MapPin, label: "الموقع", value: property.location },
+                  { icon: TrendingUp, label: "الحالة", value: property.type },
+                  { icon: Eye, label: "المشاهدات", value: `${(property.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدة` },
+                  { icon: Clock, label: "تاريخ النشر", value: property.createdAt ? new Date(property.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—" },
+                  { icon: ShieldCheck, label: "رقم الإعلان", value: `#${property.id}` },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
+                    <item.icon className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-semibold text-gray-900 mr-auto truncate">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── طرق التواصل ── */}
+              {(() => {
+                const cm = property.contactMethods;
+                const showCall = cm.length === 0 || cm.includes("call");
+                const showWhatsapp = cm.length === 0 || cm.includes("whatsapp");
+                const showChat = cm.length === 0 || cm.includes("chat");
+                const showEmail = cm.includes("email");
+                const hasAny = showCall || showWhatsapp || showChat || showEmail;
+
+                return (
+                  <div className="space-y-2">
+                    {/* طرق التواصل المتاحة */}
+                    {cm.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span className="text-xs text-muted-foreground">طرق التواصل:</span>
+                        {showCall && <span className="inline-flex items-center gap-1 text-[11px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-medium"><Phone className="w-3 h-3" />اتصال</span>}
+                        {showWhatsapp && <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full font-medium"><MessageCircle className="w-3 h-3" />واتساب</span>}
+                        {showChat && <span className="inline-flex items-center gap-1 text-[11px] bg-primary/5 text-primary border border-primary/15 px-2 py-0.5 rounded-full font-medium"><MessageCircle className="w-3 h-3" />محادثة</span>}
+                        {showEmail && <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full font-medium">✉ إيميل</span>}
+                      </div>
+                    )}
+
+                    {/* Phone reveal button */}
+                    {showCall && property.agentPhone && (
+                      <button
+                        onClick={() => {
+                          if (!phoneRevealed) {
+                            setPhoneRevealed(true);
+                            api.propertyStats.phoneClick(id).catch(() => {});
+                          } else {
+                            window.location.href = `tel:${property.agentPhone}`;
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 bg-gray-50 hover:bg-primary/5 rounded-2xl px-4 py-3 border border-gray-200 hover:border-primary/40 transition-all group cursor-pointer"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0">
+                          {phoneRevealed
+                            ? <Phone className="w-4 h-4 text-primary" />
+                            : <Eye className="w-4 h-4 text-primary" />}
+                        </div>
+                        <div className="flex-1 text-right">
+                          {phoneRevealed ? (
+                            <span dir="ltr" className="block font-mono text-base font-bold tracking-widest text-gray-900">{property.agentPhone}</span>
+                          ) : (
+                            <>
+                              <span className="block text-xs text-muted-foreground mb-0.5">اضغط لإظهار رقم التليفون</span>
+                              <span dir="ltr" className="block font-mono text-sm font-bold tracking-widest text-gray-500">{property.agentPhone.slice(0, 3) + " *** *** ***"}</span>
+                            </>
+                          )}
+                        </div>
+                        {phoneRevealed && <span className="text-xs text-primary font-semibold">اتصل الآن</span>}
+                      </button>
+                    )}
+
+                    {/* WhatsApp button */}
+                    {showWhatsapp && property.agentWhatsapp && (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-2xl h-12 text-base font-bold border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                        asChild
+                        onClick={() => { api.propertyStats.whatsappClick(id).catch(() => {}); }}
+                      >
+                        <a href={`https://wa.me/${property.agentWhatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                          <MessageCircle className="w-4 h-4 ml-2" />
+                          واتساب
+                        </a>
+                      </Button>
+                    )}
+
+                    {/* Chat button */}
+                    {showChat && property.ownerUserId && user?.id !== property.ownerUserId && (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-2xl h-12 text-base font-bold border-primary text-primary hover:bg-primary/5"
+                        onClick={() => {
+                          if (!user) {
+                            setLocation(`/login?redirect=/property/${property.id}`);
+                            return;
+                          }
+                          setMsgOpen(true);
+                          setMsgContent("");
+                        }}
+                      >
+                        <MessageCircle className="w-4 h-4 ml-2" />
+                        محادثة
+                      </Button>
+                    )}
+
+                    {/* Email button */}
+                    {showEmail && (
+                      <Button variant="outline" className="w-full rounded-2xl h-12 text-base font-bold border-amber-500 text-amber-700 hover:bg-amber-50" asChild>
+                        <a href="mailto:?subject=استفسار عن عقار">
+                          ✉ مراسلة بالبريد
+                        </a>
+                      </Button>
+                    )}
+
+                    {!hasAny && (
+                      <Button className="w-full rounded-2xl h-12 text-base font-bold shadow-md shadow-primary/20">
+                        <Phone className="w-4 h-4 ml-2" />
+                        تواصل مع المعلن
+                      </Button>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Safety Tips Card */}
+            <div className="bg-white rounded-3xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
+                <h3 className="text-base font-extrabold text-gray-900">سلامتك تهمنا</h3>
+              </div>
+              <ul className="space-y-3 text-sm text-gray-700 text-right list-none">
+                {[
+                  "قابل السمسار أو المالك في مكان معروف وآمن داخل بنها",
+                  "يُفضَّل يكون معاك شخص موثوق وقت المعاينة",
+                  "عاين العقار على الطبيعة وتأكد من حالته ومطابقته للإعلان",
+                  "اسأل عن كل التفاصيل: السعر، المرافق، الأوراق، والمصاريف",
+                  "متدفعش أي عربون أو تحوّل فلوس غير بعد المعاينة والتأكد من المستندات",
+                ].map((tip, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+              <div
+                className="mt-5 pt-4 border-t border-border/60 flex items-center gap-2 text-red-500 cursor-pointer hover:text-red-600 transition-colors justify-end"
+                onClick={() => { setReportDone(false); setReportEmail(""); setReportMessage(""); setReportOpen(true); }}
+              >
+                <span className="text-sm font-semibold">الإبلاغ عن إساءة</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* ── AD: property sidebar ── */}
+            <AdBanner position="property_sidebar" className="mt-0" />
+
+          </div>
+        </div>
+
+        {/* ── AD: property bottom ── */}
+        <div className="mt-10">
+          <AdBanner position="property_bottom" />
+        </div>
+
+        {/* ── Market Analytics ── */}
+        {property && (
+          <MarketAnalyticsSection
+            cityId={property.cityId}
+            regionId={property.regionId}
+            district={property.district}
+            mainCategory={property.mainCategory}
+            subCategory={property.subCategory}
+            listingType={property.type}
+            priceNum={property.priceNum}
+            area={property.area}
+            cityNameAr={property.cityNameAr ?? undefined}
+            regionNameAr={property.regionNameAr ?? undefined}
+          />
+        )}
+
+        {/* Similar Properties */}
+        {similar.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-extrabold text-gray-900">عقارات مشابهة</h2>
+              <button onClick={() => setLocation("/")} className="text-sm text-primary font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                عرض الكل <ArrowLeft className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similar.map((p, idx) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white rounded-3xl border border-border overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all cursor-pointer group"
+                  onClick={() => setLocation(`/property/${p.id}`)}
+                >
+                  <div className="relative h-44 overflow-hidden">
+                    <img src={p.gallery[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full ${p.type === "للبيع" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"}`}>{p.type}</span>
+                  </div>
+                  <div className="p-4">
+                    <p dir="ltr" className="text-gray-900 font-extrabold text-lg">{Number(p.price) ? Number(p.price).toLocaleString("en-US") : p.price} <span className="text-xs text-muted-foreground font-normal">ج.م</span></p>
+                    <h3 className="font-bold text-gray-900 mt-1 mb-1 truncate group-hover:text-primary transition-colors">{p.title}</h3>
+                    <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
+                      <MapPin className="w-3 h-3 text-primary" />
+                      {p.location}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      {p.beds > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{p.beds}</span>}
+                      {p.baths > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{p.baths}</span>}
+                      {p.area > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5" />{p.area} م²</span>}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+            onClick={() => setLightbox(false)}
+          >
+            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all">
+              <X className="w-5 h-5" />
+            </button>
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all"
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => (i - 1 + gallery.length) % gallery.length); }}
+            >
+              <ArrowRight className="w-6 h-6" />
+            </button>
+            <motion.img
+              key={lightboxIdx}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              src={gallery[lightboxIdx]}
+              alt=""
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              onError={(e) => { e.currentTarget.src = DEFAULT_IMG; }}
+            />
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all"
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => (i + 1) % gallery.length); }}
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {gallery.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setLightboxIdx(i); }}
+                  className={`w-2 h-2 rounded-full transition-all ${i === lightboxIdx ? "bg-white w-6" : "bg-white/40"}`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Video modal */}
+      <AnimatePresence>
+        {showVideo && property.videoId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setShowVideo(false)}
+          >
+            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="w-full max-w-4xl aspect-video" onClick={e => e.stopPropagation()}>
+              <iframe
+                src={`https://www.youtube.com/embed/${property.videoId}?autoplay=1&rel=0`}
+                title="فيديو العقار"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full rounded-2xl"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      {/* ── Floating Compare Bar ── */}
+      <AnimatePresence>
+        {compareItems.length > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border shadow-2xl"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-1 overflow-x-auto">
+                <Scale className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-bold text-gray-900 shrink-0">مقارنة ({compareItems.length}/4)</span>
+                <div className="flex items-center gap-2 mr-2">
+                  {compareItems.map(item => (
+                    <div key={item.id} className="flex items-center gap-1.5 bg-primary/8 rounded-xl px-3 py-1.5 shrink-0">
+                      <img src={item.image} alt="" className="w-7 h-7 rounded-lg object-cover" />
+                      <span className="text-xs font-semibold text-gray-800 max-w-[100px] truncate">{item.title}</span>
+                      <button onClick={() => removeFromCompare(item.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  onClick={() => setLocation("/compare")}
+                  disabled={compareItems.length < 2}
+                  className="rounded-xl"
+                >
+                  قارن الآن
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <RealEstateFooter />
+
+      {/* ── Report Modal ── */}
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              الإبلاغ عن إساءة
+            </DialogTitle>
+          </DialogHeader>
+
+          {reportDone ? (
+            <div className="py-8 flex flex-col items-center gap-3 text-center">
+              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-7 h-7 text-green-600" />
+              </div>
+              <p className="font-bold text-gray-800 text-lg">تم إرسال البلاغ</p>
+              <p className="text-sm text-gray-500">شكراً لك، سيتم مراجعة البلاغ من قِبل الإدارة في أقرب وقت.</p>
+              <Button className="mt-2 rounded-xl" onClick={() => setReportOpen(false)}>إغلاق</Button>
+            </div>
+          ) : (
+            <form
+              className="space-y-4 pt-2"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!reportEmail.trim() || !reportMessage.trim()) return;
+                setReportSending(true);
+                try {
+                  const res = await fetch("/api/property-reports", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ propertyId: property?.id ?? id, email: reportEmail.trim(), message: reportMessage.trim() }),
+                  });
+                  if (res.ok) {
+                    setReportDone(true);
+                  }
+                } finally {
+                  setReportSending(false);
+                }
+              }}
+            >
+              <p className="text-sm text-gray-600">إذا وجدت محتوى مسيء أو مخالف، أخبرنا بالتفاصيل وسنتخذ الإجراء اللازم.</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="report-email">بريدك الإلكتروني</Label>
+                <Input
+                  id="report-email"
+                  type="email"
+                  placeholder="example@email.com"
+                  value={reportEmail}
+                  onChange={(e) => setReportEmail(e.target.value)}
+                  required
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="report-msg">تفاصيل البلاغ</Label>
+                <Textarea
+                  id="report-msg"
+                  placeholder="اكتب هنا سبب الإبلاغ بالتفصيل..."
+                  rows={4}
+                  value={reportMessage}
+                  onChange={(e) => setReportMessage(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-xl bg-red-600 hover:bg-red-700"
+                  disabled={reportSending || !reportEmail.trim() || !reportMessage.trim()}
+                >
+                  {reportSending ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال البلاغ"}
+                </Button>
+                <Button type="button" variant="outline" className="rounded-xl" onClick={() => setReportOpen(false)}>
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Message Modal ── */}
+      <Dialog open={msgOpen} onOpenChange={(o) => { if (!o) { setMsgOpen(false); setMsgSent(false); setMsgError(""); setMsgContent(""); } }}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <MessageCircle className="w-5 h-5 shrink-0" />
+              محادثة مع صاحب الإعلان
+            </DialogTitle>
+          </DialogHeader>
+
+          {msgSent ? (
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <div>
+                <p className="text-base font-bold text-gray-900 mb-1">تم إرسال رسالتك بنجاح!</p>
+                <p className="text-sm text-muted-foreground">سيتواصل معك صاحب الإعلان قريباً.</p>
+              </div>
+              <div className="flex gap-2 w-full pt-1">
+                <Button className="flex-1 rounded-xl" onClick={() => { setMsgOpen(false); setMsgSent(false); setMsgContent(""); }}>
+                  حسناً
+                </Button>
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setLocation(`/dashboard/messages?otherId=${property?.ownerUserId}&propertyId=${property?.id}`)}>
+                  فتح المحادثة
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form
+              className="space-y-4 pt-1"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!msgContent.trim() || !property?.ownerUserId) return;
+                setMsgSending(true);
+                setMsgError("");
+                try {
+                  await api.messages.send(property.ownerUserId, msgContent.trim(), property.id);
+                  setMsgSent(true);
+                } catch {
+                  setMsgError("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى.");
+                } finally {
+                  setMsgSending(false);
+                }
+              }}
+            >
+              {property && (
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/15 mb-2">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-primary/10 shrink-0">
+                    {property.gallery[0]
+                      ? <img src={property.gallery[0]} className="w-full h-full object-cover" alt="" />
+                      : <Home className="w-5 h-5 text-primary/40 m-auto mt-2.5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">{property.title}</p>
+                    <p className="text-xs text-primary font-semibold">
+                      {property.priceNum > 0 ? <span dir="ltr">{property.priceNum.toLocaleString("en-US")} ج.م</span> : "السعر غير محدد"}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="msg-content">رسالتك</Label>
+                <Textarea
+                  id="msg-content"
+                  placeholder="اكتب رسالتك لصاحب الإعلان..."
+                  rows={4}
+                  value={msgContent}
+                  onChange={(e) => { setMsgContent(e.target.value); setMsgError(""); }}
+                  required
+                  autoFocus
+                />
+              </div>
+              {msgError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                  <span className="shrink-0">⚠️</span>
+                  {msgError}
+                </div>
+              )}
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-xl"
+                  disabled={msgSending || !msgContent.trim()}
+                >
+                  {msgSending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <MessageCircle className="w-4 h-4 ml-2" />}
+                  إرسال الرسالة
+                </Button>
+                <Button type="button" variant="outline" className="rounded-xl" onClick={() => { setMsgOpen(false); setMsgError(""); setMsgContent(""); }}>
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

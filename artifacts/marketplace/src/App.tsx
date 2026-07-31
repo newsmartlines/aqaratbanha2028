@@ -1,0 +1,530 @@
+import type { ComponentType } from "react";
+import { useEffect, createContext, useContext } from "react";
+import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as HotToaster } from "react-hot-toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { LanguageProvider } from "@/lib/i18n";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { api, mediaUrl, type SiteSettings } from "@/lib/api";
+import { ScrollRestorer, ScrollToTopButton } from "@/components/ScrollToTop";
+import { useSse } from "@/lib/use-sse";
+
+// ── Site-settings context ───────────────────────────────────────────────────
+export const SiteSettingsContext = createContext<SiteSettings | null>(null);
+export function useSiteSettings() { return useContext(SiteSettingsContext); }
+
+// ── Static page imports (no lazy loading — instant navigation) ─────────────
+// Public pages
+import Home from "@/pages/home";
+import SearchPage from "@/pages/search";
+import NotFound from "@/pages/not-found";
+import PropertyDetail from "@/pages/property-detail";
+import ComparePage from "@/pages/compare";
+import AdvertiserPage from "@/pages/advertiser";
+import PropertiesPage from "@/pages/properties";
+import AboutPage from "@/pages/about";
+import ContactPage from "@/pages/contact";
+import FaqPage from "@/pages/faq";
+import PrivacyPage from "@/pages/privacy";
+import TermsPage from "@/pages/terms";
+import SitemapPage from "@/pages/sitemap";
+import AddPropertyPage from "@/pages/add-property";
+import QuickAdPage from "@/pages/quick-ad";
+import PricingPage from "@/pages/pricing";
+import MapSearchPage from "@/pages/map-search";
+import MarketInsightsPage from "@/pages/market-insights";
+import CompanyRegisterPage from "@/pages/company-register";
+import VerifyEmailPage from "@/pages/verify-email";
+
+// Auth pages
+import AuthPage from "@/pages/login";
+import RegisterPage from "@/pages/register";
+
+// Dashboard pages
+import DashboardOverview from "@/pages/dashboard/index";
+import DashboardProperties from "@/pages/dashboard/properties";
+import DashboardPackages from "@/pages/dashboard/packages";
+import DashboardPromotions from "@/pages/dashboard/promotions";
+import DashboardMessages from "@/pages/dashboard/messages";
+import DashboardFavorites from "@/pages/dashboard/favorites";
+import DashboardSavedSearches from "@/pages/dashboard/saved-searches";
+import DashboardPayments from "@/pages/dashboard/payments";
+import DashboardSettings from "@/pages/dashboard/settings";
+import DashboardNotifications from "@/pages/dashboard/notifications";
+import DashboardReviews from "@/pages/dashboard/reviews";
+import DashboardSupport from "@/pages/dashboard/support";
+import DashboardSupportTickets from "@/pages/dashboard/support-tickets";
+import UserEditProperty from "@/pages/dashboard/edit-property";
+import SubscriptionPayPage from "@/pages/pay/subscription";
+import ListingPayPage from "@/pages/pay/listing";
+
+// Admin pages
+import AdminLogin from "@/pages/admin/login";
+import AdminDashboard from "@/pages/admin/dashboard";
+import AdminProviders from "@/pages/admin/providers";
+import AdminPayments from "@/pages/admin/payments";
+import AdminReports from "@/pages/admin/reports";
+import AdminComplaints from "@/pages/admin/complaints";
+import AdminSubscriptions from "@/pages/admin/subscriptions";
+import AdminSettings from "@/pages/admin/settings";
+import AdminUsers from "@/pages/admin/users";
+import AdminRealEstateCategories from "@/pages/admin/real-estate-categories";
+import AdminLocations from "@/pages/admin/locations";
+import AdminStaff from "@/pages/admin/staff";
+import AdminSupportTickets from "@/pages/admin/support-tickets";
+import AdminProviderEdit from "@/pages/admin/provider-edit";
+import AdminProviderDetail from "@/pages/admin/provider-detail";
+import AdminProperties from "@/pages/admin/properties";
+import AdminPropertyReview from "@/pages/admin/property-review";
+import AdminPropertyEdit from "@/pages/admin/property-edit";
+import AdminPropertyAdd from "@/pages/admin/property-add";
+import AdminWatermark from "@/pages/admin/watermark";
+import AdminSeo from "@/pages/admin/seo";
+import AdminGoogleKit from "@/pages/admin/google-kit";
+import AdminEmailTemplates from "@/pages/admin/email-templates";
+import AdminMessages from "@/pages/admin/messages";
+import AdminPlansCommissions from "@/pages/admin/plans-commissions";
+import AdminChatbot from "@/pages/admin/chatbot";
+import AdminFeaturedAreas from "@/pages/admin/featured-areas";
+import AdminPropertyFeatures from "@/pages/admin/property-features";
+import AdminPropertyTypeConfigs from "@/pages/admin/property-type-configs";
+import AdminDemoContent from "@/pages/admin/demo-content";
+import AdminBackup from "@/pages/admin/backup";
+import AdminUpdates from "@/pages/admin/updates";
+import AdminWpImport from "@/pages/admin/wp-import";
+import AdminAnalytics from "@/pages/admin/analytics";
+import AdminAds from "@/pages/admin/ads";
+import AdminPopups from "@/pages/admin/popups";
+import AdminPromotions from "@/pages/admin/promotions";
+import AdminCategories from "@/pages/admin/categories";
+import AdminCommission from "@/pages/admin/commission";
+import AdminSettingsAppearance from "@/pages/admin/settings-appearance";
+import AdminMenu from "@/pages/admin/menu";
+import { PopupRenderer } from "@/components/PopupRenderer";
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+});
+
+type AppRole = "admin" | "provider" | "user";
+
+function roleHome(role: string, staffRole?: string | null): string {
+  if (role === "admin") return "/admin/dashboard";
+  if (staffRole) return "/admin/dashboard";
+  if (role === "provider") return "/dashboard";
+  if (role === "user") return "/dashboard";
+  return "/";
+}
+
+function PageLoader() {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5 overflow-hidden">
+      <div
+        className="h-full bg-teal-500 animate-pulse"
+        style={{ animation: "page-progress 1.2s ease-in-out infinite" }}
+      />
+      <style>{`
+        @keyframes page-progress {
+          0%   { width: 0%;   margin-left: 0; }
+          50%  { width: 70%;  margin-left: 15%; }
+          100% { width: 0%;   margin-left: 100%; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function RoleProtectedRoute({
+  component: Component,
+  roles,
+  loginPath = "/login",
+}: {
+  component: ComponentType;
+  roles?: readonly AppRole[];
+  loginPath?: string;
+}) {
+  const { user, loading } = useAuth();
+  const [location] = useLocation();
+
+  if (loading) return <PageLoader />;
+
+  if (!user) {
+    const sep = loginPath.includes("?") ? "&" : "?";
+    return <Redirect to={`${loginPath}${sep}returnTo=${encodeURIComponent(location)}`} />;
+  }
+
+  if (roles?.length && !(roles as readonly string[]).includes(user.role)) {
+    return <Redirect to={roleHome(user.role, user.staffRole)} />;
+  }
+
+  return <Component />;
+}
+
+/** Allows main admin (role==="admin") OR any active staff member (staffRole set). */
+function AdminProtectedRoute({ component: Component }: { component: ComponentType }) {
+  const { user, loading } = useAuth();
+  const [location] = useLocation();
+
+  if (loading) return <PageLoader />;
+
+  if (!user) {
+    return <Redirect to={`/admin/login?returnTo=${encodeURIComponent(location)}`} />;
+  }
+
+  if (user.role !== "admin" && !user.staffRole) {
+    return <Redirect to={roleHome(user.role, user.staffRole)} />;
+  }
+
+  return <Component />;
+}
+
+// ── Router ─────────────────────────────────────────────────────────────────
+function Router() {
+  return (
+    <Switch>
+      {/* Public routes */}
+      <Route path="/" component={Home} />
+      <Route path="/search" component={SearchPage} />
+      <Route path="/add-property" component={AddPropertyPage} />
+      <Route path="/quick-ad" component={QuickAdPage} />
+      <Route path="/map-search" component={MapSearchPage} />
+      <Route path="/properties" component={PropertiesPage} />
+      <Route path="/property/:id" component={PropertyDetail} />
+      <Route path="/compare" component={ComparePage} />
+      <Route path="/advertiser/:id" component={AdvertiserPage} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/contact" component={ContactPage} />
+      <Route path="/faq" component={FaqPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/sitemap" component={SitemapPage} />
+      <Route path="/pricing" component={PricingPage} />
+      <Route path="/market" component={MarketInsightsPage} />
+
+      <Route path="/admin" component={() => <Redirect to="/admin/dashboard" />} />
+      <Route path="/provider" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/user" component={() => <Redirect to="/dashboard" />} />
+
+      {/* Auth routes */}
+      <Route path="/login">{() => <AuthPage />}</Route>
+      <Route path="/register" component={RegisterPage} />
+      <Route path="/company-register" component={CompanyRegisterPage} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
+      <Route path="/admin/login" component={AdminLogin} />
+
+      {/* Real-estate onboarding — redirected to unified add-property form */}
+      <Route path="/real-estate-onboarding">{() => <Redirect to="/add-property" />}</Route>
+
+      {/* ── Unified Dashboard (user + provider) ────────────────────────── */}
+      <Route path="/dashboard">
+        {() => <RoleProtectedRoute component={DashboardOverview} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/properties">
+        {() => <RoleProtectedRoute component={DashboardProperties} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/promotions">
+        {() => <RoleProtectedRoute component={DashboardPromotions} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/packages">
+        {() => <RoleProtectedRoute component={DashboardPackages} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/messages">
+        {() => <RoleProtectedRoute component={DashboardMessages} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/favorites">
+        {() => <RoleProtectedRoute component={DashboardFavorites} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/saved-searches">
+        {() => <RoleProtectedRoute component={DashboardSavedSearches} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/payments">
+        {() => <RoleProtectedRoute component={DashboardPayments} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/settings">
+        {() => <RoleProtectedRoute component={DashboardSettings} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/notifications">
+        {() => <RoleProtectedRoute component={DashboardNotifications} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/reviews">
+        {() => <RoleProtectedRoute component={DashboardReviews} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/inbox" component={() => <Redirect to="/dashboard/messages" />} />
+      <Route path="/dashboard/support">
+        {() => <RoleProtectedRoute component={DashboardSupport} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/support-tickets">
+        {() => <RoleProtectedRoute component={DashboardSupportTickets} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/dashboard/edit-property/:id">
+        {() => <RoleProtectedRoute component={UserEditProperty} roles={["user", "provider"]} />}
+      </Route>
+
+      {/* Checkout redirects to packages — full checkout flow not yet implemented */}
+      <Route path="/dashboard/checkout" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/checkout/result" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/pay/subscription">
+        {() => <RoleProtectedRoute component={SubscriptionPayPage} roles={["user", "provider"]} />}
+      </Route>
+      <Route path="/pay/listing">
+        {() => <RoleProtectedRoute component={ListingPayPage} roles={["user", "provider"]} />}
+      </Route>
+
+      {/* Legacy redirects — old /provider/* and /user/* URLs */}
+      <Route path="/provider/dashboard" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/provider/subscription" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/subscription" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/my-plan" component={() => <Redirect to="/dashboard/packages" />} />
+      <Route path="/dashboard/my-properties" component={() => <Redirect to="/dashboard/properties" />} />
+      <Route path="/user/dashboard" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/user/favorites" component={() => <Redirect to="/dashboard/favorites" />} />
+      <Route path="/user/saved-searches" component={() => <Redirect to="/dashboard/saved-searches" />} />
+      <Route path="/user/payments" component={() => <Redirect to="/dashboard/payments" />} />
+      <Route path="/user/inbox" component={() => <Redirect to="/dashboard/messages" />} />
+      <Route path="/user/support" component={() => <Redirect to="/dashboard/support" />} />
+      <Route path="/user/settings" component={() => <Redirect to="/dashboard/settings" />} />
+      <Route path="/user/profile" component={() => <Redirect to="/dashboard/settings" />} />
+      <Route path="/user/my-properties" component={() => <Redirect to="/dashboard/properties" />} />
+      <Route path="/user/add-property" component={() => <Redirect to="/add-property" />} />
+      <Route path="/user/edit-property/:id">
+        {(params) => <Redirect to={`/dashboard/edit-property/${params.id}`} />}
+      </Route>
+
+      <Route path="/user/reviews" component={() => <Redirect to="/dashboard/reviews" />} />
+
+      {/* Admin routes */}
+      <Route path="/admin/dashboard">
+        {() => <AdminProtectedRoute component={AdminDashboard} />}
+      </Route>
+      <Route path="/admin/providers">
+        {() => <AdminProtectedRoute component={AdminProviders} />}
+      </Route>
+      <Route path="/admin/providers/:id/edit">
+        {() => <AdminProtectedRoute component={AdminProviderEdit} />}
+      </Route>
+      <Route path="/admin/providers/:id">
+        {() => <AdminProtectedRoute component={AdminProviderDetail} />}
+      </Route>
+      <Route path="/admin/properties">
+        {() => <AdminProtectedRoute component={AdminProperties} />}
+      </Route>
+      <Route path="/admin/properties/new">
+        {() => <AdminProtectedRoute component={AdminPropertyAdd} />}
+      </Route>
+      <Route path="/admin/properties/:id/review">
+        {() => <AdminProtectedRoute component={AdminPropertyReview} />}
+      </Route>
+      <Route path="/admin/properties/:id/edit">
+        {() => <AdminProtectedRoute component={AdminPropertyEdit} />}
+      </Route>
+      <Route path="/admin/watermark">
+        {() => <AdminProtectedRoute component={AdminWatermark} />}
+      </Route>
+      <Route path="/admin/seo">
+        {() => <AdminProtectedRoute component={AdminSeo} />}
+      </Route>
+      <Route path="/admin/google-kit">
+        {() => <AdminProtectedRoute component={AdminGoogleKit} />}
+      </Route>
+      <Route path="/admin/payments">
+        {() => <AdminProtectedRoute component={AdminPayments} />}
+      </Route>
+      <Route path="/admin/reports">
+        {() => <AdminProtectedRoute component={AdminReports} />}
+      </Route>
+      <Route path="/admin/complaints">
+        {() => <AdminProtectedRoute component={AdminComplaints} />}
+      </Route>
+      <Route path="/admin/subscriptions">
+        {() => <AdminProtectedRoute component={AdminSubscriptions} />}
+      </Route>
+      <Route path="/admin/settings">
+        {() => <AdminProtectedRoute component={AdminSettings} />}
+      </Route>
+      <Route path="/admin/users">
+        {() => <AdminProtectedRoute component={AdminUsers} />}
+      </Route>
+      <Route path="/admin/real-estate-categories">
+        {() => <AdminProtectedRoute component={AdminRealEstateCategories} />}
+      </Route>
+      <Route path="/admin/locations">
+        {() => <AdminProtectedRoute component={AdminLocations} />}
+      </Route>
+      <Route path="/admin/support-tickets">
+        {() => <AdminProtectedRoute component={AdminSupportTickets} />}
+      </Route>
+      <Route path="/admin/staff">
+        {() => <AdminProtectedRoute component={AdminStaff} />}
+      </Route>
+      <Route path="/admin/email-templates">
+        {() => <AdminProtectedRoute component={AdminEmailTemplates} />}
+      </Route>
+      <Route path="/admin/messages">
+        {() => <AdminProtectedRoute component={AdminMessages} />}
+      </Route>
+      <Route path="/admin/plans-commissions">
+        {() => <AdminProtectedRoute component={AdminPlansCommissions} />}
+      </Route>
+      <Route path="/admin/chatbot">
+        {() => <AdminProtectedRoute component={AdminChatbot} />}
+      </Route>
+      <Route path="/admin/featured-areas">
+        {() => <AdminProtectedRoute component={AdminFeaturedAreas} />}
+      </Route>
+      <Route path="/admin/property-features">
+        {() => <AdminProtectedRoute component={AdminPropertyFeatures} />}
+      </Route>
+      <Route path="/admin/property-type-configs">
+        {() => <AdminProtectedRoute component={AdminPropertyTypeConfigs} />}
+      </Route>
+      <Route path="/admin/demo-content">
+        {() => <AdminProtectedRoute component={AdminDemoContent} />}
+      </Route>
+      <Route path="/admin/backup">
+        {() => <AdminProtectedRoute component={AdminBackup} />}
+      </Route>
+      <Route path="/admin/updates">
+        {() => <AdminProtectedRoute component={AdminUpdates} />}
+      </Route>
+      <Route path="/admin/wp-import">
+        {() => <AdminProtectedRoute component={AdminWpImport} />}
+      </Route>
+      <Route path="/admin/analytics">
+        {() => <AdminProtectedRoute component={AdminAnalytics} />}
+      </Route>
+      <Route path="/admin/ads">
+        {() => <AdminProtectedRoute component={AdminAds} />}
+      </Route>
+      <Route path="/admin/popups">
+        {() => <AdminProtectedRoute component={AdminPopups} />}
+      </Route>
+      <Route path="/admin/promotions">
+        {() => <AdminProtectedRoute component={AdminPromotions} />}
+      </Route>
+      <Route path="/admin/categories">
+        {() => <AdminProtectedRoute component={AdminCategories} />}
+      </Route>
+      <Route path="/admin/commission">
+        {() => <AdminProtectedRoute component={AdminCommission} />}
+      </Route>
+      <Route path="/admin/settings-appearance">
+        {() => <AdminProtectedRoute component={AdminSettingsAppearance} />}
+      </Route>
+      <Route path="/admin/menu">
+        {() => <AdminProtectedRoute component={AdminMenu} />}
+      </Route>
+
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function FaviconUpdater() {
+  const { data: settings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: api.settings.list,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
+  });
+
+  useEffect(() => {
+    const faviconUrl = settings?.faviconUrl;
+    if (!faviconUrl) return;
+    const url = mediaUrl(faviconUrl);
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = url;
+  }, [settings?.faviconUrl]);
+
+  return null;
+}
+
+function GoogleWrapper({ children }: { children: React.ReactNode }) {
+  const { data: settings } = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: api.settings.list,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
+  });
+  const clientId = (settings as SiteSettings & { googleClientId?: string })?.googleClientId
+    || import.meta.env.VITE_GOOGLE_CLIENT_ID
+    || "";
+
+  return (
+    <SiteSettingsContext.Provider value={settings ?? null}>
+      <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>
+    </SiteSettingsContext.Provider>
+  );
+}
+
+function SseConnector() {
+  useSse(true);
+  return null;
+}
+
+/* ── AdSense Auto Ads global loader ────────────────────────────────────── */
+function AdSenseAutoAdsLoader() {
+  const settings = useSiteSettings();
+  const publisherId = settings?.adsensePublisherId || "";
+  const autoAdsEnabled = settings?.adsenseAutoAdsEnabled === "true";
+
+  useEffect(() => {
+    if (!publisherId || !autoAdsEnabled) return;
+    // Check if already loaded
+    if (document.querySelector(`script[src*="pagead2.googlesyndication.com"]`)) return;
+    const s = document.createElement("script");
+    s.async = true;
+    s.crossOrigin = "anonymous";
+    s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`;
+    document.head.appendChild(s);
+    // Enable page-level Auto Ads
+    try {
+      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      (window as any).adsbygoogle.push({
+        google_ad_client: publisherId,
+        enable_page_level_ads: true,
+      });
+    } catch {}
+  }, [publisherId, autoAdsEnabled]);
+
+  return null;
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <AuthProvider>
+          <GoogleWrapper>
+            <TooltipProvider>
+              <SseConnector />
+              <FaviconUpdater />
+              <AdSenseAutoAdsLoader />
+              <ThemeProvider />
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <ScrollRestorer />
+                <Router />
+              </WouterRouter>
+              <ScrollToTopButton />
+              <PopupRenderer />
+              <Toaster />
+              <HotToaster position="top-center" />
+            </TooltipProvider>
+          </GoogleWrapper>
+        </AuthProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

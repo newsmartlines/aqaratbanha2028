@@ -1,0 +1,297 @@
+import { Router } from "express";
+import { db } from "@workspace/db";
+import {
+  paymentTransactionsTable,
+  paymentsTable,
+  providersTable,
+  usersTable,
+  packagesTable,
+  subscriptionsTable,
+} from "@workspace/db";
+import { eq, desc, and, inArray } from "drizzle-orm";
+import { getSession } from "./auth";
+
+const router = Router();
+
+async function getSessionUser(req: import("express").Request) {
+  const token =
+    (req.cookies as Record<string, string> | undefined)?.session ??
+    (req.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, "");
+  if (!token) return null;
+  return getSession(token);
+}
+
+function calcTotals(rows: Array<{ status: string; amount: string }>) {
+  const t = { paid: 0, pending: 0, failed: 0, paidAmount: 0, pendingAmount: 0, failedAmount: 0 };
+  for (const r of rows) {
+    const amt = parseFloat(String(r.amount ?? "0")) || 0;
+    if (r.status === "paid")         { t.paid++;    t.paidAmount    += amt; }
+    else if (r.status === "pending") { t.pending++; t.pendingAmount += amt; }
+    else                              { t.failed++;  t.failedAmount  += amt; }
+  }
+  return t;
+}
+
+/**
+ * GET /users/me/payments
+ * Returns the logged-in user's outgoing payment transactions.
+ */
+router.get("/users/me/payments", async (req, res) => {
+  try {
+    const session = await getSessionUser(req);
+    if (!session) return res.status(401).json({ success: false, error: "يجب تسجيل الدخول" });
+
+    const userId = session.userId;
+
+    // 1) payment_transactions where user_id = me (service request payments)
+    const txRows = await db
+      .select({
+        id: paymentTransactionsTable.id,
+        refId: paymentTransactionsTable.refId,
+        kind: paymentTransactionsTable.kind,
+        providerId: paymentTransactionsTable.providerId,
+        serviceId: paymentTransactionsTable.serviceId,
+        amount: paymentTransactionsTable.amount,
+        commissionAmount: paymentTransactionsTable.commissionAmount,
+        currency: paymentTransactionsTable.currency,
+        gateway: paymentTransactionsTable.gateway,
+        gatewayRef: paymentTransactionsTable.gatewayRef,
+        status: paymentTransactionsTable.status,
+        paidAt: paymentTransactionsTable.paidAt,
+        createdAt: paymentTransactionsTable.createdAt,
+        providerUserId: providersTable.userId,
+      })
+      .from(paymentTransactionsTable)
+      .leftJoin(providersTable, eq(paymentTransactionsTable.providerId, providersTable.id))
+      .where(eq(paymentTransactionsTable.userId, userId))
+      .orderBy(desc(paymentTransactionsTable.createdAt));
+
+    const providerIds = [...new Set(txRows.map((r) => r.providerUserId).filter(Boolean))] as number[];
+    const providerUsers = providerIds.length
+      ? await db.select({ id: usersTable.id, name: usersTable.name }).from(usersTable)
+          .where(inArray(usersTable.id, providerIds))
+      : [];
+
+    const provUserMap = new Map(providerUsers.map((u) => [u.id, u.name]));
+
+    const rows = txRows.map((r) => ({
+      id: r.id,
+      refId: r.refId,
+      kind: r.kind,
+      providerId: r.providerId,
+      providerName: r.providerUserId ? (provUserMap.get(r.providerUserId) ?? null) : null,
+      serviceId: null,
+      serviceTitle: null,
+      amount: r.amount,
+      commissionAmount: r.commissionAmount,
+      currency: r.currency,
+      status: r.status as "pending" | "paid" | "failed" | "cancelled",
+      gateway: r.gateway,
+      gatewayRef: r.gatewayRef,
+      paidAt: r.paidAt ? r.paidAt.toISOString() : null,
+      createdAt: r.createdAt.toISOString(),
+    }));
+
+    // 2) paymentsTable subscription records for this user (covers both user subs and provider subs via subscription-request)
+    const paySubRows = await db
+      .select({
+        id: paymentsTable.id,
+        invoiceId: paymentsTable.invoiceId,
+        planName: paymentsTable.planName,
+        amount: paymentsTable.amount,
+        status: paymentsTable.status,
+        createdAt: paymentsTable.createdAt,
+      })
+      .from(paymentsTable)
+      .where(and(eq(paymentsTable.userId, userId), eq(paymentsTable.type, "subscription")))
+      .orderBy(desc(paymentsTable.createdAt));
+
+    const paySubMapped = paySubRows.map((p) => ({
+      id: -(p.id + 2_000_000),
+      refId: p.invoiceId ?? `PAY-${p.id}`,
+      kind: "subscription",
+      providerId: null as number | null,
+      providerName: null as string | null,
+      serviceId: null,
+      serviceTitle: p.planName ?? "اشتراك في باقة",
+      amount: p.amount,
+      commissionAmount: "0",
+      currency: "EGP",
+      status: p.status as "pending" | "paid" | "failed" | "cancelled",
+      gateway: "manual",
+      gatewayRef: null,
+      paidAt: p.status === "paid" ? p.createdAt.toISOString() : null,
+      createdAt: p.createdAt.toISOString(),
+    }));
+
+    // 3) Legacy: provider subscriptions linked to this user via old packages flow
+    const subRows = await db
+      .select({
+        id: subscriptionsTable.id,
+        packageId: subscriptionsTable.packageId,
+        providerId: subscriptionsTable.providerId,
+        startDate: subscriptionsTable.startDate,
+        status: subscriptionsTable.status,
+        amount: packagesTable.price,
+        packageNameAr: packagesTable.nameAr,
+      })
+      .from(subscriptionsTable)
+      .leftJoin(packagesTable, eq(subscriptionsTable.packageId, packagesTable.id))
+      .leftJoin(providersTable, eq(subscriptionsTable.providerId, providersTable.id))
+      .where(eq(providersTable.userId, userId))
+      .orderBy(desc(subscriptionsTable.createdAt));
+
+    const subPaymentRows = subRows.map((s) => ({
+      id: -s.id,
+      refId: `SUB-${s.id}`,
+      kind: "subscription",
+      providerId: s.providerId,
+      providerName: null,
+      serviceId: null,
+      serviceTitle: s.packageNameAr ?? "اشتراك",
+      amount: s.amount ?? "0",
+      commissionAmount: "0",
+      currency: "EGP",
+      status: (s.status === "active" || s.status === "expired" ? "paid" : "pending") as "pending" | "paid" | "failed" | "cancelled",
+      gateway: "manual",
+      gatewayRef: null,
+      paidAt: s.startDate ? new Date(s.startDate).toISOString() : null,
+      createdAt: s.startDate ? new Date(s.startDate).toISOString() : new Date().toISOString(),
+    }));
+
+    // Merge all, deduplicate by invoiceId so paymentsTable records don't double-count legacy subs
+    const seenRefs = new Set(paySubMapped.map(r => r.refId).filter(Boolean));
+    const filteredLegacy = subPaymentRows.filter(r => !r.refId || !seenRefs.has(r.refId));
+    const allRows = [...rows, ...paySubMapped, ...filteredLegacy].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    const totals = calcTotals(allRows);
+
+    res.json({ success: true, rows: allRows, totals });
+  } catch (e) {
+    console.error("user payments error", e);
+    res.status(500).json({ success: false, error: "Failed to fetch payments" });
+  }
+});
+
+/**
+ * GET /providers/me/payments
+ * Returns the logged-in provider's incoming payment transactions.
+ */
+router.get("/providers/me/payments", async (req, res) => {
+  try {
+    const session = await getSessionUser(req);
+    if (!session) return res.status(401).json({ success: false, error: "يجب تسجيل الدخول" });
+
+    const [provRow] = await db
+      .select({ id: providersTable.id })
+      .from(providersTable)
+      .where(eq(providersTable.userId, session.userId));
+
+    if (!provRow) return res.status(404).json({ success: false, error: "لم يتم العثور على مزود" });
+
+    const providerId = provRow.id;
+
+    const txRows = await db
+      .select({
+        id: paymentTransactionsTable.id,
+        refId: paymentTransactionsTable.refId,
+        kind: paymentTransactionsTable.kind,
+        userId: paymentTransactionsTable.userId,
+        serviceId: paymentTransactionsTable.serviceId,
+        amount: paymentTransactionsTable.amount,
+        commissionAmount: paymentTransactionsTable.commissionAmount,
+        currency: paymentTransactionsTable.currency,
+        gateway: paymentTransactionsTable.gateway,
+        status: paymentTransactionsTable.status,
+        paidAt: paymentTransactionsTable.paidAt,
+        createdAt: paymentTransactionsTable.createdAt,
+      })
+      .from(paymentTransactionsTable)
+      .where(eq(paymentTransactionsTable.providerId, providerId))
+      .orderBy(desc(paymentTransactionsTable.createdAt));
+
+    const userIds = [...new Set(txRows.map((r) => r.userId).filter(Boolean))] as number[];
+    const customerRows: { id: number; name: string | null; phone: string | null }[] = userIds.length
+      ? await db.select({ id: usersTable.id, name: usersTable.name, phone: usersTable.phone })
+          .from(usersTable)
+          .where(inArray(usersTable.id, userIds))
+      : [];
+
+    const custMap = new Map(customerRows.map((c) => [c.id, c]));
+
+    const rows = txRows.map((r) => {
+      const cust = r.userId ? custMap.get(r.userId) : null;
+      return {
+        id: r.id,
+        refId: r.refId,
+        kind: r.kind,
+        userId: r.userId,
+        customerName: cust?.name ?? null,
+        customerPhone: cust?.phone ?? null,
+        serviceId: null,
+        serviceTitle: null,
+        amount: r.amount,
+        commissionAmount: r.commissionAmount,
+        currency: r.currency,
+        status: r.status as "pending" | "paid" | "failed" | "cancelled",
+        gateway: r.gateway,
+        paidAt: r.paidAt ? r.paidAt.toISOString() : null,
+        createdAt: r.createdAt.toISOString(),
+      };
+    });
+
+    // ── Subscription payments from paymentsTable (billing plan + package subscriptions)
+    // These are recorded by POST /providers/:id/subscribe and must appear in مدفوعاتي
+    const subPayRows = await db
+      .select({
+        id: paymentsTable.id,
+        type: paymentsTable.type,
+        amount: paymentsTable.amount,
+        status: paymentsTable.status,
+        invoiceId: paymentsTable.invoiceId,
+        createdAt: paymentsTable.createdAt,
+      })
+      .from(paymentsTable)
+      .where(and(
+        eq(paymentsTable.providerId, providerId),
+        eq(paymentsTable.type, "subscription"),
+      ))
+      .orderBy(desc(paymentsTable.createdAt));
+
+    const subRows = subPayRows.map((r) => ({
+      id: -(r.id + 1_000_000),
+      refId: r.invoiceId ?? `SUB-${r.id}`,
+      kind: "subscription",
+      userId: null as number | null,
+      customerName: null as string | null,
+      customerPhone: null as string | null,
+      serviceId: null as number | null,
+      serviceTitle: "اشتراك في باقة",
+      amount: r.amount,
+      commissionAmount: "0" as string | null,
+      currency: "EGP",
+      status: (r.status ?? "paid") as "pending" | "paid" | "failed" | "cancelled",
+      gateway: "manual",
+      paidAt: r.createdAt ? r.createdAt.toISOString() : null,
+      createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
+    }));
+
+    const allRows = [...rows, ...subRows].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+    const baseTotals = calcTotals(allRows);
+    const netEarnings = allRows
+      .filter((r) => r.status === "paid")
+      .reduce((s, r) => s + (parseFloat(String(r.amount)) || 0), 0);
+
+    res.json({ success: true, rows: allRows, totals: { ...baseTotals, netEarnings } });
+  } catch (e) {
+    console.error("provider payments error", e);
+    res.status(500).json({ success: false, error: "Failed to fetch provider payments" });
+  }
+});
+
+export default router;
