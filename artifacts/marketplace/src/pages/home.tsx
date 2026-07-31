@@ -242,7 +242,7 @@ export default function Home() {
   const [heroRegionId, setHeroRegionId] = useState<number | null>(null);
   /** null = كل المدن ضمن نطاق المنطقة */
   const [heroCityName, setHeroCityName] = useState<string | null>(null);
-  /** اسم الحي / المنطقة المختارة في بنها */
+  /** اسم الحي / المنطقة المختارة في الإسكندرية */
   const [heroAreaName, setHeroAreaName] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCat, setExpandedCat] = useState<number | null>(null);
@@ -351,7 +351,7 @@ export default function Home() {
   }, [heroRegionId]);
 
 
-  const siteName = (settings as SiteSettings | undefined)?.siteName ?? "عقارات بنها";
+  const siteName = (settings as SiteSettings | undefined)?.siteName ?? "عقارات الإسكندرية";
   const _ctaText = (settings as SiteSettings | undefined)?.ctaText ?? "ندعم المشاريع المنزلية ونضمن حقوقك";
   const _ctaButtonText = (settings as SiteSettings | undefined)?.ctaButtonText ?? "انضم إلينا الآن";
   const heroImage = (settings as SiteSettings | undefined)?.heroImage ?? "";
@@ -439,17 +439,17 @@ export default function Home() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-semibold rounded-full px-4 py-1.5 mb-5">
               <MapPin className="w-3.5 h-3.5 text-primary" />
-              بنها — القليوبية — مصر
+              الإسكندرية — مصر
             </div>
 
             {/* Headline */}
             <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight mb-3 max-w-2xl drop-shadow">
               {heroTitle || (
-                <>اعثر على <span className="text-primary">عقارك المثالي</span> في بنها</>
+                <>اعثر على <span className="text-primary">عقارك المثالي</span> في الإسكندرية</>
               )}
             </h1>
             <p className="text-white/70 text-sm md:text-base mb-8 max-w-lg">
-              بيع وإيجار عقارات بنها — أسرع وأوثق
+              بيع وإيجار عقارات الإسكندرية — أسرع وأوثق
             </p>
 
             {/* ── Search Card ── */}
@@ -631,7 +631,7 @@ export default function Home() {
                 {/* Featured Areas — admin-managed, with property counts */}
                 <div className="w-36 shrink-0">
                   {(() => {
-                    /* أحياء بنها الفعلية من جدول areas — نستبعد عنصر "كل المناطق" الأول */
+                    /* أحياء الإسكندرية الفعلية من جدول areas — نستبعد عنصر "كل المناطق" الأول */
                     const areaOptions = heroCityOptions.filter(a => a.value !== "__all__");
                     const selAreaLabel = heroAreaName ?? "كل المناطق";
                     return (
@@ -829,7 +829,7 @@ export default function Home() {
           const thumb = imgs[0] ?? DEFAULT_IMG;
           const priceNum = Number(sp.price);
           const priceStr = priceNum ? priceNum.toLocaleString("en-US") : "";
-          const location = [sp.district, sp.city].filter(Boolean).join("، ") || "بنها";
+          const location = [sp.district, sp.city].filter(Boolean).join("، ") || "الإسكندرية";
           const beds = Number(sp.bedrooms ?? 0);
           const baths = Number(sp.bathrooms ?? 0);
           const area = Number(sp.area ?? 0);
@@ -984,7 +984,7 @@ export default function Home() {
           const MiniCard = ({ property }: { property: any }) => {
             const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
             const thumb = imgs[0] ?? DEFAULT_IMG;
-            const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
+            const location = [property.district, property.city].filter(Boolean).join("، ") || "الإسكندرية";
             const priceNum = Number(property.price);
             const priceStr = priceNum ? priceNum.toLocaleString("en-US") : "غير محدد";
             const listType = property.listingType ?? "";

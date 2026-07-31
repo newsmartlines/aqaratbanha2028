@@ -67,7 +67,7 @@ function HoverCard({ property, visible, onNavigate }: {
 }) {
   const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
   const thumb = imgs[0] ?? DEFAULT_IMG;
-  const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
+  const location = [property.district, property.city].filter(Boolean).join("، ") || "الإسكندرية";
   const listType = property.listingType ?? "";
 
   return (
@@ -162,8 +162,8 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
     }));
   }, [categories]);
 
-  const sectionTitle    = settings?.featuredSectionTitle    ?? "اكتشف أفضل العقارات في بنها";
-  const sectionSubtitle = settings?.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.";
+  const sectionTitle    = settings?.featuredSectionTitle    ?? "اكتشف أفضل العقارات في الإسكندرية";
+  const sectionSubtitle = settings?.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة الإسكندرية.";
   const countSetting    = settings?.featuredSectionCount    ?? "8";
   const customCount     = parseInt(settings?.featuredSectionCustomCount ?? "12", 10);
   const columnsSetting  = settings?.featuredSectionColumns  ?? "3";
@@ -278,11 +278,11 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
               العقارات المميزة
             </div>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-              {sectionTitle.includes("بنها") ? (
+              {sectionTitle.includes("الإسكندرية") ? (
                 <>
-                  {sectionTitle.split("بنها")[0]}
-                  <span className="text-primary">بنها</span>
-                  {sectionTitle.split("بنها")[1]}
+                  {sectionTitle.split("الإسكندرية")[0]}
+                  <span className="text-primary">الإسكندرية</span>
+                  {sectionTitle.split("الإسكندرية")[1]}
                 </>
               ) : sectionTitle}
             </h2>
@@ -357,7 +357,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
           <div className={`grid ${columnsClass} gap-5`}>
             {displayed.map((property: any, idx: number) => {
               const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
-              const location = [property.district, property.city].filter(Boolean).join("، ") || "بنها";
+              const location = [property.district, property.city].filter(Boolean).join("، ") || "الإسكندرية";
               const listType = property.listingType ?? "";
               const isFav = homeFavIds.includes(property.id);
               const isFeatured = !!property.featured;
@@ -486,7 +486,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
                                 price: property.price?.toString() ?? "",
                                 priceNum: Number(property.price),
                                 image: imgs2[0] ?? "",
-                                location: [property.district, property.city].filter(Boolean).join("، ") || "بنها",
+                                location: [property.district, property.city].filter(Boolean).join("، ") || "الإسكندرية",
                                 beds: property.rooms ?? 0,
                                 baths: property.bathrooms ?? 0,
                                 area: property.area ?? 0,

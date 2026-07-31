@@ -65,7 +65,7 @@ export default function SitemapPage() {
             <Map className="w-7 h-7" />
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold mb-3">خريطة الموقع</h1>
-          <p className="text-primary-foreground/80 text-lg">دليل بجميع صفحات منصة عقارات بنها</p>
+          <p className="text-primary-foreground/80 text-lg">دليل بجميع صفحات منصة عقارات الإسكندرية</p>
         </div>
       </div>
 

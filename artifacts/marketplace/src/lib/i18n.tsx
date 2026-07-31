@@ -126,5 +126,5 @@ export const commonDict = {
   notifications: { ar: "الإشعارات", en: "Notifications" },
   markAllRead: { ar: "تعليم الكل كمقروء", en: "Mark all as read" },
   noNotifications: { ar: "لا توجد إشعارات", en: "No notifications" },
-  backToSite: { ar: "العودة إلى عقارات بنها", en: "Back to Aqarat Banha" },
+  backToSite: { ar: "العودة إلى عقارات الإسكندرية", en: "Back to Aqarat Alexandria" },
 } satisfies Dict;

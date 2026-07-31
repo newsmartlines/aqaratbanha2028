@@ -11,8 +11,8 @@ export default function AboutPage() {
     queryFn: api.settings.list,
   });
 
-  const siteName = settings?.siteName ?? "عقارات بنها";
-  const aboutContent = settings?.aboutContent ?? "نحن منصة عقارات بنها، الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية.";
+  const siteName = settings?.siteName ?? "عقارات الإسكندرية";
+  const aboutContent = settings?.aboutContent ?? "نحن منصة عقارات الإسكندرية، الوجهة الأولى لبيع وشراء وإيجار العقارات في محافظة الإسكندرية.";
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -23,7 +23,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold mb-4">من نحن</h1>
           <p className="text-primary-foreground/80 text-xl max-w-2xl mx-auto">
-            نعرّفك على {siteName} — المنصة العقارية الأولى في بنها والقليوبية
+            نعرّفك على {siteName} — المنصة العقارية الأولى في الإسكندرية
           </p>
         </div>
       </div>

@@ -20,7 +20,7 @@ export default function ContactPage() {
     queryFn: api.settings.list,
   });
 
-  const siteName = settings?.siteName ?? "عقارات بنها";
+  const siteName = settings?.siteName ?? "عقارات الإسكندرية";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

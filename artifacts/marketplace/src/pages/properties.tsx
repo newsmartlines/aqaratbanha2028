@@ -1409,7 +1409,7 @@ export default function PropertiesPage() {
                               {/* Location */}
                               <div className="flex items-center gap-1 text-gray-500 text-xs mb-3">
                                 <MapPin className="w-3 h-3 text-primary shrink-0" />
-                                <span className="line-clamp-1">{p.location || p.district || "بنها"}</span>
+                                <span className="line-clamp-1">{p.location || p.district || "الإسكندرية"}</span>
                               </div>
 
                               {/* Specs row */}

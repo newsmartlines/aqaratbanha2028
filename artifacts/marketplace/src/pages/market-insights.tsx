@@ -251,7 +251,7 @@ export default function MarketInsightsPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="flex items-center gap-2 text-white/60 text-sm mb-3">
               <MapPin className="w-4 h-4" />
-              <span>مصر — محافظة القليوبية والقاهرة والجيزة</span>
+              <span>مصر — محافظة الإسكندرية</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black mb-2">مؤشرات السوق العقاري</h1>
             <p className="text-white/70 text-base max-w-lg">

@@ -1012,7 +1012,7 @@ export default function SearchPage() {
     const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
     const priceStr = Number(p.price) ? Number(p.price).toLocaleString("en-US") : null;
     const typeAr = LISTING_TYPE_MAP[p.listingType] ?? p.listingType;
-    const loc = [p.district, p.address].filter(Boolean).join("، ") || "بنها";
+    const loc = [p.district, p.address].filter(Boolean).join("، ") || "الإسكندرية";
     const wa = (p.whatsapp ?? p.phone ?? "").replace(/\D/g, "");
     const descSnippet = p.description ? p.description.slice(0, 110) : null;
     const logoSrc = p.agentLogo || p.agentAvatar;
@@ -1192,7 +1192,7 @@ export default function SearchPage() {
   const GridCard = ({ p, idx }: { p: PropertyResult; idx: number }) => {
     const imgs: string[] = (() => { try { return JSON.parse(p.images ?? "[]"); } catch { return []; } })();
     const priceStr = Number(p.price) ? Number(p.price).toLocaleString("en-US") : null;
-    const loc = [p.district, p.address].filter(Boolean).join("، ") || "بنها";
+    const loc = [p.district, p.address].filter(Boolean).join("، ") || "الإسكندرية";
 
     return (
       <PropertyTooltip property={{ id: p.id, title: p.title, description: p.description, price: p.price, listingType: p.listingType, district: p.district, address: p.address, mainCategory: CATEGORY_MAP[p.mainCategory] ?? p.mainCategory, rooms: p.rooms, bathrooms: p.bathrooms, area: p.area, images: p.images }}>

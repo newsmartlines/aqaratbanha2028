@@ -41,7 +41,7 @@ export function Header() {
   });
   const notifCount = typeof notifUnread === "number" ? notifUnread : 0;
 
-  const siteName = settings?.siteName ?? "عقارات بنها";
+  const siteName = settings?.siteName ?? "عقارات الإسكندرية";
   const logoUrl = settings?.logoUrl;
 
   const { data: menuData } = useQuery<{ id: number; label: string; href: string; icon: string | null; openInNewTab: boolean }[]>({
@@ -126,7 +126,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <img
               src="/logo.png"
-              alt="عقارات بنها"
+              alt="عقارات الإسكندرية"
               className="h-10 w-auto object-contain"
               onError={e => {
                 e.currentTarget.style.display = "none";
