@@ -89,8 +89,8 @@ type SCItem = SCCluster | SCPoint;
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const BANHA_LAT = 30.468;
-const BANHA_LNG = 31.183;
+const BANHA_LAT = 31.2001;
+const BANHA_LNG = 29.9187;
 
 /** Zoom level at which Supercluster stops clustering (individual circles appear). */
 const CLUSTER_MAX_ZOOM = 15;

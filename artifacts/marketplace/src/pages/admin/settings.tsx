@@ -707,7 +707,7 @@ export default function AdminSettings() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>رابط الموقع الرسمي (Canonical URL)</Label>
-                  <Input dir="ltr" value={form.siteUrl ?? ""} onChange={e => setForm(f => ({ ...f, siteUrl: e.target.value }))} placeholder="https://www.aqaratbanha.com" />
+                  <Input dir="ltr" value={form.siteUrl ?? ""} onChange={e => setForm(f => ({ ...f, siteUrl: e.target.value }))} placeholder="https://www.aqaralex.com" />
                 </div>
                 <Button onClick={() => handleSave({
                   metaTitle: form.metaTitle, metaDescription: form.metaDescription,
@@ -863,7 +863,7 @@ export default function AdminSettings() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>بريد المرسل (From Email)</Label>
-                  <Input dir="ltr" value={smtpForm.smtpFromEmail} onChange={e => setSmtpForm(s => ({ ...s, smtpFromEmail: e.target.value }))} placeholder="noreply@aqaratbanha.com" />
+                  <Input dir="ltr" value={smtpForm.smtpFromEmail} onChange={e => setSmtpForm(s => ({ ...s, smtpFromEmail: e.target.value }))} placeholder="noreply@aqaralex.com" />
                 </div>
               </div>
 

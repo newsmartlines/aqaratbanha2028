@@ -47,7 +47,7 @@ async function sendEmail(opts: {
         secure: cfg.smtpSecure === "true", auth: { user: cfg.smtpUser, pass: cfg.smtpPass },
       } as any);
       await transporter.sendMail({
-        from: `"${cfg.smtpFromName || "عقارات بنها"}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
+        from: `"${cfg.smtpFromName || "عقارات الإسكندرية"}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
         to: opts.toName ? `"${opts.toName}" <${opts.to}>` : opts.to,
         subject: opts.subject, html: opts.html,
       });
@@ -1352,7 +1352,7 @@ router.post("/admin/email/templates/:id/preview", async (req, res) => {
     const [tpl] = await db.select().from(emailTemplatesTable).where(eq(emailTemplatesTable.id, id));
     if (!tpl) return res.status(404).json({ success: false, error: "Template not found" });
     const vars: Record<string, string> = {
-      siteName: (await getSetting("siteName")) ?? "عقارات بنها",
+      siteName: (await getSetting("siteName")) ?? "عقارات الإسكندرية",
       siteUrl: (await getSetting("siteUrl")) ?? "https://example.com",
       contactEmail: (await getSetting("contactEmail")) ?? "info@example.com",
       year: new Date().getFullYear().toString(),
@@ -1378,7 +1378,7 @@ router.post("/admin/email/send", async (req, res) => {
       if (!tpl) return res.status(404).json({ success: false, error: "Template not found" });
       templateName = tpl.name;
       const vars: Record<string, string> = {
-        siteName: (await getSetting("siteName")) ?? "عقارات بنها",
+        siteName: (await getSetting("siteName")) ?? "عقارات الإسكندرية",
         siteUrl: (await getSetting("siteUrl")) ?? "https://example.com",
         contactEmail: (await getSetting("contactEmail")) ?? "info@example.com",
         year: new Date().getFullYear().toString(),
@@ -1455,7 +1455,7 @@ router.post("/admin/email/smtp/test", async (req, res) => {
     if (!cfg.smtpHost || !cfg.smtpUser || !cfg.smtpPass)
       return res.json({ success: false, error: "SMTP غير مُضبوط — أدخل Host واسم المستخدم وكلمة المرور أولاً" });
 
-    const siteName = (await getSetting("siteName")) ?? "عقارات بنها";
+    const siteName = (await getSetting("siteName")) ?? "عقارات الإسكندرية";
     const siteUrl  = (await getSetting("siteUrl"))  ?? "";
     const testTo   = (body.testTo as string | undefined) || cfg.smtpUser;
     const year     = new Date().getFullYear();
@@ -1554,7 +1554,7 @@ router.post("/contact", async (req, res) => {
       return res.status(400).json({ success: false, error: "الاسم والبريد الإلكتروني والرسالة مطلوبة" });
 
     const contactEmail = (await getSetting("contactEmail")) ?? "";
-    const siteName    = (await getSetting("siteName"))    ?? "عقارات بنها";
+    const siteName    = (await getSetting("siteName"))    ?? "عقارات الإسكندرية";
     const siteUrl     = (await getSetting("siteUrl"))     ?? "";
     const year        = new Date().getFullYear().toString();
 

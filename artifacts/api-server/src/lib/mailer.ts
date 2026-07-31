@@ -43,7 +43,7 @@ function getDbSlug(eventType: string): string {
 // ─── Base HTML wrapper ────────────────────────────────────────────────────────
 
 function baseHtml(content: string, cfg: Record<string, string>): string {
-  const siteName  = cfg.siteName  || "عقارات بنها";
+  const siteName  = cfg.siteName  || "عقارات الإسكندرية";
   const siteUrl   = cfg.siteUrl   || "#";
   const contactEmail = cfg.contactEmail || "";
   const year      = new Date().getFullYear();
@@ -154,7 +154,7 @@ type EmailEvent =
 
 function buildEmailContent(event: EmailEvent, cfg: Record<string, string>): { subject: string; html: string } {
   const siteUrl = cfg.siteUrl || "#";
-  const siteName = cfg.siteName || "عقارات بنها";
+  const siteName = cfg.siteName || "عقارات الإسكندرية";
 
   switch (event.type) {
 
@@ -384,7 +384,7 @@ async function sendMail(opts: {
       if (tpl?.isActive && tpl.htmlBody) {
         // Render DB template with vars
         const vars = opts.event as unknown as Record<string, string>;
-        vars.siteName = cfg.siteName || "عقارات بنها";
+        vars.siteName = cfg.siteName || "عقارات الإسكندرية";
         vars.siteUrl = cfg.siteUrl || "#";
         vars.year = String(new Date().getFullYear());
         vars.contactEmail = cfg.contactEmail || "";
@@ -406,7 +406,7 @@ async function sendMail(opts: {
           auth: { user: cfg.smtpUser, pass: cfg.smtpPass },
         } as any);
         await transporter.sendMail({
-          from: `"${cfg.smtpFromName || cfg.siteName || "عقارات بنها"}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
+          from: `"${cfg.smtpFromName || cfg.siteName || "عقارات الإسكندرية"}" <${cfg.smtpFromEmail || cfg.smtpUser}>`,
           to: opts.toName ? `"${opts.toName}" <${opts.to}>` : opts.to,
           subject: finalSubject,
           html: finalHtml,

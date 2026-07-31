@@ -44,7 +44,7 @@ export function useAdminPropertyAdd() {
     advertiserType: accountType === "company" ? "company" : "individual",
     compound: "", facade: "", direction: "",
     features: [], nearbyServices: [],
-    city: "بنها", district: "", address: "", street: "",
+    city: "الإسكندرية", district: "", address: "", street: "",
     latitude: "", longitude: "",
     contactName: "", phone: "", contactMethod: ["phone"],
     videoUrl: "", images: [],

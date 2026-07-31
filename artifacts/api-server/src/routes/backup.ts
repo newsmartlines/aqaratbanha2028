@@ -129,7 +129,7 @@ const TABLES: TableEntry[] = [
 function buildJsonExport(tables: Record<string, any[]>): object {
   return {
     version: "1.0",
-    platform: "عقارات بنها",
+    platform: "عقارات الإسكندرية",
     exportedAt: new Date().toISOString(),
     tables,
   };
@@ -137,7 +137,7 @@ function buildJsonExport(tables: Record<string, any[]>): object {
 
 function buildSqlExport(tables: Record<string, any[]>): string {
   const lines: string[] = [
-    `-- عقارات بنها — Database Export`,
+    `-- عقارات الإسكندرية — Database Export`,
     `-- Generated: ${new Date().toISOString()}`,
     `-- Version: 1.0`,
     ``,
@@ -317,7 +317,7 @@ router.post("/admin/backup/save-seeds", async (req, res) => {
     const totalCount = Object.values(stats).reduce((a, b) => a + b, 0);
     const manifest = {
       version: "1.0",
-      platform: "عقارات بنها",
+      platform: "عقارات الإسكندرية",
       exportedAt: now,
       files: savedFiles,
       tableCounts: stats,

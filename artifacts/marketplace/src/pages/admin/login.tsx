@@ -83,7 +83,7 @@ export default function AdminLogin() {
                 <div className="relative">
                   <User className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                   <Input
-                    id="admin-email" type="email" placeholder="admin@aqaratbanha.com" dir="ltr"
+                    id="admin-email" type="email" placeholder="admin@aqaralex.com" dir="ltr"
                     className="ps-10 bg-slate-950 border-slate-800 text-white h-12 focus-visible:ring-teal-500 placeholder:text-slate-600"
                     value={email} onChange={e => { setEmail(e.target.value); setError(null); }}
                     disabled={loading} required

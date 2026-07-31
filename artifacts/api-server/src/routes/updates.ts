@@ -170,7 +170,7 @@ async function getVersion(): Promise<VersionInfo> {
   }
   const initial: VersionInfo = {
     version: "1.0.0", buildDate: new Date().toISOString(),
-    installedAt: new Date().toISOString(), platform: "عقارات بنها",
+    installedAt: new Date().toISOString(), platform: "عقارات الإسكندرية",
   };
   await fs.writeFile(VERSION_FILE, JSON.stringify(initial, null, 2));
   return initial;
@@ -463,7 +463,7 @@ async function runCreateBackup(job: Job, label = "manual"): Promise<{ filename: 
       type: "backup", label,
       createdAt: new Date().toISOString(),
       appVersion: appVersion.version,
-      platform: "عقارات بنها",
+      platform: "عقارات الإسكندرية",
       checksum: dbHash, signature: sign(dbHash),
       tablesCounts: Object.fromEntries(Object.entries(tables).map(([k, v]) => [k, (v as any[]).length])),
     };
@@ -568,7 +568,7 @@ async function runCreatePackage(
     const manifest: IncrementalManifest = {
       schemaVersion: "2",
       type: "incremental",
-      platform: "عقارات بنها",
+      platform: "عقارات الإسكندرية",
       fromVersion: current.version,
       toVersion: newVersion,
       changelog: opts.changelog,
@@ -602,7 +602,7 @@ async function runCreatePackage(
       version: newVersion,
       buildDate: new Date().toISOString(),
       installedAt: new Date().toISOString(),
-      platform: "عقارات بنها",
+      platform: "عقارات الإسكندرية",
       changelog: opts.changelog,
     };
     await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
@@ -634,7 +634,7 @@ async function runInstallPackage(job: Job, uploadedPath: string): Promise<{ vers
     if (!existsSync(manifestPath)) throw new Error("حزمة غير صالحة: manifest.json مفقود");
 
     const manifest: AnyManifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
-    if (manifest.platform !== "عقارات بنها") throw new Error("الحزمة غير متوافقة مع هذا النظام");
+    if (manifest.platform !== "عقارات الإسكندرية") throw new Error("الحزمة غير متوافقة مع هذا النظام");
     if (!manifest.checksum || !manifest.signature) throw new Error("معلومات الأمان مفقودة من الحزمة");
 
     const isIncremental = manifest.type === "incremental";
@@ -767,7 +767,7 @@ async function applyIncrementalPackage(job: Job, manifest: IncrementalManifest, 
     version: manifest.toVersion,
     buildDate: manifest.createdAt,
     installedAt: new Date().toISOString(),
-    platform: "عقارات بنها",
+    platform: "عقارات الإسكندرية",
     changelog: manifest.changelog,
   };
   await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
@@ -837,7 +837,7 @@ async function applyLegacyPackage(job: Job, manifest: LegacyManifest, tempDir: s
   const versionSrc = path.join(tempDir, "version.json");
   const newVersionInfo = existsSync(versionSrc)
     ? JSON.parse(await fs.readFile(versionSrc, "utf8"))
-    : { version: manifest.toVersion, platform: "عقارات بنها", buildDate: new Date().toISOString() };
+    : { version: manifest.toVersion, platform: "عقارات الإسكندرية", buildDate: new Date().toISOString() };
   newVersionInfo.installedAt = new Date().toISOString();
   await fs.writeFile(VERSION_FILE, JSON.stringify(newVersionInfo, null, 2));
 

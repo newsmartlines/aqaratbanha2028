@@ -87,8 +87,8 @@ export const ADVERTISER_TYPES = [
   { value: "developer", label: "مطور عقاري" },
 ];
 
-export const BANHA_LAT = 30.4667;
-export const BANHA_LNG = 31.1833;
+export const BANHA_LAT = 31.2001;
+export const BANHA_LNG = 29.9187;
 
 export const STEPS_CONFIG = (showPlans: boolean) => [
   { id: 1, label: "نوع العقار",     icon: Building2 },

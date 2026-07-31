@@ -124,7 +124,7 @@ app.use(compression());
 // Resolution order:
 //   1. CORS_ORIGIN env var (comma-separated list of exact origins) — always wins.
 //      Set this in production to your real domain(s), e.g.:
-//      CORS_ORIGIN=https://aqaratbanha.com,https://www.aqaratbanha.com
+//      CORS_ORIGIN=https://aqaralex.com,https://www.aqaralex.com
 //   2. Development: allow localhost:* and *.replit.dev automatically.
 //   3. Production without CORS_ORIGIN: same-origin only (most restrictive).
 //

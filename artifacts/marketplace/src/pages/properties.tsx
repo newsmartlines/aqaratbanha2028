@@ -379,11 +379,18 @@ export default function PropertiesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subCategories]);
 
-  const { data: banhaAreas = [] } = useQuery<Area[]>({
-    queryKey: ["areas", 2],
-    queryFn: () => api.locations.getAreasByCity(2),
+  const { data: alexAreas = [] } = useQuery<Area[]>({
+    queryKey: ["areas-all-regions"],
+    queryFn: async () => {
+      const regions = await api.regions.list();
+      return (regions as any[]).flatMap((r: any) =>
+        (r.cities ?? []).flatMap((c: any) => c.areas ?? [])
+      );
+    },
     staleTime: 5 * 60_000,
   });
+  // alias for backward compatibility
+  const banhaAreas = alexAreas;
 
   const { data: myFavIds = [] } = useQuery<number[]>({
     queryKey: ["property-favorites-ids"],

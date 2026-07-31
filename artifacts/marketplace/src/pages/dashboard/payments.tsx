@@ -77,8 +77,8 @@ function InvoiceModal({ row, open, onClose }: { row: InvoiceRow | null; open: bo
         <div className="border rounded-xl overflow-hidden">
           <div className="bg-primary p-5 text-primary-foreground flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-black">عقارات بنها</h2>
-              <p className="text-primary-foreground/70 text-sm mt-0.5">aqaratbanha.com</p>
+              <h2 className="text-xl font-black">عقارات الإسكندرية</h2>
+              <p className="text-primary-foreground/70 text-sm mt-0.5">aqaralex.com</p>
             </div>
             <div className="text-left">
               <p className="text-xs text-primary-foreground/70">رقم الإيصال</p>

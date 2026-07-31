@@ -1,6 +1,6 @@
-# Dalil — Real Estate Marketplace (عقارات بنها)
+# Dalil — Real Estate Marketplace (عقارات الإسكندرية)
 
-A full-stack Arabic-language real estate marketplace platform for Benha, Egypt. Lists properties for sale and rent, supports user/provider/admin roles, map search, subscriptions, and an admin panel.
+A full-stack Arabic-language real estate marketplace platform for Alexandria, Egypt. Lists properties for sale and rent, supports user/provider/admin roles, map search, subscriptions, and an admin panel. Production domain: **aqaralex.com**
 
 ## Stack
 
@@ -38,6 +38,7 @@ pnpm --filter @workspace/marketplace run dev & pnpm --filter @workspace/api-serv
 | `NODE_ENV` | `development` / `production` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional — Google OAuth |
 | `OPENAI_API_KEY` | Optional — AI email generation in Admin panel |
+| `CORS_ORIGIN` | Production: `https://aqaralex.com,https://www.aqaralex.com` |
 
 ## Key Commands
 
@@ -58,3 +59,5 @@ pnpm build:deploy     # Build for production
 
 - Keep the existing project structure and monorepo layout
 - Arabic RTL UI — do not change the language or layout direction
+- Platform targets: محافظة الإسكندرية only — all regions/areas must be Alexandria
+- Production domain: aqaralex.com (set CORS_ORIGIN secret before deploying)
