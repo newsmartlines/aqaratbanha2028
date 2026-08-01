@@ -268,6 +268,11 @@ export default function PricingPage() {
   const hasAnyYearly = sorted.some(p => !!p.yearlyPrice && parseFloat(p.price) > 0);
 
   const handleChoose = (plan: BillingPlan) => {
+    // Block unapproved providers from purchasing any plan
+    if (user?.providerApproved === false) {
+      navigate("/dashboard/packages");
+      return;
+    }
     const isFree = parseFloat(plan.price) === 0;
     if (user) {
       if (user.role === "provider" || user.role === "admin") {

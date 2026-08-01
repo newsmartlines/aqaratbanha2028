@@ -819,7 +819,18 @@ export default function PackagesPage() {
             {/* ══════════════════════════════════════════════════════════════════
                 SECTION 3 — Upgrade / Plans (hidden when subscriptions disabled)
             ══════════════════════════════════════════════════════════════════ */}
-            {subsEnabled ? (
+            {isProvider && user?.providerApproved === false ? (
+              <div id="upgrade" className="rounded-2xl border border-amber-200 bg-amber-50 py-12 px-6 text-center space-y-3">
+                <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto">
+                  <Clock className="w-7 h-7 text-amber-600" />
+                </div>
+                <p className="font-bold text-amber-900 text-base">حسابك قيد المراجعة</p>
+                <p className="text-sm text-amber-700 max-w-sm mx-auto leading-relaxed">
+                  سيتم تفعيل حسابك بعد موافقة فريق الإدارة. قد يستغرق ذلك حتى 24 ساعة.
+                  بعد التفعيل ستتمكن من الاشتراك في الباقات.
+                </p>
+              </div>
+            ) : subsEnabled ? (
               <div id="upgrade" className="space-y-5">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">الباقات المتاحة</h2>
