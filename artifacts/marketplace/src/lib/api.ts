@@ -725,6 +725,7 @@ export const api = {
     logo:   (file: File) => uploadFile("/upload/logo",   "logo",   file),
     service: (file: File) => uploadFile("/upload/service", "image", file),
     propertyImage: (file: File) => uploadFile("/upload/property-image", "image", file),
+    featuredAreaImage: (file: File) => uploadFile("/upload/featured-area", "image", file),
     brochure: async (file: File): Promise<{ url: string }> => {
       const form = new FormData();
       form.append("brochure", file);

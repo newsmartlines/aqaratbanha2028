@@ -76,11 +76,12 @@ function makeImageUploader(maxMb = 10) {
   });
 }
 
-const avatarUploader        = makeImageUploader(10);
-const bannerUploader        = makeImageUploader(10);
-const logoUploader          = makeImageUploader(10);
-const serviceUploader       = makeImageUploader(10);
-const propertyImageUploader = makeImageUploader(10);
+const avatarUploader          = makeImageUploader(10);
+const bannerUploader          = makeImageUploader(10);
+const logoUploader            = makeImageUploader(10);
+const serviceUploader         = makeImageUploader(10);
+const propertyImageUploader   = makeImageUploader(10);
+const featuredAreaUploader    = makeImageUploader(10);
 
 /* ── PDF uploader (disk storage — no processing needed) ──────────────────── */
 const brochureDir = path.join(UPLOADS_ROOT, "brochures");
@@ -217,6 +218,9 @@ router.post("/upload/service",
 
 router.post("/upload/property-image",
   handleImageUpload(propertyImageUploader, "image", "properties"));
+
+router.post("/upload/featured-area",
+  handleImageUpload(featuredAreaUploader, "image", "featured-areas"));
 
 /* ── PDF brochure ─────────────────────────────────────────────────────────── */
 router.post("/upload/brochure", async (req: Request, res: any) => {

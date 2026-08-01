@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { api } from "@/lib/api";
+import { api, type Region } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import {
 import {
   MapPin, Plus, Pencil, Trash2, ToggleLeft, ToggleRight,
   GripVertical, Image as ImageIcon, Building2, Eye, EyeOff,
+  Upload, X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -32,26 +33,30 @@ const EMPTY: { nameAr: string; image: string; cityName: string; displayOrder: nu
   enabled: true,
 };
 
-const PLACEHOLDER_IMGS = [
-  "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=280&fit=crop",
-  "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&h=280&fit=crop",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=280&fit=crop",
-  "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=400&h=280&fit=crop",
-  "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&h=280&fit=crop",
-  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=280&fit=crop",
-];
-
 export default function AdminFeaturedAreas() {
   const qc = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [editing, setEditing] = useState<FeaturedArea | null>(null);
   const [form, setForm] = useState<typeof EMPTY>({ ...EMPTY });
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: areas = [], isLoading } = useQuery({
     queryKey: ["admin-featured-areas"],
     queryFn: api.featuredAreas.adminList,
   });
+
+  // Load all regions → flatten to a simple area list for the dropdown
+  const { data: regions = [] } = useQuery<Region[]>({
+    queryKey: ["regions"],
+    queryFn: api.regions.list,
+  });
+  const allAreas = regions.flatMap(r => r.cities.flatMap(c => c.areas ?? []))
+    .filter((a): a is NonNullable<typeof a> => !!a)
+    .sort((a, b) => a.nameAr.localeCompare(b.nameAr, "ar"));
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-featured-areas"] });
 
@@ -81,23 +86,55 @@ export default function AdminFeaturedAreas() {
   const openAdd = () => {
     setEditing(null);
     setForm({ ...EMPTY });
+    setImagePreview("");
+    setImageFile(null);
     setModalOpen(true);
   };
 
   const openEdit = (area: FeaturedArea) => {
     setEditing(area);
     setForm({ nameAr: area.nameAr, image: area.image ?? "", cityName: area.cityName ?? "", displayOrder: area.displayOrder, enabled: area.enabled });
+    setImagePreview(area.image ?? "");
+    setImageFile(null);
     setModalOpen(true);
   };
 
-  const handleSubmit = () => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setForm(f => ({ ...f, image: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSubmit = async () => {
     if (!form.nameAr.trim()) { toast.error("اسم المنطقة مطلوب"); return; }
-    const payload = { ...form, image: form.image || null, cityName: form.cityName || null };
+    let imageUrl = form.image;
+    // Upload new file if selected
+    if (imageFile) {
+      setUploading(true);
+      try {
+        const result = await api.upload.featuredAreaImage(imageFile);
+        imageUrl = result.url;
+      } catch {
+        toast.error("فشل رفع الصورة");
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+    const payload = { ...form, image: imageUrl || null, cityName: form.cityName || null };
     if (editing) updateMut.mutate({ id: editing.id, d: payload as any });
     else createMut.mutate(payload as any);
   };
 
-  const isBusy = createMut.isPending || updateMut.isPending;
+  const isBusy = createMut.isPending || updateMut.isPending || uploading;
 
   return (
     <AdminLayout>
@@ -129,14 +166,6 @@ export default function AdminFeaturedAreas() {
               <p className="text-xs font-medium mt-0.5">{s.label}</p>
             </div>
           ))}
-        </div>
-
-        {/* Quick image suggestions */}
-        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 flex gap-2 items-start">
-          <ImageIcon className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>
-            <strong>تلميح:</strong> يمكنك استخدام أي رابط صورة من الإنترنت (Unsplash, Google Images...) أو رفع صورة عبر مدير المرفقات ونسخ الرابط.
-          </span>
         </div>
 
         {/* Areas grid */}
@@ -251,64 +280,62 @@ export default function AdminFeaturedAreas() {
             </DialogHeader>
 
             <div className="space-y-4 py-2">
-              {/* Name */}
+              {/* Area dropdown */}
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">اسم المنطقة *</Label>
-                <Input
+                <Label className="text-sm font-semibold">المنطقة *</Label>
+                <select
                   value={form.nameAr}
                   onChange={e => setForm(f => ({ ...f, nameAr: e.target.value }))}
-                  placeholder="مثال: سيدي بشر، سموحة، كليوباترا"
-                  className="text-right"
-                />
+                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm text-right focus:outline-none focus:ring-2 focus:ring-primary/40"
+                >
+                  <option value="">-- اختر منطقة --</option>
+                  {allAreas.map(area => (
+                    <option key={area.id} value={area.nameAr}>{area.nameAr}</option>
+                  ))}
+                </select>
               </div>
 
-              {/* City */}
+              {/* Image upload */}
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">المدينة / المحافظة (اختياري)</Label>
-                <Input
-                  value={form.cityName ?? ""}
-                  onChange={e => setForm(f => ({ ...f, cityName: e.target.value }))}
-                  placeholder="مثال: الإسكندرية"
-                  className="text-right"
+                <Label className="text-sm font-semibold">صورة المنطقة</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
                 />
-              </div>
-
-              {/* Image URL */}
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">رابط الصورة</Label>
-                <Input
-                  value={form.image ?? ""}
-                  onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
-                  placeholder="https://..."
-                  className="text-left ltr"
-                  dir="ltr"
-                />
-                {/* Preview */}
-                {form.image && (
-                  <div className="h-24 rounded-xl overflow-hidden bg-gray-100 mt-1">
+                {imagePreview ? (
+                  <div className="relative h-36 rounded-xl overflow-hidden bg-gray-100">
                     <img
-                      src={form.image}
+                      src={imagePreview}
                       alt="preview"
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
                     />
+                    <button
+                      onClick={clearImage}
+                      className="absolute top-2 left-2 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-2 left-2 px-3 py-1.5 bg-black/60 hover:bg-black/80 rounded-lg text-white text-xs flex items-center gap-1.5 transition-all"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      تغيير الصورة
+                    </button>
                   </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-28 rounded-xl border-2 border-dashed border-gray-300 hover:border-primary/50 bg-gray-50 hover:bg-primary/5 flex flex-col items-center justify-center gap-2 transition-all"
+                  >
+                    <Upload className="w-6 h-6 text-gray-400" />
+                    <span className="text-sm text-gray-500">اضغط لرفع صورة</span>
+                    <span className="text-xs text-gray-400">JPG, PNG, WebP — حتى 10 ميجا</span>
+                  </button>
                 )}
-                {/* Suggested images */}
-                <div>
-                  <p className="text-xs text-gray-400 mb-1.5">أو اختر صورة سريعة:</p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {PLACEHOLDER_IMGS.map((url, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setForm(f => ({ ...f, image: url }))}
-                        className={`h-14 rounded-lg overflow-hidden border-2 transition-all ${form.image === url ? "border-primary" : "border-transparent hover:border-gray-300"}`}
-                      >
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               {/* Order + Enabled */}
