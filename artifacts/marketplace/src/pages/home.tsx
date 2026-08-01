@@ -978,8 +978,10 @@ export default function Home() {
 
         {/* ── COMMERCIAL & LANDS ── */}
         {(() => {
+          // All values that indicate a land property (group slugs, Arabic group names, and Arabic subtypes)
+          const LAND_ALL_VALUES = new Set(["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"]);
           const commercial = homePropsRaw.filter(p => p.mainCategory === "تجاري" || p.mainCategory === "commercial");
-          const lands = homePropsRaw.filter(p => p.mainCategory === "أراضي" || p.mainCategory === "land");
+          const lands = homePropsRaw.filter(p => LAND_ALL_VALUES.has(p.mainCategory));
 
           const MiniCard = ({ property }: { property: any }) => {
             const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();

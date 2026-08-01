@@ -220,9 +220,16 @@ const TYPES = ["للبيع", "للإيجار"];
 const STATIC_SUBCATS: Record<string, string[]> = {
   residential: ["شقة", "فيلا", "دوبلكس", "روف", "شاليه", "استوديو", "عمارة"],
   commercial:  ["محل", "مكتب", "معرض", "مستودع", "عيادة", "فندق"],
-  land:        ["أرض سكنية", "أرض تجارية", "مزرعة", "أرض صناعية"],
+  land:        ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
   industrial:  ["مصنع", "مستودع صناعي", "ورشة"],
 };
+// All values that indicate a land property: group slugs, Arabic group names, and Arabic subtypes
+const LAND_ALL_VALUES = new Set(["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"]);
+/** Returns true when kind filter matches the property, handling land group slugs ("land","أرض","أراضي") */
+function kindMatches(pKind: string, selectedKind: string): boolean {
+  if (selectedKind === "أرض" || selectedKind === "land" || selectedKind === "أراضي") return LAND_ALL_VALUES.has(pKind);
+  return pKind === selectedKind;
+}
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
 const BATHS_OPTIONS = [1, 2, 3, 4];
 const FLOOR_OPTIONS = ["أرضي", "1", "2", "3", "4", "5+"];
@@ -513,7 +520,7 @@ export default function PropertiesPage() {
     let list = allProps.filter((p) => {
       if (search && !p.title.includes(search) && !p.location.includes(search) && !p.district.includes(search)) return false;
       if (selectedType && p.type !== selectedType) return false;
-      if (selectedKind && !selectedSubKind && p.kind !== selectedKind) return false;
+      if (selectedKind && !selectedSubKind && !kindMatches(p.kind, selectedKind)) return false;
       if (selectedSubKind && p.subCategory !== selectedSubKind) return false;
       if (selectedCity && !p.location.includes(selectedCity)) return false;
       if (selectedDistricts.length > 0 && !selectedDistricts.some(d => p.district === d || p.location.includes(d))) return false;
@@ -589,7 +596,7 @@ export default function PropertiesPage() {
         areaMin: aMin, areaMax: aMax, selectedFeaturedOnly: sFeat, selectedVerifiedOnly: sVer, selectedFeatures: sFeats, selectedRecency: sRec } = deps;
       if (s && !p.title.includes(s) && !p.location.includes(s) && !p.district.includes(s)) return false;
       if (!opts.excludeType && sT && p.type !== sT) return false;
-      if (!opts.excludeKind && !opts.excludeSubKind && sK && !sSK && p.kind !== sK) return false;
+      if (!opts.excludeKind && !opts.excludeSubKind && sK && !sSK && !kindMatches(p.kind, sK)) return false;
       if (!opts.excludeSubKind && sSK && p.subCategory !== sSK) return false;
       if (!opts.excludeDistricts && sD.length > 0 && !sD.some(d => p.district === d || p.location.includes(d))) return false;
       if (sFin && p.finishing !== sFin) return false;

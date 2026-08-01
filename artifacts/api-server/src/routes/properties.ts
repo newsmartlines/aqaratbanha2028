@@ -175,7 +175,17 @@ router.get("/properties", async (req, res) => {
     } else {
       conditions.push(inArray(propertiesTable.status, ["active", "approved"]));
     }
-    if (category) conditions.push(eq(propertiesTable.mainCategory, category));
+    if (category) {
+      // Land can be stored as the group slug "land", Arabic group names, or specific Arabic subtypes.
+      // All of these should be treated as "any land property".
+      const LAND_GROUP_TRIGGERS = new Set(["land", "أرض", "أراضي"]);
+      const LAND_ALL_VALUES = ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"];
+      if (LAND_GROUP_TRIGGERS.has(category)) {
+        conditions.push(inArray(propertiesTable.mainCategory, LAND_ALL_VALUES));
+      } else {
+        conditions.push(eq(propertiesTable.mainCategory, category));
+      }
+    }
     if (subCategory) conditions.push(eq(propertiesTable.subCategory, subCategory));
     if (providerId) conditions.push(eq(propertiesTable.providerId, parseInt(providerId)));
     if (featured === "true") conditions.push(eq(propertiesTable.featured, true));
