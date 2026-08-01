@@ -4,8 +4,13 @@
   "exportedAt": "2026-08-01T12:07:58.630Z",
   "files": [
     "locations.json",
+    "categories.json",
     "settings.json",
-    "categories.json"
+    "billing.json",
+    "field-configs.json",
+    "email.json",
+    "properties.json",
+    "admin.json"
   ],
   "description": "Auto-updated by write-through export. Do not edit manually."
 }

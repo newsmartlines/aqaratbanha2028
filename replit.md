@@ -48,12 +48,14 @@ pnpm db:push          # Push schema to database
 pnpm build:deploy     # Build for production
 ```
 
-## Setup Verification (July 27, 2026)
+## Setup Verification (August 1, 2026)
 
 - Ran `pnpm install` — all workspace dependencies installed successfully
-- Ran `pnpm db:push` — Drizzle schema applied to Replit PostgreSQL (changes applied)
+- Ran `pnpm db:push` — Drizzle schema applied to Replit PostgreSQL
 - Started "Start application" workflow — Vite frontend on :5000, API server on :8080, health proxy on :20787
-- App confirmed running via screenshot: homepage renders correctly with Arabic RTL UI
+- Ran `node scripts/force-reseed.mjs` + `node scripts/seed-missing.mjs` — seeded 25 properties (approved), 6 providers, 57 areas, 5 billing plans, email templates, site settings
+- Updated `lib/db/seeds/manifest.json` to include all 8 seed files — future fresh deployments auto-populate from seed files on startup
+- App confirmed running: /properties shows 25 listings with working search and filters
 
 ## User Preferences
 
