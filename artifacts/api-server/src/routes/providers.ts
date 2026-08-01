@@ -692,13 +692,22 @@ router.post("/providers/:id/subscribe", async (req, res) => {
     if (!isAdminUser) {
       // Verify this session user owns the provider profile with the given id
       const [providerCheck] = await db
-        .select({ userId: providersTable.userId })
+        .select({ userId: providersTable.userId, approved: providersTable.approved })
         .from(providersTable)
         .where(eq(providersTable.id, id))
         .limit(1);
       if (!providerCheck) return res.status(404).json({ success: false, error: "الشركة العقارية غير موجودة" });
       if (providerCheck.userId !== subSession.userId) {
         return res.status(403).json({ success: false, error: "غير مصرح لك بالاشتراك نيابةً عن هذه الشركة" });
+      }
+
+      // ── Approval check: unapproved providers cannot purchase subscriptions ──
+      if (providerCheck.approved === false) {
+        return res.status(403).json({
+          success: false,
+          error: "حسابك قيد المراجعة — سيتم تفعيله بعد موافقة فريق الإدارة. قد يستغرق ذلك حتى 24 ساعة.",
+          code: "ACCOUNT_PENDING",
+        });
       }
     }
 

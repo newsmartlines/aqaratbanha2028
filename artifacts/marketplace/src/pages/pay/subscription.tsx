@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSiteSettings } from "@/App";
+import { useAuth } from "@/lib/auth-context";
 import toast from "react-hot-toast";
 
 type Gateway = "vodafone_cash" | "fawry" | "instapay" | "bank_transfer";
@@ -114,6 +115,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
 export default function SubscriptionPayPage() {
   const [, navigate] = useLocation();
   const settings = useSiteSettings();
+  const { user } = useAuth();
 
   const params = new URLSearchParams(window.location.search);
   const planName = params.get("planName") ?? "الباقة";
@@ -156,6 +158,28 @@ export default function SubscriptionPayPage() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  // ── Unapproved provider: block all payment actions ───────────────────────
+  if (user?.providerApproved === false) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4" dir="rtl">
+        <div className="max-w-md w-full text-center">
+          <div className="w-20 h-20 rounded-3xl bg-amber-100 flex items-center justify-center mx-auto mb-5">
+            <Clock className="w-10 h-10 text-amber-600" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-3">حسابك قيد المراجعة</h1>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+            سيتم تفعيل حسابك بعد موافقة فريق الإدارة. قد يستغرق ذلك حتى 24 ساعة.
+            <br />
+            بعد التفعيل ستتمكن من الاشتراك في الباقات.
+          </p>
+          <Button variant="outline" onClick={() => navigate("/dashboard")} className="rounded-xl font-bold border-amber-200 text-amber-700 hover:bg-amber-50">
+            العودة للوحة التحكم
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const gw = GATEWAYS.find(g => g.id === activeGateway);
   const amount = parseFloat(price).toLocaleString("en-US");

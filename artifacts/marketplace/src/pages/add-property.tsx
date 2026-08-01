@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Building2, LogIn, UserPlus, Loader2, Zap } from "lucide-react";
+import { Building2, LogIn, UserPlus, Loader2, Zap, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useSiteSettings } from "@/App";
@@ -94,6 +94,34 @@ export default function AddPropertyPage() {
   }
 
   if (!user) return <GuestScreen />;
+
+  // Provider account pending admin approval — block all actions
+  if (user.providerApproved === false) {
+    return (
+      <div className="min-h-screen bg-gray-50" dir="rtl">
+        <Header />
+        <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-16">
+          <div className="max-w-md w-full text-center">
+            <div className="w-20 h-20 rounded-3xl bg-amber-100 flex items-center justify-center mx-auto mb-5">
+              <Clock className="w-10 h-10 text-amber-600" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 mb-3">حسابك قيد المراجعة</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              سيتم تفعيل حسابك بعد موافقة فريق الإدارة. قد يستغرق ذلك حتى 24 ساعة.
+              <br />
+              بعد التفعيل ستتمكن من إضافة عقارك مباشرةً.
+            </p>
+            <Link href="/dashboard">
+              <Button variant="outline" className="rounded-xl font-bold border-amber-200 text-amber-700 hover:bg-amber-50">
+                العودة للوحة التحكم
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <RealEstateFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">

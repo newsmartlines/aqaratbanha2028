@@ -670,6 +670,20 @@ router.post("/properties", async (req, res) => {
 
     if (!isAdmin) {
       if (parsedProviderId) {
+        // ── Approval check: unapproved providers cannot add properties ──────────
+        const [provStatus] = await db
+          .select({ approved: providersTable.approved })
+          .from(providersTable)
+          .where(eq(providersTable.id, parsedProviderId))
+          .limit(1);
+        if (provStatus && provStatus.approved === false) {
+          return res.status(403).json({
+            success: false,
+            error: "حسابك قيد المراجعة — سيتم تفعيله بعد موافقة فريق الإدارة. قد يستغرق ذلك حتى 24 ساعة.",
+            code: "ACCOUNT_PENDING",
+          });
+        }
+
         // Provider quota: enforced via billing plan limits
         const quotaError = await checkProviderQuota(parsedProviderId);
         if (quotaError) {
