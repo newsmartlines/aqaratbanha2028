@@ -223,11 +223,25 @@ const STATIC_SUBCATS: Record<string, string[]> = {
   land:        ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
   industrial:  ["مصنع", "مستودع صناعي", "ورشة"],
 };
-// All values that indicate a land property: group slugs, Arabic group names, and Arabic subtypes
-const LAND_ALL_VALUES = new Set(["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"]);
-/** Returns true when kind filter matches the property, handling land group slugs ("land","أرض","أراضي") */
+// Canonical value sets per category group (includes legacy slugs + Arabic group names + all Arabic subtypes)
+const LAND_ALL_VALUES        = new Set(["land",        "أرض",  "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"]);
+const RESIDENTIAL_ALL_VALUES = new Set(["residential", "سكني",  "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"]);
+const COMMERCIAL_ALL_VALUES  = new Set(["commercial",  "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"]);
+
+/** Map any stored mainCategory value to its group slug for counting and chip matching */
+function getGroupSlug(kind: string): string {
+  if (LAND_ALL_VALUES.has(kind))        return "land";
+  if (RESIDENTIAL_ALL_VALUES.has(kind)) return "residential";
+  if (COMMERCIAL_ALL_VALUES.has(kind))  return "commercial";
+  return kind;
+}
+
+/** Returns true when kind filter matches the property — handles group slugs/names expanding to all subtypes */
 function kindMatches(pKind: string, selectedKind: string): boolean {
-  if (selectedKind === "أرض" || selectedKind === "land" || selectedKind === "أراضي") return LAND_ALL_VALUES.has(pKind);
+  const group = getGroupSlug(selectedKind);
+  if (group === "land")        return LAND_ALL_VALUES.has(pKind);
+  if (group === "residential") return RESIDENTIAL_ALL_VALUES.has(pKind);
+  if (group === "commercial")  return COMMERCIAL_ALL_VALUES.has(pKind);
   return pKind === selectedKind;
 }
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
@@ -643,8 +657,10 @@ export default function PropertiesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const countsByKind = useMemo<Record<string, number>>(() => {
     const m: Record<string, number> = {};
-    for (const p of applyBaseFilters(allProps, { excludeKind: true, excludeSubKind: true }, facetDeps))
-      m[p.kind] = (m[p.kind] ?? 0) + 1;
+    for (const p of applyBaseFilters(allProps, { excludeKind: true, excludeSubKind: true }, facetDeps)) {
+      const slug = getGroupSlug(p.kind);
+      m[slug] = (m[slug] ?? 0) + 1;
+    }
     return m;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, FILTER_DEPS);

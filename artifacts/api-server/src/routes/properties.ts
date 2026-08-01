@@ -178,10 +178,19 @@ router.get("/properties", async (req, res) => {
     if (category) {
       // Land can be stored as the group slug "land", Arabic group names, or specific Arabic subtypes.
       // All of these should be treated as "any land property".
-      const LAND_GROUP_TRIGGERS = new Set(["land", "أرض", "أراضي"]);
-      const LAND_ALL_VALUES = ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"];
-      if (LAND_GROUP_TRIGGERS.has(category)) {
-        conditions.push(inArray(propertiesTable.mainCategory, LAND_ALL_VALUES));
+      // Map group slugs/names to all possible stored mainCategory values (legacy slugs + Arabic subtypes)
+      const GROUP_ALL_VALUES: Record<string, string[]> = {
+        land:        ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
+        "أرض":      ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
+        "أراضي":    ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
+        residential: ["residential", "سكني", "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"],
+        "سكني":     ["residential", "سكني", "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"],
+        commercial:  ["commercial", "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"],
+        "تجاري":    ["commercial", "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"],
+      };
+      const groupValues = GROUP_ALL_VALUES[category];
+      if (groupValues) {
+        conditions.push(inArray(propertiesTable.mainCategory, groupValues));
       } else {
         conditions.push(eq(propertiesTable.mainCategory, category));
       }
