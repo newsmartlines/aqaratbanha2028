@@ -34,8 +34,8 @@ const CSV_USERS_SAMPLE = `name,email,phone,role,username
 سارة علي,sara@example.com,01098765432,user,sara_ali`;
 
 const CSV_PROPS_SAMPLE = `title,description,price,area,rooms,bathrooms,address,district,city,main_category,listing_type,images,user_email
-شقة 3 غرف في بنها,شقة مميزة للبيع,850000,120,3,2,شارع النزهة,النزهة,بنها,residential,sale,https://example.com/img1.jpg,ahmed@example.com
-أرض للبيع,أرض مميزة,500000,500,,,طريق القاهرة,,بنها,land,sale,,ahmed@example.com`;
+شقة 3 غرف في سيدي بشر,شقة مميزة للبيع,1200000,120,3,2,شارع الكورنيش,سيدي بشر,سيدي بشر,residential,sale,https://example.com/img1.jpg,ahmed@example.com
+أرض للبيع,أرض مميزة,900000,500,,,طريق العجمي,,الإسكندرية,land,sale,,ahmed@example.com`;
 
 export default function WpImport() {
   const [activeTab, setActiveTab] = useState<Tab>("csv");

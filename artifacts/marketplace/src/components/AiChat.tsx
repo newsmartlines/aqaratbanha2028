@@ -31,9 +31,9 @@ type WizardStep = "type" | "category" | "location" | "budget" | "rooms" | "done"
 
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80";
 const TYPE_LABELS: Record<string, string> = { sale: "للبيع", rent: "للإيجار" };
-const DEFAULT_BOT_NAME = "مساعد عقارات بنها";
+const DEFAULT_BOT_NAME = "مساعد عقارات الإسكندرية";
 const DEFAULT_WELCOME = "أهلاً! أنا مساعدك الذكي 🏠\nأخبرني إيه اللي بتدور عليه.";
-const DEFAULT_QUICK = ["شقة للبيع في بنها", "أرض للبيع", "شقة للإيجار", "أحدث العقارات"];
+const DEFAULT_QUICK = ["شقة للبيع في الإسكندرية", "أرض للبيع", "شقة للإيجار", "أحدث العقارات"];
 
 // ── Session ───────────────────────────────────────────────────────────────────
 function getSessionId(): string {
@@ -288,7 +288,7 @@ function TrendingPanel({ onQuery, trending }: { onQuery: (q: string) => void; tr
         </p>
         <div className="grid grid-cols-2 gap-1.5">
           {[
-            { label: "شقق للبيع", q: "شقة للبيع في بنها", icon: <Home className="w-3.5 h-3.5" /> },
+            { label: "شقق للبيع", q: "شقة للبيع في الإسكندرية", icon: <Home className="w-3.5 h-3.5" /> },
             { label: "شقق للإيجار", q: "شقة للإيجار", icon: <Building2 className="w-3.5 h-3.5" /> },
             { label: "أراضي", q: "أرض للبيع", icon: <Trees className="w-3.5 h-3.5" /> },
             { label: "أحدث العقارات", q: "أحدث العقارات", icon: <Clock className="w-3.5 h-3.5" /> },
@@ -467,7 +467,7 @@ export default function AiChat() {
   const openWhatsApp = (property?: Property) => {
     const msg = property
       ? `مرحباً، أنا مهتم بعقار: ${property.title} — ${property.price}. رابط: ${window.location.origin}/property/${property.id}`
-      : `مرحباً، أريد الاستفسار عن عقارات في بنها.`;
+      : `مرحباً، أريد الاستفسار عن عقارات في الإسكندرية.`;
     const wa = (s?.chatbotWhatsapp || s?.contactWhatsapp || s?.contactPhone || "").replace(/\D/g, "");
     window.open(`https://wa.me/${wa || "201000000000"}?text=${encodeURIComponent(msg)}`, "_blank");
   };
@@ -482,7 +482,7 @@ export default function AiChat() {
       { label: "محل تجاري", value: "محل" }, { label: "مكتب", value: "مكتب" },
     ],
     location: [
-      { label: "بنها", value: "بنها" }, { label: "القناطر", value: "القناطر الخيرية" },
+      { label: "سيدي بشر", value: "سيدي بشر" }, { label: "سموحة", value: "سموحة" }, { label: "كليوباترا", value: "كليوباترا" },
       { label: "الخانكة", value: "الخانكة" }, { label: "قليوب", value: "قليوب" },
       { label: "طوخ", value: "طوخ" }, { label: "العبور", value: "العبور" },
       { label: "أي منطقة", value: "أي منطقة" },
@@ -755,7 +755,7 @@ export default function AiChat() {
                     onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } if (e.key === "Escape") setShowAutocomplete(false); }}
                     onFocus={() => { if (input.length >= 2) setShowAutocomplete(autocomplete.length > 0); }}
                     onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
-                    placeholder="اكتب سؤالك... مثلاً: شقة 3 غرف في بنها"
+                    placeholder="اكتب سؤالك... مثلاً: شقة 3 غرف في سيدي بشر"
                     className="flex-1 text-sm outline-none bg-transparent text-gray-800 placeholder-gray-400 text-right"
                     dir="rtl"
                     disabled={loading}

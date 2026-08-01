@@ -292,7 +292,7 @@ export default function PropertyDetail() {
         }
 
         // Update page title and inject JSON-LD structured data for SEO
-        document.title = `${mapped.title} | دليل عقارات بنها`;
+        document.title = `${mapped.title} | دليل عقارات الإسكندرية`;
 
         const existingLd = document.getElementById("property-jsonld");
         if (existingLd) existingLd.remove();
@@ -315,7 +315,7 @@ export default function PropertyDetail() {
           },
           "address": {
             "@type": "PostalAddress",
-            "addressLocality": mapped.district ?? "بنها",
+            "addressLocality": mapped.district ?? "الإسكندرية",
             "addressCountry": "EG",
           },
         });
@@ -343,7 +343,7 @@ export default function PropertyDetail() {
   // Restore page title when navigating away
   useEffect(() => {
     return () => {
-      document.title = "دليل عقارات بنها";
+      document.title = "دليل عقارات الإسكندرية";
       document.getElementById("property-jsonld")?.remove();
     };
   }, []);
@@ -1390,7 +1390,7 @@ export default function PropertyDetail() {
               </div>
               <ul className="space-y-3 text-sm text-gray-700 text-right list-none">
                 {[
-                  "قابل السمسار أو المالك في مكان معروف وآمن داخل بنها",
+                  "قابل السمسار أو المالك في مكان معروف وآمن داخل الإسكندرية",
                   "يُفضَّل يكون معاك شخص موثوق وقت المعاينة",
                   "عاين العقار على الطبيعة وتأكد من حالته ومطابقته للإعلان",
                   "اسأل عن كل التفاصيل: السعر، المرافق، الأوراق، والمصاريف",

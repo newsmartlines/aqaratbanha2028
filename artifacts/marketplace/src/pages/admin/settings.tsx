@@ -338,7 +338,7 @@ export default function AdminSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>{t("siteNameAr")}</Label>
-                  <Input value={form.siteName ?? ""} onChange={e => setForm(f => ({ ...f, siteName: e.target.value }))} placeholder="عقارات بنها" />
+                  <Input value={form.siteName ?? ""} onChange={e => setForm(f => ({ ...f, siteName: e.target.value }))} placeholder="عقارات الإسكندرية" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>{t("siteNameEn")}</Label>
@@ -687,12 +687,12 @@ export default function AdminSettings() {
               <CardContent className="space-y-5">
                 <div className="space-y-1.5">
                   <Label>عنوان الصفحة الرئيسية (Meta Title)</Label>
-                  <Input dir="rtl" value={form.metaTitle ?? ""} onChange={e => setForm(f => ({ ...f, metaTitle: e.target.value }))} placeholder="عقارات بنها — خدمات محلية موثوقة" />
+                  <Input dir="rtl" value={form.metaTitle ?? ""} onChange={e => setForm(f => ({ ...f, metaTitle: e.target.value }))} placeholder="عقارات الإسكندرية — عقارات موثوقة" />
                   <p className="text-xs text-slate-400">يُنصح بـ 50-60 حرفاً · الحالي: {(form.metaTitle ?? "").length}</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>وصف الصفحة (Meta Description)</Label>
-                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة عقارات بنها تربطك بأفضل الوسطاء والشركات العقارية الموثوقة في بنها والقليوبية." />
+                  <Textarea dir="rtl" rows={3} value={form.metaDescription ?? ""} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} placeholder="منصة عقارات الإسكندرية تربطك بأفضل الوسطاء والشركات العقارية الموثوقة في الإسكندرية." />
                   <p className="text-xs text-slate-400">يُنصح بـ 150-160 حرفاً · الحالي: {(form.metaDescription ?? "").length}</p>
                 </div>
                 <div className="space-y-1.5">
@@ -859,7 +859,7 @@ export default function AdminSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>اسم المرسل (From Name)</Label>
-                  <Input dir="rtl" value={smtpForm.smtpFromName} onChange={e => setSmtpForm(s => ({ ...s, smtpFromName: e.target.value }))} placeholder="عقارات بنها" />
+                  <Input dir="rtl" value={smtpForm.smtpFromName} onChange={e => setSmtpForm(s => ({ ...s, smtpFromName: e.target.value }))} placeholder="عقارات الإسكندرية" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>بريد المرسل (From Email)</Label>
@@ -1525,7 +1525,7 @@ export default function AdminSettings() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">الاسم الظاهر</Label>
-                      <Input value={form.vodafoneCashName ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashName: e.target.value }))} placeholder="عقارات بنها" />
+                      <Input value={form.vodafoneCashName ?? ""} onChange={e => setForm(f => ({ ...f, vodafoneCashName: e.target.value }))} placeholder="عقارات الإسكندرية" />
                     </div>
                   </div>
                 </CardContent>
@@ -1566,7 +1566,7 @@ export default function AdminSettings() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">اسم التاجر</Label>
-                      <Input value={form.fawryMerchantName ?? ""} onChange={e => setForm(f => ({ ...f, fawryMerchantName: e.target.value }))} placeholder="عقارات بنها" />
+                      <Input value={form.fawryMerchantName ?? ""} onChange={e => setForm(f => ({ ...f, fawryMerchantName: e.target.value }))} placeholder="عقارات الإسكندرية" />
                     </div>
                   </div>
                 </CardContent>
@@ -1607,7 +1607,7 @@ export default function AdminSettings() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">الاسم الظاهر</Label>
-                      <Input value={form.instaPayName ?? ""} onChange={e => setForm(f => ({ ...f, instaPayName: e.target.value }))} placeholder="عقارات بنها" />
+                      <Input value={form.instaPayName ?? ""} onChange={e => setForm(f => ({ ...f, instaPayName: e.target.value }))} placeholder="عقارات الإسكندرية" />
                     </div>
                   </div>
                 </CardContent>
@@ -1648,7 +1648,7 @@ export default function AdminSettings() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">اسم صاحب الحساب</Label>
-                      <Input value={form.bankAccountName ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountName: e.target.value }))} placeholder="شركة عقارات بنها" />
+                      <Input value={form.bankAccountName ?? ""} onChange={e => setForm(f => ({ ...f, bankAccountName: e.target.value }))} placeholder="شركة عقارات الإسكندرية" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">رقم الحساب</Label>
@@ -2020,8 +2020,8 @@ function FeaturedSectionSettings({
   handleSave: (data: Partial<any>) => void;
   saving: boolean;
 }) {
-  const title       = form.featuredSectionTitle    ?? "اكتشف أفضل العقارات في بنها";
-  const subtitle    = form.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة بنها.";
+  const title       = form.featuredSectionTitle    ?? "اكتشف أفضل العقارات في الإسكندرية";
+  const subtitle    = form.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في الإسكندرية.";
   const countSetting = form.featuredSectionCount   ?? "8";
   const customCount  = form.featuredSectionCustomCount ?? "12";
   const columns      = form.featuredSectionColumns ?? "3";
@@ -2083,7 +2083,7 @@ function FeaturedSectionSettings({
             <Input
               value={title}
               onChange={e => setForm(f => ({ ...f, featuredSectionTitle: e.target.value }))}
-              placeholder="اكتشف أفضل العقارات في بنها"
+              placeholder="اكتشف أفضل العقارات في الإسكندرية"
               className="text-right"
               dir="rtl"
             />

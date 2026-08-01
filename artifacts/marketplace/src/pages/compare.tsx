@@ -30,14 +30,14 @@ function typeLabel(t: string) {
   return t === "sale" ? "للبيع" : t === "rent" ? "للإيجار" : t;
 }
 
-/* Location insight: known Banha/QalyubiaAreas keywords */
+/* Location insight: Alexandria area keywords */
 const AREA_INSIGHTS: Record<string, string> = {
   "كورنيش":   "موقع حيوي على الكورنيش — طلب مرتفع",
   "وسط":      "قلب المدينة — سهولة الوصول والخدمات",
-  "شرق":      "منطقة شرق بنها — هادئة ومناسبة للسكن",
-  "غرب":      "منطقة غرب بنها — أسعار معتدلة",
-  "جنوب":     "جنوب بنها — توسع عمراني جديد",
-  "شمال":     "شمال بنها — قرب الطريق الدولي",
+  "شرق":      "منطقة شرق الإسكندرية — هادئة ومناسبة للسكن",
+  "غرب":      "منطقة غرب الإسكندرية (العجمي) — هواء بحري ومناسب",
+  "جنوب":     "جنوب الإسكندرية — توسع عمراني جديد",
+  "شمال":     "شمال الإسكندرية — على البحر المتوسط",
   "المركز":   "قريب من المركز — ارتفاع قيمة الاستثمار",
   "الصناعية": "المنطقة الصناعية — مناسب للتجاري",
   "الزيتون":  "حي الزيتون — هادئ وخضراء",
@@ -48,7 +48,7 @@ function getLocationInsight(loc: string): string {
   for (const [key, insight] of Object.entries(AREA_INSIGHTS)) {
     if (loc.includes(key)) return insight;
   }
-  return "منطقة بنها المميزة";
+  return "منطقة الإسكندرية المميزة";
 }
 
 /* Score a property for recommendation (higher = better) */

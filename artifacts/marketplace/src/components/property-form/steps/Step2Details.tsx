@@ -57,7 +57,7 @@ export function Step2Details({
         </Label>
         <Input
           id="f-title"
-          placeholder="مثال: شقة 3 غرف للبيع في حي النزهة ببنها"
+          placeholder="مثال: شقة 3 غرف للبيع في سيدي بشر بالإسكندرية"
           {...register("title")}
           className="h-12 rounded-xl text-base"
         />

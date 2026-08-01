@@ -103,7 +103,7 @@ async function updateManifest(savedFiles: string[]): Promise<void> {
   const merged = [...new Set([...existing, ...savedFiles])];
   const manifest = {
     version: "1.0",
-    platform: "عقارات بنها",
+    platform: "عقارات الإسكندرية",
     exportedAt: new Date().toISOString(),
     files: merged,
     description: "Auto-updated by write-through export. Do not edit manually.",

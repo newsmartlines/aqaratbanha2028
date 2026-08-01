@@ -461,7 +461,7 @@ function QuickAdForm() {
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
-            placeholder={`اكتب وصف طبيعي مثلاً:\n"شقة للبيع ١٢٠ متر ٣ غرف وحمامين دور ثاني في بنها المنشية بسعر ١.٢ مليون تشطيب سوبر لوكس مصعد وجراج واتساب 01200000000"`}
+            placeholder={`اكتب وصف طبيعي مثلاً:\n"شقة للبيع ١٢٠ متر ٣ غرف وحمامين دور ثاني في سيدي بشر بسعر ١.٢ مليون تشطيب سوبر لوكس مصعد وجراج واتساب 01200000000"`}
             rows={5}
             maxLength={2000}
             className="w-full rounded-2xl border border-border bg-white px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500 transition-all resize-none leading-relaxed"

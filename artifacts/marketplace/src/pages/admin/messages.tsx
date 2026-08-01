@@ -78,7 +78,7 @@ const CHANNEL_CONFIG = [
 const DEMO_VARS: Record<string, string> = {
   userName: "أحمد محمد",
   userEmail: "ahmed@example.com",
-  siteName: "عقارات بنها",
+  siteName: "عقارات الإسكندرية",
   siteUrl: "https://example.com",
   contactEmail: "info@example.com",
   year: new Date().getFullYear().toString(),
@@ -408,7 +408,7 @@ export default function AdminMessages() {
     try {
       const res = await api.fetchJson<{ result: string; demo?: boolean }>("/admin/email/ai-assist", {
         method: "POST",
-        body: JSON.stringify({ prompt: aiPrompt, type: aiType, context: { siteName: "عقارات بنها" } }),
+        body: JSON.stringify({ prompt: aiPrompt, type: aiType, context: { siteName: "عقارات الإسكندرية" } }),
       });
       setAiResult(res.result);
       setAiDemo(!!res.demo);
@@ -582,7 +582,7 @@ export default function AdminMessages() {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-teal-700 hover:bg-teal-50 transition-colors group"
               >
                 <Home className="w-3.5 h-3.5 shrink-0 text-teal-500 group-hover:text-teal-700" />
-                <span>العودة إلى عقارات بنها</span>
+                <span>العودة إلى عقارات الإسكندرية</span>
               </a>
             </div>
           </div>

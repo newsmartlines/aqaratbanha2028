@@ -56,7 +56,7 @@ export function AddressAutocomplete({
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        q: `${q} بنها القليوبية مصر`,
+        q: `${q} الإسكندرية مصر`,
         format: "json",
         limit: "6",
         countrycodes: "eg",

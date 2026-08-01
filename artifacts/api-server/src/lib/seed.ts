@@ -189,15 +189,15 @@ export async function seed() {
     ]).returning();
 
     const adminHash = await bcrypt.hash("admin123", 10);
-    const [adminUser] = await db.insert(usersTable).values({ name: "Admin", email: "admin@aqaratbanha.com", passwordHash: adminHash, role: "admin" }).returning();
+    const [adminUser] = await db.insert(usersTable).values({ name: "Admin", email: "admin@aqaralex.com", passwordHash: adminHash, role: "admin" }).returning();
 
     const providerData = [
-      { name: "أحمد عبدالله", email: "ahmed@aqaratbanha.com", city: "بنها", bio: "سمسار عقارات محترف بخبرة 10 سنوات في بنها والقليوبية", rating: "4.9", featured: true, verified: true },
-      { name: "سارة الغامدي", email: "sara@aqaratbanha.com", city: "بنها", bio: "خبيرة تسويق عقاري ومستشارة مبيعات", rating: "4.8", featured: true, verified: true },
-      { name: "نواف العتيبي", email: "nawaf@aqaratbanha.com", city: "القناطر الخيرية", bio: "وسيط عقاري متخصص في عقارات القليوبية", rating: "4.7", featured: false, verified: true },
-      { name: "أم خالد", email: "oumkhalid@aqaratbanha.com", city: "طوخ", bio: "وسيطة عقارية ومتخصصة في عقارات محافظة القليوبية", rating: "4.9", featured: true, verified: true },
-      { name: "منى الشهري", email: "mona@aqaratbanha.com", city: "شبرا الخيمة", bio: "مستشارة عقارية ومتخصصة في الاستثمار العقاري", rating: "4.6", featured: false, verified: true },
-      { name: "هنود القرني", email: "hanood@aqaratbanha.com", city: "قليوب", bio: "وسيط عقاري خبرة 7 سنوات في بيع وإيجار الشقق", rating: "4.8", featured: true, verified: true },
+      { name: "أحمد عبدالله", email: "ahmed@aqaralex.com", city: "سيدي جابر", bio: "سمسار عقارات محترف بخبرة 10 سنوات في الإسكندرية", rating: "4.9", featured: true, verified: true },
+      { name: "سارة الغامدي", email: "sara@aqaralex.com", city: "سموحة", bio: "خبيرة تسويق عقاري ومستشارة مبيعات في الإسكندرية", rating: "4.8", featured: true, verified: true },
+      { name: "نواف العتيبي", email: "nawaf@aqaralex.com", city: "المنتزه", bio: "وسيط عقاري متخصص في عقارات الإسكندرية", rating: "4.7", featured: false, verified: true },
+      { name: "أم خالد", email: "oumkhalid@aqaralex.com", city: "كليوباترا", bio: "وسيطة عقارية ومتخصصة في عقارات محافظة الإسكندرية", rating: "4.9", featured: true, verified: true },
+      { name: "منى الشهري", email: "mona@aqaralex.com", city: "لوران", bio: "مستشارة عقارية ومتخصصة في الاستثمار العقاري بالإسكندرية", rating: "4.6", featured: false, verified: true },
+      { name: "هنود القرني", email: "hanood@aqaralex.com", city: "الشاطبي", bio: "وسيط عقاري خبرة 7 سنوات في بيع وإيجار الشقق بالإسكندرية", rating: "4.8", featured: true, verified: true },
     ];
 
     const passHash = await bcrypt.hash("provider123", 10);
@@ -255,43 +255,80 @@ export async function seed() {
   }
 }
 
-// ── Egypt / Banha Locations ───────────────────────────────────────────────────
+// ── Alexandria Locations ──────────────────────────────────────────────────────
 
 export async function seedEgyptLocations() {
   const existing = await db.select({ id: regionsTable.id }).from(regionsTable)
-    .where(eq(regionsTable.nameAr, "محافظة القليوبية")).limit(1);
+    .where(eq(regionsTable.nameAr, "محافظة الإسكندرية")).limit(1);
   if (existing.length > 0) {
-    console.log("Egypt locations already seeded, skipping.");
+    console.log("Alexandria locations already seeded, skipping.");
     return;
   }
-  console.log("Seeding Egypt/Banha locations...");
+  console.log("Seeding Alexandria locations...");
 
-  const egyptRegions = [
+  const alexandriaRegions = [
     {
-      nameAr: "محافظة القليوبية", nameEn: "Qalyubia Governorate", order: 1,
+      nameAr: "محافظة الإسكندرية", nameEn: "Alexandria Governorate", order: 1,
       cities: [
         {
-          name: "بنها", nameEn: "Banha",
+          name: "حي المنتزه", nameEn: "Montaza District",
           areas: [
-            "أتريب", "الأهرام", "محيط كلية الحقوق", "كفر الجزار", "الآثار", "العلوم",
-            "بطا", "شارع أبو حشيش", "وسط البلد", "الحرس الوطني", "المنشية", "النجدة",
-            "الرملة", "عزبة المربع", "محيط النادي الرياضي", "مناطق أخرى", "التمثال",
-            "بنها القديمة", "سندنهور", "شرق الاستاد", "طوخ", "عزبة الزراعة", "عزبة البرنس",
-            "عزبة السوق", "كفر بطا", "كفر شكر", "محيط كلية التربية", "مدخل بنها", "مرصفا",
-            "منشأة بنها", "منشية النور", "ميت عاصم", "الشدية", "الشموت", "الفيومي",
-            "الكوبري", "الموالح", "بتمدة", "جزيرة بلى", "جمجرة", "دملو", "شبلنجة",
-            "عزبة ذكي", "فرسيس", "كفر أبو زهرة", "كفر الأربعين", "كفر الحصة",
-            "كفر الحمام", "كفر السرايا", "كفر الشموت", "كفر الشيخ إبراهيم", "كفر سعد",
-            "كفر طحلة", "كفر عطا الله", "كفر مناقر", "كفر مويس", "مجول",
-            "محيط كلية التربية الرياضية", "محيط مستشفى الأميري", "محيط نادي المعلمين",
-            "منشأة أبو دياب", "منية السباع", "ميت العطار", "ميت راضي", "نقباس", "ورورة",
+            "سيدي بشر", "ميامي", "المندرة", "المنتزه", "المعمورة", "طيبة", "زيزينيا", "سموحة", "عصافرة",
+          ]
+        },
+        {
+          name: "حي شرق", nameEn: "East District",
+          areas: [
+            "الشاطبي", "كليوباترا", "سبورتنج", "رشدي", "محطة الرمل", "سيدي جابر", "جليم", "لوران", "بكوس", "فيكتوريا",
+          ]
+        },
+        {
+          name: "حي وسط", nameEn: "Central District",
+          areas: [
+            "المنشية", "محطة مصر", "باب شرق", "الأزاريطة", "الفلكي", "العطارين", "محرم بك", "وسط البلد", "الشلالات", "كوم الدكة",
+          ]
+        },
+        {
+          name: "حي الجمرك", nameEn: "Gomrok District",
+          areas: [
+            "الجمرك", "اللبان", "بحري", "الورديان", "الأنفوشي", "قايتباي", "المكس",
+          ]
+        },
+        {
+          name: "حي العجمي", nameEn: "Agami District",
+          areas: [
+            "العجمي", "المتراس", "الهانوفيل", "الزعفران", "سيدي كرير", "أبو تلات",
+          ]
+        },
+        {
+          name: "حي العامرية", nameEn: "Ameriya District",
+          areas: [
+            "العامرية", "المحمودية", "الفردوس", "العرب", "الحضرة", "الأمل",
+          ]
+        },
+        {
+          name: "حي الدخيلة", nameEn: "Dekheila District",
+          areas: [
+            "الدخيلة", "صفر", "المنيرة", "الزهراء",
+          ]
+        },
+        {
+          name: "مركز أبو قير", nameEn: "Abu Qir Center",
+          areas: [
+            "أبو قير", "إيدكو",
+          ]
+        },
+        {
+          name: "مركز برج العرب", nameEn: "Borg El Arab Center",
+          areas: [
+            "برج العرب", "مدينة برج العرب الجديدة", "العلمين الجديدة",
           ]
         },
       ]
     },
   ];
 
-  for (const r of egyptRegions) {
+  for (const r of alexandriaRegions) {
     const [region] = await db.insert(regionsTable).values({
       nameAr: r.nameAr,
       nameEn: r.nameEn,
@@ -314,7 +351,7 @@ export async function seedEgyptLocations() {
       }
     }
   }
-  console.log("Egypt/Banha locations seeded.");
+  console.log("Alexandria locations seeded.");
 }
 
 // ── Saudi Arabia Regions (legacy) ─────────────────────────────────────────────
@@ -442,83 +479,17 @@ export async function seedFeaturedAreas() {
   console.log("Seeding featured areas...");
 
   await db.insert(featuredAreasTable).values([
-    {
-      nameAr: "بنها",
-      image: "https://images.unsplash.com/photo-1582407947304-fd86f28f7f89?w=600&q=80",
-      cityName: "بنها",
-      displayOrder: 1,
-      enabled: true,
-    },
-    {
-      nameAr: "شبرا الخيمة",
-      image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=600&q=80",
-      cityName: "شبرا الخيمة",
-      displayOrder: 2,
-      enabled: true,
-    },
-    {
-      nameAr: "القناطر الخيرية",
-      image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=600&q=80",
-      cityName: "القناطر الخيرية",
-      displayOrder: 3,
-      enabled: true,
-    },
-    {
-      nameAr: "طوخ",
-      image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80",
-      cityName: "طوخ",
-      displayOrder: 4,
-      enabled: true,
-    },
-    {
-      nameAr: "قليوب",
-      image: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=600&q=80",
-      cityName: "قليوب",
-      displayOrder: 5,
-      enabled: true,
-    },
-    {
-      nameAr: "التجمع الخامس",
-      image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80",
-      cityName: "التجمع الخامس",
-      displayOrder: 6,
-      enabled: true,
-    },
-    {
-      nameAr: "الشيخ زايد",
-      image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80",
-      cityName: "الشيخ زايد",
-      displayOrder: 7,
-      enabled: true,
-    },
-    {
-      nameAr: "مدينة بدر",
-      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80",
-      cityName: "مدينة بدر",
-      displayOrder: 8,
-      enabled: true,
-    },
-    {
-      nameAr: "العبور",
-      image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80",
-      cityName: "العبور",
-      displayOrder: 9,
-      enabled: true,
-    },
-    {
-      nameAr: "الخانكة",
-      image: "https://images.unsplash.com/photo-1502005097973-6a7082348e28?w=600&q=80",
-      cityName: "الخانكة",
-      displayOrder: 10,
-      enabled: true,
-    },
-    {
-      nameAr: "كفر شكر",
-      image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80",
-      cityName: "كفر شكر",
-      displayOrder: 11,
-      enabled: true,
-    },
+    { nameAr: "المنتزه",   image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=600&q=80", cityName: "المنتزه",   displayOrder: 1,  enabled: true },
+    { nameAr: "سيدي بشر", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80", cityName: "سيدي بشر", displayOrder: 2,  enabled: true },
+    { nameAr: "سموحة",    image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=600&q=80", cityName: "سموحة",    displayOrder: 3,  enabled: true },
+    { nameAr: "كليوباترا","image": "https://images.unsplash.com/photo-1502005097973-6a7082348e28?w=600&q=80", cityName: "كليوباترا",displayOrder: 4,  enabled: true },
+    { nameAr: "العجمي",   image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80", cityName: "العجمي",   displayOrder: 5,  enabled: true },
+    { nameAr: "برج العرب","image": "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=600&q=80", cityName: "برج العرب",displayOrder: 6,  enabled: true },
+    { nameAr: "وسط البلد","image": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80", cityName: "وسط البلد",displayOrder: 7,  enabled: true },
+    { nameAr: "سيدي جابر","image": "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=600&q=80", cityName: "سيدي جابر",displayOrder: 8,  enabled: true },
+    { nameAr: "المعمورة", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80", cityName: "المعمورة", displayOrder: 9,  enabled: true },
+    { nameAr: "زيزينيا",  image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80", cityName: "زيزينيا",  displayOrder: 10, enabled: true },
+    { nameAr: "لوران",    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80", cityName: "لوران",    displayOrder: 11, enabled: true },
   ]);
   console.log("Featured areas seeded.");
 }
@@ -578,137 +549,128 @@ async function seedProperties() {
   }
   const pid = (i: number) => providers[i % providers.length].id;
 
-  // Get Egypt region/city IDs for linking
-  const [qaliubiyaRegion] = await db.select({ id: regionsTable.id }).from(regionsTable)
-    .where(eq(regionsTable.nameAr, "محافظة القليوبية")).limit(1);
-  const [cairoRegion] = await db.select({ id: regionsTable.id }).from(regionsTable)
-    .where(eq(regionsTable.nameAr, "محافظة القاهرة")).limit(1);
-  const [gizaRegion] = await db.select({ id: regionsTable.id }).from(regionsTable)
-    .where(eq(regionsTable.nameAr, "محافظة الجيزة")).limit(1);
+  // Get Alexandria region/city IDs for linking
+  const [alexRegion] = await db.select({ id: regionsTable.id }).from(regionsTable)
+    .where(eq(regionsTable.nameAr, "محافظة الإسكندرية")).limit(1);
 
-  const [banhaCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "بنها")).limit(1);
-  const [qalyubCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "قليوب")).limit(1);
-  const [toukhCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "طوخ")).limit(1);
-  const [qanaterCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "القناطر الخيرية")).limit(1);
-  const [shubra] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "شبرا الخيمة")).limit(1);
-  const [khankaCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "الخانكة")).limit(1);
-  const [tajamouCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "التجمع الخامس")).limit(1);
-  const [zayedCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "الشيخ زايد")).limit(1);
-  const [badrCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "مدينة بدر")).limit(1);
-  const [obourbCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
-    .where(eq(citiesTable.nameAr, "العبور")).limit(1);
+  const [montazaCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي المنتزه")).limit(1);
+  const [sharqCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي شرق")).limit(1);
+  const [wasatCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي وسط")).limit(1);
+  const [gomrokCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي الجمرك")).limit(1);
+  const [agamiCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي العجمي")).limit(1);
+  const [ameriyaCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي العامرية")).limit(1);
+  const [dekheilaCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "حي الدخيلة")).limit(1);
+  const [abuqirCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "مركز أبو قير")).limit(1);
+  const [borgCity] = await db.select({ id: citiesTable.id }).from(citiesTable)
+    .where(eq(citiesTable.nameAr, "مركز برج العرب")).limit(1);
 
-  const qR = qaliubiyaRegion?.id;
-  const cR = cairoRegion?.id;
-  const gR = gizaRegion?.id;
-  const bC = banhaCity?.id;
-  const qC = qalyubCity?.id;
-  const tC = toukhCity?.id;
-  const qnC = qanaterCity?.id;
-  const shC = shubra?.id;
-  const khC = khankaCity?.id;
-  const tjC = tajamouCity?.id;
-  const zC = zayedCity?.id;
-  const bdC = badrCity?.id;
-  const obC = obourbCity?.id;
+  const alexR = alexRegion?.id;
+  const monC  = montazaCity?.id;
+  const shrC  = sharqCity?.id;
+  const wasC  = wasatCity?.id;
+  const gomC  = gomrokCity?.id;
+  const agaC  = agamiCity?.id;
+  const ameC  = ameriyaCity?.id;
+  const dekC  = dekheilaCity?.id;
+  const abuC  = abuqirCity?.id;
+  const borC  = borgCity?.id;
 
   console.log("Seeding properties...");
 
   await db.insert(propertiesTable).values([
-    // ── شقق للبيع بنها ─────────────────────────────────────────────────────────
+    // ── شقق للبيع ──────────────────────────────────────────────────────────────
     {
-      providerId: pid(0), title: "شقة 3 غرف للبيع في بنها - موقع مميز",
-      description: "شقة فاخرة مساحة 120 متر في قلب بنها، تشطيب سوبر لوكس، 3 غرف نوم، 2 حمام، مطبخ راقي، ريسيبشن واسع. الطابق الثالث بمصعد. المنطقة هادئة وبالقرب من كل الخدمات.",
+      providerId: pid(0), title: "شقة 3 غرف للبيع في سيدي بشر - موقع مميز",
+      description: "شقة فاخرة مساحة 120 متر في سيدي بشر، تشطيب سوبر لوكس، 3 غرف نوم، 2 حمام، مطبخ راقي. الطابق الثالث بمصعد. بالقرب من البحر وكل الخدمات.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
-      price: "850000", area: "120", rooms: 3, bathrooms: 2, floor: 3, totalFloors: 8,
+      price: "1200000", area: "120", rooms: 3, bathrooms: 2, floor: 3, totalFloors: 8,
       finishing: "مشطب", furnished: "غير مفروش", paymentMethod: "نقدي أو تقسيط",
-      district: "وسط البلد", address: "بنها", regionId: qR, cityId: bC,
-      latitude: "30.4667", longitude: "31.1833",
+      district: "سيدي بشر", address: "سيدي بشر", regionId: alexR, cityId: monC,
+      latitude: "31.2578", longitude: "30.0098",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
-      providerId: pid(1), title: "شقة 2 غرف سوبر لوكس للبيع - بنها",
+      providerId: pid(1), title: "شقة 2 غرف سوبر لوكس للبيع - كليوباترا",
       description: "شقة سوبر لوكس 95 متر، دور خامس بمصعد، تشطيب أوروبي راقي. 2 غرف نوم وريسيبشن. قريبة من النيل ومن كل المواصلات. مناسبة للشباب والعائلات الصغيرة.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
       price: "650000", area: "95", rooms: 2, bathrooms: 1, floor: 5, totalFloors: 10,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "شارع الجمهورية", address: "بنها", regionId: qR, cityId: bC,
+      district: "كليوباترا", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.4690", longitude: "31.1820",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(2), title: "شقة 4 غرف بموقع مميز - بنها",
-      description: "شقة كبيرة 170 متر، 4 غرف نوم، 2 حمام، مطبخ كبير، ريسيبشن وصالة. دور ثاني لا يعلوه دور. مناسبة للعائلات الكبيرة. قريبة من مستشفى بنها والجامعة.",
+      providerId: pid(2), title: "شقة 4 غرف بموقع مميز - سموحة",
+      description: "شقة كبيرة 170 متر، 4 غرف نوم، 2 حمام، مطبخ كبير، ريسيبشن وصالة. دور ثاني لا يعلوه دور. مناسبة للعائلات الكبيرة. قريبة من الخدمات والمواصلات.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
       price: "1200000", area: "170", rooms: 4, bathrooms: 2, floor: 2, totalFloors: 6,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "الحي العاشر", address: "بنها", regionId: qR, cityId: bC,
+      district: "سموحة", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.4650", longitude: "31.1850",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(3), title: "شقة 3 غرف تشطيب كامل - القناطر الخيرية",
+      providerId: pid(3), title: "شقة 3 غرف تشطيب كامل - رشدي",
       description: "شقة 130 متر بتشطيب كامل ونظيف، 3 غرف نوم واسعة، 2 حمام، مطبخ أمريكي، ريسيبشن فاخر. المنطقة هادئة وشعبية ومريحة.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
       price: "720000", area: "130", rooms: 3, bathrooms: 2, floor: 1, totalFloors: 5,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
+      district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.328709", longitude: "31.118075",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
-      providerId: pid(4), title: "شقة غرفتين ريسيبشن للبيع - قليوب",
+      providerId: pid(4), title: "شقة غرفتين ريسيبشن للبيع - جليم",
       description: "شقة 85 متر بحالة ممتازة، 2 غرف نوم، حمام، ريسيبشن كبير، مطبخ. الدور الرابع بمصعد. موقع مركزي قريب من المحطة والأسواق.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
       price: "550000", area: "85", rooms: 2, bathrooms: 1, floor: 4, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "وسط قليوب", address: "قليوب", regionId: qR, cityId: qC,
+      district: "جليم", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.341349", longitude: "31.222926",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
     {
-      providerId: pid(5), title: "شقة استوديو مفروشة للبيع - بنها",
+      providerId: pid(5), title: "شقة استوديو مفروشة للبيع - الأزاريطة",
       description: "استوديو 55 متر مفروش بالكامل بأثاث حديث، تكييف، ثلاجة، غسالة، مطبخ مجهز. مناسب جداً للعزاب أو الطلاب. قريب من الجامعة.",
       mainCategory: "residential", listingType: "sale", subCategory: "ستوديو",
       price: "380000", area: "55", rooms: 1, bathrooms: 1, floor: 6, totalFloors: 9,
       finishing: "مشطب", furnished: "مفروش",
-      district: "شارع الجيش", address: "بنها", regionId: qR, cityId: bC,
+      district: "الأزاريطة", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.485337", longitude: "31.174820",
       images: IMGS_APT, features: JSON.stringify(["مفروش بالكامل", "تكييف", "إنترنت", "غسالة", "ثلاجة"]),
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(0), title: "شقة 3 غرف خام - الخانكة",
-      description: "شقة خام 115 متر في الخانكة، 3 غرف نوم، 2 حمام، مطبخ وصالة. مناسبة لمن يريد التشطيب بذوقه. سعر مغري ومنافس.",
+      providerId: pid(0), title: "شقة 3 غرف خام - المعمورة",
+      description: "شقة خام 115 متر في المعمورة، 3 غرف نوم، 2 حمام، مطبخ وصالة. قريبة من الشاطئ. مناسبة لمن يريد التشطيب بذوقه.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
       price: "480000", area: "115", rooms: 3, bathrooms: 2, floor: 2, totalFloors: 5,
       finishing: "خام", furnished: "غير مفروش",
-      district: "مركز الخانكة", address: "الخانكة", regionId: qR, cityId: khC,
+      district: "المعمورة", address: "الإسكندرية", regionId: alexR, cityId: wasC,
       latitude: "30.252963", longitude: "31.333631",
       images: IMGS_APT, features: JSON.stringify(["موقف سيارات", "أمن وحراسة"]),
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(1), title: "شقة 3 غرف نص تشطيب - طوخ",
+      providerId: pid(1), title: "شقة 3 غرف نص تشطيب - عصافرة",
       description: "شقة 110 متر نص تشطيب، 3 غرف، 2 حمام، مطبخ وصالة. مناسبة للبناء والتشطيب الشخصي بسعر اقتصادي.",
       mainCategory: "residential", listingType: "sale", subCategory: "شقة",
       price: "420000", area: "110", rooms: 3, bathrooms: 2, floor: 1, totalFloors: 4,
       finishing: "نص تشطيب", furnished: "غير مفروش",
-      district: "مركز طوخ", address: "طوخ", regionId: qR, cityId: tC,
+      district: "عصافرة", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.347960", longitude: "31.185442",
       images: IMGS_APT, features: JSON.stringify(["موقف سيارات"]),
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
@@ -716,56 +678,56 @@ async function seedProperties() {
 
     // ── شقق للإيجار ──────────────────────────────────────────────────────────
     {
-      providerId: pid(2), title: "شقة للإيجار 3 غرف مفروشة بنها",
+      providerId: pid(2), title: "شقة للإيجار 3 غرف مفروشة - ميامي",
       description: "شقة مفروشة فاخرة 120 متر، 3 غرف نوم مع تكييفات، ريسيبشن كبير مع أثاث، مطبخ مجهز كامل. مناسبة للعائلات والمغتربين. إيجار شهري.",
       mainCategory: "residential", listingType: "rent", subCategory: "شقة",
       price: "5000", area: "120", rooms: 3, bathrooms: 2, floor: 3, totalFloors: 8,
       finishing: "مشطب", furnished: "مفروش",
-      district: "الحي الثامن", address: "بنها", regionId: qR, cityId: bC,
+      district: "ميامي", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.4680", longitude: "31.1840",
       images: IMGS_APT, features: JSON.stringify(["مفروش بالكامل", "تكييف", "إنترنت فايبر", "غسالة", "مصعد"]),
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
-      providerId: pid(3), title: "شقة للإيجار 2 غرفة غير مفروشة - بنها",
+      providerId: pid(3), title: "شقة للإيجار 2 غرفة غير مفروشة - سيدي جابر",
       description: "شقة 90 متر غير مفروشة، 2 غرف نوم، حمام كبير، مطبخ، ريسيبشن. دور ثاني بمصعد. منطقة هادئة وآمنة. إيجار شهري مناسب.",
       mainCategory: "residential", listingType: "rent", subCategory: "شقة",
       price: "2800", area: "90", rooms: 2, bathrooms: 1, floor: 2, totalFloors: 6,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "شارع الرياضة", address: "بنها", regionId: qR, cityId: bC,
+      district: "سيدي جابر", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.471257", longitude: "31.171548",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(4), title: "شقة للإيجار 4 غرف مفروشة - بنها",
+      providerId: pid(4), title: "شقة للإيجار 4 غرف مفروشة - لوران",
       description: "شقة فاخرة 165 متر مفروشة بالكامل بأثاث مودرن، 4 غرف نوم، 3 حمامات، مطبخ راقي. دور خامس بمصعد. مناسبة للعائلات الكبيرة.",
       mainCategory: "residential", listingType: "rent", subCategory: "شقة",
       price: "7500", area: "165", rooms: 4, bathrooms: 3, floor: 5, totalFloors: 10,
       finishing: "مشطب", furnished: "مفروش",
-      district: "فيلتس", address: "بنها", regionId: qR, cityId: bC,
+      district: "لوران", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.470838", longitude: "31.178001",
       images: IMGS_APT, features: JSON.stringify(["مفروش بالكامل", "تكييف مركزي", "إنترنت فايبر", "مصعد", "أمن وحراسة", "موقف سيارات"]),
       status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(5), title: "شقة إيجار غرفة وصالة - قليوب",
+      providerId: pid(5), title: "شقة إيجار غرفة وصالة - باب شرق",
       description: "شقة 65 متر غرفة وصالة، حمام، مطبخ، مناسبة لعزاب أو زوجين. دور ثالث، سعر مناسب جداً.",
       mainCategory: "residential", listingType: "rent", subCategory: "شقة",
       price: "1800", area: "65", rooms: 1, bathrooms: 1, floor: 3, totalFloors: 5,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "قليوب الجديدة", address: "قليوب", regionId: qR, cityId: qC,
+      district: "باب شرق", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.346910", longitude: "31.188454",
       images: IMGS_APT, features: JSON.stringify(["مصعد", "أمن وحراسة"]),
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
-      providerId: pid(0), title: "شقة للإيجار 3 غرف - القناطر الخيرية",
+      providerId: pid(0), title: "شقة للإيجار 3 غرف - المنتزه",
       description: "شقة 105 متر، 3 غرف نوم، 2 حمام، مطبخ وصالة. دور رابع بمصعد. موقع جيد وقريب من كل الخدمات.",
       mainCategory: "residential", listingType: "rent", subCategory: "شقة",
       price: "3500", area: "105", rooms: 3, bathrooms: 2, floor: 4, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "كورنيش القناطر", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
+      district: "المنتزه", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.318800", longitude: "31.120904",
       images: IMGS_APT, features: FEATS_APT, nearbyServices: NEARBY_APT, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
@@ -778,51 +740,51 @@ async function seedProperties() {
       mainCategory: "residential", listingType: "sale", subCategory: "فيلا",
       price: "4500000", area: "350", rooms: 5, bathrooms: 4, floor: 0, totalFloors: 3,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "العبور السكنية", address: "العبور", regionId: cR, cityId: obC,
+      district: "المنتزه", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.2167", longitude: "31.5333",
       images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(2), title: "فيلا توين هاوس للبيع - بنها الجديدة",
-      description: "توين هاوس راقي 280 متر في بنها الجديدة، 4 غرف نوم، 3 حمامات، مطبخ أمريكي، 2 صالة، حديقة أمامية وخلفية. نص تشطيب جاهزة للتشطيب.",
+      providerId: pid(2), title: "فيلا توين هاوس للبيع - سيدي بشر",
+      description: "توين هاوس راقي 280 متر في سيدي بشر، 4 غرف نوم، 3 حمامات، مطبخ أمريكي، 2 صالة، حديقة أمامية وخلفية. نص تشطيب جاهزة للتشطيب.",
       mainCategory: "residential", listingType: "sale", subCategory: "توين هاوس",
       price: "3200000", area: "280", rooms: 4, bathrooms: 3, floor: 0, totalFloors: 2,
       finishing: "نص تشطيب", furnished: "غير مفروش",
-      district: "بنها الجديدة", address: "بنها", regionId: qR, cityId: bC,
+      district: "سيدي بشر", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.471948", longitude: "31.176231",
       images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(3), title: "فيلا دوبلكس 6 غرف - مدينة بدر",
+      providerId: pid(3), title: "فيلا دوبلكس 6 غرف - المنتزه",
       description: "فيلا دوبلكس ضخمة 420 متر في مدينة بدر، 6 غرف نوم، 5 حمامات، مطبخ فاخر، صالة رسمية وعائلية، غرفة سائق وغرفة خادمة. مسبح خاص وحديقة.",
       mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس",
       price: "5800000", area: "420", rooms: 6, bathrooms: 5, floor: 0, totalFloors: 3,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "مدينة بدر الجديدة", address: "مدينة بدر", regionId: cR, cityId: bdC,
+      district: "المنتزه", address: "الإسكندرية", regionId: alexR, cityId: borC,
       latitude: "30.110234", longitude: "31.746250",
       images: IMGS_DUPLEX, features: FEATS_VILLA, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: true, phone: "01334567890", whatsapp: "01334567890",
     },
     {
-      providerId: pid(4), title: "فيلا 4 غرف بحديقة - القناطر الخيرية",
+      providerId: pid(4), title: "فيلا 4 غرف بحديقة - سموحة",
       description: "فيلا 300 متر في القناطر الخيرية بحديقة واسعة 200 متر، 4 غرف نوم، 3 حمامات، مطبخ كبير، جراج مغطى. موقع هادئ وطبيعة خلابة.",
       mainCategory: "residential", listingType: "sale", subCategory: "فيلا",
       price: "2800000", area: "300", rooms: 4, bathrooms: 3, floor: 0, totalFloors: 2,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
+      district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.311380", longitude: "31.126932",
       images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: false, phone: "01445678901", whatsapp: "01445678901",
     },
     {
-      providerId: pid(5), title: "فيلا 5 غرف في كمبوند - التجمع الخامس",
+      providerId: pid(5), title: "فيلا 5 غرف في كمبوند - زيزينيا",
       description: "فيلا فاخرة في كمبوند متكامل الخدمات، 5 غرف، 4 حمامات، مسبح خاص، حديقة 250 متر، نظام تأمين ذكي، جراج مغطى. تشطيب بالكامل.",
       mainCategory: "residential", listingType: "sale", subCategory: "فيلا",
       price: "8500000", area: "500", rooms: 5, bathrooms: 4, floor: 0, totalFloors: 3,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "التجمع الثالث", address: "التجمع الخامس", regionId: cR, cityId: tjC,
+      district: "التجمع الثالث", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.028468", longitude: "31.474707",
       images: IMGS_VILLA, features: FEATS_VILLA, nearbyServices: NEARBY_VILLA, contactMethods: CONTACT_ALL,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
@@ -830,34 +792,34 @@ async function seedProperties() {
 
     // ── دوبلكس وروف ──────────────────────────────────────────────────────────
     {
-      providerId: pid(0), title: "دوبلكس 4 غرف للبيع - بنها",
+      providerId: pid(0), title: "دوبلكس 4 غرف للبيع - كليوباترا",
       description: "دوبلكس رائع 200 متر على دورين، 4 غرف نوم، 3 حمامات، مطبخ كبير، 2 صالة، تراس خاص. سلم داخلي أنيق. تشطيب سوبر لوكس.",
       mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس",
       price: "1800000", area: "200", rooms: 4, bathrooms: 3, floor: 5, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "الحي التاسع", address: "بنها", regionId: qR, cityId: bC,
+      district: "كليوباترا", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.477670", longitude: "31.163851",
       images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(1), title: "روف 3 غرف بتراس واسع - بنها",
+      providerId: pid(1), title: "روف 3 غرف بتراس واسع - سبورتنج",
       description: "روف مميز 140 متر + 100 متر تراس خاص، 3 غرف نوم، 2 حمام، مطبخ راقي. إطلالة بانورامية على المدينة. مناسب جداً للعائلات.",
       mainCategory: "residential", listingType: "sale", subCategory: "روف",
       price: "1100000", area: "140", rooms: 3, bathrooms: 2, floor: 7, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "شارع سعد زغلول", address: "بنها", regionId: qR, cityId: bC,
+      district: "سبورتنج", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.474351", longitude: "31.166068",
       images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(2), title: "دوبلكس 5 غرف في الشيخ زايد",
+      providerId: pid(2), title: "دوبلكس 5 غرف في رشدي",
       description: "دوبلكس فاخر 350 متر في قلب الشيخ زايد، 5 غرف نوم، 4 حمامات، مطبخ راقي، صالتان، تراس كبير. كمبوند متكامل الخدمات.",
       mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس",
       price: "4200000", area: "350", rooms: 5, bathrooms: 4, floor: 2, totalFloors: 4,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "الحي الثامن", address: "الشيخ زايد", regionId: gR, cityId: zC,
+      district: "ميامي", address: "الإسكندرية", regionId: alexR, cityId: agaC,
       latitude: "30.042545", longitude: "30.955090",
       images: IMGS_DUPLEX, features: FEATS_DUPLEX, nearbyServices: NEARBY_DUPLEX, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: true, phone: "01334567890", whatsapp: "01334567890",
@@ -865,51 +827,51 @@ async function seedProperties() {
 
     // ── أراضي للبيع ──────────────────────────────────────────────────────────
     {
-      providerId: pid(3), title: "أرض سكنية 300 متر للبيع - بنها",
-      description: "أرض سكنية 300 متر في المنطقة الصناعية ببنها، واجهة 15 متر على شارع 12 متر. مرافق كاملة كهرباء ومياه وصرف. مناسبة لبناء عمارة سكنية.",
+      providerId: pid(3), title: "أرض سكنية 300 متر للبيع - العامرية",
+      description: "أرض سكنية 300 متر في العامرية، واجهة 15 متر على شارع 12 متر. مرافق كاملة كهرباء ومياه وصرف. مناسبة لبناء عمارة سكنية.",
       mainCategory: "land", listingType: "sale", subCategory: "أرض",
       price: "600000", area: "300",
-      district: "المنطقة الصناعية", address: "بنها", regionId: qR, cityId: bC,
+      district: "المنطقة الصناعية", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.482254", longitude: "31.171036",
       images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
-      providerId: pid(4), title: "قطعة أرض 500م للبيع - القناطر",
+      providerId: pid(4), title: "قطعة أرض 500م للبيع - برج العرب",
       description: "أرض 500 متر في القناطر الجديدة، ركن واجهتين على شارعين. موقع ممتاز ومرافق كاملة. مناسبة للبناء السكني أو التجاري.",
       mainCategory: "land", listingType: "sale", subCategory: "أرض",
       price: "900000", area: "500",
-      district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
+      district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.313030", longitude: "31.104409",
       images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
-      providerId: pid(5), title: "أرض 750م للبيع - طوخ الصناعية",
+      providerId: pid(5), title: "أرض 750م للبيع - الدخيلة الصناعية",
       description: "أرض صناعية 750 متر في طوخ الصناعية، واجهة 20 متر. مناسبة للمشاريع الصناعية والمستودعات. على الشارع الرئيسي.",
       mainCategory: "land", listingType: "sale", subCategory: "أرض",
       price: "1200000", area: "750",
-      district: "طوخ الصناعية", address: "طوخ", regionId: qR, cityId: tC,
+      district: "الدخيلة الصناعية", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.351269", longitude: "31.155403",
       images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(0), title: "أرض زراعية 2 فدان - الخانكة",
-      description: "أرض زراعية 2 فدان (8400 متر) في ريف الخانكة، تربة طينية خصبة، مروية. مناسبة للزراعة أو الاستثمار في المشاريع الزراعية.",
+      providerId: pid(0), title: "أرض 2 فدان للاستثمار - أبو قير",
+      description: "أرض 2 فدان (8400 متر) في أبو قير على الطريق الرئيسي. مرافق كاملة. مناسبة للبناء والاستثمار.",
       mainCategory: "land", listingType: "sale", subCategory: "أرض",
       price: "2500000", area: "8400",
-      district: "ريف الخانكة", address: "الخانكة", regionId: qR, cityId: khC,
+      district: "أبو قير", address: "الإسكندرية", regionId: alexR, cityId: wasC,
       latitude: "30.220099", longitude: "31.350969",
       images: IMGS_LAND, features: JSON.stringify(["تربة خصبة", "مروية", "على ترعة"]),
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(1), title: "أرض سكنية 200م - شبين القناطر",
+      providerId: pid(1), title: "أرض سكنية 200م - العامرية",
       description: "أرض سكنية 200 متر في شبين القناطر، واجهة 10 متر على شارع 6 متر. مرافق كاملة. سعر مميز جداً.",
       mainCategory: "land", listingType: "sale", subCategory: "أرض",
       price: "350000", area: "200",
-      district: "شبين القناطر", address: "شبرا الخيمة", regionId: qR, cityId: shC,
+      district: "العامرية", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.121126", longitude: "31.239992",
       images: IMGS_LAND, features: FEATS_LAND, nearbyServices: NEARBY_LAND, contactMethods: CONTACT_CALL_WA,
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
@@ -917,61 +879,61 @@ async function seedProperties() {
 
     // ── عقارات تجارية ────────────────────────────────────────────────────────
     {
-      providerId: pid(2), title: "محل تجاري للبيع شارع رئيسي - بنها",
-      description: "محل تجاري 80 متر على الشارع الرئيسي في بنها بحركة مرورية عالية. واجهة زجاجية 6 متر. تشطيب جاهز. مناسب لأي نشاط تجاري.",
+      providerId: pid(2), title: "محل تجاري للبيع شارع رئيسي - وسط البلد",
+      description: "محل تجاري 80 متر على الشارع الرئيسي في وسط البلد بحركة مرورية عالية. واجهة زجاجية 6 متر. تشطيب جاهز. مناسب لأي نشاط تجاري.",
       mainCategory: "commercial", listingType: "sale", subCategory: "محل",
       price: "1500000", area: "80",
-      district: "السوق التجاري", address: "بنها", regionId: qR, cityId: bC,
+      district: "وسط البلد", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.4660", longitude: "31.1845",
       images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: true, phone: "01001234567", whatsapp: "01001234567",
     },
     {
-      providerId: pid(3), title: "مكتب للبيع 120م - بنها",
+      providerId: pid(3), title: "مكتب للبيع 120م - باب شرق",
       description: "مكتب راقي 120 متر في برج تجاري، دور رابع بمصعد. تشطيب جاهز بتكييف مركزي وكاميرات. مناسب للشركات والمحاسبين والأطباء.",
       mainCategory: "commercial", listingType: "sale", subCategory: "مكتب",
       price: "900000", area: "120", floor: 4, totalFloors: 12,
-      district: "شارع التحرير", address: "بنها", regionId: qR, cityId: bC,
+      district: "باب شرق", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.448606", longitude: "31.179679",
       images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
     },
     {
-      providerId: pid(4), title: "محل للإيجار - الشارع الرئيسي بنها",
-      description: "محل 60 متر على الشارع الرئيسي ببنها، تشطيب جاهز، تكييف، إيجار شهري مميز. موقع تجاري بامتياز.",
+      providerId: pid(4), title: "محل للإيجار - الشارع الرئيسي سموحة",
+      description: "محل 60 متر على الشارع الرئيسي بسموحة، تشطيب جاهز، تكييف، إيجار شهري مميز. موقع تجاري بامتياز.",
       mainCategory: "commercial", listingType: "rent", subCategory: "محل",
       price: "8000", area: "60",
-      district: "وسط البلد", address: "بنها", regionId: qR, cityId: bC,
+      district: "وسط البلد", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.456865", longitude: "31.197738",
       images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(5), title: "مستودع للإيجار - المنطقة الصناعية بنها",
-      description: "مستودع 300 متر في المنطقة الصناعية ببنها، ارتفاع 5 متر، بوابة كبيرة. مناسب للتخزين والمشاريع الصناعية.",
+      providerId: pid(5), title: "مستودع للإيجار - الدخيلة الصناعية",
+      description: "مستودع 300 متر في الدخيلة الصناعية، ارتفاع 5 متر، بوابة كبيرة. مناسب للتخزين والمشاريع الصناعية.",
       mainCategory: "commercial", listingType: "rent", subCategory: "مستودع / مخزن",
       price: "12000", area: "300",
-      district: "المنطقة الصناعية", address: "بنها", regionId: qR, cityId: bC,
+      district: "المنطقة الصناعية", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.481638", longitude: "31.197282",
       images: IMGS_COMM, features: JSON.stringify(["ارتفاع 5 متر", "بوابة كبيرة", "كهرباء ثلاثة فاز", "موقف سيارات"]),
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
     },
     {
-      providerId: pid(0), title: "مكتب للإيجار 90م - القناطر الخيرية",
+      providerId: pid(0), title: "مكتب للإيجار 90م - محطة الرمل",
       description: "مكتب 90 متر في مجمع إداري راقي، دور ثاني بمصعد. تكييف مركزي، إنترنت فايبر، أمن 24 ساعة. مناسب للشركات الصغيرة.",
       mainCategory: "commercial", listingType: "rent", subCategory: "مكتب",
       price: "4500", area: "90", floor: 2, totalFloors: 6,
-      district: "القناطر الجديدة", address: "القناطر الخيرية", regionId: qR, cityId: qnC,
+      district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.323485", longitude: "31.098712",
       images: IMGS_COMM, features: FEATS_COMM, nearbyServices: NEARBY_COMM, contactMethods: CONTACT_WA_CHAT,
       status: "active", featured: false, phone: "01001234567", whatsapp: "01001234567",
     },
     {
-      providerId: pid(1), title: "محل تجاري في شبرا الخيمة - للإيجار",
-      description: "محل 45 متر على شارع تجاري رئيسي في شبرا الخيمة. بالقرب من المترو. مناسب لأي نشاط تجاري.",
+      providerId: pid(1), title: "محل تجاري في الجمرك - للإيجار",
+      description: "محل 45 متر على شارع تجاري رئيسي في الجمرك. موقع تجاري مميز على الكورنيش. مناسب لأي نشاط تجاري.",
       mainCategory: "commercial", listingType: "rent", subCategory: "محل",
       price: "5000", area: "45",
-      district: "شبرا الخيمة الأولى", address: "شبرا الخيمة", regionId: qR, cityId: shC,
+      district: "الجمرك", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.116682", longitude: "31.249652",
       images: IMGS_COMM, features: JSON.stringify(["واجهة تجارية", "موقع مميز", "قريب من المترو"]),
       status: "active", featured: false, phone: "01112345678", whatsapp: "01112345678",
@@ -979,23 +941,23 @@ async function seedProperties() {
 
     // ── دور أرضي ─────────────────────────────────────────────────────────────
     {
-      providerId: pid(2), title: "دور أرضي 4 غرف بحديقة - كفر شكر",
+      providerId: pid(2), title: "دور أرضي 4 غرف بحديقة - ميامي",
       description: "دور أرضي 180 متر في كفر شكر، 4 غرف نوم، 2 حمام، مطبخ كبير، حديقة أمامية 80 متر. مناسب جداً للعائلات.",
       mainCategory: "residential", listingType: "sale", subCategory: "دور أرضي",
       price: "950000", area: "180", rooms: 4, bathrooms: 2, floor: 0, totalFloors: 1,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "مركز كفر شكر", address: "كفر شكر", regionId: qR,
+      district: "ميامي", address: "الإسكندرية", regionId: alexR,
       latitude: "30.537077", longitude: "31.253386",
       images: IMGS_APT, features: JSON.stringify(["حديقة خاصة", "مدخل مستقل", "موقف سيارات", "مخزن"]),
       status: "active", featured: false, phone: "01223456789", whatsapp: "01223456789",
     },
     {
-      providerId: pid(3), title: "دور أرضي 3 غرف للإيجار - بنها",
+      providerId: pid(3), title: "دور أرضي 3 غرف للإيجار - الشاطبي",
       description: "دور أرضي 150 متر بحديقة صغيرة، 3 غرف نوم، 2 حمام، مطبخ. مدخل مستقل. مناسب للعائلات. منطقة هادئة.",
       mainCategory: "residential", listingType: "rent", subCategory: "دور أرضي",
       price: "4000", area: "150", rooms: 3, bathrooms: 2, floor: 0, totalFloors: 1,
       finishing: "مشطب", furnished: "غير مفروش",
-      district: "حي الزهور", address: "بنها", regionId: qR, cityId: bC,
+      district: "الشاطبي", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.447810", longitude: "31.165496",
       images: IMGS_APT, features: JSON.stringify(["مدخل مستقل", "حديقة", "موقف سيارات"]),
       status: "active", featured: false, phone: "01334567890", whatsapp: "01334567890",
@@ -1347,10 +1309,10 @@ const EMAIL_TEMPLATES = [
     subject: "أحدث عروض العقارات في {{siteName}} 🏠",
     category: "marketing",
     variables: JSON.stringify(["siteName", "siteUrl", "userName", "featuredProperties", "unsubscribeUrl", "contactEmail", "year"]),
-    plainBody: "أحدث عروض عقارات بنها والقليوبية. اكتشف الآن: {{siteUrl}}",
+    plainBody: "أحدث عروض عقارات الإسكندرية. اكتشف الآن: {{siteUrl}}",
     htmlBody: BASE_HTML(`
       <h2 style="margin:0 0 8px;color:#0f172a;font-size:24px;font-weight:800;">أحدث عروض العقارات 🏠</h2>
-      <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.7;">اكتشف أفضل عروض العقارات في بنها والقليوبية هذا الأسبوع.</p>
+      <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.7;">اكتشف أفضل عروض العقارات في الإسكندرية هذا الأسبوع.</p>
       <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 24px;">
         <tr><td style="background:#0d9488;border-radius:12px;padding:14px 36px;text-align:center;">
           <a href="{{siteUrl}}" style="color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:block;">تصفح العقارات →</a>
@@ -1424,27 +1386,27 @@ export async function seedEmailTemplates() {
 // ── Site Settings ─────────────────────────────────────────────────────────────
 
 const DEFAULT_SITE_SETTINGS: Record<string, string> = {
-  siteName: "عقارات بنها",
-  siteNameEn: "Aqarat Banha",
+  siteName: "عقارات الإسكندرية",
+  siteNameEn: "Aqarat Alexandria",
   logoUrl: "",
   faviconUrl: "",
-  heroImage: "https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80",
-  heroTitle: "اعثر على عقارك المثالي في بنها",
-  heroSubtitle: "بيع وإيجار وشراء العقارات في بنها والقليوبية — أسرع وأوثق",
-  ctaText: "نضمن لك أفضل العقارات بأفضل الأسعار في بنها والقليوبية",
+  heroImage: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1600&q=80",
+  heroTitle: "اعثر على عقارك المثالي في الإسكندرية",
+  heroSubtitle: "بيع وإيجار عقارات الإسكندرية — أسرع وأوثق",
+  ctaText: "نضمن لك أفضل العقارات بأفضل الأسعار في الإسكندرية",
   ctaButtonText: "تصفح العقارات الآن",
   primaryColor: "#0d9488",
   themePreset: "teal-sand",
-  aboutContent: "نحن منصة عقارات بنها، الوجهة الأولى لبيع وشراء وإيجار العقارات في بنها والقليوبية. نربطك بأفضل العروض العقارية بسرعة وأمان وشفافية تامة.",
-  contactEmail: "info@aqaratbanha.com",
+  aboutContent: "نحن منصة عقارات الإسكندرية، الوجهة الأولى لبيع وشراء وإيجار العقارات في الإسكندرية. نربطك بأفضل العروض العقارية بسرعة وأمان وشفافية تامة.",
+  contactEmail: "info@aqaralex.com",
   contactPhone: "+201000000000",
   contactWhatsapp: "+201000000000",
-  contactAddress: "بنها، محافظة القليوبية، جمهورية مصر العربية",
+  contactAddress: "الإسكندرية، جمهورية مصر العربية",
   workingHours: "السبت — الخميس، من 9 صباحاً حتى 9 مساءً",
   faqContent: JSON.stringify([
     { q: "كيف أعرض عقاري على الموقع؟", a: "سجّل كمزود، ثم أضف بيانات عقارك من لوحة التحكم — الأمر يستغرق دقائق فقط." },
     { q: "هل التسجيل مجاني؟", a: "نعم، التسجيل الأساسي مجاني تماماً. تتوفر باقات مدفوعة لمزايا إضافية." },
-    { q: "ما المناطق التي يغطيها الموقع؟", a: "نغطي بنها وجميع مراكز القليوبية (طوخ، قليوب، الخانكة، القناطر، شبرا الخيمة...) بالإضافة إلى القاهرة الكبرى." },
+    { q: "ما المناطق التي يغطيها الموقع؟", a: "نغطي جميع أحياء الإسكندرية: المنتزه، شرق، وسط، الجمرك، العجمي، العامرية، الدخيلة، أبو قير، وبرج العرب." },
     { q: "كيف أتواصل مع المالك أو السمسار؟", a: "يمكنك الاتصال مباشرة عبر الهاتف أو واتساب الظاهر في إعلان العقار." },
     { q: "هل الأسعار المعروضة قابلة للتفاوض؟", a: "نعم، معظم الأسعار قابلة للتفاوض. تواصل مع المالك للاستفسار." },
     { q: "ما الفرق بين الإعلان العادي والمميز؟", a: "الإعلان المميز يظهر في أعلى نتائج البحث وعلى الصفحة الرئيسية بشارة 'مميز'." },
@@ -1565,7 +1527,7 @@ export async function seedDefaultAccounts() {
     .insert(usersTable)
     .values({
       name: "مستخدم تجريبي",
-      email: "user@aqaratbanha.com",
+      email: "user@aqaralex.com",
       passwordHash: userHash,
       role: "user",
       status: "active",
@@ -1587,7 +1549,7 @@ export async function seedDefaultAccounts() {
     .insert(usersTable)
     .values({
       name: "شركة تجريبية",
-      email: "company@aqaratbanha.com",
+      email: "company@aqaralex.com",
       passwordHash: companyHash,
       role: "provider",
       status: "active",
@@ -1614,7 +1576,7 @@ export async function seedDefaultAccounts() {
     await db.insert(providersTable).values({
       userId: companyUser.id,
       bio: "حساب الشركة التجريبي للاختبار والتطوير",
-      city: "بنها",
+      city: "سيدي جابر",
       verified: true,
       featured: false,
       approved: true,
@@ -1626,8 +1588,8 @@ export async function seedDefaultAccounts() {
 
   console.log(
     `Default accounts ready:\n` +
-    `  User    → user@aqaratbanha.com     / user123\n` +
-    `  Company → company@aqaratbanha.com  / company123`
+    `  User    → user@aqaralex.com     / user123\n` +
+    `  Company → company@aqaralex.com  / company123`
   );
 }
 
@@ -1638,10 +1600,10 @@ export async function forceSeedSection(section: string): Promise<{ ok: boolean; 
     switch (section) {
       case "locations": {
         const existing = await db.select({ id: regionsTable.id }).from(regionsTable)
-          .where(eq(regionsTable.nameAr, "محافظة القليوبية")).limit(1);
+          .where(eq(regionsTable.nameAr, "محافظة الإسكندرية")).limit(1);
         if (existing.length === 0) {
           await seedEgyptLocations();
-          return { ok: true, message: "تم إضافة مواقع مصر/بنها بنجاح" };
+          return { ok: true, message: "تم إضافة مواقع الإسكندرية بنجاح" };
         }
         return { ok: true, message: "المواقع موجودة بالفعل" };
       }

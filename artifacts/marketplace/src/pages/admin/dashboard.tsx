@@ -19,7 +19,7 @@ import { type ExtendedProperty } from "@/components/admin/PropertyDetailDrawer";
 import toast from "react-hot-toast";
 
 const dict = {
-  pageTitle:          { ar: "لوحة تحكم عقارات بنها", en: "Aqarat Banha Dashboard" },
+  pageTitle:          { ar: "لوحة تحكم عقارات الإسكندرية", en: "Aqarat Alexandria Dashboard" },
   totalProperties:    { ar: "إجمالي العقارات النشطة", en: "Active Listings" },
   forSale:            { ar: "للبيع", en: "For Sale" },
   forRent:            { ar: "للإيجار", en: "For Rent" },
@@ -42,7 +42,7 @@ const dict = {
   listingActivity:    { ar: "معدل النشاط اليومي", en: "Daily Activity Rate" },
   occupancyRate:      { ar: "نسبة الإشغال", en: "Occupancy Rate" },
   act1: { ar: "انضم وسيط عقاري جديد: أحمد محمد",   en: "New agent joined: Ahmed Mohamed" },
-  act2: { ar: "تمت الموافقة على شقة في بنها الجديدة", en: "Apartment in New Banha approved" },
+  act2: { ar: "تمت الموافقة على شقة في سيدي بشر", en: "Apartment in Sidi Bishr approved" },
   act3: { ar: "تمت معالجة دفعة اشتراك 500 ج.م",     en: "Subscription payment of 500 EGP" },
   act4: { ar: "فيلا للبيع تحتاج مراجعة — الحي الأول", en: "Villa for sale needs review — District 1" },
   act5: { ar: "انتهى صلاحية إعلان عقار #142",        en: "Property listing #142 expired" },

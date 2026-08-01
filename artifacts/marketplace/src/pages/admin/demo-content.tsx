@@ -270,7 +270,7 @@ export default function AdminDemoContent() {
             <div className="grid md:grid-cols-2 gap-4">
               <SeedCard
                 icon={MapPin}
-                title="محافظات ومدن مصر / بنها"
+                title="محافظة الإسكندرية وأحياؤها"
                 description={`${status?.regions ?? "…"} محافظة · ${status?.cities ?? "…"} مدينة · ${status?.areas ?? "…"} منطقة`}
                 section="locations"
                 count={status?.regions ?? 0}
@@ -278,7 +278,7 @@ export default function AdminDemoContent() {
                 onSeed={handleSeed}
                 loading={loadingSection === "locations"}
                 color="bg-teal-100 text-teal-700"
-                items={["بنها", "قليوب", "طوخ", "الخانكة", "القناطر الخيرية", "شبرا الخيمة", "القاهرة", "التجمع الخامس", "الشيخ زايد", "مدينة بدر"]}
+                items={["حي المنتزه", "حي شرق", "حي وسط", "حي الجمرك", "حي العجمي", "حي العامرية", "حي الدخيلة", "مركز أبو قير", "مركز برج العرب"]}
               />
               <SeedCard
                 icon={Star}
@@ -290,7 +290,7 @@ export default function AdminDemoContent() {
                 onSeed={handleSeed}
                 loading={loadingSection === "featured-areas"}
                 color="bg-amber-100 text-amber-700"
-                items={["بنها", "شبرا الخيمة", "القناطر الخيرية", "طوخ", "قليوب", "التجمع", "الشيخ زايد", "مدينة بدر"]}
+                items={["سيدي بشر", "سموحة", "كليوباترا", "المنتزه", "لوران", "العجمي", "برج العرب", "أبو قير"]}
               />
             </div>
           </div>
@@ -305,7 +305,7 @@ export default function AdminDemoContent() {
               <SeedCard
                 icon={Home}
                 title="عقارات تجريبية"
-                description="شقق وفيلات ودوبلكس ومحلات وأراضي في بنها وشبرا وطوخ وغيرها"
+                description="شقق وفيلات ودوبلكس ومحلات وأراضي في أحياء الإسكندرية"
                 section="properties"
                 count={status?.properties ?? 0}
                 min={10}

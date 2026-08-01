@@ -295,9 +295,9 @@ export default function AuthPage({ defaultTab = "login" }: AuthProps) {
         <div className="relative z-10 text-center flex flex-col items-center">
           <Link href="/" className="flex items-center gap-3 mb-8 cursor-pointer hover:opacity-90 transition-opacity">
             <div className="w-14 h-14 rounded-2xl bg-background flex items-center justify-center text-primary font-bold text-3xl shadow-lg">✦</div>
-            <span className="font-bold text-5xl tracking-tight text-primary-foreground">عقارات بنها</span>
+            <span className="font-bold text-5xl tracking-tight text-primary-foreground">عقارات الإسكندرية</span>
           </Link>
-          <h1 className="text-3xl font-bold leading-tight mb-4 max-w-sm">اعثر على عقارك المثالي في بنها والقليوبية</h1>
+          <h1 className="text-3xl font-bold leading-tight mb-4 max-w-sm">اعثر على عقارك المثالي في الإسكندرية</h1>
           <p className="text-primary-foreground/80 text-lg max-w-sm">بيع وشراء وإيجار العقارات مع خدمات التشطيبات والديكور ومواد البناء.</p>
         </div>
         <div className="absolute top-1/4 -right-12 w-64 h-64 bg-accent/20 rounded-full blur-3xl" />

@@ -10058,7 +10058,7 @@
         "updated_at": null
       },
       {
-        "id": "      <p style=margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.7;>اكتشف أفضل عروض العقارات في بنها والقليوبية هذا الأسبوع.</p>",
+        "id": "      <p style=margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.7;>اكتشف أفضل عروض العقارات في الإسكندرية هذا الأسبوع.</p>",
         "name": null,
         "slug": null,
         "subject": null,
@@ -10366,7 +10366,7 @@
         "updated_at": null
       },
       {
-        "id": "</html>,أحدث عروض عقارات بنها والقليوبية. اكتشف الآن: {{siteUrl}},marketing,[email],[siteName",
+        "id": "</html>,أحدث عروض عقارات الإسكندرية. اكتشف الآن: {{siteUrl}},marketing,[email],[siteName",
         "name": "siteUrl",
         "slug": "userName",
         "subject": "featuredProperties",

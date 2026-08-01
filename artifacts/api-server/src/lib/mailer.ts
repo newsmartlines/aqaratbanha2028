@@ -1,5 +1,5 @@
 /**
- * mailer.ts — Standalone email sender for عقارات بنها
+ * mailer.ts — Standalone email sender for عقارات الإسكندرية
  * Professional Arabic HTML emails, RTL, luxury design.
  * Uses SMTP settings from site_settings table.
  * Fire-and-forget: always resolves, never throws.

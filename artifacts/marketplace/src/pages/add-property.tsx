@@ -19,7 +19,7 @@ function GuestScreen() {
             </div>
             <h1 className="text-2xl font-extrabold text-gray-900 mb-2">أضف عقارك الآن</h1>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
-              انشر إعلانك مجاناً وتواصل مع مشترين ومستأجرين في بنها والقليوبية
+              انشر إعلانك مجاناً وتواصل مع مشترين ومستأجرين في الإسكندرية
             </p>
           </div>
 

@@ -225,7 +225,7 @@ function ContactSidebar({ provider }: { provider: ProviderInfo }) {
         <div className="p-5 space-y-3">
           {provider.whatsapp && (
             <a
-              href={`https://wa.me/${provider.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent("مرحباً، رأيت إعلانك على عقارات بنها وأريد الاستفسار")}`}
+              href={`https://wa.me/${provider.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent("مرحباً، رأيت إعلانك على عقارات الإسكندرية وأريد الاستفسار")}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center gap-2.5 w-full bg-[#25D366] hover:bg-[#20bc5a] text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-sm shadow-[#25D366]/30"
@@ -744,7 +744,7 @@ export default function AdvertiserPage() {
         <div className="flex gap-3">
           {provider.whatsapp ? (
             <a
-              href={`https://wa.me/${provider.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent("مرحباً، رأيت إعلانك على عقارات بنها")}`}
+              href={`https://wa.me/${provider.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent("مرحباً، رأيت إعلانك على عقارات الإسكندرية")}`}
               target="_blank"
               rel="noreferrer"
               className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 rounded-xl text-sm"

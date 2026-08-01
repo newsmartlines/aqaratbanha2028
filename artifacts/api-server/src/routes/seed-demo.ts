@@ -29,7 +29,7 @@ router.get("/admin/seed-status", adminOnly, async (_req, res) => {
 
     // Check Egypt specifically
     const egyptRegion = await db.select({ id: regionsTable.id }).from(regionsTable)
-      .where(eq(regionsTable.nameAr, "محافظة القليوبية")).limit(1);
+      .where(eq(regionsTable.nameAr, "محافظة الإسكندرية")).limit(1);
 
     res.json({
       success: true,
@@ -45,7 +45,7 @@ router.get("/admin/seed-status", adminOnly, async (_req, res) => {
         allCategories: allCategories.n,
         providers: providers.n,
         users: users.n,
-        hasEgyptLocations: egyptRegion.length > 0,
+        hasAlexandriaLocations: egyptRegion.length > 0,
       },
     });
   } catch (err) {

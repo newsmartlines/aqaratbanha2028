@@ -274,7 +274,7 @@ export default function CompanyRegisterPage() {
             <Building2 className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-2xl font-extrabold text-zinc-800">إنشاء حساب شركة عقارية</h1>
-          <p className="text-zinc-500 mt-1.5 text-sm">انضم إلى منصة عقارات بنها وابدأ نشر عقاراتك</p>
+          <p className="text-zinc-500 mt-1.5 text-sm">انضم إلى منصة عقارات الإسكندرية وابدأ نشر عقاراتك</p>
         </div>
 
         {/* Step progress */}

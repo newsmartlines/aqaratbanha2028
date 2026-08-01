@@ -257,7 +257,7 @@ export default function AdminFeaturedAreas() {
                 <Input
                   value={form.nameAr}
                   onChange={e => setForm(f => ({ ...f, nameAr: e.target.value }))}
-                  placeholder="مثال: بنها، شبرا الخيمة، القناطر الخيرية"
+                  placeholder="مثال: سيدي بشر، سموحة، كليوباترا"
                   className="text-right"
                 />
               </div>
@@ -268,7 +268,7 @@ export default function AdminFeaturedAreas() {
                 <Input
                   value={form.cityName ?? ""}
                   onChange={e => setForm(f => ({ ...f, cityName: e.target.value }))}
-                  placeholder="مثال: القليوبية"
+                  placeholder="مثال: الإسكندرية"
                   className="text-right"
                 />
               </div>
