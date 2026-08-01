@@ -15,17 +15,12 @@ import {
   SheetDescription,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { Loader2, RefreshCw, Ticket, Send } from "lucide-react";
-import { api, type AdminSupportTicket } from "@/lib/api";
+import { Loader2, RefreshCw, Ticket, Send, XCircle } from "lucide-react";
+import { api, type AdminSupportTicket, type TicketMessage } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useT, commonDict, useLanguage } from "@/lib/i18n";
+import { format, parseISO } from "date-fns";
+import { arSA } from "date-fns/locale";
 
 const dict = {
   pageTitle: { ar: "تذاكر الدعم", en: "Support Tickets" },
@@ -42,23 +37,35 @@ const dict = {
   open: { ar: "مفتوحة", en: "Open" },
   closed: { ar: "مغلقة", en: "Closed" },
   replied: { ar: "تم الرد", en: "Replied" },
-  providerMsg: { ar: "رسالة مقدم الخدمة", en: "Provider message" },
-  lastReply: { ar: "آخر رد إداري", en: "Latest admin reply" },
-  newReply: { ar: "رد جديد للمقدّم", en: "New reply to provider" },
+  thread: { ar: "المحادثة", en: "Thread" },
+  newReply: { ar: "رد جديد", en: "New reply" },
   replyPh: { ar: "اكتب ردك هنا...", en: "Write your reply here..." },
-  ticketStatus: { ar: "حالة التذكرة", en: "Ticket status" },
-  statusHint: { ar: "«مفتوحة» تعيد التذكرة إلى انتظار المتابعة، «مغلقة» تنهي التذكرة.", en: "“Open” puts the ticket back in the follow-up queue; “Closed” ends the ticket." },
   sendReply: { ar: "إرسال الرد", en: "Send reply" },
-  applyStatusOnly: { ar: "تطبيق الحالة فقط", en: "Apply status only" },
-  saveReplyClose: { ar: "حفظ الرد وإغلاق التذكرة", en: "Save reply and close ticket" },
+  saveReplyClose: { ar: "رد وإغلاق التذكرة", en: "Reply and close ticket" },
+  closeOnly: { ar: "إغلاق التذكرة", en: "Close ticket" },
   saved: { ar: "تم الحفظ", en: "Saved" },
   enterReply: { ar: "أدخل نص الرد", en: "Enter reply text" },
+  you: { ar: "فريق الدعم", en: "Support Team" },
+  provider: { ar: "مقدم الخدمة", en: "Provider" },
 };
 
 function statusBadgeClass(status: string) {
   if (status === "Closed") return "bg-slate-100 text-slate-700 border-slate-200";
   if (status === "Replied") return "bg-emerald-50 text-emerald-800 border-emerald-200";
   return "bg-amber-50 text-amber-800 border-amber-200";
+}
+
+function formatDt(iso: string) {
+  try { return format(parseISO(iso), "d MMM yyyy، h:mm a", { locale: arSA }); }
+  catch { return iso; }
+}
+
+/** Build full thread from messages array or fallback to flat fields */
+function buildThread(tk: AdminSupportTicket): TicketMessage[] {
+  if (Array.isArray(tk.messages) && tk.messages.length > 0) return tk.messages;
+  const t: TicketMessage[] = [{ role: "provider", text: tk.message, createdAt: tk.createdAt }];
+  if (tk.adminReply) t.push({ role: "admin", text: tk.adminReply, createdAt: tk.updatedAt });
+  return t;
 }
 
 export default function AdminSupportTickets() {
@@ -69,7 +76,6 @@ export default function AdminSupportTickets() {
   const { lang, formatDate } = useLanguage();
   const [selected, setSelected] = useState<AdminSupportTicket | null>(null);
   const [reply, setReply] = useState("");
-  const [sheetStatus, setSheetStatus] = useState<"Open" | "Closed">("Open");
 
   const statusLabel = (status: string) =>
     status === "Closed" ? t("closed") : status === "Replied" ? t("replied") : t("open");
@@ -82,34 +88,30 @@ export default function AdminSupportTickets() {
   const updateTicket = useMutation({
     mutationFn: (args: { id: string; body: { adminReply?: string; status?: "Open" | "Closed" } }) =>
       api.admin.supportTickets.update(args.id, args.body),
-    onSuccess: async () => {
+    onSuccess: async (updated) => {
       await queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
       toast({ title: t("saved") });
-      setSelected(null);
       setReply("");
+      // keep sheet open with refreshed data so admin can continue the conversation
+      if (updated && (updated as any).data) {
+        setSelected((updated as any).data as AdminSupportTicket);
+      } else {
+        setSelected(null);
+      }
     },
     onError: (e: Error) => toast({ title: tc("error"), description: e.message, variant: "destructive" }),
   });
 
   const openSheet = (tk: AdminSupportTicket) => {
     setSelected(tk);
-    setReply(tk.adminReply ?? "");
-    setSheetStatus(tk.status === "Closed" ? "Closed" : "Open");
+    setReply("");
   };
 
   const submitReply = () => {
     if (!selected) return;
     const trimmed = reply.trim();
-    if (!trimmed) {
-      toast({ title: t("enterReply"), variant: "destructive" });
-      return;
-    }
+    if (!trimmed) { toast({ title: t("enterReply"), variant: "destructive" }); return; }
     updateTicket.mutate({ id: selected.id, body: { adminReply: trimmed } });
-  };
-
-  const submitStatus = () => {
-    if (!selected) return;
-    updateTicket.mutate({ id: selected.id, body: { status: sheetStatus } });
   };
 
   const submitReplyAndClose = () => {
@@ -123,6 +125,14 @@ export default function AdminSupportTickets() {
       },
     });
   };
+
+  const submitCloseOnly = () => {
+    if (!selected) return;
+    updateTicket.mutate({ id: selected.id, body: { status: "Closed" } });
+  };
+
+  const isClosed = selected?.status === "Closed";
+  const thread = selected ? buildThread(selected) : [];
 
   return (
     <AdminLayout title={t("pageTitle")}>
@@ -198,72 +208,105 @@ export default function AdminSupportTickets() {
           </CardContent>
         </Card>
 
-        <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-          <SheetContent side={lang === "ar" ? "left" : "right"} className="w-full sm:max-w-lg overflow-y-auto">
+        {/* ── Ticket management sheet ────────────────────────────────────── */}
+        <Sheet open={!!selected} onOpenChange={(o) => { if (!o) { setSelected(null); setReply(""); } }}>
+          <SheetContent side={lang === "ar" ? "left" : "right"} className="w-full sm:max-w-lg overflow-y-auto" dir="rtl">
             <SheetHeader className="text-start space-y-1">
-              <SheetTitle className="text-lg">{selected?.subject}</SheetTitle>
+              <div className="flex items-center gap-2 flex-wrap">
+                <SheetTitle className="text-lg">{selected?.subject}</SheetTitle>
+                {selected && (
+                  <Badge variant="outline" className={statusBadgeClass(selected.status)}>
+                    {statusLabel(selected.status)}
+                  </Badge>
+                )}
+              </div>
               <SheetDescription className="text-xs font-mono text-slate-500">{selected?.id}</SheetDescription>
             </SheetHeader>
 
             {selected && (
               <div className="mt-6 space-y-5 text-start">
+
+                {/* ── Full conversation thread ─────────────────────────────── */}
                 <div>
-                  <Label className="text-xs text-slate-500">{t("providerMsg")}</Label>
-                  <p className="mt-1 text-sm whitespace-pre-wrap rounded-lg border border-slate-100 bg-slate-50/80 p-3">
-                    {selected.message}
-                  </p>
+                  <Label className="text-xs text-slate-500 mb-2 block">{t("thread")}</Label>
+                  <div className="flex flex-col gap-2 max-h-80 overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+                    {thread.map((m, i) => (
+                      <div
+                        key={i}
+                        className={`max-w-[90%] rounded-xl border p-3 text-sm shadow-sm ${
+                          m.role === "admin"
+                            ? "self-end border-teal-100 bg-teal-50/80"
+                            : "self-start border-slate-100 bg-white"
+                        }`}
+                      >
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-slate-600">
+                            {m.role === "admin" ? t("you") : t("provider")}
+                          </span>
+                          <span className="text-[10px] text-slate-400">{formatDt(m.createdAt)}</span>
+                        </div>
+                        <p className="whitespace-pre-wrap text-slate-700">{m.text}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {selected.adminReply && (
-                  <div>
-                    <Label className="text-xs text-slate-500">{t("lastReply")}</Label>
-                    <p className="mt-1 text-sm whitespace-pre-wrap rounded-lg border border-teal-100 bg-teal-50/60 p-3">
-                      {selected.adminReply}
-                    </p>
+                {/* ── Reply input (hidden when closed) ────────────────────── */}
+                {!isClosed && (
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-reply">{t("newReply")}</Label>
+                    <Textarea
+                      id="admin-reply"
+                      rows={4}
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder={t("replyPh")}
+                      className="resize-none"
+                      disabled={updateTicket.isPending}
+                    />
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="admin-reply">{t("newReply")}</Label>
-                  <Textarea
-                    id="admin-reply"
-                    rows={5}
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder={t("replyPh")}
-                    className="resize-none"
-                  />
-                </div>
+                {isClosed && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-xs text-slate-500">
+                    هذه التذكرة مغلقة.
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <Label>{t("ticketStatus")}</Label>
-                  <Select value={sheetStatus} onValueChange={(v) => setSheetStatus(v as "Open" | "Closed")}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Open">{t("open")}</SelectItem>
-                      <SelectItem value="Closed">{t("closed")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-[11px] text-slate-500">{t("statusHint")}</p>
-                </div>
-
+                {/* ── Action buttons ───────────────────────────────────────── */}
                 <SheetFooter className="flex-col gap-2 sm:flex-col pt-2">
-                  <Button
-                    className="w-full gap-2"
-                    onClick={submitReply}
-                    disabled={updateTicket.isPending}
-                  >
-                    {updateTicket.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    {t("sendReply")}
-                  </Button>
-                  <Button variant="outline" className="w-full" onClick={submitStatus} disabled={updateTicket.isPending}>
-                    {t("applyStatusOnly")}
-                  </Button>
-                  <Button variant="secondary" className="w-full" onClick={submitReplyAndClose} disabled={updateTicket.isPending}>
-                    {t("saveReplyClose")}
-                  </Button>
+                  {!isClosed && (
+                    <>
+                      <Button
+                        className="w-full gap-2"
+                        onClick={submitReply}
+                        disabled={updateTicket.isPending}
+                      >
+                        {updateTicket.isPending
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <Send className="w-4 h-4" />}
+                        {t("sendReply")}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="w-full gap-2"
+                        onClick={submitReplyAndClose}
+                        disabled={updateTicket.isPending}
+                      >
+                        <XCircle className="w-4 h-4" />
+                        {t("saveReplyClose")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={submitCloseOnly}
+                        disabled={updateTicket.isPending}
+                      >
+                        <XCircle className="w-4 h-4" />
+                        {t("closeOnly")}
+                      </Button>
+                    </>
+                  )}
                 </SheetFooter>
               </div>
             )}

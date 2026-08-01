@@ -458,6 +458,12 @@ export interface ServiceArea {
   areaId: number | null;
 }
 
+export type TicketMessage = {
+  role: "provider" | "admin";
+  text: string;
+  createdAt: string;
+};
+
 export type SupportTicketDto = {
   id: string;
   subject: string;
@@ -465,6 +471,7 @@ export type SupportTicketDto = {
   status: string;
   message: string;
   adminReply?: string | null;
+  messages: TicketMessage[];
   createdAt: string;
   updatedAt: string;
 };
@@ -479,6 +486,7 @@ export type AdminSupportTicket = {
   status: string;
   message: string;
   adminReply: string | null;
+  messages: TicketMessage[];
   createdAt: string;
   updatedAt: string;
 };
@@ -953,6 +961,12 @@ export const api = {
       fetchJson<SupportTicketDto>(`/providers/${providerId}/support-tickets/${encodeURIComponent(publicId)}`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
+        headers: userId ? { "x-user-id": String(userId) } : undefined,
+      }),
+    reply: (providerId: number, publicId: string, message: string, userId?: number) =>
+      fetchJson<SupportTicketDto>(`/providers/${providerId}/support-tickets/${encodeURIComponent(publicId)}/reply`, {
+        method: "POST",
+        body: JSON.stringify({ message }),
         headers: userId ? { "x-user-id": String(userId) } : undefined,
       }),
     // Regular user endpoints

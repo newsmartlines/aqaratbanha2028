@@ -1,6 +1,12 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { providersTable } from "./providers";
 import { usersTable } from "./users";
+
+export type TicketMessage = {
+  role: "provider" | "admin";
+  text: string;
+  createdAt: string;
+};
 
 export const supportTicketsTable = pgTable("support_tickets", {
   id: serial("id").primaryKey(),
@@ -15,6 +21,7 @@ export const supportTicketsTable = pgTable("support_tickets", {
   status: text("status").notNull().default("Pending"),
   message: text("message").notNull(),
   adminReply: text("admin_reply"),
+  messages: jsonb("messages").$type<TicketMessage[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -1,5 +1,5 @@
 import type { SupportTicketDto } from "@/lib/api";
-import type { SupportTicket, TicketCategory, TicketStatus } from "./types";
+import type { SupportTicket, TicketCategory, TicketStatus, TicketMessage } from "./types";
 
 const CATS = new Set<string>(["Technical", "Payment", "Account", "Other"]);
 const STATS = new Set<string>(["Replied", "Pending", "Closed"]);
@@ -12,6 +12,7 @@ export function mapSupportTicketDto(d: SupportTicketDto): SupportTicket {
     status: (STATS.has(d.status) ? d.status : "Pending") as TicketStatus,
     message: d.message,
     adminReply: d.adminReply ?? null,
+    messages: Array.isArray((d as any).messages) ? (d as any).messages as TicketMessage[] : [],
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,
   };

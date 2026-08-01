@@ -557,6 +557,7 @@ router.get("/admin/support-tickets", async (_req, res) => {
       status: r.status,
       message: r.message,
       adminReply: r.adminReply ?? null,
+      messages: (r as any).messages ?? [],
       createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
       updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : String(r.updatedAt),
     }));
@@ -573,28 +574,59 @@ router.patch("/admin/support-tickets/:publicId", async (req, res) => {
   if (!publicId) return res.status(400).json({ success: false, error: "Invalid ticket id" });
   const { adminReply, status } = (req.body ?? {}) as { adminReply?: string | null; status?: string };
   try {
-    const hasReply = adminReply !== undefined;
+    const hasReply = adminReply !== undefined && String(adminReply ?? "").trim().length > 0;
     const hasStatus = status === "Open" || status === "Closed";
     if (!hasReply && !hasStatus) {
       return res.status(400).json({ success: false, error: "Send adminReply and/or status (Open|Closed)" });
     }
 
-    const updates: { adminReply?: string | null; status?: string; updatedAt: Date } = {
-      updatedAt: new Date(),
-    };
+    // Fetch current ticket to build full messages thread
+    const [current] = await db
+      .select({
+        message: supportTicketsTable.message,
+        adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
+        createdAt: supportTicketsTable.createdAt,
+        updatedAt: supportTicketsTable.updatedAt,
+      })
+      .from(supportTicketsTable)
+      .where(eq(supportTicketsTable.publicId, publicId))
+      .limit(1);
 
-    if (hasReply) {
-      const t = String(adminReply).trim();
-      updates.adminReply = t.length ? t : null;
+    if (!current) return res.status(404).json({ success: false, error: "Ticket not found" });
+
+    const now = new Date();
+    const replyText = hasReply ? String(adminReply).trim() : null;
+
+    // Build messages thread — migrate old tickets on first admin reply
+    let newMessages = Array.isArray(current.messages) && current.messages.length > 0
+      ? [...current.messages]
+      : [
+          { role: "provider" as const, text: current.message, createdAt: (current.createdAt instanceof Date ? current.createdAt : new Date(String(current.createdAt))).toISOString() },
+          ...(current.adminReply ? [{ role: "admin" as const, text: current.adminReply, createdAt: (current.updatedAt instanceof Date ? current.updatedAt : new Date(String(current.updatedAt))).toISOString() }] : []),
+        ];
+
+    if (replyText) {
+      newMessages = [...newMessages, { role: "admin" as const, text: replyText, createdAt: now.toISOString() }];
     }
 
-    if (status === "Open") updates.status = "Pending";
-    else if (status === "Closed") updates.status = "Closed";
-    else if (updates.adminReply && updates.adminReply.length > 0) updates.status = "Replied";
+    // Determine new status
+    let newStatus: string;
+    if (status === "Closed") newStatus = "Closed";
+    else if (status === "Open") newStatus = "Pending";
+    else if (replyText) newStatus = "Replied";
+    else newStatus = "Pending";
+
+    const updatePayload: Record<string, unknown> = {
+      messages: newMessages,
+      status: newStatus,
+      updatedAt: now,
+    };
+    if (replyText) updatePayload.adminReply = replyText;
 
     const [updated] = await db
       .update(supportTicketsTable)
-      .set(updates)
+      .set(updatePayload as any)
       .where(eq(supportTicketsTable.publicId, publicId))
       .returning({
         id: supportTicketsTable.publicId,
@@ -604,6 +636,7 @@ router.patch("/admin/support-tickets/:publicId", async (req, res) => {
         status: supportTicketsTable.status,
         message: supportTicketsTable.message,
         adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
         createdAt: supportTicketsTable.createdAt,
         updatedAt: supportTicketsTable.updatedAt,
       });
@@ -630,6 +663,7 @@ router.patch("/admin/support-tickets/:publicId", async (req, res) => {
         status: updated.status,
         message: updated.message,
         adminReply: updated.adminReply ?? null,
+        messages: (updated as any).messages ?? [],
         createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : String(updated.createdAt),
         updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : String(updated.updatedAt),
       },

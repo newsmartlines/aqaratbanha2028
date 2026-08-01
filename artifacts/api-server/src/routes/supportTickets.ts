@@ -4,6 +4,7 @@ import { providersTable } from "@workspace/db";
 import { supportTicketsTable } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { ensureSessionProviderId } from "./auth";
+import type { TicketMessage } from "@workspace/db/schema";
 
 const router = Router();
 
@@ -42,6 +43,25 @@ function paramStr(v: string | string[] | undefined): string {
   return Array.isArray(v) ? (v[0] ?? "") : v;
 }
 
+function serializeTicket(r: {
+  id: string; subject: string; category: string; status: string;
+  message: string; adminReply: string | null; messages: TicketMessage[] | null;
+  createdAt: Date | string; updatedAt: Date | string;
+}) {
+  return {
+    id: r.id,
+    subject: r.subject,
+    category: r.category,
+    status: r.status,
+    message: r.message,
+    adminReply: r.adminReply ?? null,
+    messages: r.messages ?? [],
+    createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+    updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : String(r.updatedAt),
+  };
+}
+
+// ── GET list ─────────────────────────────────────────────────────────────────
 router.get("/providers/:providerId/support-tickets", async (req: Request, res: Response) => {
   const providerId = parseInt(paramStr(req.params.providerId), 10);
   if (!Number.isFinite(providerId) || providerId < 1) {
@@ -59,29 +79,21 @@ router.get("/providers/:providerId/support-tickets", async (req: Request, res: R
         status: supportTicketsTable.status,
         message: supportTicketsTable.message,
         adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
         createdAt: supportTicketsTable.createdAt,
         updatedAt: supportTicketsTable.updatedAt,
       })
       .from(supportTicketsTable)
       .where(eq(supportTicketsTable.providerId, providerId))
       .orderBy(desc(supportTicketsTable.createdAt));
-    const data = rows.map((r) => ({
-      id: r.id,
-      subject: r.subject,
-      category: r.category,
-      status: r.status,
-      message: r.message,
-      adminReply: r.adminReply ?? null,
-      createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
-      updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : String(r.updatedAt),
-    }));
-    return res.json({ success: true, data });
+    return res.json({ success: true, data: rows.map(serializeTicket) });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ success: false, error: "تعذر تحميل تذاكر الدعم" });
   }
 });
 
+// ── POST create ───────────────────────────────────────────────────────────────
 router.post("/providers/:providerId/support-tickets", async (req: Request, res: Response) => {
   const providerId = parseInt(paramStr(req.params.providerId), 10);
   if (!Number.isFinite(providerId) || providerId < 1) {
@@ -116,6 +128,10 @@ router.post("/providers/:providerId/support-tickets", async (req: Request, res: 
     }
 
     const now = new Date();
+    const initMessages: TicketMessage[] = [
+      { role: "provider", text: message.trim(), createdAt: now.toISOString() },
+    ];
+
     const [row] = await db
       .insert(supportTicketsTable)
       .values({
@@ -125,6 +141,7 @@ router.post("/providers/:providerId/support-tickets", async (req: Request, res: 
         category: String(category),
         status: "Pending",
         message: message.trim(),
+        messages: initMessages,
         createdAt: now,
         updatedAt: now,
       })
@@ -135,29 +152,91 @@ router.post("/providers/:providerId/support-tickets", async (req: Request, res: 
         status: supportTicketsTable.status,
         message: supportTicketsTable.message,
         adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
         createdAt: supportTicketsTable.createdAt,
         updatedAt: supportTicketsTable.updatedAt,
       });
 
-    return res.status(201).json({
-      success: true,
-      data: {
-        id: row.id,
-        subject: row.subject,
-        category: row.category,
-        status: row.status,
-        message: row.message,
-        adminReply: row.adminReply ?? null,
-        createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-        updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
-      },
-    });
+    return res.status(201).json({ success: true, data: serializeTicket(row) });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ success: false, error: "تعذر إنشاء التذكرة" });
   }
 });
 
+// ── POST reply (provider adds a follow-up message) ────────────────────────────
+router.post("/providers/:providerId/support-tickets/:publicId/reply", async (req: Request, res: Response) => {
+  const providerId = parseInt(paramStr(req.params.providerId), 10);
+  const publicId = paramStr(req.params.publicId);
+  if (!Number.isFinite(providerId) || providerId < 1) {
+    return res.status(400).json({ success: false, error: "معرّف الشركة العقارية غير صالح" });
+  }
+  if (!(await canAccessProviderTickets(req, providerId))) {
+    return res.status(401).json({ success: false, error: "غير مصرح" });
+  }
+  const { message: replyText } = req.body ?? {};
+  if (!replyText || typeof replyText !== "string" || !replyText.trim()) {
+    return res.status(400).json({ success: false, error: "نص الرد مطلوب" });
+  }
+  try {
+    const [ticket] = await db
+      .select({
+        id: supportTicketsTable.id,
+        message: supportTicketsTable.message,
+        adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
+        status: supportTicketsTable.status,
+        createdAt: supportTicketsTable.createdAt,
+        updatedAt: supportTicketsTable.updatedAt,
+      })
+      .from(supportTicketsTable)
+      .where(and(eq(supportTicketsTable.providerId, providerId), eq(supportTicketsTable.publicId, publicId)))
+      .limit(1);
+
+    if (!ticket) return res.status(404).json({ success: false, error: "التذكرة غير موجودة" });
+    if (ticket.status === "Closed") {
+      return res.status(400).json({ success: false, error: "لا يمكن الرد على تذكرة مغلقة" });
+    }
+
+    // Build existing messages — migrate old tickets if messages array is empty
+    const existing: TicketMessage[] = Array.isArray(ticket.messages) && ticket.messages.length > 0
+      ? ticket.messages
+      : [
+          { role: "provider", text: ticket.message, createdAt: (ticket.createdAt instanceof Date ? ticket.createdAt : new Date(ticket.createdAt)).toISOString() },
+          ...(ticket.adminReply ? [{ role: "admin" as const, text: ticket.adminReply, createdAt: (ticket.updatedAt instanceof Date ? ticket.updatedAt : new Date(ticket.updatedAt)).toISOString() }] : []),
+        ];
+
+    const now = new Date();
+    const newMessages: TicketMessage[] = [
+      ...existing,
+      { role: "provider", text: replyText.trim(), createdAt: now.toISOString() },
+    ];
+
+    const [updated] = await db
+      .update(supportTicketsTable)
+      .set({ messages: newMessages, status: "Pending", updatedAt: now })
+      .where(and(eq(supportTicketsTable.providerId, providerId), eq(supportTicketsTable.publicId, publicId)))
+      .returning({
+        id: supportTicketsTable.publicId,
+        subject: supportTicketsTable.subject,
+        category: supportTicketsTable.category,
+        status: supportTicketsTable.status,
+        message: supportTicketsTable.message,
+        adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
+        createdAt: supportTicketsTable.createdAt,
+        updatedAt: supportTicketsTable.updatedAt,
+      });
+
+    if (!updated) return res.status(404).json({ success: false, error: "التذكرة غير موجودة" });
+    return res.json({ success: true, data: serializeTicket(updated) });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ success: false, error: "تعذر إرسال الرد" });
+  }
+});
+
+// ── PATCH status (provider close) ─────────────────────────────────────────────
 router.patch("/providers/:providerId/support-tickets/:publicId", async (req: Request, res: Response) => {
   const providerId = parseInt(paramStr(req.params.providerId), 10);
   const publicId = paramStr(req.params.publicId);
@@ -184,23 +263,12 @@ router.patch("/providers/:providerId/support-tickets/:publicId", async (req: Req
         status: supportTicketsTable.status,
         message: supportTicketsTable.message,
         adminReply: supportTicketsTable.adminReply,
+        messages: supportTicketsTable.messages,
         createdAt: supportTicketsTable.createdAt,
         updatedAt: supportTicketsTable.updatedAt,
       });
     if (!updated) return res.status(404).json({ success: false, error: "التذكرة غير موجودة" });
-    return res.json({
-      success: true,
-      data: {
-        id: updated.id,
-        subject: updated.subject,
-        category: updated.category,
-        status: updated.status,
-        message: updated.message,
-        adminReply: updated.adminReply ?? null,
-        createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : String(updated.createdAt),
-        updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : String(updated.updatedAt),
-      },
-    });
+    return res.json({ success: true, data: serializeTicket(updated) });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ success: false, error: "تعذر تحديث التذكرة" });

@@ -70,6 +70,40 @@ export default function SupportTicketsPage() {
     },
   });
 
+  const replyMutation = useMutation({
+    mutationFn: async ({ publicId, message }: { publicId: string; message: string }) => {
+      if (!isProvider || !providerId) throw new Error("غير متاح");
+      return api.supportTickets.reply(providerId, publicId, message, user?.id);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["support-tickets", isProvider ? providerId : user?.id] });
+      toast.success("تم إرسال ردك بنجاح");
+      // refresh ticket in dialog
+      setDetailTicket(prev => {
+        if (!prev) return prev;
+        const updated = rawTickets.find((r: SupportTicketDto) => r.id === prev.id);
+        return updated ? mapSupportTicketDto(updated) : prev;
+      });
+    },
+    onError: (e: Error) => toast.error(e.message || "تعذر إرسال الرد"),
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: async (publicId: string) => {
+      if (isProvider && providerId) {
+        return api.supportTickets.updateStatus(providerId, publicId, "Closed", user?.id);
+      }
+      return api.supportTickets.userUpdateStatus(user!.id, publicId, "Closed");
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["support-tickets", isProvider ? providerId : user?.id] });
+      toast.success("تم إغلاق التذكرة");
+      setDetailOpen(false);
+      setDetailTicket(null);
+    },
+    onError: (e: Error) => toast.error(e.message || "تعذر إغلاق التذكرة"),
+  });
+
   useEffect(() => { setPage(1); }, [search, statusFilter]);
 
   const stats = useMemo(() => ({
@@ -243,6 +277,16 @@ export default function SupportTicketsPage() {
                   if (!v) setDetailTicket(null);
                 }}
                 defaultTab={detailTab}
+                onReply={detailTicket && detailTicket.status !== "Closed" && isProvider
+                  ? async (text) => {
+                      await replyMutation.mutateAsync({ publicId: detailTicket.id, message: text });
+                    }
+                  : undefined}
+                onClose={detailTicket && detailTicket.status !== "Closed"
+                  ? async () => { await closeMutation.mutateAsync(detailTicket.id); }
+                  : undefined}
+                replying={replyMutation.isPending}
+                closing={closeMutation.isPending}
               />
             </>
           )}
