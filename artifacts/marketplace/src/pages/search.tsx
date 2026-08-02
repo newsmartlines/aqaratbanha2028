@@ -1188,7 +1188,7 @@ export default function SearchPage() {
               ) : (
                 <span className="text-[11px] font-semibold text-zinc-600">السعر عند الاتصال</span>
               )}
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className="flex items-center gap-0.5 text-[10px] text-zinc-500">
                   <Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}
                 </span>
@@ -1196,6 +1196,26 @@ export default function SearchPage() {
                   <span className="text-[10px] text-zinc-500 font-semibold">
                     {p.viewCount.toLocaleString("ar-EG")} مشاهدات
                   </span>
+                )}
+                {/* Company logo + name — bottom of card */}
+                {p.agentLogo && p.agentName && (
+                  <button
+                    type="button"
+                    onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/advertiser/${p.providerId}`); } : undefined}
+                    className={`flex items-center gap-1.5 shrink-0 transition-all
+                      ${p.providerId ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
+                    title={p.providerId ? `عرض صفحة ${p.agentName}` : p.agentName}
+                  >
+                    <div className="h-7 px-2 rounded-md border border-zinc-200 bg-white flex items-center justify-center" style={{ minWidth: 52, maxWidth: 90 }}>
+                      <img
+                        src={p.agentLogo}
+                        alt={p.agentName}
+                        className="h-[18px] w-auto object-contain"
+                        onError={e => { (e.currentTarget as HTMLImageElement).closest("button")!.style.display = "none"; }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold text-zinc-600 max-w-[80px] truncate">{p.agentName}</span>
+                  </button>
                 )}
               </div>
             </div>
