@@ -1151,6 +1151,12 @@ export type UserCurrentSub = {
   limits: Record<string, number> | null;
   features: Record<string, boolean> | null;
   color: string | null;
+  /** Number of active/pending properties currently counted against this quota */
+  used_quota: number;
+  /** Total allowed by this plan (-1 = unlimited) */
+  total_quota: number;
+  /** Remaining slots (-1 = unlimited, 0 = exhausted) */
+  remaining_quota: number;
 };
 
 export type BillingPlan = {

@@ -68,6 +68,10 @@ type SubShape = {
   endDate?: string | null;
   maxListings?: number | null;
   planColor?: string | null;
+  /** Backend-computed used quota (regular users only) */
+  usedQuota?: number | null;
+  /** Backend-computed remaining quota (regular users only; -1 = unlimited) */
+  remainingQuota?: number | null;
 };
 
 type StatusInfo = { label: string; cls: string; icon: React.ElementType } | null;
@@ -231,19 +235,51 @@ function ActiveSubCard({
                 )}
               </>
             ) : maxProps != null ? (
+              // Regular user — show used / total with progress bar
               <>
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5" />
-                    حد الإعلانات
+                    الإعلانات المستخدمة
                   </p>
-                  <p className="text-3xl font-black text-foreground tabular-nums">
-                    {maxProps < 0 ? "∞" : maxProps}
-                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-foreground tabular-nums">
+                      {sub.usedQuota ?? 0}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      / {maxProps < 0 ? "∞" : maxProps}
+                    </span>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    {maxProps < 0 ? "غير محدود" : "إعلان كحد أقصى"}
+                    متبقي:{" "}
+                    <span className="font-semibold text-foreground">
+                      {maxProps < 0 ? "غير محدود" : Math.max(0, maxProps - (sub.usedQuota ?? 0))}
+                    </span>
                   </p>
                 </div>
+                {maxProps > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, ((sub.usedQuota ?? 0) / maxProps) * 100)}%`,
+                          backgroundColor: accentColor,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>مستخدم: {sub.usedQuota ?? 0}</span>
+                      <span>متبقي: {Math.max(0, maxProps - (sub.usedQuota ?? 0))}</span>
+                    </div>
+                  </div>
+                )}
+                {maxProps < 0 && (
+                  <p className="text-sm font-semibold text-teal-600 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    إعلانات غير محدودة
+                  </p>
+                )}
               </>
             ) : (
               <div className="space-y-2">
@@ -390,6 +426,9 @@ export default function PackagesPage() {
         endDate: userSub.endDate ? String(userSub.endDate) : null,
         maxListings: maxListings != null && maxListings < 0 ? -1 : maxListings,
         planColor: userSub.color,
+        // Backend-computed quota (single source of truth)
+        usedQuota: userSub.used_quota ?? null,
+        remainingQuota: userSub.remaining_quota ?? null,
       };
     }
 

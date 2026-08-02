@@ -1,7 +1,7 @@
 import { Router, type Request } from "express";
 import { db } from "@workspace/db";
-import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable, paymentsTable, supportTicketsTable, providersTable } from "@workspace/db";
-import { eq, ne, and, desc } from "drizzle-orm";
+import { usersTable, subscriptionsTable, billingPlansTable, packagesTable, notificationsTable, paymentsTable, supportTicketsTable, providersTable, propertiesTable } from "@workspace/db";
+import { eq, ne, and, desc, sql, or } from "drizzle-orm";
 import { getSession } from "./auth";
 import { adminOnly } from "../middleware/adminOnly";
 
@@ -386,6 +386,32 @@ router.get("/users/:userId/current-subscription", async (req, res) => {
     const nameAr = s.billingPlanId ? (s.bpNameAr ?? s.planNameAr) : s.planNameAr;
     const price = s.billingPlanId ? s.bpPrice : s.planPrice;
 
+    // ── Quota computation (backend is single source of truth) ────────────
+    const parsedLimits = s.bpLimits
+      ? (() => { try { return JSON.parse(s.bpLimits!); } catch { return null; } })()
+      : null;
+    const DEFAULT_USER_MAX = 3;
+    const totalQuota: number = parsedLimits?.properties != null
+      ? Number(parsedLimits.properties)
+      : DEFAULT_USER_MAX;
+
+    const [qRow] = await db
+      .select({ cnt: sql<number>`cast(count(*) as int)` })
+      .from(propertiesTable)
+      .where(
+        and(
+          eq(propertiesTable.ownerUserId, userId),
+          or(
+            eq(propertiesTable.status, "approved"),
+            eq(propertiesTable.status, "active"),
+            eq(propertiesTable.status, "pending"),
+          )
+        )
+      );
+    const usedQuota = qRow?.cnt ?? 0;
+    // -1 means unlimited; otherwise clamp to 0
+    const remainingQuota = totalQuota < 0 ? -1 : Math.max(0, totalQuota - usedQuota);
+
     res.json({
       success: true,
       data: {
@@ -399,9 +425,12 @@ router.get("/users/:userId/current-subscription", async (req, res) => {
         status: s.status,
         isActive,
         daysLeft,
-        limits: s.bpLimits ? (() => { try { return JSON.parse(s.bpLimits!); } catch { return null; } })() : null,
+        limits: parsedLimits,
         features: s.bpFeatures ? (() => { try { return JSON.parse(s.bpFeatures!); } catch { return null; } })() : null,
         color: s.bpColor,
+        used_quota: usedQuota,
+        total_quota: totalQuota,
+        remaining_quota: remainingQuota,
       },
     });
   } catch (e) {

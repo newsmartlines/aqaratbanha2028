@@ -27,29 +27,39 @@ export function useSse(enabled = true) {
       qc.invalidateQueries({ queryKey: ["admin-properties"] });
       qc.invalidateQueries({ queryKey: ["property", data?.propertyId] });
       qc.invalidateQueries({ queryKey: ["featured-properties"] });
+      // Status change may affect quota count
+      qc.invalidateQueries({ queryKey: ["userCurrentSub"] });
     },
 
     "property.submitted": () => {
       qc.invalidateQueries({ queryKey: ["admin-properties"] });
       qc.invalidateQueries({ queryKey: ["admin-sidebar-counts"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      // New property uses quota — refresh subscription widget immediately
+      qc.invalidateQueries({ queryKey: ["userCurrentSub"] });
     },
 
     "property.approved": (data: any) => {
       qc.invalidateQueries({ queryKey: ["properties"] });
       qc.invalidateQueries({ queryKey: ["user-properties"] });
       qc.invalidateQueries({ queryKey: ["property", data?.id] });
+      // Quota may change when a property moves to approved status
+      qc.invalidateQueries({ queryKey: ["userCurrentSub"] });
     },
 
     "property.rejected": (data: any) => {
       qc.invalidateQueries({ queryKey: ["user-properties"] });
       qc.invalidateQueries({ queryKey: ["property", data?.id] });
+      // Quota changes when a property is rejected (no longer counts toward quota)
+      qc.invalidateQueries({ queryKey: ["userCurrentSub"] });
     },
 
     "property.deleted": (data: any) => {
       qc.invalidateQueries({ queryKey: ["properties"] });
       qc.invalidateQueries({ queryKey: ["user-properties"] });
       qc.invalidateQueries({ queryKey: ["property", data?.id] });
+      // Deleting a property frees up quota
+      qc.invalidateQueries({ queryKey: ["userCurrentSub"] });
     },
 
     "property.edited": () => {

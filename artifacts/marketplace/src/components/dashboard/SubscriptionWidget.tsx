@@ -198,9 +198,9 @@ export function SubscriptionWidget() {
     : null;
 
   const sub: SubscriptionData | null = isProvider ? (stats?.subscription ?? null) : rawUserSub;
-  const totalProperties = isProvider ? (stats?.totalProperties ?? 0) : 0;
   const maxListings = sub?.maxListings ?? null;
-  const usedListings = totalProperties;
+  // For providers, use live stats. For regular users, use the backend-computed used_quota.
+  const usedListings = isProvider ? (stats?.totalProperties ?? 0) : (userSub?.used_quota ?? 0);
   const remainingListings = maxListings !== null && maxListings >= 0
     ? Math.max(0, maxListings - usedListings)
     : null;

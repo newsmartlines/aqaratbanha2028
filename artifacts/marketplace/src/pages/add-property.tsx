@@ -1,11 +1,13 @@
 import { Link } from "wouter";
-import { Building2, LogIn, UserPlus, Loader2, Zap, Clock } from "lucide-react";
+import { Building2, LogIn, UserPlus, Loader2, Zap, Clock, AlertTriangle, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useSiteSettings } from "@/App";
 import { Header } from "@/components/Header";
 import { RealEstateFooter } from "@/components/RealEstateFooter";
 import { PropertyFormFull } from "@/components/property-form";
+import { useQuery } from "@tanstack/react-query";
+import { api, type UserCurrentSub } from "@/lib/api";
 
 function GuestScreen() {
   return (
@@ -81,11 +83,38 @@ function GuestScreen() {
 export default function AddPropertyPage() {
   const { user, loading } = useAuth();
   const siteSettings = useSiteSettings();
+  const subsEnabled = siteSettings?.subscriptionsEnabled !== "false";
+  const isProvider = (user as any)?.role === "provider";
 
-  // Show plans step only when the Packages & Subscriptions feature is enabled
-  const showPlans = siteSettings?.subscriptionsEnabled !== "false";
+  // Pre-check active subscription so we can skip the plan-selection step
+  // when the user already has an active subscription with remaining quota.
+  const { data: userSub, isLoading: subLoading } = useQuery<UserCurrentSub | null>({
+    queryKey: ["userCurrentSub", user?.id],
+    queryFn: () => api.userSubscription.current(user!.id),
+    enabled: !!user && subsEnabled && !isProvider,
+    staleTime: 0,
+  });
 
-  if (loading) {
+  // Determine whether to show the plan-selection step and/or block with a quota-full screen
+  let showPlans = subsEnabled; // default: show plans when enabled
+  let quotaExhausted = false;
+
+  if (subsEnabled && user && !isProvider && !subLoading) {
+    if (userSub) {
+      const rem = userSub.remaining_quota;
+      if (rem === -1 || rem > 0) {
+        // Active subscription with quota remaining — skip plan selection entirely
+        showPlans = false;
+      } else {
+        // Subscription active but quota exhausted
+        showPlans = false;
+        quotaExhausted = true;
+      }
+    }
+    // userSub === null → no active subscription → showPlans remains true
+  }
+
+  if (loading || (subsEnabled && !isProvider && !!user && subLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-10 h-10 animate-spin text-teal-600" />
@@ -94,6 +123,45 @@ export default function AddPropertyPage() {
   }
 
   if (!user) return <GuestScreen />;
+
+  // Quota exhausted — user has an active subscription but no remaining slots
+  if (quotaExhausted && userSub) {
+    return (
+      <div className="min-h-screen bg-gray-50" dir="rtl">
+        <Header />
+        <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-16">
+          <div className="max-w-md w-full text-center">
+            <div className="w-20 h-20 rounded-3xl bg-red-100 flex items-center justify-center mx-auto mb-5">
+              <AlertTriangle className="w-10 h-10 text-red-600" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 mb-3">وصلت إلى الحد الأقصى</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-2">
+              لقد استنفذت جميع إعلانات باقتك الحالية.
+            </p>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              مستخدم:{" "}
+              <strong className="text-foreground">{userSub.used_quota}</strong>{" "}
+              من أصل{" "}
+              <strong className="text-foreground">
+                {userSub.total_quota < 0 ? "∞" : userSub.total_quota}
+              </strong>{" "}
+              إعلان
+            </p>
+            <Link href="/dashboard/packages">
+              <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-12 px-8 font-bold text-base gap-2">
+                <Crown className="w-4 h-4" />
+                ترقية الباقة
+              </Button>
+            </Link>
+            <p className="text-xs text-muted-foreground mt-4">
+              بعد الترقية ستتمكن من إضافة المزيد من الإعلانات فوراً
+            </p>
+          </div>
+        </div>
+        <RealEstateFooter />
+      </div>
+    );
+  }
 
   // Provider account pending admin approval — block all actions
   if (user.providerApproved === false) {
