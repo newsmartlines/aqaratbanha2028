@@ -831,12 +831,12 @@ export default function PropertiesPage() {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="h-10 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 text-gray-600 focus:outline-none focus:border-primary/40 cursor-pointer"
             >
-              <option value="newest">🕐 الأحدث أولاً</option>
-              <option value="featured">⭐ المميزة أولاً</option>
-              <option value="popular">🔥 الأكثر مشاهدة</option>
-              <option value="price_asc">💰 السعر: الأقل أولاً</option>
-              <option value="price_desc">💰 السعر: الأعلى أولاً</option>
-              <option value="area">📐 المساحة: الأكبر أولاً</option>
+              <option value="newest">الأحدث أولاً</option>
+              <option value="featured">المميزة أولاً</option>
+              <option value="popular">الأكثر مشاهدة</option>
+              <option value="price_asc">السعر: الأقل أولاً</option>
+              <option value="price_desc">السعر: الأعلى أولاً</option>
+              <option value="area">المساحة: الأكبر أولاً</option>
             </select>
 
             {/* Save search button */}
