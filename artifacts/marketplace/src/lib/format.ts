@@ -4,7 +4,7 @@ export function formatPrice(
 ): string {
   const n = Number(price);
   if (!price || isNaN(n) || n === 0) return "—";
-  return `${n.toLocaleString("en-US")} ج.م${suffix ?? ""}`;
+  return `${n.toLocaleString("en-US")} جنيه${suffix ?? ""}`;
 }
 
 export function formatPriceRent(
@@ -21,7 +21,7 @@ export function formatPriceRent(
         : rentDuration === "daily"
           ? "/يوم"
           : "";
-  return `${n.toLocaleString("en-US")} ج.م${durationSuffix}`;
+  return `${n.toLocaleString("en-US")} جنيه${durationSuffix}`;
 }
 
 export function formatPriceShort(
@@ -29,7 +29,7 @@ export function formatPriceShort(
 ): string {
   const n = Number(price);
   if (!price || isNaN(n) || n === 0) return "—";
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)} م ج.م`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)} ألف ج.م`;
-  return `${n.toLocaleString("en-US")} ج.م`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)} م جنيه`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)} ألف جنيه`;
+  return `${n.toLocaleString("en-US")} جنيه`;
 }

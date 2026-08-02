@@ -17,13 +17,13 @@ function formatPrice(n: number): string {
   if (!n || n === 0) return "—";
   if (n >= 1_000_000) {
     const m = n / 1_000_000;
-    return `${m % 1 === 0 ? m : m.toFixed(1)} مليون ج.م`;
+    return `${m % 1 === 0 ? m : m.toFixed(1)} مليون جنيه`;
   }
   if (n >= 1_000) {
     const k = n / 1_000;
-    return `${k % 1 === 0 ? k : k.toFixed(0)} ألف ج.م`;
+    return `${k % 1 === 0 ? k : k.toFixed(0)} ألف جنيه`;
   }
-  return `${n.toLocaleString("en-US")} ج.م`;
+  return `${n.toLocaleString("en-US")} جنيه`;
 }
 
 function typeLabel(t: string) {
@@ -308,7 +308,7 @@ export default function ComparePage() {
                       </span>
                       {item.area > 0 && item.priceNum > 0 && (
                         <span className="text-[11px] text-muted-foreground">
-                          <span dir="ltr">{Math.round(item.priceNum / item.area).toLocaleString("en-US")} ج.م/م²</span>
+                          <span dir="ltr">{Math.round(item.priceNum / item.area).toLocaleString("en-US")} جنيه/م²</span>
                         </span>
                       )}
                       <div className="flex flex-wrap gap-1 mt-0.5">

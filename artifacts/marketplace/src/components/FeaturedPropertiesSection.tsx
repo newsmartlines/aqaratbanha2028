@@ -30,7 +30,7 @@ function timeAgo(dateStr: string | null | undefined): string {
 function formatPrice(price: number | string | null | undefined, listType?: string): string {
   const n = Number(price);
   if (!price || isNaN(n) || n === 0) return "السعر عند الاتصال";
-  return `${n.toLocaleString("en-US")} ج.م${listType === "rent" ? "/شهر" : ""}`;
+  return `${n.toLocaleString("en-US")} جنيه${listType === "rent" ? "/شهر" : ""}`;
 }
 
 // Fallback tabs used only when no categories are passed from the API
@@ -427,16 +427,16 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
                     {/* ── Content ── */}
                     <div className="p-4">
 
+                      <h3 className="font-bold text-gray-900 text-sm leading-snug mb-1.5 line-clamp-1">
+                        {property.title}
+                      </h3>
+
                       {/* Price — right-aligned */}
                       <div className="mb-2 text-right">
                         <span dir="ltr" className="inline-block text-primary text-xl leading-tight tracking-tight">
                           {formatPrice(property.price, listType)}
                         </span>
                       </div>
-
-                      <h3 className="font-bold text-gray-900 text-sm leading-snug mb-1.5 line-clamp-1">
-                        {property.title}
-                      </h3>
 
                       <div className="flex items-center gap-1 text-gray-700 text-xs mb-3">
                         <MapPin className="w-3 h-3 text-primary shrink-0" />

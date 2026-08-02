@@ -1156,7 +1156,7 @@ export default function SearchPage() {
               {priceStr ? (
                 <div dir="ltr" className="text-[15px] text-primary leading-none">
                   {priceStr}
-                  <span className="text-[11px] text-primary mr-1">ج.م</span>
+                  <span className="text-[11px] text-primary mr-1">جنيه</span>
                   {p.listingType === "rent" && (
                     <span className="text-[10px] text-zinc-600">
                       / {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : ""}
@@ -1244,18 +1244,18 @@ export default function SearchPage() {
 
         </PropertyImageGallery>
         <div className="p-3.5">
-          {/* Price — right-aligned (justify-start = visual right in RTL) */}
+          <h2 className="font-bold text-sm text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">{p.title}</h2>
+          {/* Price — right-aligned */}
           <div className="mb-2 flex justify-start items-baseline gap-1.5">
             {priceStr ? (
               <>
-                <span className="text-sm text-primary">ج.م</span>
                 <span dir="ltr" className="text-primary text-xl leading-none">{priceStr}</span>
+                <span className="text-sm text-primary">جنيه</span>
               </>
             ) : (
               <span className="text-sm font-semibold text-zinc-500">السعر عند الاتصال</span>
             )}
           </div>
-          <h2 className="font-bold text-sm text-zinc-900 leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">{p.title}</h2>
           <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2 flex-wrap">
             {p.rooms != null && <span className="flex items-center gap-1"><BedDouble className="w-3 h-3 text-zinc-300" />{p.rooms} غرف</span>}
             {p.bathrooms != null && <span className="flex items-center gap-1"><Bath className="w-3 h-3 text-zinc-300" />{p.bathrooms} حمام</span>}

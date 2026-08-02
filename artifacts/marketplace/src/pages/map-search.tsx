@@ -119,7 +119,7 @@ function formatPrice(price?: string) {
   if (!price) return "السعر عند الطلب";
   const n = Number(price);
   if (isNaN(n) || n === 0) return "السعر عند الطلب";
-  return `${n.toLocaleString("en-US")} ج.م`;
+  return `${n.toLocaleString("en-US")} جنيه`;
 }
 
 // ─── Cluster divIcon ───────────────────────────────────────────────────────────

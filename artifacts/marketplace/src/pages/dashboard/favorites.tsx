@@ -154,7 +154,7 @@ export default function FavoritesPage() {
                     )}
                     {fav.price && (
                       <p className="font-bold text-base text-teal-700 dark:text-teal-400 mb-3">
-                        <span dir="ltr">{Number(fav.price).toLocaleString("en-US")} ج.م</span>
+                        <span dir="ltr">{Number(fav.price).toLocaleString("en-US")} جنيه</span>
                         {fav.listingType === "rent" && (
                           <span className="text-xs text-muted-foreground font-normal mr-1">/ شهرياً</span>
                         )}

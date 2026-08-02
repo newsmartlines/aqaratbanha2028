@@ -177,7 +177,7 @@ function mapDbProp(row: DbProp, fallback: string): DisplayProp {
     hasCoords: !!(row.latitude && row.longitude),
     lat: row.latitude ? parseFloat(row.latitude) : NaN,
     lng: row.longitude ? parseFloat(row.longitude) : NaN,
-    price: row.price ? Number(row.price).toLocaleString("en-US") + " ج.م" : "السعر عند الطلب",
+    price: row.price ? Number(row.price).toLocaleString("en-US") + " جنيه" : "السعر عند الطلب",
     priceNum: row.price ? parseFloat(row.price) : 0,
     finishing: row.finishing ?? "",
     furnished: row.furnished ?? "",
@@ -1431,11 +1431,16 @@ export default function PropertiesPage() {
 
                             {/* ── Content ── */}
                             <div className="flex-1 flex flex-col p-5 gap-0 min-w-0">
+                              {/* Title */}
+                              <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1 mb-2.5">
+                                {p.title}
+                              </h3>
+
                               {/* Price + verified badge */}
                               <div className="flex items-center justify-between gap-2 mb-3">
                                 <div className="flex items-baseline gap-1">
-                                  <span className="text-xl text-primary leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
-                                  <span className="text-xs text-primary">ج.م</span>
+                                  <span className="text-xl text-primary leading-none tracking-tight">{p.price.replace(" جنيه", "").replace(" ج.م", "")}</span>
+                                  <span className="text-xs text-primary">جنيه</span>
                                   {p.type === "للإيجار" && <span className="text-[11px] text-gray-500">/ شهر</span>}
                                 </div>
                                 {p.verified && (
@@ -1444,11 +1449,6 @@ export default function PropertiesPage() {
                                   </span>
                                 )}
                               </div>
-
-                              {/* Title */}
-                              <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1 mb-2.5">
-                                {p.title}
-                              </h3>
 
                               {/* Location */}
                               <div className="flex items-center gap-1 text-gray-500 text-xs mb-3">
@@ -1625,22 +1625,23 @@ export default function PropertiesPage() {
 
                             {/* Body */}
                             <div>
+                              <div className="p-4 flex flex-col gap-2">
+                              <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-1">
+                                {p.title}
+                              </h3>
                               {/* Price */}
-                              <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100">
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className="text-sm text-primary">ج.م</span>
-                                  <p className="text-primary text-xl leading-none" dir="ltr">{p.price}</p>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-baseline gap-1.5 flex-1 justify-start">
+                                  <p className="text-primary text-xl leading-none" dir="ltr">{p.price.replace(" جنيه", "").replace(" ج.م", "")}</p>
+                                  <span className="text-sm text-primary">جنيه</span>
+                                  {p.type === "للإيجار" && <span className="text-[11px] text-gray-500">/ شهر</span>}
                                 </div>
                                 {p.verified && (
-                                  <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200">
+                                  <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200 shrink-0">
                                     <BadgeCheck className="w-3 h-3 text-teal-500" /> موثّق
                                   </span>
                                 )}
                               </div>
-                              <div className="p-4 flex flex-col gap-3">
-                              <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-1">
-                                {p.title}
-                              </h3>
                               <div className="flex items-center gap-1 text-gray-600 text-xs">
                                 <MapPin className="w-3 h-3 text-primary shrink-0" />
                                 <span className="truncate">{p.location}</span>
