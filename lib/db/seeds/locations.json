@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "locations",
   "label": "المواقع الجغرافية",
-  "exportedAt": "2026-08-01T20:17:24.906Z",
+  "exportedAt": "2026-08-02T11:49:42.579Z",
   "tables": {
     "regions": [
       {
@@ -487,7 +487,7 @@
         "cityName": "المنتزه",
         "displayOrder": 1,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 3,
@@ -496,7 +496,7 @@
         "cityName": "سيدي بشر",
         "displayOrder": 2,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 4,
@@ -505,7 +505,7 @@
         "cityName": "سموحة",
         "displayOrder": 3,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 5,
@@ -514,7 +514,7 @@
         "cityName": "كليوباترا",
         "displayOrder": 4,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 6,
@@ -523,7 +523,7 @@
         "cityName": "العجمي",
         "displayOrder": 5,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 7,
@@ -532,7 +532,7 @@
         "cityName": "برج العرب",
         "displayOrder": 6,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 8,
@@ -541,7 +541,7 @@
         "cityName": "وسط البلد",
         "displayOrder": 7,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 9,
@@ -550,7 +550,7 @@
         "cityName": "سيدي جابر",
         "displayOrder": 8,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 10,
@@ -559,7 +559,7 @@
         "cityName": "المعمورة",
         "displayOrder": 9,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 11,
@@ -568,7 +568,7 @@
         "cityName": "زيزينيا",
         "displayOrder": 10,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       },
       {
         "id": 12,
@@ -577,7 +577,7 @@
         "cityName": "لوران",
         "displayOrder": 11,
         "enabled": true,
-        "createdAt": "2026-08-01T19:59:30.399Z"
+        "createdAt": "2026-08-02T11:25:53.305Z"
       }
     ]
   }

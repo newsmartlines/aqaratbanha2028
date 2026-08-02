@@ -399,6 +399,84 @@ router.patch("/admin/property-features/reorder", async (req, res) => {
   }
 });
 
+// ── Admin: apply smart defaults to all features ───────────────────────────────
+
+// Maps feature name → Arabic property type list (null = all types)
+const SMART_FEATURE_DEFAULTS: Record<string, string[] | null> = {
+  "مسبح":              ["فيلا", "استراحة", "عمارة", "مجمع تجاري", "فندق"],
+  "جراج مغطى":         ["شقة", "فيلا", "دوبلكس", "روف", "عمارة", "مكتب", "عيادة"],
+  "حديقة خاصة":        ["فيلا", "استراحة", "عمارة"],
+  "مصعد":              ["شقة", "دوبلكس", "روف", "عمارة", "مكتب", "عيادة", "فندق", "مجمع تجاري"],
+  "شرفة / بلكونة":     ["شقة", "دوبلكس", "روف", "استوديو", "فيلا"],
+  "مكيف مركزي":        ["شقة", "فيلا", "دوبلكس", "روف", "استوديو", "مكتب", "عيادة", "فندق", "محل تجاري", "مجمع تجاري", "مطعم"],
+  "تكييف مركزي":       ["شقة", "فيلا", "دوبلكس", "روف", "استوديو", "مكتب", "عيادة", "فندق", "محل تجاري", "مجمع تجاري", "مطعم"],
+  "أمن 24 ساعة":       ["شقة", "فيلا", "دوبلكس", "عمارة", "مكتب", "عيادة", "فندق", "مجمع تجاري", "مطعم"],
+  "غرفة خادمة":        ["شقة", "فيلا", "دوبلكس", "روف"],
+  "غرفة سائق":         ["فيلا", "دوبلكس"],
+  "بوابة ذكية":        ["فيلا", "عمارة", "مجمع تجاري"],
+  "نظام منزل ذكي":     ["شقة", "فيلا", "دوبلكس", "روف", "استوديو"],
+  "مطبخ مجهز":         ["شقة", "فيلا", "دوبلكس", "روف", "استوديو", "غرفة", "استراحة", "فندق", "مطعم"],
+  "طاقة شمسية":        ["فيلا", "عمارة", "مستودع"],
+  "موقف خاص":          ["شقة", "فيلا", "دوبلكس", "مكتب", "محل تجاري", "مجمع تجاري", "مطعم"],
+  "موقف سيارات":       ["شقة", "فيلا", "دوبلكس", "مكتب", "محل تجاري", "مجمع تجاري", "مطعم", "فندق", "مستودع"],
+  "صالة رياضية":       ["فيلا", "عمارة", "فندق", "مجمع تجاري"],
+  "شارع رئيسي":        ["أرض سكنية", "أرض تجارية", "أرض صناعية", "محل تجاري", "مجمع تجاري", "مستودع"],
+  "واجهتين":           ["أرض سكنية", "أرض تجارية", "أرض صناعية", "محل تجاري"],
+  "تصلح للاستثمار":    ["أرض سكنية", "أرض تجارية", "أرض صناعية", "أرض زراعية"],
+  "تصريح بناء":        ["أرض سكنية", "أرض تجارية"],
+  "متصلة بالمياه":     ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
+  "متصلة بالكهرباء":   ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
+  "صرف صحي":           ["أرض سكنية", "أرض تجارية", "أرض صناعية"],
+  "واجهة زجاجية":      ["محل تجاري", "مجمع تجاري", "مكتب", "عيادة", "مطعم"],
+  "إنترنت فايبر":      ["شقة", "فيلا", "دوبلكس", "استوديو", "مكتب", "عيادة", "محل تجاري", "فندق", "مجمع تجاري", "مطعم"],
+  "كاميرات مراقبة":    ["مكتب", "محل تجاري", "مجمع تجاري", "مستودع", "فندق", "مطعم"],
+  "غرفة اجتماعات":     ["مكتب", "عيادة"],
+  "مولد كهرباء":       ["مكتب", "عيادة", "فندق", "مجمع تجاري", "مستودع", "مطعم"],
+  "تراخيص جاهزة":      ["محل تجاري", "مجمع تجاري", "مطعم", "عيادة"],
+  "صالح كمطعم":        ["محل تجاري", "مجمع تجاري"],
+  "مصدر المياه":       ["أرض زراعية"],
+  "نوع التربة":        ["أرض زراعية"],
+  "تربة خصبة":         ["أرض زراعية"],
+  "يوجد أشجار/نخيل":  ["أرض زراعية"],
+  "مسورة":             ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "فيلا", "استراحة"],
+  "تصريح زراعي":       ["أرض زراعية"],
+  "بئر مياه":          ["أرض زراعية"],
+  // Services — always visible for all property types
+  "مسجد":              null,
+  "مدرسة":             null,
+  "مستشفى":            null,
+  "مول تجاري":         null,
+  "مطاعم":             null,
+  "كافيهات":           null,
+  "محطة وقود":         null,
+  "صيدلية":            null,
+  "جامعة":             null,
+  "بنك":               null,
+  "سوبر ماركت":        null,
+};
+
+router.post("/admin/property-features/apply-defaults", async (req, res) => {
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
+  try {
+    const features = await db.select().from(propertyFeaturesTable);
+    let updated = 0;
+    for (const feature of features) {
+      if (Object.prototype.hasOwnProperty.call(SMART_FEATURE_DEFAULTS, feature.name)) {
+        const types = SMART_FEATURE_DEFAULTS[feature.name];
+        await db
+          .update(propertyFeaturesTable)
+          .set({ applicableTypes: types === null ? null : JSON.stringify(types) })
+          .where(eq(propertyFeaturesTable.id, feature.id));
+        updated++;
+      }
+    }
+    res.json({ ok: true, updated });
+  } catch (err) {
+    console.error("[admin/property-features/apply-defaults POST]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // ── Admin: delete ─────────────────────────────────────────────────────────────
 
 router.delete("/admin/property-features/:id", async (req, res) => {
@@ -423,25 +501,36 @@ const ALL_FIELD_KEYS = [
   "paymentMethod","landType","landDimensions","buildRatio",
 ];
 
+// Keys are English subcategory slugs — must match frontend DEFAULT_FIELD_VISIBILITY
 const FIELD_VISIBILITY_DEFAULTS: Record<string, Record<string, boolean>> = {
-  "شقة":         { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "دوبلكس":      { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "استوديو":     { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "روف":         { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "غرفة":        { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "فيلا":        { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "استراحة":     { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "عمارة":       { rooms:true,  bathrooms:false, floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "مكتب":        { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "عيادة":       { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "محل تجاري":  { rooms:false, bathrooms:false, floor:true,  totalFloors:false, buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "مجمع تجاري": { rooms:false, bathrooms:false, floor:true,  totalFloors:false, buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "فندق":        { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "مستودع":      { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
-  "أرض سكنية":  { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
-  "أرض تجارية": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
-  "أرض زراعية": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:false },
-  "أرض صناعية": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+  // ── Residential ────────────────────────────────────────────────────────────
+  "apartment":            { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "duplex":               { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "studio":               { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "standalone":           { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "single-room":          { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "chalet":               { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "villa":                { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "full-floor":           { rooms:true,  bathrooms:false, floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  // ── Commercial ─────────────────────────────────────────────────────────────
+  "office":               { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "pharmacy":             { rooms:true,  bathrooms:true,  floor:true,  totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "shop":                 { rooms:false, bathrooms:false, floor:true,  totalFloors:false, buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "showroom":             { rooms:false, bathrooms:false, floor:true,  totalFloors:false, buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "commercial-building":  { rooms:true,  bathrooms:false, floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "restaurant":           { rooms:true,  bathrooms:true,  floor:false, totalFloors:true,  buildYear:true,  finishing:true,  furnished:true,  condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "warehouse":            { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  // ── Land ───────────────────────────────────────────────────────────────────
+  "land-residential":     { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+  "land-commercial":      { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+  "land-agricultural":    { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:false },
+  "land-industrial":      { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:true  },
+  "land-service":         { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:false, finishing:false, furnished:false, condition:false, direction:true, facade:true, paymentMethod:true, landType:true,  landDimensions:true,  buildRatio:false },
+  // ── Industrial ─────────────────────────────────────────────────────────────
+  "factory":              { rooms:false, bathrooms:false, floor:false, totalFloors:true,  buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:true,  buildRatio:false },
+  "industrial-warehouse": { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:true,  buildRatio:false },
+  "workshop":             { rooms:false, bathrooms:false, floor:false, totalFloors:false, buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:false, buildRatio:false },
+  "industrial-facility":  { rooms:false, bathrooms:false, floor:false, totalFloors:true,  buildYear:true,  finishing:false, furnished:false, condition:true,  direction:true, facade:true, paymentMethod:true, landType:false, landDimensions:true,  buildRatio:false },
 };
 
 let fieldConfigsSeeded = false;
@@ -538,6 +627,21 @@ router.put("/admin/property-field-configs/bulk", async (req, res) => {
     res.json({ ok: true, updated: rows.length });
   } catch (err) {
     console.error("[admin/property-field-configs/bulk PUT]", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ── Admin: reset field configs to defaults ────────────────────────────────────
+
+router.post("/admin/property-field-configs/reset", async (req, res) => {
+  if (!(await requireAdmin(req))) return res.status(403).json({ error: "Forbidden" });
+  try {
+    await db.delete(propertyFieldConfigsTable);
+    fieldConfigsSeeded = false;
+    await ensureFieldConfigsSeeded();
+    res.json({ ok: true, message: "تمت إعادة ضبط إعدادات الحقول" });
+  } catch (err) {
+    console.error("[admin/property-field-configs/reset POST]", err);
     res.status(500).json({ error: "Server error" });
   }
 });

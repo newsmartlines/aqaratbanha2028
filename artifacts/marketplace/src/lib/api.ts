@@ -1082,6 +1082,8 @@ export const api = {
       fetchJson("/admin/property-features/reorder", { method: "PATCH", body: JSON.stringify(items) }),
     delete: (id: number) =>
       fetchJson(`/admin/property-features/${id}`, { method: "DELETE" }),
+    applyDefaults: () =>
+      fetchJson("/admin/property-features/apply-defaults", { method: "POST" }),
   },
 
   propertyFieldConfigs: {
@@ -1091,6 +1093,8 @@ export const api = {
       fetchJson<Array<{ id: number; mainCategory: string; fieldKey: string; isVisible: boolean; label: string | null; sortOrder: number }>>("/admin/property-field-configs"),
     bulkUpdate: (rows: Array<{ mainCategory: string; fieldKey: string; isVisible: boolean }>) =>
       fetchJson("/admin/property-field-configs/bulk", { method: "PUT", body: JSON.stringify({ rows }) }),
+    reset: () =>
+      fetchJson("/admin/property-field-configs/reset", { method: "POST" }),
   },
 
   market: {
