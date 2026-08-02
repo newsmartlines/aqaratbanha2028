@@ -188,7 +188,6 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/" component={Home} />
-      <Route path="/home2" component={Home2} />
       <Route path="/search" component={SearchPage} />
       <Route path="/add-property" component={AddPropertyPage} />
       <Route path="/quick-ad" component={QuickAdPage} />

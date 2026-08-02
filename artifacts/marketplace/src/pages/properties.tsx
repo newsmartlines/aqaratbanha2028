@@ -1434,8 +1434,8 @@ export default function PropertiesPage() {
                               {/* Price + verified badge */}
                               <div className="flex items-center justify-between gap-2 mb-3">
                                 <div className="flex items-baseline gap-1">
-                                  <span className="text-xl font-black text-black leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
-                                  <span className="text-xs font-bold text-gray-600">ج.م</span>
+                                  <span className="text-xl text-primary leading-none tracking-tight">{p.price.replace(" ج.م", "")}</span>
+                                  <span className="text-xs text-primary">ج.م</span>
                                   {p.type === "للإيجار" && <span className="text-[11px] text-gray-500">/ شهر</span>}
                                 </div>
                                 {p.verified && (
@@ -1628,8 +1628,8 @@ export default function PropertiesPage() {
                               {/* Price */}
                               <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100">
                                 <div className="flex items-baseline gap-1.5">
-                                  <span className="text-sm font-bold text-gray-600">ج.م</span>
-                                  <p className="text-black font-black text-xl leading-none" dir="ltr">{p.price}</p>
+                                  <span className="text-sm text-primary">ج.م</span>
+                                  <p className="text-primary text-xl leading-none" dir="ltr">{p.price}</p>
                                 </div>
                                 {p.verified && (
                                   <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200">
@@ -1781,7 +1781,7 @@ export default function PropertiesPage() {
                             <Popup>
                               <div className="text-right min-w-[180px]" dir="rtl" onClick={() => setLocation(`/property/${p.id}`)}>
                                 <img src={p.img} alt={p.title} className="w-full h-20 object-cover rounded-lg mb-2" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
-                                <p className="font-extrabold text-gray-900 text-sm mb-0.5">{p.price} <span className="text-xs text-gray-400 font-normal">ج.م</span></p>
+                                <p className="text-primary text-sm mb-0.5">{p.price}</p>
                                 <p className="font-bold text-gray-900 text-xs mb-0.5">{p.title}</p>
                                 <p className="text-xs text-gray-500">{p.location}</p>
                                 <p className="text-xs text-primary font-semibold mt-1.5 cursor-pointer">عرض التفاصيل ←</p>

@@ -1154,9 +1154,9 @@ export default function SearchPage() {
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               {priceStr ? (
-                <div dir="ltr" className="text-[15px] font-black text-zinc-900 leading-none">
+                <div dir="ltr" className="text-[15px] text-primary leading-none">
                   {priceStr}
-                  <span className="text-[11px] font-bold text-zinc-700 mr-1">ج.م</span>
+                  <span className="text-[11px] text-primary mr-1">ج.م</span>
                   {p.listingType === "rent" && (
                     <span className="text-[10px] text-zinc-600">
                       / {(p as any).rentDuration === "monthly" ? "شهر" : (p as any).rentDuration === "yearly" ? "سنة" : ""}
@@ -1248,8 +1248,8 @@ export default function SearchPage() {
           <div className="mb-2 flex justify-start items-baseline gap-1.5">
             {priceStr ? (
               <>
-                <span className="text-sm font-bold text-gray-600">ج.م</span>
-                <span dir="ltr" className="text-black font-black text-xl leading-none">{priceStr}</span>
+                <span className="text-sm text-primary">ج.م</span>
+                <span dir="ltr" className="text-primary text-xl leading-none">{priceStr}</span>
               </>
             ) : (
               <span className="text-sm font-semibold text-zinc-500">السعر عند الاتصال</span>
