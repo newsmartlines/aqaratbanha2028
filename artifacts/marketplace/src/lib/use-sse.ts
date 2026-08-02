@@ -86,6 +86,8 @@ export function useSse(enabled = true) {
     "package.activated": () => {
       qc.invalidateQueries({ queryKey: ["subscription"] });
       qc.invalidateQueries({ queryKey: ["billing"] });
+      qc.invalidateQueries({ queryKey: ["userCurrentSub"] });
+      qc.invalidateQueries({ queryKey: ["providerStats"] });
     },
 
     "admin.sidebar_update": () => {

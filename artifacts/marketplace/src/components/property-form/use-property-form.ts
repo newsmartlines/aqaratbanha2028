@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type BillingPlan } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import type { FormMode, FormValues, DynFeature } from "./types";
@@ -18,6 +18,7 @@ export function usePropertyForm(
 ) {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const isCompany = mode === "company";
   const STEPS = STEPS_CONFIG(showPlans);
@@ -271,6 +272,9 @@ export function usePropertyForm(
         await doCreate();
         if (user?.id && selectedPlan?.id) {
           await api.userSubscription.subscribe(user.id, selectedPlan.id).catch(() => {});
+          // Immediately refresh the subscription widget on the dashboard
+          queryClient.invalidateQueries({ queryKey: ["userCurrentSub"] });
+          queryClient.invalidateQueries({ queryKey: ["subscriptionHistory"] });
         }
       } catch (e: any) {
         setError(e?.message ?? "حدث خطأ أثناء إرسال الطلب");
