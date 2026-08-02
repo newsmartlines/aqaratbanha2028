@@ -4,7 +4,9 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { getSession } from "./auth";
-import { processImage, isValidImageBuffer } from "../lib/imageProcessor";
+import { processImage, isValidImageBuffer, type WatermarkConfig } from "../lib/imageProcessor";
+import { getSettingCached } from "../lib/settingsCache";
+import { adminOnly } from "../middleware/adminOnly";
 
 const router = Router();
 
@@ -82,6 +84,7 @@ const logoUploader            = makeImageUploader(10);
 const serviceUploader         = makeImageUploader(10);
 const propertyImageUploader   = makeImageUploader(10);
 const featuredAreaUploader    = makeImageUploader(10);
+const wmImageUploader         = makeImageUploader(5);
 
 /* ── PDF uploader (disk storage — no processing needed) ──────────────────── */
 const brochureDir = path.join(UPLOADS_ROOT, "brochures");
@@ -216,8 +219,99 @@ router.post("/upload/logo",
 router.post("/upload/service",
   handleImageUpload(serviceUploader, "image", "services"));
 
-router.post("/upload/property-image",
-  handleImageUpload(propertyImageUploader, "image", "properties"));
+/* ── Property image — with watermark support ──────────────────────────────── */
+router.post("/upload/property-image", async (req: Request, res: any) => {
+  if (!(await requireAuth(req))) {
+    return res.status(401).json({ success: false, error: "يجب تسجيل الدخول أولاً" });
+  }
+
+  propertyImageUploader.single("image")(req as any, res as any, async (err: any) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, error: `خطأ في الرفع: ${err.message}` });
+    }
+    if (err) return res.status(400).json({ success: false, error: String(err.message) });
+
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ success: false, error: "لم يتم إرسال أي ملف" });
+
+    if (!isValidImageBuffer(file.buffer)) {
+      return res.status(400).json({
+        success: false,
+        error: "الملف تالف أو نوعه غير مدعوم — يرجى التحقق من نوع الملف الحقيقي",
+      });
+    }
+
+    try {
+      const baseName  = crypto.randomBytes(16).toString("hex");
+      const destDir   = path.join(UPLOADS_ROOT, "properties");
+      const urlPrefix = "/uploads/properties";
+
+      // Fetch watermark config from settings cache (30s TTL — fast hot path)
+      let watermark: WatermarkConfig | undefined;
+      try {
+        const wmJson = await getSettingCached("watermarkConfig", "", 30_000);
+        if (wmJson) {
+          const parsed = JSON.parse(wmJson) as WatermarkConfig;
+          if (parsed?.enabled) watermark = parsed;
+        }
+      } catch { /* proceed without watermark if settings unavailable */ }
+
+      const result = await processImage(file.buffer, destDir, urlPrefix, baseName, watermark);
+
+      return res.json({
+        success: true,
+        data: {
+          url:        result.url,
+          variants:   result.variants,
+          watermarked: !!watermark,
+          meta: {
+            width:         result.dimensions.width,
+            height:        result.dimensions.height,
+            originalBytes: result.originalBytes,
+            webpBytes:     result.webpBytes,
+            savings:       `${Math.round((1 - result.webpBytes / result.originalBytes) * 100)}%`,
+          },
+        },
+      });
+    } catch {
+      return res.status(422).json({
+        success: false,
+        error: "تعذّر معالجة الصورة — يرجى المحاولة بملف آخر",
+      });
+    }
+  });
+});
+
+/* ── Watermark image upload (admin only) ──────────────────────────────────── */
+const wmDir = path.join(UPLOADS_ROOT, "watermarks");
+fs.mkdirSync(wmDir, { recursive: true });
+
+router.post("/upload/watermark-image", adminOnly, (req: Request, res: any) => {
+  wmImageUploader.single("image")(req as any, res as any, async (err: any) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, error: `خطأ في الرفع: ${err.message}` });
+    }
+    if (err) return res.status(400).json({ success: false, error: String(err.message) });
+
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ success: false, error: "لم يتم إرسال أي ملف" });
+
+    if (!isValidImageBuffer(file.buffer)) {
+      return res.status(400).json({
+        success: false,
+        error: "الملف تالف أو نوعه غير مدعوم",
+      });
+    }
+
+    try {
+      const baseName = crypto.randomBytes(16).toString("hex");
+      const result   = await processImage(file.buffer, wmDir, "/uploads/watermarks", baseName);
+      return res.json({ success: true, data: { url: result.url } });
+    } catch {
+      return res.status(422).json({ success: false, error: "تعذّر معالجة الصورة" });
+    }
+  });
+});
 
 router.post("/upload/featured-area",
   handleImageUpload(featuredAreaUploader, "image", "featured-areas"));

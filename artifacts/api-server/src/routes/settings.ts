@@ -76,6 +76,19 @@ const PUBLIC_KEYS = new Set<string>([
 ]);
 
 const DEFAULT_SETTINGS: Record<string, string> = {
+  watermarkConfig: JSON.stringify({
+    enabled: false,
+    type: "text",
+    text: "عقارات الإسكندرية",
+    textColor: "#ffffff",
+    fontSize: 32,
+    imageUrl: "",
+    position: "bottom-right",
+    opacity: 60,
+    scale: 30,
+    padding: 20,
+    repeat: false,
+  }),
   googleClientId: "",
   googleClientSecret: "",
   // ── AdSense ─────────────────────────────────────────────────────────────

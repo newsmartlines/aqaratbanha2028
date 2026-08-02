@@ -9,8 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Type, ImageIcon, Download, Save, RotateCcw, Upload, CheckCircle2,
-  AlignCenter, AlignLeft, AlignRight,
+  Type, ImageIcon, Download, Save, RotateCcw, Upload, CheckCircle2, Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,7 +25,6 @@ interface WatermarkSettings {
   text: string;
   textColor: string;
   fontSize: number;
-  fontFamily: string;
   imageUrl: string;
   position: Position;
   opacity: number;
@@ -36,12 +34,11 @@ interface WatermarkSettings {
 }
 
 const DEFAULT: WatermarkSettings = {
-  enabled: true,
+  enabled: false,
   type: "text",
   text: "عقارات الإسكندرية",
   textColor: "#ffffff",
   fontSize: 32,
-  fontFamily: "Tajawal, Arial",
   imageUrl: "",
   position: "bottom-right",
   opacity: 60,
@@ -70,7 +67,6 @@ const FONTS = [
   { value: "Courier New",      label: "Courier New" },
 ];
 
-const STORAGE_KEY = "daleel_watermark_settings";
 const SAMPLE_IMG = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=70";
 
 /* ─── Helper: compute (x,y) from position + padding ─── */
@@ -94,13 +90,12 @@ function getXY(pos: Position, cw: number, ch: number, ww: number, wh: number, pa
 ═══════════════════════════════════════ */
 export default function AdminWatermark() {
   const { toast } = useToast();
-  const [settings, setSettings] = useState<WatermarkSettings>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? { ...DEFAULT, ...JSON.parse(stored) } : DEFAULT;
-    } catch { return DEFAULT; }
-  });
-  const [saved, setSaved] = useState(false);
+  const [settings, setSettings] = useState<WatermarkSettings>(DEFAULT);
+  const [loading, setLoading]   = useState(true);
+  const [saving,  setSaving]    = useState(false);
+  const [saved,   setSaved]     = useState(false);
+  const [uploading, setUploading] = useState(false);
+
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
   const wmImgRef    = useRef<HTMLImageElement | null>(null);
@@ -108,6 +103,29 @@ export default function AdminWatermark() {
 
   const upd = <K extends keyof WatermarkSettings>(k: K, v: WatermarkSettings[K]) =>
     setSettings(p => ({ ...p, [k]: v }));
+
+  /* ─── Load settings from API on mount ─── */
+  useEffect(() => {
+    fetch("/api/admin/settings", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.data?.watermarkConfig) {
+          try {
+            const saved = JSON.parse(data.data.watermarkConfig) as WatermarkSettings;
+            setSettings({ ...DEFAULT, ...saved });
+            // Pre-load watermark image for canvas preview if type is image
+            if (saved.imageUrl && saved.type === "image") {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => { wmImgRef.current = img; };
+              img.src = saved.imageUrl;
+            }
+          } catch { /* use defaults */ }
+        }
+      })
+      .catch(() => { /* use defaults silently */ })
+      .finally(() => setLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Load sample image once ─── */
   useEffect(() => {
@@ -137,7 +155,8 @@ export default function AdminWatermark() {
 
     if (settings.type === "text" && settings.text.trim()) {
       const fs = settings.fontSize;
-      ctx.font = `bold ${fs}px ${settings.fontFamily}`;
+      ctx.font = `bold ${fs}px ${FONTS.find(f => f.value === settings.textColor) ? settings.textColor : "Tajawal, Arial"}`;
+      ctx.font = `bold ${fs}px Arial`;
       ctx.textBaseline = "top";
       ctx.direction = "rtl";
       const metrics = ctx.measureText(settings.text);
@@ -145,8 +164,26 @@ export default function AdminWatermark() {
       const th = fs * 1.2;
 
       const drawText = (x: number, y: number) => {
+        // Dark background rect for contrast (mirrors server-side rendering)
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = "rgba(0,0,0,1)";
+        const pad = 8;
+        ctx.beginPath();
+        const bgX = x - pad;
+        const bgY = y - pad;
+        const bgW = tw + pad * 2;
+        const bgH = th + pad * 2;
+        const r = 5;
+        ctx.moveTo(bgX + r, bgY);
+        ctx.arcTo(bgX + bgW, bgY, bgX + bgW, bgY + bgH, r);
+        ctx.arcTo(bgX + bgW, bgY + bgH, bgX, bgY + bgH, r);
+        ctx.arcTo(bgX, bgY + bgH, bgX, bgY, r);
+        ctx.arcTo(bgX, bgY, bgX + bgW, bgY, r);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = settings.opacity / 100;
         ctx.shadowColor = "rgba(0,0,0,0.6)";
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 4;
         ctx.fillStyle = settings.textColor;
         ctx.fillText(settings.text, x + tw, y);
         ctx.shadowBlur = 0;
@@ -155,6 +192,7 @@ export default function AdminWatermark() {
       if (settings.repeat) {
         const gapX = tw + 80;
         const gapY = th + 60;
+        ctx.globalAlpha = settings.opacity / 100;
         for (let ry = -gapY; ry < CH + gapY; ry += gapY) {
           for (let rx = -gapX; rx < CW + gapX; rx += gapX) {
             ctx.save();
@@ -194,26 +232,63 @@ export default function AdminWatermark() {
   useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
   /* ─── Handle watermark image upload ─── */
-  const handleWmImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleWmImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Show local preview immediately via FileReader
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const url = ev.target?.result as string;
-      upd("imageUrl", url);
+      const dataUrl = ev.target?.result as string;
       const img = new Image();
       img.onload = () => { wmImgRef.current = img; drawCanvas(); };
-      img.src = url;
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
+
+    // Upload to server and store persistent URL
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+      const r    = await fetch("/api/upload/watermark-image", {
+        method: "POST",
+        credentials: "include",
+        body: form,
+      });
+      const data = await r.json();
+      if (data.success) {
+        upd("imageUrl", data.data.url);
+      } else {
+        toast({ title: "خطأ في الرفع", description: data.error, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "خطأ", description: "تعذّر رفع صورة العلامة المائية", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
-  /* ─── Save ─── */
-  const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-    toast({ title: "تم الحفظ", description: "تم حفظ إعدادات العلامة المائية بنجاح ✓" });
+  /* ─── Save to API ─── */
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const r = await fetch("/api/settings", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ watermarkConfig: JSON.stringify(settings) }),
+      });
+      const data = await r.json();
+      if (!data.success) throw new Error(data.error ?? "فشل الحفظ");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      toast({ title: "تم الحفظ", description: "تم حفظ إعدادات العلامة المائية — ستُطبَّق على الصور الجديدة ✓" });
+    } catch (err: any) {
+      toast({ title: "خطأ في الحفظ", description: err?.message ?? "حاول مرة أخرى", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ─── Reset ─── */
@@ -233,6 +308,16 @@ export default function AdminWatermark() {
     link.click();
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div dir="rtl" className="p-6 max-w-7xl mx-auto space-y-6">
@@ -251,9 +336,19 @@ export default function AdminWatermark() {
             <Button variant="outline" size="sm" onClick={handleDownload} className="gap-1.5">
               <Download className="w-4 h-4" /> تحميل المعاينة
             </Button>
-            <Button onClick={handleSave} size="sm" className={`gap-1.5 ${saved ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}>
-              {saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              {saved ? "تم الحفظ!" : "حفظ الإعدادات"}
+            <Button
+              onClick={handleSave}
+              size="sm"
+              disabled={saving}
+              className={`gap-1.5 ${saved ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+            >
+              {saving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> جاري الحفظ...</>
+              ) : saved ? (
+                <><CheckCircle2 className="w-4 h-4" /> تم الحفظ!</>
+              ) : (
+                <><Save className="w-4 h-4" /> حفظ الإعدادات</>
+              )}
             </Button>
           </div>
         </div>
@@ -335,8 +430,8 @@ export default function AdminWatermark() {
                           <div>
                             <Label className="text-sm font-semibold mb-1.5 block">نوع الخط</Label>
                             <select
-                              value={settings.fontFamily}
-                              onChange={e => upd("fontFamily", e.target.value)}
+                              value={settings.textColor}
+                              onChange={e => upd("textColor", e.target.value)}
                               className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
                             >
                               {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
@@ -363,10 +458,15 @@ export default function AdminWatermark() {
                           <Label className="text-sm font-semibold mb-2 block">صورة العلامة المائية</Label>
                           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleWmImage} />
                           <div
-                            onClick={() => fileRef.current?.click()}
-                            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${settings.imageUrl ? "border-primary/40 bg-primary/5" : "border-gray-300 hover:border-primary/40 hover:bg-gray-50"}`}
+                            onClick={() => !uploading && fileRef.current?.click()}
+                            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${settings.imageUrl ? "border-primary/40 bg-primary/5" : "border-gray-300 hover:border-primary/40 hover:bg-gray-50"} ${uploading ? "opacity-60 cursor-wait" : ""}`}
                           >
-                            {settings.imageUrl ? (
+                            {uploading ? (
+                              <div className="flex flex-col items-center gap-2 text-primary">
+                                <Loader2 className="w-8 h-8 animate-spin" />
+                                <p className="text-sm font-medium">جاري الرفع...</p>
+                              </div>
+                            ) : settings.imageUrl ? (
                               <div className="space-y-2">
                                 <img src={settings.imageUrl} alt="wm" className="h-20 mx-auto object-contain rounded" />
                                 <p className="text-primary text-sm font-semibold">انقر لتغيير الصورة</p>
@@ -503,8 +603,8 @@ export default function AdminWatermark() {
                   ))}
                 </div>
 
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs leading-relaxed">
-                  <strong>ملاحظة:</strong> سيتم تطبيق العلامة المائية تلقائياً على جميع صور العقارات الجديدة عند رفعها. الصور المرفوعة مسبقاً لن تتأثر.
+                <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs leading-relaxed">
+                  <strong>✓ مُفعَّل على الخادم:</strong> سيتم تطبيق العلامة المائية تلقائياً على جميع صور العقارات الجديدة عند رفعها. الصور المرفوعة مسبقاً لن تتأثر.
                 </div>
               </CardContent>
             </Card>
