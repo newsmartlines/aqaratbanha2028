@@ -12,6 +12,7 @@ export interface FormValues {
   listingType:    string;
   propertyGroup:  string;
   mainCategory:   string;
+  subCategory:    string;
   title:          string;
   description:    string;
   price:          string;

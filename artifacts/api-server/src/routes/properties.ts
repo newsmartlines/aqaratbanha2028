@@ -176,24 +176,13 @@ router.get("/properties", async (req, res) => {
       conditions.push(inArray(propertiesTable.status, ["active", "approved"]));
     }
     if (category) {
-      // Land can be stored as the group slug "land", Arabic group names, or specific Arabic subtypes.
-      // All of these should be treated as "any land property".
-      // Map group slugs/names to all possible stored mainCategory values (legacy slugs + Arabic subtypes)
-      const GROUP_ALL_VALUES: Record<string, string[]> = {
-        land:        ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
-        "أرض":      ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
-        "أراضي":    ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
-        residential: ["residential", "سكني", "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"],
-        "سكني":     ["residential", "سكني", "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"],
-        commercial:  ["commercial", "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"],
-        "تجاري":    ["commercial", "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"],
+      // Normalize legacy Arabic group names to canonical slugs
+      const CAT_SLUG_MAP: Record<string, string> = {
+        "سكني": "residential", "تجاري": "commercial",
+        "أراضي": "land", "أرض": "land", "صناعي": "industrial",
       };
-      const groupValues = GROUP_ALL_VALUES[category];
-      if (groupValues) {
-        conditions.push(inArray(propertiesTable.mainCategory, groupValues));
-      } else {
-        conditions.push(eq(propertiesTable.mainCategory, category));
-      }
+      const normalizedCategory = CAT_SLUG_MAP[category] ?? category;
+      conditions.push(eq(propertiesTable.mainCategory, normalizedCategory));
     }
     if (subCategory) conditions.push(eq(propertiesTable.subCategory, subCategory));
     if (providerId) conditions.push(eq(propertiesTable.providerId, parseInt(providerId)));

@@ -162,29 +162,50 @@ const DEFAULT_CONFIG: PropertyTypeConfig = {
   isCommercial:       false,
 };
 
+// Keys are subcategory slugs (matches DB sub_category field)
 export const PROPERTY_TYPE_CONFIGS: Record<string, PropertyTypeConfig> = {
-  "شقة":          RESIDENTIAL_FULL,
-  "دوبلكس":       RESIDENTIAL_FULL,
-  "استوديو":      RESIDENTIAL_FULL,
-  "روف":          RESIDENTIAL_FULL,
-  "غرفة":         RESIDENTIAL_FULL,
-  "فيلا":         VILLA,
-  "استراحة":      VILLA,
-  "عمارة":        BUILDING,
-  "مكتب":         OFFICE_CLINIC,
-  "عيادة":        OFFICE_CLINIC,
-  "محل تجاري":   SHOP_MALL,
-  "مجمع تجاري":  SHOP_MALL,
-  "فندق":         HOTEL,
-  "مستودع":       WAREHOUSE,
-  "أرض سكنية":   LAND,
-  "أرض تجارية":  LAND,
-  "أرض زراعية":  LAND,
-  "أرض صناعية":  LAND,
+  // Residential
+  "apartment":           RESIDENTIAL_FULL,
+  "duplex":              RESIDENTIAL_FULL,
+  "studio":              RESIDENTIAL_FULL,
+  "standalone":          VILLA,
+  "single-room":         RESIDENTIAL_FULL,
+  "chalet":              RESIDENTIAL_FULL,
+  "villa":               VILLA,
+  "full-floor":          BUILDING,
+  // Commercial
+  "office":              OFFICE_CLINIC,
+  "pharmacy":            OFFICE_CLINIC,
+  "shop":                SHOP_MALL,
+  "showroom":            SHOP_MALL,
+  "commercial-building": BUILDING,
+  "restaurant":          HOTEL,
+  "warehouse":           WAREHOUSE,
+  // Land
+  "land-residential":    LAND,
+  "land-commercial":     LAND,
+  "land-agricultural":   LAND,
+  "land-industrial":     LAND,
+  "land-service":        LAND,
+  // Industrial
+  "factory":             WAREHOUSE,
+  "industrial-warehouse": WAREHOUSE,
+  "workshop":            WAREHOUSE,
+  "industrial-facility": WAREHOUSE,
 };
 
-export function getPropertyTypeConfig(mainCategory: string): PropertyTypeConfig {
-  return PROPERTY_TYPE_CONFIGS[mainCategory] ?? DEFAULT_CONFIG;
+/**
+ * Get field visibility config for a property subtype.
+ * Pass subCategory slug (preferred), falls back to mainCategory group slug.
+ */
+export function getPropertyTypeConfig(subCategory: string, mainCategory?: string): PropertyTypeConfig {
+  if (subCategory && PROPERTY_TYPE_CONFIGS[subCategory]) {
+    return PROPERTY_TYPE_CONFIGS[subCategory];
+  }
+  // Group-level defaults when no specific subtype selected
+  if (mainCategory === "land") return LAND;
+  if (mainCategory === "commercial") return OFFICE_CLINIC;
+  return DEFAULT_CONFIG;
 }
 
 export const LAND_TYPE_OPTIONS = [

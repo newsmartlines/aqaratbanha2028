@@ -32,7 +32,7 @@ export function usePropertyForm(
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const baseDefaults: FormValues = {
-    listingType: "", propertyGroup: "", mainCategory: "",
+    listingType: "", propertyGroup: "", mainCategory: "", subCategory: "",
     title: "", description: "", price: "", area: "",
     rooms: "", bathrooms: "", floor: "", totalFloors: "", buildYear: "",
     finishing: "", furnished: "", paymentMethod: "", condition: "",
@@ -55,7 +55,7 @@ export function usePropertyForm(
 
   const v = watch();
 
-  const cfg = getPropertyTypeConfig(v.mainCategory);
+  const cfg = getPropertyTypeConfig(v.subCategory, v.mainCategory);
   const showRoomFields = cfg.showRooms || cfg.showBathrooms || cfg.showFloor;
 
   const accountType: "company" | "user" = mode === "company" ? "company" : "user";
@@ -87,7 +87,8 @@ export function usePropertyForm(
       setValue("features", []);
       setValue("nearbyServices", []);
     }
-    if (!LAND_CATEGORIES.includes(cat)) {
+    // If the group changed (not a land group), clear land-specific fields
+    if (cat !== "land") {
       setValue("landType", "");
       setValue("landWidth", "");
       setValue("landDepth", "");
@@ -134,6 +135,7 @@ export function usePropertyForm(
     return {
       listingType:    f.listingType,
       mainCategory:   f.mainCategory,
+      subCategory:    f.subCategory    || undefined,
       title:          f.title,
       description:    f.description    || undefined,
       price:          f.price          || undefined,

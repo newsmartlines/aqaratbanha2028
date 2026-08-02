@@ -2,6 +2,7 @@
 - [Express 5 middleware params type fix](express5-params.md) — `req.params[key]` is `string | string[]` on adminOnly-guarded routes; wrap with `String()` before parseInt.
 - [Provider-owned property notifications](provider-event-notifications.md) — all property event handlers must use `resolvePropertyOwnerUserId()` not `property.ownerUserId` directly.
 - [Full-stack audit complete](AUDIT_REPORT.md) — 9 issues fixed (2 Critical, 4 High, 3 Medium); see AUDIT_REPORT.md in project root for full details.
+- [Property Classification System](classification-system.md) — mainCategory=group slug, subCategory=subtype slug everywhere; DB migrated, form/search/API all normalized.
 - [Phase 2 property audit fixes](phase2-property-fixes.md) — 13 fixes: C-1 status=all auth, C-2 mass-assign allowlist, C-3 favorites IDOR, H-1 font magic bytes, H-2 hard cap 200, H-3 server sessionId, H-4 renew quota, H-5 reports auth+ratelimit, L-1 N+1, L-2 admin cap, L-3 SEO, L-4 phone, L-5 NaN guard.
 - [adminOnly middleware pattern](adminonly-pattern.md) — Use `router.use("/prefix", adminOnly)` for whole routers; use inline `router.verb("/path", adminOnly, handler)` for individual routes (needs `String(req.params.id)` cast).
 - [listings.ts schema mismatch](listings-schema.md) — propertiesTable has `images` (not `mainImage`) and `mainCategory` text (not `categoryId` FK); no category join is possible via a FK column.

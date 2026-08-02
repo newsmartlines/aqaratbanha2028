@@ -978,10 +978,9 @@ export default function Home() {
 
         {/* ── COMMERCIAL & LANDS ── */}
         {(() => {
-          const LAND_ALL_VALUES       = new Set(["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"]);
-          const COMMERCIAL_ALL_VALUES = new Set(["commercial", "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"]);
-          const commercial = homePropsRaw.filter(p => COMMERCIAL_ALL_VALUES.has(p.mainCategory));
-          const lands = homePropsRaw.filter(p => LAND_ALL_VALUES.has(p.mainCategory));
+          // mainCategory is now normalized to group slugs in the DB
+          const commercial = homePropsRaw.filter(p => p.mainCategory === "commercial");
+          const lands = homePropsRaw.filter(p => p.mainCategory === "land");
 
           const MiniCard = ({ property }: { property: any }) => {
             const imgs: string[] = (() => { try { return JSON.parse(property.images ?? "[]"); } catch { return []; } })();
@@ -1033,7 +1032,7 @@ export default function Home() {
                           <p className="text-xs text-muted-foreground">{commercial.length} عقار تجاري متاح</p>
                         </div>
                       </div>
-                      <button onClick={() => setLocation("/properties?category=تجاري")} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">
+                      <button onClick={() => setLocation("/properties?mainCategory=commercial")} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">
                         عرض الكل <ArrowLeft className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -1054,7 +1053,7 @@ export default function Home() {
                           <p className="text-xs text-muted-foreground">{lands.length} قطعة أرض متاحة</p>
                         </div>
                       </div>
-                      <button onClick={() => setLocation("/properties?category=أراضي")} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">
+                      <button onClick={() => setLocation("/properties?mainCategory=land")} className="text-xs font-semibold text-primary flex items-center gap-1 hover:gap-2 transition-all">
                         عرض الكل <ArrowLeft className="w-3.5 h-3.5" />
                       </button>
                     </div>

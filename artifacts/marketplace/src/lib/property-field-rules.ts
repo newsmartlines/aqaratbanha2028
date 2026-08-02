@@ -30,55 +30,53 @@ export const ALL_FIELD_DEFS: FieldDef[] = [
   { key: "buildRatio",     label: "نسبة البناء",        group: "land"        },
 ];
 
-// Canonical default field visibility per property type (matches property-type-config.ts)
+// Canonical default field visibility per subcategory slug
 export const DEFAULT_FIELD_VISIBILITY: Record<string, Record<FieldKey, boolean>> = {
-  "شقة":         { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "دوبلكس":      { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "استوديو":     { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "روف":         { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "غرفة":        { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "فيلا":        { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "استراحة":     { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "عمارة":       { rooms: true,  bathrooms: false, floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "مكتب":        { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "عيادة":       { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "محل تجاري":  { rooms: false, bathrooms: false, floor: true,  totalFloors: false, buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "مجمع تجاري": { rooms: false, bathrooms: false, floor: true,  totalFloors: false, buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "فندق":        { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "مستودع":      { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: true,  finishing: false, furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
-  "أرض سكنية":  { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: true  },
-  "أرض تجارية": { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: true  },
-  "أرض زراعية": { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: false },
-  "أرض صناعية": { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: true  },
+  // Residential
+  "apartment":    { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "duplex":       { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "studio":       { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "standalone":   { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "single-room":  { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "chalet":       { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "villa":        { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "full-floor":   { rooms: true,  bathrooms: false, floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  // Commercial
+  "office":              { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "pharmacy":            { rooms: true,  bathrooms: true,  floor: true,  totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "shop":                { rooms: false, bathrooms: false, floor: true,  totalFloors: false, buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "showroom":            { rooms: false, bathrooms: false, floor: true,  totalFloors: false, buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "commercial-building": { rooms: true,  bathrooms: false, floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "restaurant":          { rooms: true,  bathrooms: true,  floor: false, totalFloors: true,  buildYear: true,  finishing: true,  furnished: true,  condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  "warehouse":           { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: true,  finishing: false, furnished: false, condition: true,  direction: true, facade: true, paymentMethod: true, landType: false, landDimensions: false, buildRatio: false },
+  // Land
+  "land-residential":    { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: true  },
+  "land-commercial":     { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: true  },
+  "land-agricultural":   { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: false },
+  "land-industrial":     { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: true  },
+  "land-service":        { rooms: false, bathrooms: false, floor: false, totalFloors: false, buildYear: false, finishing: false, furnished: false, condition: false, direction: true, facade: true, paymentMethod: true, landType: true,  landDimensions: true,  buildRatio: false },
 };
 
-// Maps search page subCategory values → DB mainCategory values
-export const SEARCH_SUB_TO_MAIN: Record<string, string> = {
-  apartment:        "شقة",
-  villa:            "فيلا",
-  duplex:           "دوبلكس",
-  roof:             "روف",
-  chalet:           "استراحة",
-  studio:           "استوديو",
-  building:         "عمارة",
-  shop:             "محل تجاري",
-  office:           "مكتب",
-  showroom:         "مجمع تجاري",
-  warehouse:        "مستودع",
-  clinic:           "عيادة",
-  hotel:            "فندق",
-  residential_land: "أرض سكنية",
-  commercial_land:  "أرض تجارية",
-  farm:             "أرض زراعية",
-  industrial_land:  "أرض صناعية",
+// Subcategory slug → group slug mapping
+export const SUBCAT_TO_GROUP: Record<string, string> = {
+  "apartment": "residential", "villa": "residential", "duplex": "residential",
+  "studio": "residential", "chalet": "residential", "standalone": "residential",
+  "single-room": "residential", "full-floor": "residential",
+  "shop": "commercial", "office": "commercial", "warehouse": "commercial",
+  "showroom": "commercial", "commercial-building": "commercial",
+  "pharmacy": "commercial", "restaurant": "commercial",
+  "land-residential": "land", "land-commercial": "land",
+  "land-agricultural": "land", "land-industrial": "land", "land-service": "land",
+  "factory": "industrial", "industrial-warehouse": "industrial",
+  "workshop": "industrial", "industrial-facility": "industrial",
 };
 
-// Subcategory values belonging to each search category
+// Subcategory slugs belonging to each category group
 const CATEGORY_SUBS: Record<string, string[]> = {
-  residential: ["apartment","villa","duplex","roof","chalet","studio","building"],
-  commercial:  ["shop","office","showroom","warehouse","clinic","hotel"],
-  land:        ["residential_land","commercial_land","farm","industrial_land"],
-  industrial:  ["industrial_land"],
+  residential: ["apartment", "villa", "duplex", "studio", "chalet", "standalone", "single-room", "full-floor"],
+  commercial:  ["shop", "office", "warehouse", "showroom", "commercial-building", "pharmacy", "restaurant"],
+  land:        ["land-residential", "land-commercial", "land-agricultural", "land-industrial", "land-service"],
+  industrial:  ["factory", "industrial-warehouse", "workshop", "industrial-facility"],
 };
 
 // All-visible fallback
@@ -89,14 +87,12 @@ const ALL_VISIBLE: Record<FieldKey, boolean> = {
 };
 
 /**
- * Resolve the DB mainCategory string from search page filter values.
- * Returns null when category="all" or subCategory="all".
+ * Resolve the subtype slug from search page filter values.
+ * Returns the subCategory slug when set, or null when category-level or "all".
  */
 export function resolveMainCategory(category: string, subCategory: string): string | null {
-  if (subCategory && subCategory !== "all") {
-    return SEARCH_SUB_TO_MAIN[subCategory] ?? null;
-  }
-  return null;
+  if (subCategory && subCategory !== "all") return subCategory;
+  return category !== "all" ? category : null;
 }
 
 export type FieldConfigRow = { mainCategory: string; fieldKey: string; isVisible: boolean };
@@ -105,7 +101,7 @@ export type FieldConfigRow = { mainCategory: string; fieldKey: string; isVisible
  * Get field visibility rules for the current search filter state.
  *
  * Priority:
- * 1. DB configs for the exact mainCategory (if subCategory is set)
+ * 1. DB configs for the exact subCategory slug (if subCategory is set)
  * 2. Union of DB configs across the category's subtypes
  * 3. Hardcoded DEFAULT_FIELD_VISIBILITY fallback
  */
@@ -114,11 +110,11 @@ export function getFieldRules(
   subCategory: string,
   dbConfigs?: FieldConfigRow[]
 ): Record<FieldKey, boolean> {
-  const mainCat = resolveMainCategory(category, subCategory);
+  const subCat = subCategory && subCategory !== "all" ? subCategory : null;
 
   if (dbConfigs && dbConfigs.length > 0) {
-    if (mainCat) {
-      const forType = dbConfigs.filter((c) => c.mainCategory === mainCat);
+    if (subCat) {
+      const forType = dbConfigs.filter((c) => c.mainCategory === subCat);
       if (forType.length > 0) {
         const rules: Record<FieldKey, boolean> = { ...ALL_VISIBLE };
         for (const cfg of forType) {
@@ -131,8 +127,7 @@ export function getFieldRules(
     // Category-level: a field is shown if ANY subtype in the category shows it
     if (category !== "all") {
       const subs = CATEGORY_SUBS[category] ?? [];
-      const subtypeMainCats = subs.map((s) => SEARCH_SUB_TO_MAIN[s]).filter(Boolean);
-      if (subtypeMainCats.length > 0) {
+      if (subs.length > 0) {
         const rules: Record<FieldKey, boolean> = {
           rooms: false, bathrooms: false, floor: false, totalFloors: false,
           buildYear: false, finishing: false, furnished: false, condition: false,
@@ -140,10 +135,10 @@ export function getFieldRules(
           landType: false, landDimensions: false, buildRatio: false,
         };
         for (const fk of ALL_FIELD_DEFS.map((f) => f.key)) {
-          const anyVisible = subtypeMainCats.some((mc) => {
-            const cfgs = dbConfigs.filter((c) => c.mainCategory === mc);
+          const anyVisible = subs.some((s) => {
+            const cfgs = dbConfigs.filter((c) => c.mainCategory === s);
             if (cfgs.length === 0) {
-              return DEFAULT_FIELD_VISIBILITY[mc]?.[fk] ?? true;
+              return DEFAULT_FIELD_VISIBILITY[s]?.[fk] ?? true;
             }
             const cfg = cfgs.find((c) => c.fieldKey === fk);
             return cfg ? cfg.isVisible : true;
@@ -156,14 +151,13 @@ export function getFieldRules(
   }
 
   // Fallback to hardcoded defaults
-  if (mainCat && DEFAULT_FIELD_VISIBILITY[mainCat]) {
-    return { ...DEFAULT_FIELD_VISIBILITY[mainCat] } as Record<FieldKey, boolean>;
+  if (subCat && DEFAULT_FIELD_VISIBILITY[subCat]) {
+    return { ...DEFAULT_FIELD_VISIBILITY[subCat] } as Record<FieldKey, boolean>;
   }
 
   if (category !== "all") {
     const subs = CATEGORY_SUBS[category] ?? [];
-    const subtypeMainCats = subs.map((s) => SEARCH_SUB_TO_MAIN[s]).filter(Boolean);
-    if (subtypeMainCats.length > 0) {
+    if (subs.length > 0) {
       const rules: Record<FieldKey, boolean> = {
         rooms: false, bathrooms: false, floor: false, totalFloors: false,
         buildYear: false, finishing: false, furnished: false, condition: false,
@@ -171,9 +165,7 @@ export function getFieldRules(
         landType: false, landDimensions: false, buildRatio: false,
       };
       for (const fk of ALL_FIELD_DEFS.map((f) => f.key)) {
-        rules[fk] = subtypeMainCats.some(
-          (mc) => DEFAULT_FIELD_VISIBILITY[mc]?.[fk] ?? true
-        );
+        rules[fk] = subs.some((s) => DEFAULT_FIELD_VISIBILITY[s]?.[fk] ?? true);
       }
       return rules;
     }
@@ -182,28 +174,28 @@ export function getFieldRules(
   return { ...ALL_VISIBLE };
 }
 
-// ─── Maps category slugs to their Arabic subtype names ────────────────────────
+// Subcategory slugs per category group (for getFieldRulesForCategorySlug)
 const SLUG_TO_SUBTYPES: Record<string, string[]> = {
-  residential: ["residential", "سكني", "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"],
-  commercial:  ["commercial", "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"],
-  land:        ["land", "أرض", "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"],
-  industrial:  ["أرض صناعية", "مستودع"],
+  residential: ["apartment", "villa", "duplex", "studio", "chalet", "standalone", "single-room", "full-floor"],
+  commercial:  ["shop", "office", "warehouse", "showroom", "commercial-building", "pharmacy", "restaurant"],
+  land:        ["land-residential", "land-commercial", "land-agricultural", "land-industrial", "land-service"],
+  industrial:  ["factory", "industrial-warehouse", "workshop", "industrial-facility"],
 };
 
 /**
- * Get field visibility rules for a specific Arabic mainCategory name.
- * Used by properties.tsx / map-search.tsx which work with Arabic type names directly.
- * When mainCategory is null/undefined → shows ALL fields (no filter selected).
+ * Get field visibility rules for a specific subCategory slug.
+ * Used by properties.tsx / map-search.tsx.
+ * When subCategory is null/undefined → shows ALL fields (no filter selected).
  */
 export function getFieldRulesForMainCategory(
-  mainCategory: string | null | undefined,
+  subCategory: string | null | undefined,
   dbConfigs?: FieldConfigRow[]
 ): Record<FieldKey, boolean> {
-  if (!mainCategory) return { ...ALL_VISIBLE };
+  if (!subCategory) return { ...ALL_VISIBLE };
 
   // DB configs take priority over hardcoded defaults
   if (dbConfigs && dbConfigs.length > 0) {
-    const forType = dbConfigs.filter((c) => c.mainCategory === mainCategory);
+    const forType = dbConfigs.filter((c) => c.mainCategory === subCategory);
     if (forType.length > 0) {
       const rules: Record<FieldKey, boolean> = { ...ALL_VISIBLE };
       for (const cfg of forType) {
@@ -213,16 +205,14 @@ export function getFieldRulesForMainCategory(
     }
   }
 
-  return DEFAULT_FIELD_VISIBILITY[mainCategory]
-    ? { ...DEFAULT_FIELD_VISIBILITY[mainCategory] } as Record<FieldKey, boolean>
+  return DEFAULT_FIELD_VISIBILITY[subCategory]
+    ? { ...DEFAULT_FIELD_VISIBILITY[subCategory] } as Record<FieldKey, boolean>
     : { ...ALL_VISIBLE };
 }
 
 /**
  * Get field rules for a category slug (e.g. "residential", "commercial", "land").
- * Returns the UNION of all subtype field visibilities — a field is shown if
- * ANY subtype within the category would show it.  Avoids hiding filters
- * prematurely when the user hasn't picked a specific subtype yet.
+ * Returns the UNION of all subtype field visibilities.
  */
 export function getFieldRulesForCategorySlug(
   slug: string | null | undefined,
@@ -249,5 +239,5 @@ export function getFieldRulesForCategorySlug(
   return rules;
 }
 
-/** Export slug→subtypes map for use in UI (e.g. map-search subcategory selector) */
+/** Export for use in UI (e.g. map-search subcategory selector) */
 export { SLUG_TO_SUBTYPES };

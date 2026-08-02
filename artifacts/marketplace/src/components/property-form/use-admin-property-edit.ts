@@ -42,7 +42,7 @@ export function useAdminPropertyEdit(propertyId: number) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const defaultValues: FormValues = {
-    listingType: "", propertyGroup: "", mainCategory: "",
+    listingType: "", propertyGroup: "", mainCategory: "", subCategory: "",
     title: "", description: "", price: "", area: "",
     rooms: "", bathrooms: "", floor: "", totalFloors: "", buildYear: "",
     finishing: "", furnished: "", paymentMethod: "", condition: "",
@@ -76,8 +76,9 @@ export function useAdminPropertyEdit(propertyId: number) {
 
     reset({
       listingType:    p.listingType     ?? "",
-      propertyGroup:  "",
+      propertyGroup:  p.mainCategory    ?? "",
       mainCategory:   p.mainCategory    ?? "",
+      subCategory:    p.subCategory     ?? "",
       title:          p.title           ?? "",
       description:    p.description     ?? "",
       price:          p.price           ?? "",
@@ -119,7 +120,7 @@ export function useAdminPropertyEdit(propertyId: number) {
     setAdminUrgent(p.urgent ?? false);
   }, [propData, reset]);
 
-  const cfg = getPropertyTypeConfig(v.mainCategory);
+  const cfg = getPropertyTypeConfig(v.subCategory, v.mainCategory);
   const showRoomFields = cfg.showRooms || cfg.showBathrooms || cfg.showFloor;
 
   const { data: amenitiesData = [] } = useQuery<DynFeature[]>({
@@ -179,6 +180,7 @@ export function useAdminPropertyEdit(propertyId: number) {
     return {
       listingType:    f.listingType,
       mainCategory:   f.mainCategory,
+      subCategory:    f.subCategory    || null,
       title:          f.title,
       description:    f.description    || null,
       price:          f.price          || null,

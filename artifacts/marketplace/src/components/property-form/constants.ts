@@ -11,12 +11,14 @@ export const PROPERTY_GROUPS = [
     icon: Home,
     desc: "شقق، فيلات، وحدات سكنية",
     subtypes: [
-      { value: "شقة",        label: "شقة",        icon: Home },
-      { value: "فيلا",       label: "فيلا",       icon: Building2 },
-      { value: "دوبلكس",    label: "دوبلكس",    icon: Layers },
-      { value: "بنتهاوس",   label: "بنتهاوس",   icon: Crown },
-      { value: "استوديو",    label: "استوديو",    icon: Building2 },
-      { value: "تاون هاوس", label: "تاون هاوس", icon: Building2 },
+      { value: "apartment",   label: "شقة",         icon: Home },
+      { value: "villa",       label: "فيلا",        icon: Building2 },
+      { value: "duplex",      label: "دوبلكس",      icon: Layers },
+      { value: "studio",      label: "استوديو",      icon: Building2 },
+      { value: "chalet",      label: "شاليه",        icon: Building2 },
+      { value: "standalone",  label: "منزل مستقل",   icon: Crown },
+      { value: "single-room", label: "غرفة مفردة",   icon: Building2 },
+      { value: "full-floor",  label: "طابق كامل",    icon: Layers },
     ],
   },
   {
@@ -25,12 +27,13 @@ export const PROPERTY_GROUPS = [
     icon: Briefcase,
     desc: "مكاتب، محلات، مستودعات",
     subtypes: [
-      { value: "محل",      label: "محل",      icon: ShoppingBag },
-      { value: "مكتب",     label: "مكتب",     icon: Briefcase },
-      { value: "مستودع",   label: "مستودع",   icon: Warehouse },
-      { value: "معرض",     label: "معرض",     icon: Store },
-      { value: "عيادة",    label: "عيادة",    icon: Stethoscope },
-      { value: "مطعم",     label: "مطعم",     icon: Utensils },
+      { value: "shop",                label: "محل تجاري",    icon: ShoppingBag },
+      { value: "office",              label: "مكتب",         icon: Briefcase },
+      { value: "warehouse",           label: "مستودع",       icon: Warehouse },
+      { value: "showroom",            label: "معرض",         icon: Store },
+      { value: "commercial-building", label: "عمارة تجارية", icon: Building2 },
+      { value: "pharmacy",            label: "صيدلية",       icon: Stethoscope },
+      { value: "restaurant",          label: "مطعم",         icon: Utensils },
     ],
   },
   {
@@ -39,10 +42,11 @@ export const PROPERTY_GROUPS = [
     icon: Trees,
     desc: "أراضي سكنية وتجارية وزراعية",
     subtypes: [
-      { value: "أرض سكنية",   label: "أرض سكنية",  icon: Trees },
-      { value: "أرض زراعية",  label: "أرض زراعية", icon: Trees },
-      { value: "أرض تجارية",  label: "أرض تجارية", icon: Trees },
-      { value: "أرض صناعية",  label: "أرض صناعية", icon: Trees },
+      { value: "land-residential",  label: "أرض سكنية",   icon: Trees },
+      { value: "land-commercial",   label: "أرض تجارية",  icon: Trees },
+      { value: "land-agricultural", label: "أرض زراعية",  icon: Trees },
+      { value: "land-industrial",   label: "أرض صناعية",  icon: Trees },
+      { value: "land-service",      label: "أرض خدمية",   icon: Trees },
     ],
   },
 ] as const;
@@ -123,10 +127,11 @@ export const PLAN_ICONS: Record<string, typeof Eye> = {
 };
 
 export const NO_ROOM_CATEGORIES = [
-  "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية",
-  "أرض", "مستودع", "محل تجاري",
+  "land-residential", "land-commercial", "land-agricultural", "land-industrial",
+  "land-service", "warehouse", "shop",
 ];
 
 export const LAND_CATEGORIES = [
-  "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض",
+  "land-residential", "land-commercial", "land-agricultural",
+  "land-industrial", "land-service",
 ];

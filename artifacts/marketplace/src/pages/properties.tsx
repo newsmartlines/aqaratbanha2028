@@ -214,34 +214,45 @@ const FALLBACK = NO_IMAGE_PLACEHOLDER;
 const MAP_CENTER: [number, number] = [24.7136, 46.6753];
 
 const CITIES: string[] = [];
-const KINDS = ["فيلا", "شقة", "مكتب", "دوبلكس", "أرض"];
+const KINDS = [
+  { value: "residential", label: "سكني" },
+  { value: "commercial",  label: "تجاري" },
+  { value: "land",        label: "أراضي" },
+  { value: "industrial",  label: "صناعي" },
+];
 const TYPES = ["للبيع", "للإيجار"];
 
+// Subcategory slugs per category group — canonical slug values matching DB
 const STATIC_SUBCATS: Record<string, string[]> = {
-  residential: ["شقة", "فيلا", "دوبلكس", "روف", "شاليه", "استوديو", "عمارة"],
-  commercial:  ["محل", "مكتب", "معرض", "مستودع", "عيادة", "فندق"],
-  land:        ["أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية"],
-  industrial:  ["مصنع", "مستودع صناعي", "ورشة"],
+  residential: ["apartment", "villa", "duplex", "studio", "chalet", "standalone", "single-room", "full-floor"],
+  commercial:  ["shop", "office", "warehouse", "showroom", "commercial-building", "pharmacy", "restaurant"],
+  land:        ["land-residential", "land-commercial", "land-agricultural", "land-industrial", "land-service"],
+  industrial:  ["factory", "industrial-warehouse", "workshop", "industrial-facility"],
 };
-// Canonical value sets per category group (includes legacy slugs + Arabic group names + all Arabic subtypes)
-const LAND_ALL_VALUES        = new Set(["land",        "أرض",  "أراضي", "أرض سكنية", "أرض تجارية", "أرض زراعية", "أرض صناعية", "أرض خدمية"]);
-const RESIDENTIAL_ALL_VALUES = new Set(["residential", "سكني",  "شقة", "فيلا", "دوبلكس", "بنتهاوس", "استوديو", "تاون هاوس", "روف", "استراحة", "عمارة", "غرفة", "شاليه"]);
-const COMMERCIAL_ALL_VALUES  = new Set(["commercial",  "تجاري", "محل", "مكتب", "مستودع", "معرض", "عيادة", "مطعم", "محل تجاري", "مجمع تجاري", "فندق"]);
 
-/** Map any stored mainCategory value to its group slug for counting and chip matching */
+// Arabic labels for subcategory slugs (for display in chips)
+const SUBCAT_LABELS: Record<string, string> = {
+  "apartment": "شقة", "villa": "فيلا", "duplex": "دوبلكس",
+  "studio": "استوديو", "chalet": "شاليه", "standalone": "منزل مستقل",
+  "single-room": "غرفة مفردة", "full-floor": "طابق كامل",
+  "shop": "محل تجاري", "office": "مكتب", "warehouse": "مستودع",
+  "showroom": "معرض", "commercial-building": "عمارة تجارية",
+  "pharmacy": "صيدلية", "restaurant": "مطعم",
+  "land-residential": "أرض سكنية", "land-commercial": "أرض تجارية",
+  "land-agricultural": "أرض زراعية", "land-industrial": "أرض صناعية",
+  "land-service": "أرض خدمية",
+  "factory": "مصنع", "industrial-warehouse": "مستودع صناعي",
+  "workshop": "ورشة", "industrial-facility": "منشأة صناعية",
+};
+
+/** Map any stored mainCategory value to its group slug — now all data uses group slugs directly */
 function getGroupSlug(kind: string): string {
-  if (LAND_ALL_VALUES.has(kind))        return "land";
-  if (RESIDENTIAL_ALL_VALUES.has(kind)) return "residential";
-  if (COMMERCIAL_ALL_VALUES.has(kind))  return "commercial";
+  // Data is normalized: mainCategory IS the group slug
   return kind;
 }
 
-/** Returns true when kind filter matches the property — handles group slugs/names expanding to all subtypes */
+/** Returns true when kind filter matches the property */
 function kindMatches(pKind: string, selectedKind: string): boolean {
-  const group = getGroupSlug(selectedKind);
-  if (group === "land")        return LAND_ALL_VALUES.has(pKind);
-  if (group === "residential") return RESIDENTIAL_ALL_VALUES.has(pKind);
-  if (group === "commercial")  return COMMERCIAL_ALL_VALUES.has(pKind);
   return pKind === selectedKind;
 }
 const BEDS_OPTIONS = [1, 2, 3, 4, 5];
@@ -396,7 +407,7 @@ export default function PropertiesPage() {
     const initSubcategoryId = initParams.subcategoryId;
     if (!initSubcategoryId || !subCategories.length || selectedSubKind) return;
     const match = subCategories.find((s) => s.id === initSubcategoryId);
-    if (match) setSelectedSubKind(match.nameAr);
+    if (match) setSelectedSubKind(match.slug ?? match.nameAr);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subCategories]);
 
@@ -1010,15 +1021,18 @@ export default function PropertiesPage() {
                           );
                         })
                       : KINDS.map((k) => (
-                          <Chip key={k} label={k} active={selectedKind === k}
-                            count={countsByKind[k] ?? 0}
-                            onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />
+                          <Chip key={k.value} label={k.label} active={selectedKind === k.value}
+                            count={countsByKind[k.value] ?? 0}
+                            onClick={() => { setSelectedKind(selectedKind === k.value ? null : k.value); setSelectedSubKind(null); }} />
                         ))
                     }
                   </div>
                   {selectedKind && (() => {
-                    const dbSubs = subCategories.map(s => s.nameAr);
-                    const activeSubs = dbSubs.length > 0 ? dbSubs : (STATIC_SUBCATS[selectedKind] ?? []);
+                    // Use DB subcategories (keyed by slug) when available, else STATIC_SUBCATS slugs
+                    type SubItem = { slug: string; label: string };
+                    const activeSubs: SubItem[] = subCategories.length > 0
+                      ? subCategories.map(s => ({ slug: s.slug ?? s.nameAr, label: s.nameAr }))
+                      : (STATIC_SUBCATS[selectedKind] ?? []).map(slug => ({ slug, label: SUBCAT_LABELS[slug] ?? slug }));
                     if (activeSubs.length === 0) return null;
                     const allSubCount = Object.values(countsBySubKind).reduce((s, n) => s + n, 0);
                     return (
@@ -1026,10 +1040,10 @@ export default function PropertiesPage() {
                         <p className="text-xs text-gray-400 mb-2 font-semibold">التصنيف الفرعي:</p>
                         <div className="flex flex-wrap gap-1.5">
                           <Chip label="الكل" active={!selectedSubKind} count={allSubCount} onClick={() => setSelectedSubKind(null)} />
-                          {activeSubs.map(name => (
-                            <Chip key={name} label={name} active={selectedSubKind === name}
-                              count={countsBySubKind[name] ?? 0}
-                              onClick={() => setSelectedSubKind(selectedSubKind === name ? null : name)} />
+                          {activeSubs.map(({ slug, label }) => (
+                            <Chip key={slug} label={label} active={selectedSubKind === slug}
+                              count={countsBySubKind[slug] ?? 0}
+                              onClick={() => setSelectedSubKind(selectedSubKind === slug ? null : slug)} />
                           ))}
                         </div>
                       </div>
@@ -1316,7 +1330,7 @@ export default function PropertiesPage() {
                 )}
                 {selectedSubKind && (
                   <span onClick={() => setSelectedSubKind(null)} className="inline-flex items-center gap-1 bg-teal-100 text-teal-700 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-teal-200">
-                    {selectedSubKind} <X className="w-3 h-3" />
+                    {subCategories.find(s => (s.slug ?? s.nameAr) === selectedSubKind)?.nameAr ?? SUBCAT_LABELS[selectedSubKind] ?? selectedSubKind} <X className="w-3 h-3" />
                   </span>
                 )}
                 {selectedCity && (
@@ -1828,14 +1842,14 @@ export default function PropertiesPage() {
                       const slug = c.slug ?? String(c.id);
                       return <Chip key={slug} label={c.nameAr} active={selectedKind === slug} count={countsByKind[slug] ?? 0} onClick={() => { const next = selectedKind === slug ? null : slug; setSelectedKind(next); setSelectedSubKind(null); }} />;
                     })
-                  : KINDS.map((k) => <Chip key={k} label={k} active={selectedKind === k} count={countsByKind[k] ?? 0} onClick={() => { setSelectedKind(selectedKind === k ? null : k); setSelectedSubKind(null); }} />)
+                  : KINDS.map((k) => <Chip key={k.value} label={k.label} active={selectedKind === k.value} count={countsByKind[k.value] ?? 0} onClick={() => { setSelectedKind(selectedKind === k.value ? null : k.value); setSelectedSubKind(null); }} />)
                 }
               </div>
               {selectedKind && subCategories.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <p className="text-xs text-gray-400 mb-2 font-semibold">تخصيص أكثر:</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {subCategories.map((s) => <Chip key={s.id} label={s.nameAr} active={selectedSubKind === s.nameAr} count={countsBySubKind[s.nameAr] ?? 0} onClick={() => setSelectedSubKind(selectedSubKind === s.nameAr ? null : s.nameAr)} />)}
+                    {subCategories.map((s) => { const slug = s.slug ?? s.nameAr; return <Chip key={s.id} label={s.nameAr} active={selectedSubKind === slug} count={countsBySubKind[slug] ?? 0} onClick={() => setSelectedSubKind(selectedSubKind === slug ? null : slug)} />; })}
                   </div>
                 </div>
               )}

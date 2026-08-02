@@ -71,7 +71,7 @@ function resolveIcon(icon: any) {
 /* ─── Phase logic ───────────────────────────────────────────────────────── */
 function usePhase(v: FormValues) {
   if (!v.propertyGroup) return 0;
-  if (!v.mainCategory)  return 1;
+  if (!v.subCategory)   return 1;  // subCategory = subtype slug
   if (!v.listingType)   return 2;
   return 3;
 }
@@ -192,19 +192,27 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
 
   const handleGroupClick = (val: string) => {
     if (v.propertyGroup === val) return;
-    set("propertyGroup", val); set("mainCategory", ""); set("listingType", "");
+    set("propertyGroup", val); set("mainCategory", ""); set("subCategory", ""); set("listingType", "");
     set("features", []); set("nearbyServices", []);
   };
   const handleGroupReset = () => {
-    set("propertyGroup", ""); set("mainCategory", ""); set("listingType", "");
+    set("propertyGroup", ""); set("mainCategory", ""); set("subCategory", ""); set("listingType", "");
     set("features", []); set("nearbyServices", []);
   };
   const handleSubtypeClick = (val: string) => {
     set("listingType", "");
-    if (onMainCategoryChange) onMainCategoryChange(val);
-    else set("mainCategory", val);
+    // mainCategory = group slug (residential/commercial/land)
+    // subCategory  = subtype slug (apartment/villa/shop/…)
+    const groupSlug = activeGroup?.value ?? "";
+    if (onMainCategoryChange) onMainCategoryChange(groupSlug);
+    else set("mainCategory", groupSlug);
+    set("subCategory", val);
   };
-  const handleSubtypeReset = () => { set("mainCategory", ""); set("listingType", ""); };
+  const handleSubtypeReset = () => {
+    set("mainCategory", "");
+    set("subCategory", "");
+    set("listingType", "");
+  };
 
   /* ── BLOCK 1 ── */
   const block1 = (
@@ -270,7 +278,7 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
           <div className="flex flex-wrap gap-1.5">
             {activeGroup.subtypes.map((sub) => {
               const SubIcon = resolveIcon(sub.icon);
-              const isActive = v.mainCategory === sub.value;
+              const isActive = v.subCategory === sub.value;
               return (
                 <button key={sub.value} type="button" onClick={() => handleSubtypeClick(sub.value)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all focus:outline-none"
@@ -290,16 +298,19 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
         </FadeIn>
       )}
 
-      {phase >= 2 && pal && (
-        <FadeIn show>
-          <button type="button" onClick={handleSubtypeReset}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-colors hover:opacity-80"
-            style={{ borderColor: pal.border, background: pal.chipBg, color: pal.iconColor }}>
-            <Tag className="w-3 h-3 shrink-0" />{v.mainCategory}
-            <ChevronLeft className="w-3 h-3 opacity-40 rotate-180" />
-          </button>
-        </FadeIn>
-      )}
+      {phase >= 2 && pal && (() => {
+        const subtypeLabel = activeGroup?.subtypes.find((s) => s.value === v.subCategory)?.label ?? v.subCategory;
+        return (
+          <FadeIn show>
+            <button type="button" onClick={handleSubtypeReset}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-colors hover:opacity-80"
+              style={{ borderColor: pal.border, background: pal.chipBg, color: pal.iconColor }}>
+              <Tag className="w-3 h-3 shrink-0" />{subtypeLabel}
+              <ChevronLeft className="w-3 h-3 opacity-40 rotate-180" />
+            </button>
+          </FadeIn>
+        );
+      })()}
     </div>
   );
 
@@ -380,7 +391,7 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
           <p className="text-xs font-bold text-gray-800">اختياراتك مكتملة — أكمل بيانات العقار أدناه</p>
           <p className="text-[11px] text-gray-500 mt-0.5 truncate">
             {PROPERTY_GROUPS.find((g) => g.value === v.propertyGroup)?.label}
-            {v.mainCategory && <> · {v.mainCategory}</>}
+            {v.subCategory && <> · {PROPERTY_GROUPS.find((g) => g.value === v.propertyGroup)?.subtypes.find((s) => s.value === v.subCategory)?.label ?? v.subCategory}</>}
             {v.listingType && <> · {v.listingType === "sale" ? "للبيع" : "للإيجار"}</>}
           </p>
         </div>

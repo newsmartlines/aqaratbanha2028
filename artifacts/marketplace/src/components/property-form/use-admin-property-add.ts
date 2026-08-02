@@ -37,7 +37,7 @@ export function useAdminPropertyAdd() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const defaultValues: FormValues = {
-    listingType: "", propertyGroup: "", mainCategory: "",
+    listingType: "", propertyGroup: "", mainCategory: "", subCategory: "",
     title: "", description: "", price: "", area: "",
     rooms: "", bathrooms: "", floor: "", totalFloors: "", buildYear: "",
     finishing: "", furnished: "", paymentMethod: "", condition: "",
@@ -56,7 +56,7 @@ export function useAdminPropertyAdd() {
 
   const v = watch();
 
-  const cfg = getPropertyTypeConfig(v.mainCategory);
+  const cfg = getPropertyTypeConfig(v.subCategory, v.mainCategory);
   const showRoomFields = cfg.showRooms || cfg.showBathrooms || cfg.showFloor;
   const isCompany = accountType === "company";
 
@@ -119,6 +119,7 @@ export function useAdminPropertyAdd() {
     return {
       listingType:    f.listingType,
       mainCategory:   f.mainCategory,
+      subCategory:    f.subCategory    || null,
       title:          f.title,
       description:    f.description    || null,
       price:          f.price          || null,

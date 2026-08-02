@@ -65,21 +65,36 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 const SUBCATEGORIES: Record<string, { value: string; label: string }[]> = {
   residential: [
-    { value: "apartment", label: "شقة" }, { value: "villa", label: "فيلا" },
-    { value: "duplex", label: "دوبلكس" }, { value: "roof", label: "روف" },
-    { value: "chalet", label: "شاليه" }, { value: "studio", label: "استوديو" },
-    { value: "building", label: "عمارة" },
+    { value: "apartment",   label: "شقة" },
+    { value: "villa",       label: "فيلا" },
+    { value: "duplex",      label: "دوبلكس" },
+    { value: "studio",      label: "استوديو" },
+    { value: "chalet",      label: "شاليه" },
+    { value: "standalone",  label: "منزل مستقل" },
+    { value: "single-room", label: "غرفة مفردة" },
+    { value: "full-floor",  label: "طابق كامل" },
   ],
   commercial: [
-    { value: "shop", label: "محل" }, { value: "office", label: "مكتب" },
-    { value: "showroom", label: "معرض" }, { value: "warehouse", label: "مستودع" },
-    { value: "clinic", label: "عيادة" }, { value: "hotel", label: "فندق" },
+    { value: "shop",                label: "محل تجاري" },
+    { value: "office",              label: "مكتب" },
+    { value: "warehouse",           label: "مستودع" },
+    { value: "showroom",            label: "معرض" },
+    { value: "commercial-building", label: "عمارة تجارية" },
+    { value: "pharmacy",            label: "صيدلية" },
+    { value: "restaurant",          label: "مطعم" },
   ],
   land: [
-    { value: "residential_land", label: "أرض سكنية" },
-    { value: "commercial_land", label: "أرض تجارية" },
-    { value: "farm", label: "مزرعة" },
-    { value: "industrial_land", label: "أرض صناعية" },
+    { value: "land-residential",  label: "أرض سكنية" },
+    { value: "land-commercial",   label: "أرض تجارية" },
+    { value: "land-agricultural", label: "أرض زراعية" },
+    { value: "land-industrial",   label: "أرض صناعية" },
+    { value: "land-service",      label: "أرض خدمية" },
+  ],
+  industrial: [
+    { value: "factory",              label: "مصنع" },
+    { value: "industrial-warehouse", label: "مستودع صناعي" },
+    { value: "workshop",             label: "ورشة" },
+    { value: "industrial-facility",  label: "منشأة صناعية" },
   ],
 };
 const BEDS_OPTS = [
