@@ -1,3 +1,4 @@
+- [Seed Order Bug Fix](seed-order-bug.md) — providers gate must check providers (not categories); seedProperties must run after seedDefaultAccounts.
 - [Quick Ad Extractor & UI](quick-ad-extractor.md) — v2 extractor: all phones, WhatsApp, governorate DB, geocoding, section-based UI.
 - [Express 5 middleware params type fix](express5-params.md) — `req.params[key]` is `string | string[]` on adminOnly-guarded routes; wrap with `String()` before parseInt.
 - [Provider-owned property notifications](provider-event-notifications.md) — all property event handlers must use `resolvePropertyOwnerUserId()` not `property.ownerUserId` directly.

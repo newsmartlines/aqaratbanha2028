@@ -179,9 +179,10 @@ export async function seed() {
     console.log("Billing plans seeded.");
   }
 
-  // Real estate providers seed
-  const existingCats = await db.select().from(categoriesTable);
-  if (existingCats.length === 0) {
+  // Real estate providers seed — gate on providers, not categories
+  // (categories may already exist from seed files, but providers may still be missing)
+  const existingProviders = await db.select({ id: providersTable.id }).from(providersTable).limit(1);
+  if (existingProviders.length === 0) {
     const packages = await db.insert(packagesTable).values([
       { nameAr: "مجاني", nameEn: "Free", price: "0", durationDays: 30, maxListings: 3, featuredAllowed: 0, topBadge: false, priorityRank: 0 },
       { nameAr: "برونزي", nameEn: "Bronze", price: "99", durationDays: 30, maxListings: 10, featuredAllowed: 3, topBadge: false, priorityRank: 1 },
@@ -226,12 +227,12 @@ export async function seed() {
   await seedRealEstateCategories();
   await seedRealEstateSubcategories();
   await seedFeaturedAreas();
-  await seedProperties();
   await seedEmailTemplates();
   await seedSiteSettings();
-  await seedDefaultAccounts();
+  await seedDefaultAccounts();   // must run before seedProperties (creates the company provider)
   await seedMenuItems();
   await seedPromotionTypes();
+  await seedProperties();         // runs last so all providers are guaranteed to exist
 
   console.log("Database seeded successfully!");
 

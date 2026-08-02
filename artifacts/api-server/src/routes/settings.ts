@@ -116,7 +116,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   featuredSectionTitle: "اكتشف أفضل العقارات في الإسكندرية",
   featuredSectionSubtitle: "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة الإسكندرية.",
   featuredSectionTypes: JSON.stringify(["all"]),
-  featuredSectionCount: "8",
+  featuredSectionCount: "5",
   featuredSectionCustomCount: "12",
   featuredSectionColumns: "3",
   featuredSectionSort: "newest",

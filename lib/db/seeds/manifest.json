@@ -1,15 +1,10 @@
 {
   "version": "1.0",
   "platform": "عقارات الإسكندرية",
-  "exportedAt": "2026-08-02T13:45:19.454Z",
+  "exportedAt": "2026-08-02T14:56:08.735Z",
   "files": [
-    "locations.json",
     "categories.json",
-    "properties.json",
-    "email.json",
-    "settings.json",
-    "billing.json",
-    "admin.json"
+    "settings.json"
   ],
   "description": "Auto-updated by write-through export. Do not edit manually."
 }
