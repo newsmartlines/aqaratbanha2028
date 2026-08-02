@@ -278,11 +278,7 @@ export default function Home() {
     queryFn: () => api.regions.list(),
   });
 
-  const { data: banhaAreas = [] } = useQuery({
-    queryKey: ["areas", 2],
-    queryFn: () => api.locations.getAreasByCity(2),
-    staleTime: 5 * 60_000,
-  });
+  // All areas across all districts — derived from the already-loaded regions tree
 
   const { data: featuredAreas = [] } = useQuery<Array<{ id: number; nameAr: string; image: string | null; cityName: string | null; displayOrder: number; enabled: boolean; propertyCount: number }>>({
     queryKey: ["featured-areas"],
@@ -339,13 +335,16 @@ export default function Home() {
 
   const heroCityOptions = useMemo(() => {
     const all = { value: "__all__", label: "كل المناطق", count: -1 };
-    const areas = (banhaAreas as Array<{ id: number; nameAr: string; enabled?: boolean; propertyCount?: number }>)
+    const areas = (regions as import("@/lib/api").Region[])
+      .flatMap(r => r.cities ?? [])
+      .filter(c => c.enabled !== false)
+      .flatMap(c => (c.areas ?? []).map(a => ({ ...a, cityName: c.nameAr })))
       .filter(a => a.enabled !== false)
-      .map(a => ({ value: a.nameAr, label: a.nameAr, count: a.propertyCount ?? 0 }))
+      .map(a => ({ value: a.nameAr, label: a.nameAr, count: 0 }))
       .filter((a, i, arr) => arr.findIndex(x => x.value === a.value) === i)
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => a.label.localeCompare(b.label, "ar"));
     return [all, ...areas];
-  }, [banhaAreas]);
+  }, [regions]);
 
   useEffect(() => {
     setHeroCityName(null);

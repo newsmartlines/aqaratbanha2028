@@ -13,3 +13,4 @@
 - [Subscription System Audit](subscription-audit.md) — 9 bugs fixed: missing quota enforcement on POST /properties, free plan payment records, bpNameAr missing from stats select, stale sub in provider profile, provider/customer lookup bugs in payments, frontend hasUsedFreePlan, auto-expire.
 - [Subscription Expiry Scheduler](subscription-scheduler.md) — hourly scheduler in lib/subscription-scheduler.ts; started in index.ts; notifies via email+in-app at 7/3/1 days before expiry and on expiry.
 - [Subscription Integrity (Phase 3.1)](subscription-integrity.md) — 3 new DB columns + 2 partial unique indexes; approve-subscription handles replacement vs renewal; reject-subscription notification fix; "replaced" is a valid status.
+- [Alexandria Areas Complete List](alexandria-areas.md) — 57 areas across 9 districts; hero dropdown uses regions tree not a single-city fetch; featured_areas table has 11 admin-curated entries.
