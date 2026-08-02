@@ -166,8 +166,8 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
   const sectionSubtitle = settings?.featuredSectionSubtitle ?? "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة الإسكندرية.";
   const countSetting    = settings?.featuredSectionCount    ?? "8";
   const customCount     = parseInt(settings?.featuredSectionCustomCount ?? "12", 10);
-  const columnsSetting  = settings?.featuredSectionColumns  ?? "3";
-  const sortSetting     = settings?.featuredSectionSort     ?? "newest";
+  const columnsSetting  = settings?.featuredSectionColumns  ?? "4";
+  const sortSetting     = settings?.featuredSectionSort     ?? "featured";
 
   let adminSelectedTypes: string[] = [];
   try {

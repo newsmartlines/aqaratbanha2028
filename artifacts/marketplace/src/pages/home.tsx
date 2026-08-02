@@ -1083,9 +1083,6 @@ export default function Home() {
           <AdBanner position="homepage_mid" />
         </div>
 
-        {/* ── AI: TRENDING PROPERTIES ── */}
-        <TrendingSection />
-
         {/* ── AI: RECENTLY VIEWED ── */}
         <RecentlyViewedSection />
 
