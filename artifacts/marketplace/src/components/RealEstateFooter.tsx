@@ -51,7 +51,6 @@ export function RealEstateFooter() {
             <ul className="space-y-2.5">
               {[
                 { label: "الرئيسية", path: "/" },
-                { label: "الرئيسية 2", path: "/home2" },
                 { label: "جميع العقارات", path: "/properties" },
                 { label: "للبيع", path: "/properties?listingType=sale" },
                 { label: "للإيجار", path: "/properties?listingType=rent" },
