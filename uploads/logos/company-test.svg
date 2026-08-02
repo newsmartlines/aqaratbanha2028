@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none">
+  <rect width="160" height="48" rx="6" fill="#0d4f8c"/>
+  <rect x="8" y="8" width="32" height="32" rx="4" fill="#1a73c8"/>
+  <path d="M14 36 L24 16 L34 36 Z" fill="white" opacity="0.9"/>
+  <path d="M20 36 L28 36 L28 26 L20 26 Z" fill="#0d4f8c"/>
+  <text x="50" y="21" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="white">دليل</text>
+  <text x="50" y="37" font-family="Arial, sans-serif" font-size="10" fill="#93c5fd">للعقارات</text>
+</svg>

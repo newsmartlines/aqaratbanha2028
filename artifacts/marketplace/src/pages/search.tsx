@@ -1100,7 +1100,7 @@ export default function SearchPage() {
                 /* ── Clickable rectangular logo badge ── */
                 <button
                   type="button"
-                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/advertiser/${p.providerId}`); } : undefined}
                   className={`h-8 px-2 rounded-md border border-zinc-200 bg-white flex items-center justify-center shrink-0 transition-all
                     ${p.providerId ? "cursor-pointer hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10" : "cursor-default"}`}
                   style={{ minWidth: 56, maxWidth: 96 }}
@@ -1116,7 +1116,7 @@ export default function SearchPage() {
               ) : (
                 <span
                   className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
-                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/advertiser/${p.providerId}`); } : undefined}
                 >
                   {p.agentName}
                 </span>
@@ -1124,7 +1124,7 @@ export default function SearchPage() {
               {p.agentLogo && (
                 <span
                   className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
-                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/advertiser/${p.providerId}`); } : undefined}
                 >
                   {p.agentName}
                 </span>
@@ -1298,7 +1298,7 @@ export default function SearchPage() {
               {p.agentLogo ? (
                 <button
                   type="button"
-                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/advertiser/${p.providerId}`); } : undefined}
                   className={`h-7 px-2 rounded-md border border-zinc-200 bg-white flex items-center justify-center shrink-0 transition-all
                     ${p.providerId ? "cursor-pointer hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10" : "cursor-default"}`}
                   style={{ minWidth: 48, maxWidth: 88 }}
