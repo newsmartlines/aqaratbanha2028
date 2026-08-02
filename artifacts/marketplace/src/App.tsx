@@ -26,6 +26,7 @@ import PropertyDetail from "@/pages/property-detail";
 import ComparePage from "@/pages/compare";
 import AdvertiserPage from "@/pages/advertiser";
 import PropertiesPage from "@/pages/properties";
+import Home2 from "@/pages/home2";
 import AboutPage from "@/pages/about";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
@@ -188,6 +189,7 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/" component={Home} />
+      <Route path="/home2" component={Home2} />
       <Route path="/search" component={SearchPage} />
       <Route path="/add-property" component={AddPropertyPage} />
       <Route path="/quick-ad" component={QuickAdPage} />

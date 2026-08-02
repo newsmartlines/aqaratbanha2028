@@ -2,158 +2,194 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-08-02T14:56:08.732Z",
+  "exportedAt": "2026-08-02T21:04:36.348Z",
   "tables": {
     "siteSettings": [
       {
         "id": 2,
         "key": "siteName",
         "value": "عقارات الإسكندرية",
-        "updatedAt": "2026-08-02T13:34:05.432Z"
+        "updatedAt": "2026-08-02T20:54:55.712Z"
       },
       {
         "id": 3,
         "key": "siteNameEn",
         "value": "Aqarat Alexandria",
-        "updatedAt": "2026-08-02T13:34:05.436Z"
+        "updatedAt": "2026-08-02T20:54:55.717Z"
       },
       {
         "id": 4,
         "key": "logoUrl",
         "value": "",
-        "updatedAt": "2026-08-02T13:34:05.447Z"
+        "updatedAt": "2026-08-02T20:54:55.722Z"
       },
       {
         "id": 5,
         "key": "faviconUrl",
         "value": "",
-        "updatedAt": "2026-08-02T13:34:05.460Z"
+        "updatedAt": "2026-08-02T20:54:55.727Z"
       },
       {
         "id": 6,
         "key": "heroImage",
         "value": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1600&q=80",
-        "updatedAt": "2026-08-02T13:34:05.465Z"
+        "updatedAt": "2026-08-02T20:54:55.735Z"
       },
       {
         "id": 7,
         "key": "heroTitle",
         "value": "اعثر على عقارك المثالي في الإسكندرية",
-        "updatedAt": "2026-08-02T13:34:05.469Z"
+        "updatedAt": "2026-08-02T20:54:55.739Z"
       },
       {
         "id": 8,
         "key": "heroSubtitle",
         "value": "بيع وإيجار عقارات الإسكندرية — أسرع وأوثق",
-        "updatedAt": "2026-08-02T13:34:05.477Z"
+        "updatedAt": "2026-08-02T20:54:55.742Z"
       },
       {
         "id": 9,
         "key": "ctaText",
         "value": "نضمن لك أفضل العقارات بأفضل الأسعار في الإسكندرية",
-        "updatedAt": "2026-08-02T13:34:05.486Z"
+        "updatedAt": "2026-08-02T20:54:55.748Z"
       },
       {
         "id": 10,
         "key": "ctaButtonText",
         "value": "تصفح العقارات الآن",
-        "updatedAt": "2026-08-02T13:34:05.488Z"
+        "updatedAt": "2026-08-02T20:54:55.752Z"
       },
       {
         "id": 11,
         "key": "primaryColor",
         "value": "#0d9488",
-        "updatedAt": "2026-08-02T13:34:05.492Z"
+        "updatedAt": "2026-08-02T20:54:55.759Z"
       },
       {
         "id": 12,
         "key": "themePreset",
-        "value": "teal-sand",
-        "updatedAt": "2026-08-02T14:56:08.701Z"
+        "value": "royal-blue",
+        "updatedAt": "2026-08-02T21:03:54.415Z"
       },
       {
         "id": 13,
         "key": "aboutContent",
         "value": "نحن منصة عقارات الإسكندرية، الوجهة الأولى لبيع وشراء وإيجار العقارات في الإسكندرية. نربطك بأفضل العروض العقارية بسرعة وأمان وشفافية تامة.",
-        "updatedAt": "2026-08-02T13:34:05.499Z"
+        "updatedAt": "2026-08-02T20:54:55.775Z"
       },
       {
         "id": 14,
         "key": "contactEmail",
         "value": "info@aqaralex.com",
-        "updatedAt": "2026-08-02T13:34:05.503Z"
+        "updatedAt": "2026-08-02T20:54:55.780Z"
       },
       {
         "id": 15,
         "key": "contactPhone",
         "value": "+201000000000",
-        "updatedAt": "2026-08-02T13:34:05.509Z"
+        "updatedAt": "2026-08-02T20:54:55.785Z"
       },
       {
         "id": 16,
         "key": "contactWhatsapp",
         "value": "+201000000000",
-        "updatedAt": "2026-08-02T13:34:05.512Z"
+        "updatedAt": "2026-08-02T20:54:55.789Z"
       },
       {
         "id": 17,
         "key": "contactAddress",
         "value": "الإسكندرية، جمهورية مصر العربية",
-        "updatedAt": "2026-08-02T13:34:05.516Z"
+        "updatedAt": "2026-08-02T20:54:55.793Z"
       },
       {
         "id": 18,
         "key": "workingHours",
         "value": "السبت — الخميس، من 9 صباحاً حتى 9 مساءً",
-        "updatedAt": "2026-08-02T13:34:05.521Z"
+        "updatedAt": "2026-08-02T20:54:55.799Z"
       },
       {
         "id": 19,
         "key": "faqContent",
         "value": "[{\"q\":\"كيف أعرض عقاري على الموقع؟\",\"a\":\"سجّل كمزود، ثم أضف بيانات عقارك من لوحة التحكم — الأمر يستغرق دقائق فقط.\"},{\"q\":\"هل التسجيل مجاني؟\",\"a\":\"نعم، التسجيل الأساسي مجاني تماماً. تتوفر باقات مدفوعة لمزايا إضافية.\"},{\"q\":\"ما المناطق التي يغطيها الموقع؟\",\"a\":\"نغطي جميع أحياء الإسكندرية: المنتزه، شرق، وسط، الجمرك، العجمي، العامرية، الدخيلة، أبو قير، وبرج العرب.\"},{\"q\":\"كيف أتواصل مع المالك أو السمسار؟\",\"a\":\"يمكنك الاتصال مباشرة عبر الهاتف أو واتساب الظاهر في إعلان العقار.\"},{\"q\":\"هل الأسعار المعروضة قابلة للتفاوض؟\",\"a\":\"نعم، معظم الأسعار قابلة للتفاوض. تواصل مع المالك للاستفسار.\"},{\"q\":\"ما الفرق بين الإعلان العادي والمميز؟\",\"a\":\"الإعلان المميز يظهر في أعلى نتائج البحث وعلى الصفحة الرئيسية بشارة 'مميز'.\"}]",
-        "updatedAt": "2026-08-02T13:34:05.525Z"
+        "updatedAt": "2026-08-02T20:54:55.807Z"
       },
       {
         "id": 20,
         "key": "servicesModuleEnabled",
         "value": "true",
-        "updatedAt": "2026-08-02T13:34:05.532Z"
+        "updatedAt": "2026-08-02T20:54:55.813Z"
       },
       {
         "id": 21,
-        "key": "watermarkConfig",
-        "value": "{\"enabled\":true,\"type\":\"text\",\"text\":\"عقارات الإسكندرية\",\"textColor\":\"#ffffff\",\"fontSize\":32,\"imageUrl\":\"\",\"position\":\"bottom-right\",\"opacity\":70,\"scale\":30,\"padding\":20,\"repeat\":false}",
-        "updatedAt": "2026-08-02T13:45:19.440Z"
+        "key": "primaryColorHsl",
+        "value": "220 70% 45%",
+        "updatedAt": "2026-08-02T21:03:54.424Z"
       },
       {
         "id": 22,
-        "key": "primaryColorHsl",
-        "value": "180 65% 35%",
-        "updatedAt": "2026-08-02T14:56:08.707Z"
+        "key": "secondaryColorHsl",
+        "value": "220 30% 90%",
+        "updatedAt": "2026-08-02T21:03:54.433Z"
       },
       {
         "id": 23,
-        "key": "secondaryColorHsl",
-        "value": "35 50% 88%",
-        "updatedAt": "2026-08-02T14:56:08.712Z"
+        "key": "accentColorHsl",
+        "value": "35 85% 58%",
+        "updatedAt": "2026-08-02T21:03:54.440Z"
       },
       {
         "id": 24,
-        "key": "accentColorHsl",
-        "value": "25 80% 60%",
-        "updatedAt": "2026-08-02T14:56:08.716Z"
+        "key": "fontFamily",
+        "value": "Tajawal",
+        "updatedAt": "2026-08-02T21:03:54.447Z"
       },
       {
         "id": 25,
-        "key": "fontFamily",
-        "value": "Tajawal",
-        "updatedAt": "2026-08-02T14:56:08.721Z"
+        "key": "borderRadius",
+        "value": "0.25rem",
+        "updatedAt": "2026-08-02T21:03:54.453Z"
       },
       {
         "id": 26,
-        "key": "borderRadius",
-        "value": "0.25rem",
-        "updatedAt": "2026-08-02T14:56:08.725Z"
+        "key": "featuredSectionTitle",
+        "value": "اكتشف أفضل العقارات في الإسكندرية",
+        "updatedAt": "2026-08-02T21:04:36.293Z"
+      },
+      {
+        "id": 27,
+        "key": "featuredSectionSubtitle",
+        "value": "استعرض أحدث العقارات السكنية والتجارية وأفضل الفرص الاستثمارية في مدينة الإسكندرية.",
+        "updatedAt": "2026-08-02T21:04:36.310Z"
+      },
+      {
+        "id": 28,
+        "key": "featuredSectionTypes",
+        "value": "[\"all\"]",
+        "updatedAt": "2026-08-02T21:04:36.314Z"
+      },
+      {
+        "id": 29,
+        "key": "featuredSectionCount",
+        "value": "16",
+        "updatedAt": "2026-08-02T21:04:36.320Z"
+      },
+      {
+        "id": 30,
+        "key": "featuredSectionCustomCount",
+        "value": "12",
+        "updatedAt": "2026-08-02T21:04:36.325Z"
+      },
+      {
+        "id": 31,
+        "key": "featuredSectionColumns",
+        "value": "4",
+        "updatedAt": "2026-08-02T21:04:36.331Z"
+      },
+      {
+        "id": 32,
+        "key": "featuredSectionSort",
+        "value": "newest",
+        "updatedAt": "2026-08-02T21:04:36.336Z"
       }
     ]
   }
