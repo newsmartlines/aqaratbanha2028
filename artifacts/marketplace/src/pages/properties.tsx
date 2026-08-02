@@ -1745,7 +1745,7 @@ export default function PropertiesPage() {
                               <img src={p.img} alt={p.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = FALLBACK; }} />
                             </div>
                             <div className="p-2.5 flex-1 min-w-0">
-                              <p className="text-gray-900 font-extrabold text-sm leading-none mb-0.5">{p.price}</p>
+                              <p className="text-primary text-sm leading-none mb-0.5">{p.price}</p>
                               <p className="font-semibold text-gray-900 text-xs leading-snug mb-1 line-clamp-1">{p.title}</p>
                               <div className="flex items-center gap-1 text-gray-400 text-[10px] mb-1">
                                 <MapPin className="w-2.5 h-2.5 text-primary" /><span className="truncate">{p.location}</span>

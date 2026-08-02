@@ -106,7 +106,7 @@ function HoverCard({ property, visible, onNavigate }: {
             <p className="font-bold text-gray-900 text-xs leading-snug line-clamp-1 mb-1">
               {property.title}
             </p>
-            <p className="text-primary font-extrabold text-base leading-none mb-2 text-right">
+            <p className="text-primary text-base leading-none mb-2 text-right">
               {formatPrice(property.price, listType)}
             </p>
             <div className="flex items-center gap-3 text-[11px] text-gray-600 mb-2">
@@ -429,7 +429,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
 
                       {/* Price — right-aligned */}
                       <div className="mb-2 text-right">
-                        <span dir="ltr" className="inline-block text-black font-black text-xl leading-tight tracking-tight">
+                        <span dir="ltr" className="inline-block text-primary text-xl leading-tight tracking-tight">
                           {formatPrice(property.price, listType)}
                         </span>
                       </div>
