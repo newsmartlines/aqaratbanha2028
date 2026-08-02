@@ -1,9 +1,9 @@
-import { useRef } from "react";
+import { AlertCircle, ImagePlus, Loader2, X } from "lucide-react";
 import { UseFormRegister } from "react-hook-form";
-import { ImagePlus, Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { FormValues } from "../types";
+import type { FieldErrors } from "../use-step-validation";
 
 interface Step4MediaProps {
   v:                FormValues;
@@ -13,11 +13,25 @@ interface Step4MediaProps {
   fileInputRef:     React.RefObject<HTMLInputElement | null>;
   removeImage:      (url: string) => void;
   handleFileUpload: (files: FileList | null) => void;
+  fieldErrors?:     FieldErrors;
+}
+
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-1.5 flex items-center gap-1 text-sm text-red-600" role="alert">
+      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+      {msg}
+    </p>
+  );
 }
 
 export function Step4Media({
   v, register, isCompany, uploading, fileInputRef, removeImage, handleFileUpload,
+  fieldErrors = {},
 }: Step4MediaProps) {
+  const hasPhoneError = !!fieldErrors.phone;
+
   return (
     <div className="space-y-6">
       {/* صور العقار */}
@@ -84,18 +98,24 @@ export function Step4Media({
       {/* معلومات التواصل */}
       <div>
         <Label className="text-base font-bold mb-4 block">
-          معلومات التواصل <span className="text-red-500">*</span>
+          معلومات التواصل <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="sr-only"> (مطلوبة)</span>
         </Label>
         <div className="space-y-4">
-          <div>
+          <div data-field="phone">
             <Label htmlFor="f-phone" className="text-sm font-semibold mb-2 block">
-              رقم الهاتف <span className="text-red-500">*</span>
+              رقم الهاتف <span className="text-red-500" aria-hidden="true">*</span>
+              <span className="sr-only"> (مطلوب)</span>
             </Label>
             <Input
-              id="f-phone" placeholder="01XXXXXXXXX"
+              id="f-phone"
+              placeholder="01XXXXXXXXX"
               {...register("phone")}
-              className="h-11 rounded-xl" dir="ltr"
+              aria-invalid={hasPhoneError}
+              className={`h-11 rounded-xl${hasPhoneError ? " border-red-400 focus-visible:ring-red-400" : ""}`}
+              dir="ltr"
             />
+            <FieldError msg={fieldErrors.phone} />
           </div>
         </div>
       </div>

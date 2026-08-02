@@ -25,6 +25,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
     v,
     plans, plansLoading,
     amenitiesData, servicesData,
+    fieldErrors,
     set, setMainCategory, toggleArr, removeImage,
     handleFileUpload,
     canProceed,
@@ -117,7 +118,12 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
       {/* Step content */}
       <div className="pb-28">
         {step === 1 && (
-          <Step1Type v={v} set={set} onMainCategoryChange={setMainCategory} />
+          <Step1Type
+            v={v}
+            set={set}
+            onMainCategoryChange={setMainCategory}
+            fieldErrors={fieldErrors}
+          />
         )}
         {step === 2 && (
           <Step2Details
@@ -128,6 +134,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             isCompany={isCompany}
             amenitiesData={amenitiesData}
             servicesData={servicesData}
+            fieldErrors={fieldErrors}
           />
         )}
         {step === 3 && (
@@ -136,6 +143,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             set={set}
             register={register}
             setValue={setValue}
+            fieldErrors={fieldErrors}
           />
         )}
         {step === 4 && (
@@ -147,6 +155,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             fileInputRef={fileInputRef}
             removeImage={removeImage}
             handleFileUpload={handleFileUpload}
+            fieldErrors={fieldErrors}
           />
         )}
         {step === 5 && showPlans && (
@@ -200,8 +209,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             <button
               type="button"
               onClick={goNext}
-              disabled={!canProceed()}
-              className="flex items-center gap-1 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 rounded-lg transition-colors shrink-0"
+              className="flex items-center gap-1 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 px-6 py-2.5 rounded-lg transition-colors shrink-0"
             >
               التالي
               <ChevronLeft className="w-4 h-4 rotate-180" />
@@ -210,7 +218,7 @@ export function PropertyFormWizard({ mode, backPath, showPlans = false }: Proper
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!canProceed() || submitting}
+              disabled={submitting}
               className={`flex items-center gap-2 text-sm font-bold text-white px-6 py-2.5 rounded-lg transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${submitBg}`}
             >
               {submitLabel()}

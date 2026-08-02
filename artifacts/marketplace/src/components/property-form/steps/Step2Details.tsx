@@ -1,4 +1,5 @@
 import { UseFormRegister } from "react-hook-form";
+import { AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +10,7 @@ import { TileButton } from "../shared/TileButton";
 import { ADVERTISER_TYPES, FINISHING, CONDITIONS, DIRECTIONS } from "../constants";
 import { LAND_TYPE_OPTIONS, getPropertyTypeConfig } from "../property-type-config";
 import type { FormValues, DynFeature } from "../types";
+import type { FieldErrors } from "../use-step-validation";
 
 interface Step2DetailsProps {
   v:             FormValues;
@@ -18,11 +20,29 @@ interface Step2DetailsProps {
   isCompany:     boolean;
   amenitiesData: DynFeature[];
   servicesData:  DynFeature[];
+  fieldErrors?:  FieldErrors;
+}
+
+/** Inline validation error displayed below a field */
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-1.5 flex items-center gap-1 text-sm text-red-600" role="alert">
+      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+      {msg}
+    </p>
+  );
+}
+
+/** Returns Tailwind border classes — red when field has an error */
+function inputCls(base: string, hasError: boolean) {
+  return `${base} ${hasError ? "border-red-400 focus-visible:ring-red-400" : ""}`;
 }
 
 export function Step2Details({
   v, set, register, toggleArr,
   isCompany, amenitiesData, servicesData,
+  fieldErrors = {},
 }: Step2DetailsProps) {
   const cfg = getPropertyTypeConfig(v.mainCategory);
 
@@ -51,17 +71,23 @@ export function Step2Details({
       )}
 
       {/* عنوان الإعلان */}
-      <div>
+      <div data-field="title">
         <Label htmlFor="f-title" className="text-base font-bold mb-2 block">
-          عنوان الإعلان <span className="text-red-500">*</span>
+          عنوان الإعلان <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="sr-only"> (مطلوب)</span>
         </Label>
         <Input
           id="f-title"
           placeholder="مثال: شقة 3 غرف للبيع في سيدي بشر بالإسكندرية"
           {...register("title")}
-          className="h-12 rounded-xl text-base"
+          className={inputCls("h-12 rounded-xl text-base", !!fieldErrors.title)}
+          aria-invalid={!!fieldErrors.title}
+          aria-describedby={fieldErrors.title ? "err-title" : undefined}
         />
-        <p className="text-xs text-muted-foreground mt-1.5">عنوان واضح يجذب أكثر مشترين</p>
+        {fieldErrors.title
+          ? <FieldError msg={fieldErrors.title} />
+          : <p className="text-xs text-muted-foreground mt-1.5">عنوان واضح يجذب أكثر مشترين</p>
+        }
       </div>
 
       {/* ── Company: اسم المشروع ─────────────────────────── */}
@@ -83,13 +109,28 @@ export function Step2Details({
           <Label htmlFor="f-price" className="text-sm font-semibold mb-2 block">
             {v.listingType === "rent" ? "الإيجار (ج.م)" : "السعر (ج.م)"}
           </Label>
-          <Input id="f-price" type="number" placeholder="850,000" {...register("price")} className="h-11 rounded-xl" />
+          <Input
+            id="f-price"
+            type="number"
+            placeholder="850,000"
+            {...register("price")}
+            className="h-11 rounded-xl"
+          />
         </div>
-        <div>
+        <div data-field="area">
           <Label htmlFor="f-area" className="text-sm font-semibold mb-2 block">
-            المساحة (م²) <span className="text-red-500">*</span>
+            المساحة (م²) <span className="text-red-500" aria-hidden="true">*</span>
+            <span className="sr-only"> (مطلوب)</span>
           </Label>
-          <Input id="f-area" type="number" placeholder="120" {...register("area")} className="h-11 rounded-xl" />
+          <Input
+            id="f-area"
+            type="number"
+            placeholder="120"
+            {...register("area")}
+            className={inputCls("h-11 rounded-xl", !!fieldErrors.area)}
+            aria-invalid={!!fieldErrors.area}
+          />
+          <FieldError msg={fieldErrors.area} />
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import type { FormMode, FormValues, DynFeature } from "./types";
 import { STEPS_CONFIG, LAND_CATEGORIES } from "./constants";
 import { getPropertyTypeConfig } from "./property-type-config";
+import { validateStep, scrollToFirstError, type FieldErrors } from "./use-step-validation";
 
 export function usePropertyForm(
   mode: FormMode,
@@ -29,6 +30,7 @@ export function usePropertyForm(
   const [uploading, setUploading]   = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
   const [showPayment, setShowPayment]   = useState(false);
+  const [fieldErrors, setFieldErrors]   = useState<FieldErrors>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const baseDefaults: FormValues = {
@@ -79,7 +81,17 @@ export function usePropertyForm(
     staleTime: 5 * 60_000,
   });
 
-  const set = (key: keyof FormValues, val: any) => setValue(key, val);
+  const set = (key: keyof FormValues, val: any) => {
+    setValue(key, val);
+    // Clear error for this field immediately when user sets a value
+    if (fieldErrors[key]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+  };
 
   const setMainCategory = (cat: string) => {
     setValue("mainCategory", cat);
@@ -87,14 +99,37 @@ export function usePropertyForm(
       setValue("features", []);
       setValue("nearbyServices", []);
     }
-    // If the group changed (not a land group), clear land-specific fields
     if (cat !== "land") {
       setValue("landType", "");
       setValue("landWidth", "");
       setValue("landDepth", "");
       setValue("buildRatio", "");
     }
+    // Clear mainCategory error when category is set
+    if (fieldErrors.mainCategory) {
+      setFieldErrors((prev) => { const n = { ...prev }; delete n.mainCategory; return n; });
+    }
   };
+
+  // Auto-clear errors as user fills fields (for react-hook-form registered inputs)
+  useEffect(() => {
+    if (Object.keys(fieldErrors).length === 0) return;
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const key of Object.keys(next) as (keyof FormValues)[]) {
+        const val = v[key];
+        const valid =
+          (typeof val === "string" && val.trim() !== "") ||
+          (Array.isArray(val) && val.length > 0);
+        if (valid) {
+          delete next[key];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [v]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleArr = (key: "features" | "nearbyServices", val: string) => {
     const arr = getValues(key) as string[];
@@ -120,13 +155,32 @@ export function usePropertyForm(
     setUploading(false);
   };
 
+  /** Quick check — used to show a visual ready indicator on the step bar. Does NOT show errors. */
   const canProceed = (): boolean => {
     if (isEditMode) return !!v.title && !!v.area && !!v.phone;
     if (step === 1) return !!v.listingType && !!v.mainCategory;
     if (step === 2) return !!v.title && !!v.area;
-    if (step === 3) return !!v.city;
+    if (step === 3) return !!v.district; // fixed: was v.city
     if (step === 4) return !!v.phone;
     if (step === 5) return !!selectedPlan;
+    return true;
+  };
+
+  /**
+   * Validate the current step, show per-field errors, scroll to first invalid field.
+   * Returns true if the step is valid.
+   */
+  const validateCurrentStep = (): boolean => {
+    if (isEditMode) return true; // edit mode uses a flat form — no per-step validation
+    if (step === 5) return !!selectedPlan;
+
+    const errors = validateStep(step, v, cfg);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      scrollToFirstError(errors);
+      return false;
+    }
+    setFieldErrors({});
     return true;
   };
 
@@ -187,6 +241,9 @@ export function usePropertyForm(
   };
 
   const handleSubmit = async () => {
+    // Validate the last step before submitting
+    if (!validateCurrentStep()) return;
+
     if (!isEditMode && showPlans) {
       if (!selectedPlan) return;
       if (parseFloat(selectedPlan.price) > 0) {
@@ -243,11 +300,21 @@ export function usePropertyForm(
     setStep(1);
     setSelectedPlan(null);
     setError(null);
+    setFieldErrors({});
     reset(baseDefaults);
   };
 
-  const goBack  = () => (step > 1 ? setStep(step - 1) : setLocation(backPath));
-  const goNext  = () => setStep(step + 1);
+  const goBack  = () => {
+    setFieldErrors({});
+    if (step > 1) setStep(step - 1);
+    else setLocation(backPath);
+  };
+
+  const goNext  = () => {
+    if (!validateCurrentStep()) return;
+    setStep(step + 1);
+  };
+
   const isLastStep = isEditMode ? true : step === STEPS.length;
 
   return {
@@ -270,6 +337,7 @@ export function usePropertyForm(
     plans, plansLoading,
     amenitiesData,
     servicesData,
+    fieldErrors,
     set, setMainCategory, toggleArr, removeImage,
     handleFileUpload,
     canProceed,

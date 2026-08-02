@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import {
   Home, Building2, Trees, Briefcase, Warehouse, ShoppingBag,
   Layers, Stethoscope, Store, Utensils, Crown, CheckCircle2,
-  ArrowLeft, Lock, Tag, ChevronLeft, Map,
+  ArrowLeft, Lock, Tag, ChevronLeft, Map, AlertCircle,
 } from "lucide-react";
 import { PROPERTY_GROUPS } from "../constants";
 import type { FormValues } from "../types";
+import type { FieldErrors } from "../use-step-validation";
 
 /* ─── European colour palette per group ────────────────────────────────── */
 const GROUP_PALETTE: Record<string, {
@@ -183,9 +184,20 @@ export interface PropertyTypeSelectorProps {
   v: FormValues;
   set: (key: keyof FormValues, val: any) => void;
   onMainCategoryChange?: (cat: string) => void;
+  fieldErrors?: FieldErrors;
 }
 
-export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyTypeSelectorProps) {
+function InlineError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-2 flex items-center gap-1 text-sm text-red-600" role="alert">
+      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+      {msg}
+    </p>
+  );
+}
+
+export function PropertyTypeSelector({ v, set, onMainCategoryChange, fieldErrors = {} }: PropertyTypeSelectorProps) {
   const phase = usePhase(v);
   const activeGroup = PROPERTY_GROUPS.find((g) => g.value === v.propertyGroup);
   const pal = activeGroup ? GROUP_PALETTE[activeGroup.value] : undefined;
@@ -264,8 +276,8 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
   /* ── BLOCK 2 ── */
   const isBlock2Locked = phase < 1;
   const block2 = (
-    <div className="rounded-xl border bg-white p-3.5 transition-all duration-300"
-      style={{ borderStyle: isBlock2Locked ? "dashed" : "solid", borderColor: phase >= 2 ? (pal?.activeBorder ?? "#d1d5db") : "#e5e7eb" }}>
+    <div data-field="mainCategory" className="rounded-xl border bg-white p-3.5 transition-all duration-300"
+      style={{ borderStyle: isBlock2Locked ? "dashed" : "solid", borderColor: phase >= 2 ? (pal?.activeBorder ?? "#d1d5db") : fieldErrors.mainCategory ? "#f87171" : "#e5e7eb" }}>
       <StepHeader n={2} label="نوع الوحدة" done={phase >= 2} active={phase === 1}
         accent={pal?.activeBorder} onReset={phase >= 2 ? handleSubtypeReset : undefined} />
 
@@ -311,6 +323,7 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
           </FadeIn>
         );
       })()}
+      <InlineError msg={fieldErrors.mainCategory} />
     </div>
   );
 
@@ -322,8 +335,8 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
   ];
 
   const block3 = (
-    <div className="rounded-xl border bg-white p-3.5 transition-all duration-300"
-      style={{ borderStyle: isBlock3Locked ? "dashed" : "solid", borderColor: phase >= 3 ? "#d1d5db" : "#e5e7eb" }}>
+    <div data-field="listingType" className="rounded-xl border bg-white p-3.5 transition-all duration-300"
+      style={{ borderStyle: isBlock3Locked ? "dashed" : "solid", borderColor: phase >= 3 ? "#d1d5db" : fieldErrors.listingType ? "#f87171" : "#e5e7eb" }}>
       <StepHeader n={3} label="نوع الإعلان" done={phase >= 3} active={phase === 2}
         onReset={phase >= 3 ? () => set("listingType", "") : undefined} />
 
@@ -361,6 +374,7 @@ export function PropertyTypeSelector({ v, set, onMainCategoryChange }: PropertyT
           </div>
         </FadeIn>
       )}
+      <InlineError msg={fieldErrors.listingType} />
     </div>
   );
 

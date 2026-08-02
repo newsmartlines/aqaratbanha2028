@@ -664,6 +664,8 @@ router.post("/properties", async (req, res) => {
     if (!title) return res.status(400).json({ success: false, error: "العنوان مطلوب" });
     if (!mainCategory) return res.status(400).json({ success: false, error: "التصنيف الرئيسي مطلوب" });
     if (!listingType) return res.status(400).json({ success: false, error: "نوع القائمة مطلوب" });
+    if (!area) return res.status(400).json({ success: false, error: "المساحة مطلوبة" });
+    if (!phone) return res.status(400).json({ success: false, error: "رقم الهاتف مطلوب" });
     if (!providerId && !session.userId) return res.status(400).json({ success: false, error: "معرّف المزود أو المستخدم مطلوب" });
 
     // ── Subscription quota check ──────────────────────────────────────────────
