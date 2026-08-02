@@ -248,6 +248,7 @@ export default function Home() {
   const [expandedCat, setExpandedCat] = useState<number | null>(null);
   /* ─── Real-estate hero search ─── */
   const [listingType, setListingType] = useState<"للبيع" | "للإيجار">("للبيع");
+  const [listingTypeChosen, setListingTypeChosen] = useState(false);
   const [heroSubcategoryId, setHeroSubcategoryId] = useState<string>("all");
 
   const [priceRange, setPriceRange] = useState<string>("all");
@@ -369,7 +370,7 @@ export default function Home() {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery);
     if (selectedCategory && selectedCategory !== "all") params.set("mainCategory", selectedCategory);
-    if (listingType) params.set("type", listingType);
+    if (listingTypeChosen && listingType) params.set("type", listingType);
     if (priceRange && priceRange !== "all") params.set("price", priceRange);
     if (heroRegionId != null) params.set("regionId", String(heroRegionId));
     if (heroCityName && heroCityName !== "__all__") params.set("city", heroCityName);
@@ -459,24 +460,34 @@ export default function Home() {
             >
               {/* Tabs */}
               <div className="relative flex rounded-t-2xl overflow-hidden">
-                {(["للبيع", "للإيجار"] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setListingType(tab)}
-                    className={`relative flex-1 py-3.5 text-sm font-bold transition-colors z-10 ${
-                      listingType === tab ? "text-primary-foreground" : "text-gray-500 hover:text-gray-700 bg-gray-50"
-                    }`}
-                  >
-                    {listingType === tab && (
-                      <motion.span
-                        layoutId="tab-indicator"
-                        className="absolute inset-0 bg-primary"
-                        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-                      />
-                    )}
-                    <span className="relative z-10">{tab}</span>
-                  </button>
-                ))}
+                {(["للبيع", "للإيجار"] as const).map(tab => {
+                  const isActive = listingTypeChosen && listingType === tab;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => {
+                        if (listingTypeChosen && listingType === tab) {
+                          setListingTypeChosen(false); // deselect → no type filter
+                        } else {
+                          setListingType(tab);
+                          setListingTypeChosen(true);
+                        }
+                      }}
+                      className={`relative flex-1 py-3.5 text-sm font-bold transition-colors z-10 ${
+                        isActive ? "text-primary-foreground" : "text-gray-500 hover:text-gray-700 bg-gray-50"
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="tab-indicator"
+                          className="absolute inset-0 bg-primary"
+                          transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                        />
+                      )}
+                      <span className="relative z-10">{tab}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* ── Main search row ── */}
