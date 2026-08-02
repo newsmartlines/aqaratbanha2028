@@ -1096,17 +1096,39 @@ export default function SearchPage() {
           {/* Row 2: Company logo + name + verified */}
           {p.agentName && (
             <div className="flex items-center gap-1.5 mb-2">
-              {p.agentLogo && (
-                <div className="h-5 px-1.5 rounded border border-zinc-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 64 }}>
-                  <img src={p.agentLogo} alt={p.agentName} className="h-3.5 w-auto object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                </div>
+              {p.agentLogo ? (
+                /* ── Clickable rectangular logo badge ── */
+                <button
+                  type="button"
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                  className={`h-8 px-2 rounded-md border border-zinc-200 bg-white flex items-center justify-center shrink-0 transition-all
+                    ${p.providerId ? "cursor-pointer hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10" : "cursor-default"}`}
+                  style={{ minWidth: 56, maxWidth: 96 }}
+                  title={p.providerId ? `عرض صفحة ${p.agentName}` : p.agentName ?? ""}
+                >
+                  <img
+                    src={p.agentLogo}
+                    alt={p.agentName}
+                    className="h-5 w-auto object-contain"
+                    onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+                  />
+                </button>
+              ) : (
+                <span
+                  className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                >
+                  {p.agentName}
+                </span>
               )}
-              <span
-                className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
-                onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
-              >
-                {p.agentName}
-              </span>
+              {p.agentLogo && (
+                <span
+                  className={`text-[11px] font-semibold text-zinc-500 truncate ${p.providerId ? "cursor-pointer hover:text-primary transition-colors" : ""}`}
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                >
+                  {p.agentName}
+                </span>
+              )}
               {p.verified && (
                 <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 shrink-0">
                   <BadgeCheck className="w-2.5 h-2.5 text-teal-500" /> موثّق
@@ -1273,11 +1295,23 @@ export default function SearchPage() {
           </div>
           <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5 gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              {p.agentLogo && (
-                <div className="h-5 px-1 rounded border border-zinc-200 bg-white flex items-center justify-center shrink-0" style={{ maxWidth: 60 }}>
-                  <img src={p.agentLogo} alt={p.agentName ?? ""} className="h-3.5 w-auto object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                </div>
-              )}
+              {p.agentLogo ? (
+                <button
+                  type="button"
+                  onClick={p.providerId ? e => { e.stopPropagation(); setLocation(`/provider/${p.providerId}`); } : undefined}
+                  className={`h-7 px-2 rounded-md border border-zinc-200 bg-white flex items-center justify-center shrink-0 transition-all
+                    ${p.providerId ? "cursor-pointer hover:border-primary/50 hover:shadow-sm hover:shadow-primary/10" : "cursor-default"}`}
+                  style={{ minWidth: 48, maxWidth: 88 }}
+                  title={p.providerId ? `عرض صفحة ${p.agentName}` : p.agentName ?? ""}
+                >
+                  <img
+                    src={p.agentLogo}
+                    alt={p.agentName ?? ""}
+                    className="h-4 w-auto object-contain"
+                    onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+                  />
+                </button>
+              ) : null}
               <span className="flex items-center gap-1 text-[11px] text-zinc-500"><Clock className="w-2.5 h-2.5" />{timeAgo(p.createdAt)}</span>
             </div>
             <span className="text-[11px] text-zinc-500 font-semibold shrink-0">{(p.viewCount ?? 0).toLocaleString("ar-EG")} مشاهدات</span>
