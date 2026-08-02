@@ -1038,7 +1038,7 @@ export default function SearchPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, delay: Math.min(idx, 5) * 0.04 }}
-        className={`group relative bg-white rounded-lg overflow-hidden cursor-pointer flex flex-row h-[176px]
+        className={`group relative bg-white overflow-hidden cursor-pointer flex flex-row h-[176px]
           border transition-colors duration-150
           ${p.activePromotion ? "" : p.featured
             ? "border-amber-200 hover:border-amber-300"
@@ -1216,7 +1216,7 @@ export default function SearchPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: Math.min(idx, 6) * 0.06 }}
         onClick={() => setLocation(`/property/${p.id}`)}
-        className={`group bg-white rounded-xl overflow-hidden cursor-pointer transition-colors duration-150
+        className={`group bg-white overflow-hidden cursor-pointer transition-colors duration-150
           ${p.activePromotion ? "" : p.featured ? "border border-amber-200 hover:border-amber-300"
           : p.urgent ? "border border-red-200 hover:border-red-300"
           : "border border-zinc-200/80 hover:border-zinc-300"}`}

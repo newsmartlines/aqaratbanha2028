@@ -114,7 +114,7 @@ function SmallPropertyCard({ p, onClick }: { p: SmallProperty; onClick: () => vo
     <PropertyTooltip property={{ id: p.id, title: p.title, price: p.price, listingType: p.listingType, district: p.district, rooms: p.rooms, area: p.area ? String(p.area) : undefined, images: p.images, mainCategory: p.mainCategory ?? undefined }}>
     <div
       onClick={onClick}
-      className="w-56 shrink-0 bg-white rounded-lg border border-slate-200/80 overflow-hidden cursor-pointer transition-colors duration-150 hover:border-slate-300"
+      className="w-56 shrink-0 bg-white border border-slate-200/80 overflow-hidden cursor-pointer transition-colors duration-150 hover:border-slate-300"
     >
       <div className="relative h-36 overflow-hidden bg-slate-100">
         <img src={thumb} alt={p.title} loading="lazy"
