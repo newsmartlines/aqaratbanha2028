@@ -768,7 +768,7 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-8">
         {/* ── Top action bar ── */}
         <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
           <div>
