@@ -7,6 +7,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { TileButton } from "../shared/TileButton";
+import { CounterStepper } from "../shared/CounterStepper";
 import { ADVERTISER_TYPES, FINISHING, FURNISHED_OPTIONS, CONDITIONS, DIRECTIONS } from "../constants";
 import { LAND_TYPE_OPTIONS, getPropertyTypeConfig } from "../property-type-config";
 import type { FormValues, DynFeature } from "../types";
@@ -185,48 +186,45 @@ export function Step2Details({
       {/* ── تفاصيل الوحدة (الغرف والحمامات...) ─────────────── */}
       {(cfg.showRooms || cfg.showBathrooms || cfg.showFloor) && (
         <div>
-          <Label className="text-sm font-semibold mb-3 block">تفاصيل الوحدة</Label>
-          <div className={`grid gap-3 ${
-            [cfg.showRooms, cfg.showBathrooms, cfg.showFloor].filter(Boolean).length === 3
-              ? "grid-cols-3"
-              : [cfg.showRooms, cfg.showBathrooms, cfg.showFloor].filter(Boolean).length === 2
-              ? "grid-cols-2"
-              : "grid-cols-1 max-w-[33%]"
-          }`}>
+          <Label className="text-sm font-semibold mb-1 block">تفاصيل الوحدة</Label>
+          <div className="rounded-2xl border border-border/70 px-4 pt-1 pb-0">
             {cfg.showRooms && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1.5">{cfg.roomsLabel}</p>
-                <Input type="number" placeholder="3" {...register("rooms")} className="h-11 rounded-xl text-center" />
-              </div>
+              <CounterStepper
+                label={cfg.roomsLabel}
+                value={v.rooms}
+                onChange={(val) => set("rooms", val)}
+                min={0} max={20}
+              />
             )}
             {cfg.showBathrooms && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1.5">الحمامات</p>
-                <Input type="number" placeholder="2" {...register("bathrooms")} className="h-11 rounded-xl text-center" />
-              </div>
+              <CounterStepper
+                label="الحمامات"
+                value={v.bathrooms}
+                onChange={(val) => set("bathrooms", val)}
+                min={0} max={10}
+              />
             )}
             {cfg.showFloor && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1.5">{cfg.floorLabel}</p>
-                <Input type="number" placeholder="3" {...register("floor")} className="h-11 rounded-xl text-center" />
-              </div>
+              <CounterStepper
+                label={cfg.floorLabel}
+                value={v.floor}
+                onChange={(val) => set("floor", val)}
+                min={0} max={60}
+              />
+            )}
+            {cfg.showTotalFloors && (
+              <CounterStepper
+                label="إجمالي الأدوار"
+                value={v.totalFloors}
+                onChange={(val) => set("totalFloors", val)}
+                min={1} max={60}
+              />
             )}
           </div>
-
-          {(cfg.showTotalFloors || (isCompany && cfg.showBuildYear)) && (
-            <div className={`grid gap-3 mt-3 ${isCompany && cfg.showBuildYear && cfg.showTotalFloors ? "grid-cols-2" : "grid-cols-1 max-w-[33%]"}`}>
-              {cfg.showTotalFloors && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">إجمالي الأدوار</p>
-                  <Input type="number" placeholder="10" {...register("totalFloors")} className="h-11 rounded-xl text-center" />
-                </div>
-              )}
-              {isCompany && cfg.showBuildYear && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
-                  <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl text-center" />
-                </div>
-              )}
+          {isCompany && cfg.showBuildYear && (
+            <div className="mt-3">
+              <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
+              <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl max-w-[140px]" />
             </div>
           )}
         </div>

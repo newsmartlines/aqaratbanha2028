@@ -9,6 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { FormSection } from "./shared/FormSection";
+import { CounterStepper } from "./shared/CounterStepper";
 import { PropertyTypeSelector } from "./shared/PropertyTypeSelector";
 import { FeatureIcon } from "@/components/FeatureIcon";
 import { DynamicFilterPanel } from "./DynamicFilterPanel";
@@ -389,39 +390,47 @@ export function PropertyFormFull({ mode, backPath, showPlans = false, editProper
             {/* الغرف / الحمامات / الطابق — للوحدات فقط */}
             {(cfg.showRooms || cfg.showBathrooms || cfg.showFloor) && (
               <div>
-                <Label className="text-sm font-semibold mb-2 block">تفاصيل الوحدة</Label>
-                <div className="grid grid-cols-3 gap-3">
+                <Label className="text-sm font-semibold mb-1 block">تفاصيل الوحدة</Label>
+                <div className="rounded-2xl border border-border/70 px-4 pt-1 pb-0">
                   {cfg.showRooms && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">{cfg.roomsLabel}</p>
-                      <Input type="number" placeholder="3" {...register("rooms")} className="h-11 rounded-xl text-center" />
-                    </div>
+                    <CounterStepper
+                      label={cfg.roomsLabel}
+                      value={v.rooms}
+                      onChange={(val) => set("rooms", val)}
+                      min={0} max={20}
+                    />
                   )}
                   {cfg.showBathrooms && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">الحمامات</p>
-                      <Input type="number" placeholder="2" {...register("bathrooms")} className="h-11 rounded-xl text-center" />
-                    </div>
+                    <CounterStepper
+                      label="الحمامات"
+                      value={v.bathrooms}
+                      onChange={(val) => set("bathrooms", val)}
+                      min={0} max={10}
+                    />
                   )}
                   {cfg.showFloor && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">{cfg.floorLabel}</p>
-                      <Input type="number" placeholder="3" {...register("floor")} className="h-11 rounded-xl text-center" />
-                    </div>
+                    <CounterStepper
+                      label={cfg.floorLabel}
+                      value={v.floor}
+                      onChange={(val) => set("floor", val)}
+                      min={0} max={60}
+                    />
                   )}
                   {cfg.showTotalFloors && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">إجمالي الأدوار</p>
-                      <Input type="number" placeholder="10" {...register("totalFloors")} className="h-11 rounded-xl text-center" />
-                    </div>
-                  )}
-                  {isCompany && cfg.showBuildYear && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
-                      <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl text-center" />
-                    </div>
+                    <CounterStepper
+                      label="إجمالي الأدوار"
+                      value={v.totalFloors}
+                      onChange={(val) => set("totalFloors", val)}
+                      min={1} max={60}
+                    />
                   )}
                 </div>
+                {isCompany && cfg.showBuildYear && (
+                  <div className="mt-3">
+                    <p className="text-xs text-muted-foreground mb-1.5">سنة البناء</p>
+                    <Input type="number" placeholder="2022" {...register("buildYear")} className="h-11 rounded-xl max-w-[140px]" />
+                  </div>
+                )}
               </div>
             )}
           </div>
