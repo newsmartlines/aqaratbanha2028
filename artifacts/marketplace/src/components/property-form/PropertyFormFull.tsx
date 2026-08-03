@@ -18,7 +18,7 @@ import { PaymentDialog } from "./shared/PaymentDialog";
 import { Step5Plans } from "./steps/Step5Plans";
 import { usePropertyForm } from "./use-property-form";
 import {
-  ADVERTISER_TYPES, FINISHING, CONDITIONS,
+  ADVERTISER_TYPES, FINISHING, FURNISHED_OPTIONS, CONDITIONS,
   DIRECTIONS,
 } from "./constants";
 
@@ -431,34 +431,45 @@ export function PropertyFormFull({ mode, backPath, showPlans = false, editProper
         {(cfg.showFinishing || cfg.showFurnished || (isCompany && (cfg.showCondition || cfg.showDirection)) || (v.listingType === "rent" && cfg.showPaymentMethod) || cfg.showFacade) && (
           <FormSection title="التفاصيل الإضافية">
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-4">
                 {cfg.showFinishing && (
                   <div>
-                    <Label className="text-sm font-semibold mb-1.5 block">حالة التشطيب</Label>
-                    <Select value={v.finishing} onValueChange={(val) => set("finishing", val)}>
-                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
-                      <SelectContent>
-                        {FINISHING.map((f) => (
-                          <SelectItem key={f.value} value={f.value}>
-                            <span className="font-medium">{f.label}</span>
-                            <span className="text-xs text-muted-foreground mr-2">{f.desc}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-sm font-semibold mb-2 block">حالة التشطيب</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {FINISHING.map((f) => (
+                        <button
+                          key={f.value} type="button"
+                          onClick={() => set("finishing", f.value)}
+                          className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all text-center ${
+                            v.finishing === f.value
+                              ? "border-teal-600 bg-teal-50 text-teal-700"
+                              : "border-border hover:border-teal-300 hover:bg-secondary/40"
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {cfg.showFurnished && (
                   <div>
-                    <Label className="text-sm font-semibold mb-1.5 block">الأثاث</Label>
-                    <Select value={v.furnished} onValueChange={(val) => set("furnished", val)}>
-                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="اختر..." /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="furnished">مفروشة بالكامل</SelectItem>
-                        <SelectItem value="semi_furnished">نصف مفروشة</SelectItem>
-                        <SelectItem value="unfurnished">غير مفروشة</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-sm font-semibold mb-2 block">الأثاث</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {FURNISHED_OPTIONS.map((f) => (
+                        <button
+                          key={f.value} type="button"
+                          onClick={() => set("furnished", f.value)}
+                          className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition-all text-center ${
+                            v.furnished === f.value
+                              ? "border-teal-600 bg-teal-50 text-teal-700"
+                              : "border-border hover:border-teal-300 hover:bg-secondary/40"
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {isCompany && cfg.showCondition && (

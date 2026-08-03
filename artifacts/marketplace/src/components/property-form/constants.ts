@@ -72,6 +72,12 @@ export const FINISHING = [
   { value: "unfinished",    label: "بدون تشطيب", desc: "هيكل فقط" },
 ];
 
+export const FURNISHED_OPTIONS = [
+  { value: "furnished",      label: "مفروشة بالكامل" },
+  { value: "semi_furnished", label: "نصف مفروشة" },
+  { value: "unfurnished",    label: "غير مفروشة" },
+];
+
 export const CONDITIONS = [
   { value: "new",                label: "جديد / لم يُسكن" },
   { value: "excellent",          label: "ممتاز" },
