@@ -53,14 +53,12 @@ const dict = {
   days2:     { ar: "منذ يومين",   en: "2 days ago" },
 };
 
-// Real estate property type categories (Arabic labels)
+// Real estate main-category slugs (must match DB mainCategory values)
 const PROPERTY_TYPES = [
-  { key: "شقة",       label: { ar: "شقق",           en: "Apartments" } },
-  { key: "فيلا",      label: { ar: "فيلل",           en: "Villas" } },
-  { key: "أرض",       label: { ar: "أراضي",          en: "Land" } },
-  { key: "محل",       label: { ar: "محلات تجارية",   en: "Commercial" } },
-  { key: "مكتب",      label: { ar: "مكاتب",          en: "Offices" } },
-  { key: "other",     label: { ar: "أخرى",           en: "Other" } },
+  { key: "residential", label: { ar: "سكني",   en: "Residential" } },
+  { key: "commercial",  label: { ar: "تجاري",  en: "Commercial"  } },
+  { key: "land",        label: { ar: "أراضي",  en: "Land"        } },
+  { key: "industrial",  label: { ar: "صناعي",  en: "Industrial"  } },
 ];
 
 const PIE_COLORS = ["#0d9488", "#0284c7", "#8b5cf6", "#f59e0b", "#e11d48", "#64748b"];
@@ -264,7 +262,7 @@ export default function AdminDashboard() {
   // Property type distribution from API or fallback
   const typeData = (stats?.topCategories ?? []).length > 0
     ? stats!.topCategories.slice(0, 6).map((r, i) => ({
-        name: PROPERTY_TYPES.find(p => r.category?.includes(p.key))?.label.ar ?? r.category,
+        name: PROPERTY_TYPES.find(p => p.key === r.category)?.label.ar ?? r.category,
         value: r.count,
         color: PIE_COLORS[i % PIE_COLORS.length],
       }))

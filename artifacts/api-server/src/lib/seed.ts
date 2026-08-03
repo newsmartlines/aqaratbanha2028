@@ -591,7 +591,7 @@ async function seedProperties() {
     {
       providerId: pid(0), title: "شقة 3 غرف للبيع في سيدي بشر - موقع مميز",
       description: "شقة فاخرة مساحة 120 متر في سيدي بشر، تشطيب سوبر لوكس، 3 غرف نوم، 2 حمام، مطبخ راقي. الطابق الثالث بمصعد. بالقرب من البحر وكل الخدمات.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "1200000", area: "120", rooms: 3, bathrooms: 2, floor: 3, totalFloors: 8,
       finishing: "مشطب", furnished: "غير مفروش", paymentMethod: "نقدي أو تقسيط",
       district: "سيدي بشر", address: "سيدي بشر", regionId: alexR, cityId: monC,
@@ -602,7 +602,7 @@ async function seedProperties() {
     {
       providerId: pid(1), title: "شقة 2 غرف سوبر لوكس للبيع - كليوباترا",
       description: "شقة سوبر لوكس 95 متر، دور خامس بمصعد، تشطيب أوروبي راقي. 2 غرف نوم وريسيبشن. قريبة من النيل ومن كل المواصلات. مناسبة للشباب والعائلات الصغيرة.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "650000", area: "95", rooms: 2, bathrooms: 1, floor: 5, totalFloors: 10,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "كليوباترا", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -613,7 +613,7 @@ async function seedProperties() {
     {
       providerId: pid(2), title: "شقة 4 غرف بموقع مميز - سموحة",
       description: "شقة كبيرة 170 متر، 4 غرف نوم، 2 حمام، مطبخ كبير، ريسيبشن وصالة. دور ثاني لا يعلوه دور. مناسبة للعائلات الكبيرة. قريبة من الخدمات والمواصلات.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "1200000", area: "170", rooms: 4, bathrooms: 2, floor: 2, totalFloors: 6,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "سموحة", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -624,7 +624,7 @@ async function seedProperties() {
     {
       providerId: pid(3), title: "شقة 3 غرف تشطيب كامل - رشدي",
       description: "شقة 130 متر بتشطيب كامل ونظيف، 3 غرف نوم واسعة، 2 حمام، مطبخ أمريكي، ريسيبشن فاخر. المنطقة هادئة وشعبية ومريحة.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "720000", area: "130", rooms: 3, bathrooms: 2, floor: 1, totalFloors: 5,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
@@ -635,7 +635,7 @@ async function seedProperties() {
     {
       providerId: pid(4), title: "شقة غرفتين ريسيبشن للبيع - جليم",
       description: "شقة 85 متر بحالة ممتازة، 2 غرف نوم، حمام، ريسيبشن كبير، مطبخ. الدور الرابع بمصعد. موقع مركزي قريب من المحطة والأسواق.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "550000", area: "85", rooms: 2, bathrooms: 1, floor: 4, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "جليم", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -646,7 +646,7 @@ async function seedProperties() {
     {
       providerId: pid(5), title: "شقة استوديو مفروشة للبيع - الأزاريطة",
       description: "استوديو 55 متر مفروش بالكامل بأثاث حديث، تكييف، ثلاجة، غسالة، مطبخ مجهز. مناسب جداً للعزاب أو الطلاب. قريب من الجامعة.",
-      mainCategory: "residential", listingType: "sale", subCategory: "ستوديو",
+      mainCategory: "residential", listingType: "sale", subCategory: "studio",
       price: "380000", area: "55", rooms: 1, bathrooms: 1, floor: 6, totalFloors: 9,
       finishing: "مشطب", furnished: "مفروش",
       district: "الأزاريطة", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -657,7 +657,7 @@ async function seedProperties() {
     {
       providerId: pid(0), title: "شقة 3 غرف خام - المعمورة",
       description: "شقة خام 115 متر في المعمورة، 3 غرف نوم، 2 حمام، مطبخ وصالة. قريبة من الشاطئ. مناسبة لمن يريد التشطيب بذوقه.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "480000", area: "115", rooms: 3, bathrooms: 2, floor: 2, totalFloors: 5,
       finishing: "خام", furnished: "غير مفروش",
       district: "المعمورة", address: "الإسكندرية", regionId: alexR, cityId: wasC,
@@ -668,7 +668,7 @@ async function seedProperties() {
     {
       providerId: pid(1), title: "شقة 3 غرف نص تشطيب - عصافرة",
       description: "شقة 110 متر نص تشطيب، 3 غرف، 2 حمام، مطبخ وصالة. مناسبة للبناء والتشطيب الشخصي بسعر اقتصادي.",
-      mainCategory: "residential", listingType: "sale", subCategory: "شقة",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "420000", area: "110", rooms: 3, bathrooms: 2, floor: 1, totalFloors: 4,
       finishing: "نص تشطيب", furnished: "غير مفروش",
       district: "عصافرة", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -681,7 +681,7 @@ async function seedProperties() {
     {
       providerId: pid(2), title: "شقة للإيجار 3 غرف مفروشة - ميامي",
       description: "شقة مفروشة فاخرة 120 متر، 3 غرف نوم مع تكييفات، ريسيبشن كبير مع أثاث، مطبخ مجهز كامل. مناسبة للعائلات والمغتربين. إيجار شهري.",
-      mainCategory: "residential", listingType: "rent", subCategory: "شقة",
+      mainCategory: "residential", listingType: "rent", subCategory: "apartment",
       price: "5000", area: "120", rooms: 3, bathrooms: 2, floor: 3, totalFloors: 8,
       finishing: "مشطب", furnished: "مفروش",
       district: "ميامي", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -692,7 +692,7 @@ async function seedProperties() {
     {
       providerId: pid(3), title: "شقة للإيجار 2 غرفة غير مفروشة - سيدي جابر",
       description: "شقة 90 متر غير مفروشة، 2 غرف نوم، حمام كبير، مطبخ، ريسيبشن. دور ثاني بمصعد. منطقة هادئة وآمنة. إيجار شهري مناسب.",
-      mainCategory: "residential", listingType: "rent", subCategory: "شقة",
+      mainCategory: "residential", listingType: "rent", subCategory: "apartment",
       price: "2800", area: "90", rooms: 2, bathrooms: 1, floor: 2, totalFloors: 6,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "سيدي جابر", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -703,7 +703,7 @@ async function seedProperties() {
     {
       providerId: pid(4), title: "شقة للإيجار 4 غرف مفروشة - لوران",
       description: "شقة فاخرة 165 متر مفروشة بالكامل بأثاث مودرن، 4 غرف نوم، 3 حمامات، مطبخ راقي. دور خامس بمصعد. مناسبة للعائلات الكبيرة.",
-      mainCategory: "residential", listingType: "rent", subCategory: "شقة",
+      mainCategory: "residential", listingType: "rent", subCategory: "apartment",
       price: "7500", area: "165", rooms: 4, bathrooms: 3, floor: 5, totalFloors: 10,
       finishing: "مشطب", furnished: "مفروش",
       district: "لوران", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -714,7 +714,7 @@ async function seedProperties() {
     {
       providerId: pid(5), title: "شقة إيجار غرفة وصالة - باب شرق",
       description: "شقة 65 متر غرفة وصالة، حمام، مطبخ، مناسبة لعزاب أو زوجين. دور ثالث، سعر مناسب جداً.",
-      mainCategory: "residential", listingType: "rent", subCategory: "شقة",
+      mainCategory: "residential", listingType: "rent", subCategory: "apartment",
       price: "1800", area: "65", rooms: 1, bathrooms: 1, floor: 3, totalFloors: 5,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "باب شرق", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -725,7 +725,7 @@ async function seedProperties() {
     {
       providerId: pid(0), title: "شقة للإيجار 3 غرف - المنتزه",
       description: "شقة 105 متر، 3 غرف نوم، 2 حمام، مطبخ وصالة. دور رابع بمصعد. موقع جيد وقريب من كل الخدمات.",
-      mainCategory: "residential", listingType: "rent", subCategory: "شقة",
+      mainCategory: "residential", listingType: "rent", subCategory: "apartment",
       price: "3500", area: "105", rooms: 3, bathrooms: 2, floor: 4, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "المنتزه", address: "الإسكندرية", regionId: alexR, cityId: shrC,
@@ -738,7 +738,7 @@ async function seedProperties() {
     {
       providerId: pid(1), title: "فيلا 5 غرف للبيع - العبور",
       description: "فيلا فاخرة 350 متر في كمبوند العبور السكنية، 5 غرف نوم، 4 حمامات، مطبخ كبير، ريسيبشن وصالة، حديقة خاصة مساحة 150 متر. مجهزة بنظام أمن ذكي.",
-      mainCategory: "residential", listingType: "sale", subCategory: "فيلا",
+      mainCategory: "residential", listingType: "sale", subCategory: "villa",
       price: "4500000", area: "350", rooms: 5, bathrooms: 4, floor: 0, totalFloors: 3,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "المنتزه", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -749,7 +749,7 @@ async function seedProperties() {
     {
       providerId: pid(2), title: "فيلا توين هاوس للبيع - سيدي بشر",
       description: "توين هاوس راقي 280 متر في سيدي بشر، 4 غرف نوم، 3 حمامات، مطبخ أمريكي، 2 صالة، حديقة أمامية وخلفية. نص تشطيب جاهزة للتشطيب.",
-      mainCategory: "residential", listingType: "sale", subCategory: "توين هاوس",
+      mainCategory: "residential", listingType: "sale", subCategory: "standalone",
       price: "3200000", area: "280", rooms: 4, bathrooms: 3, floor: 0, totalFloors: 2,
       finishing: "نص تشطيب", furnished: "غير مفروش",
       district: "سيدي بشر", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -760,7 +760,7 @@ async function seedProperties() {
     {
       providerId: pid(3), title: "فيلا دوبلكس 6 غرف - المنتزه",
       description: "فيلا دوبلكس ضخمة 420 متر في مدينة بدر، 6 غرف نوم، 5 حمامات، مطبخ فاخر، صالة رسمية وعائلية، غرفة سائق وغرفة خادمة. مسبح خاص وحديقة.",
-      mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس",
+      mainCategory: "residential", listingType: "sale", subCategory: "duplex",
       price: "5800000", area: "420", rooms: 6, bathrooms: 5, floor: 0, totalFloors: 3,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "المنتزه", address: "الإسكندرية", regionId: alexR, cityId: borC,
@@ -771,7 +771,7 @@ async function seedProperties() {
     {
       providerId: pid(4), title: "فيلا 4 غرف بحديقة - سموحة",
       description: "فيلا 300 متر في القناطر الخيرية بحديقة واسعة 200 متر، 4 غرف نوم، 3 حمامات، مطبخ كبير، جراج مغطى. موقع هادئ وطبيعة خلابة.",
-      mainCategory: "residential", listingType: "sale", subCategory: "فيلا",
+      mainCategory: "residential", listingType: "sale", subCategory: "villa",
       price: "2800000", area: "300", rooms: 4, bathrooms: 3, floor: 0, totalFloors: 2,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
@@ -782,7 +782,7 @@ async function seedProperties() {
     {
       providerId: pid(5), title: "فيلا 5 غرف في كمبوند - زيزينيا",
       description: "فيلا فاخرة في كمبوند متكامل الخدمات، 5 غرف، 4 حمامات، مسبح خاص، حديقة 250 متر، نظام تأمين ذكي، جراج مغطى. تشطيب بالكامل.",
-      mainCategory: "residential", listingType: "sale", subCategory: "فيلا",
+      mainCategory: "residential", listingType: "sale", subCategory: "villa",
       price: "8500000", area: "500", rooms: 5, bathrooms: 4, floor: 0, totalFloors: 3,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "التجمع الثالث", address: "الإسكندرية", regionId: alexR, cityId: shrC,
@@ -795,7 +795,7 @@ async function seedProperties() {
     {
       providerId: pid(0), title: "دوبلكس 4 غرف للبيع - كليوباترا",
       description: "دوبلكس رائع 200 متر على دورين، 4 غرف نوم، 3 حمامات، مطبخ كبير، 2 صالة، تراس خاص. سلم داخلي أنيق. تشطيب سوبر لوكس.",
-      mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس",
+      mainCategory: "residential", listingType: "sale", subCategory: "duplex",
       price: "1800000", area: "200", rooms: 4, bathrooms: 3, floor: 5, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "كليوباترا", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -806,7 +806,7 @@ async function seedProperties() {
     {
       providerId: pid(1), title: "روف 3 غرف بتراس واسع - سبورتنج",
       description: "روف مميز 140 متر + 100 متر تراس خاص، 3 غرف نوم، 2 حمام، مطبخ راقي. إطلالة بانورامية على المدينة. مناسب جداً للعائلات.",
-      mainCategory: "residential", listingType: "sale", subCategory: "روف",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "1100000", area: "140", rooms: 3, bathrooms: 2, floor: 7, totalFloors: 7,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "سبورتنج", address: "الإسكندرية", regionId: alexR, cityId: monC,
@@ -817,7 +817,7 @@ async function seedProperties() {
     {
       providerId: pid(2), title: "دوبلكس 5 غرف في رشدي",
       description: "دوبلكس فاخر 350 متر في قلب الشيخ زايد، 5 غرف نوم، 4 حمامات، مطبخ راقي، صالتان، تراس كبير. كمبوند متكامل الخدمات.",
-      mainCategory: "residential", listingType: "sale", subCategory: "دوبلكس",
+      mainCategory: "residential", listingType: "sale", subCategory: "duplex",
       price: "4200000", area: "350", rooms: 5, bathrooms: 4, floor: 2, totalFloors: 4,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "ميامي", address: "الإسكندرية", regionId: alexR, cityId: agaC,
@@ -830,7 +830,7 @@ async function seedProperties() {
     {
       providerId: pid(3), title: "أرض سكنية 300 متر للبيع - العامرية",
       description: "أرض سكنية 300 متر في العامرية، واجهة 15 متر على شارع 12 متر. مرافق كاملة كهرباء ومياه وصرف. مناسبة لبناء عمارة سكنية.",
-      mainCategory: "land", listingType: "sale", subCategory: "أرض",
+      mainCategory: "land", listingType: "sale", subCategory: "land-residential",
       price: "600000", area: "300",
       district: "المنطقة الصناعية", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.482254", longitude: "31.171036",
@@ -840,7 +840,7 @@ async function seedProperties() {
     {
       providerId: pid(4), title: "قطعة أرض 500م للبيع - برج العرب",
       description: "أرض 500 متر في القناطر الجديدة، ركن واجهتين على شارعين. موقع ممتاز ومرافق كاملة. مناسبة للبناء السكني أو التجاري.",
-      mainCategory: "land", listingType: "sale", subCategory: "أرض",
+      mainCategory: "land", listingType: "sale", subCategory: "land-residential",
       price: "900000", area: "500",
       district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.313030", longitude: "31.104409",
@@ -850,7 +850,7 @@ async function seedProperties() {
     {
       providerId: pid(5), title: "أرض 750م للبيع - الدخيلة الصناعية",
       description: "أرض صناعية 750 متر في طوخ الصناعية، واجهة 20 متر. مناسبة للمشاريع الصناعية والمستودعات. على الشارع الرئيسي.",
-      mainCategory: "land", listingType: "sale", subCategory: "أرض",
+      mainCategory: "land", listingType: "sale", subCategory: "land-residential",
       price: "1200000", area: "750",
       district: "الدخيلة الصناعية", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.351269", longitude: "31.155403",
@@ -860,7 +860,7 @@ async function seedProperties() {
     {
       providerId: pid(0), title: "أرض 2 فدان للاستثمار - أبو قير",
       description: "أرض 2 فدان (8400 متر) في أبو قير على الطريق الرئيسي. مرافق كاملة. مناسبة للبناء والاستثمار.",
-      mainCategory: "land", listingType: "sale", subCategory: "أرض",
+      mainCategory: "land", listingType: "sale", subCategory: "land-residential",
       price: "2500000", area: "8400",
       district: "أبو قير", address: "الإسكندرية", regionId: alexR, cityId: wasC,
       latitude: "30.220099", longitude: "31.350969",
@@ -870,7 +870,7 @@ async function seedProperties() {
     {
       providerId: pid(1), title: "أرض سكنية 200م - العامرية",
       description: "أرض سكنية 200 متر في شبين القناطر، واجهة 10 متر على شارع 6 متر. مرافق كاملة. سعر مميز جداً.",
-      mainCategory: "land", listingType: "sale", subCategory: "أرض",
+      mainCategory: "land", listingType: "sale", subCategory: "land-residential",
       price: "350000", area: "200",
       district: "العامرية", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.121126", longitude: "31.239992",
@@ -882,7 +882,7 @@ async function seedProperties() {
     {
       providerId: pid(2), title: "محل تجاري للبيع شارع رئيسي - وسط البلد",
       description: "محل تجاري 80 متر على الشارع الرئيسي في وسط البلد بحركة مرورية عالية. واجهة زجاجية 6 متر. تشطيب جاهز. مناسب لأي نشاط تجاري.",
-      mainCategory: "commercial", listingType: "sale", subCategory: "محل",
+      mainCategory: "commercial", listingType: "sale", subCategory: "shop",
       price: "1500000", area: "80",
       district: "وسط البلد", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.4660", longitude: "31.1845",
@@ -892,7 +892,7 @@ async function seedProperties() {
     {
       providerId: pid(3), title: "مكتب للبيع 120م - باب شرق",
       description: "مكتب راقي 120 متر في برج تجاري، دور رابع بمصعد. تشطيب جاهز بتكييف مركزي وكاميرات. مناسب للشركات والمحاسبين والأطباء.",
-      mainCategory: "commercial", listingType: "sale", subCategory: "مكتب",
+      mainCategory: "commercial", listingType: "sale", subCategory: "office",
       price: "900000", area: "120", floor: 4, totalFloors: 12,
       district: "باب شرق", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.448606", longitude: "31.179679",
@@ -902,7 +902,7 @@ async function seedProperties() {
     {
       providerId: pid(4), title: "محل للإيجار - الشارع الرئيسي سموحة",
       description: "محل 60 متر على الشارع الرئيسي بسموحة، تشطيب جاهز، تكييف، إيجار شهري مميز. موقع تجاري بامتياز.",
-      mainCategory: "commercial", listingType: "rent", subCategory: "محل",
+      mainCategory: "commercial", listingType: "rent", subCategory: "shop",
       price: "8000", area: "60",
       district: "وسط البلد", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.456865", longitude: "31.197738",
@@ -912,7 +912,7 @@ async function seedProperties() {
     {
       providerId: pid(5), title: "مستودع للإيجار - الدخيلة الصناعية",
       description: "مستودع 300 متر في الدخيلة الصناعية، ارتفاع 5 متر، بوابة كبيرة. مناسب للتخزين والمشاريع الصناعية.",
-      mainCategory: "commercial", listingType: "rent", subCategory: "مستودع / مخزن",
+      mainCategory: "commercial", listingType: "rent", subCategory: "warehouse",
       price: "12000", area: "300",
       district: "المنطقة الصناعية", address: "الإسكندرية", regionId: alexR, cityId: monC,
       latitude: "30.481638", longitude: "31.197282",
@@ -922,7 +922,7 @@ async function seedProperties() {
     {
       providerId: pid(0), title: "مكتب للإيجار 90م - محطة الرمل",
       description: "مكتب 90 متر في مجمع إداري راقي، دور ثاني بمصعد. تكييف مركزي، إنترنت فايبر، أمن 24 ساعة. مناسب للشركات الصغيرة.",
-      mainCategory: "commercial", listingType: "rent", subCategory: "مكتب",
+      mainCategory: "commercial", listingType: "rent", subCategory: "office",
       price: "4500", area: "90", floor: 2, totalFloors: 6,
       district: "القناطر الجديدة", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.323485", longitude: "31.098712",
@@ -932,7 +932,7 @@ async function seedProperties() {
     {
       providerId: pid(1), title: "محل تجاري في الجمرك - للإيجار",
       description: "محل 45 متر على شارع تجاري رئيسي في الجمرك. موقع تجاري مميز على الكورنيش. مناسب لأي نشاط تجاري.",
-      mainCategory: "commercial", listingType: "rent", subCategory: "محل",
+      mainCategory: "commercial", listingType: "rent", subCategory: "shop",
       price: "5000", area: "45",
       district: "الجمرك", address: "الإسكندرية", regionId: alexR, cityId: shrC,
       latitude: "30.116682", longitude: "31.249652",
@@ -944,7 +944,7 @@ async function seedProperties() {
     {
       providerId: pid(2), title: "دور أرضي 4 غرف بحديقة - ميامي",
       description: "دور أرضي 180 متر في كفر شكر، 4 غرف نوم، 2 حمام، مطبخ كبير، حديقة أمامية 80 متر. مناسب جداً للعائلات.",
-      mainCategory: "residential", listingType: "sale", subCategory: "دور أرضي",
+      mainCategory: "residential", listingType: "sale", subCategory: "apartment",
       price: "950000", area: "180", rooms: 4, bathrooms: 2, floor: 0, totalFloors: 1,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "ميامي", address: "الإسكندرية", regionId: alexR,
@@ -955,7 +955,7 @@ async function seedProperties() {
     {
       providerId: pid(3), title: "دور أرضي 3 غرف للإيجار - الشاطبي",
       description: "دور أرضي 150 متر بحديقة صغيرة، 3 غرف نوم، 2 حمام، مطبخ. مدخل مستقل. مناسب للعائلات. منطقة هادئة.",
-      mainCategory: "residential", listingType: "rent", subCategory: "دور أرضي",
+      mainCategory: "residential", listingType: "rent", subCategory: "apartment",
       price: "4000", area: "150", rooms: 3, bathrooms: 2, floor: 0, totalFloors: 1,
       finishing: "مشطب", furnished: "غير مفروش",
       district: "الشاطبي", address: "الإسكندرية", regionId: alexR, cityId: monC,

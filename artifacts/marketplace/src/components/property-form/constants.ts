@@ -1,6 +1,6 @@
 import {
   Building2, Home, Warehouse, Briefcase, ShoppingBag, Trees,
-  MapPin, Phone, Crown, Layers, Stethoscope, Hotel, Store, Utensils,
+  MapPin, Phone, Crown, Layers, Stethoscope, Store, Utensils, Factory,
   Eye, TrendingUp, Award, Star, Smartphone, BarChart2, Rocket, Bot,
 } from "lucide-react";
 
@@ -49,20 +49,21 @@ export const PROPERTY_GROUPS = [
       { value: "land-service",      label: "أرض خدمية",   icon: Trees },
     ],
   },
+  {
+    value: "industrial",
+    label: "صناعي",
+    icon: Factory,
+    desc: "مصانع، ورش، مستودعات صناعية",
+    subtypes: [
+      { value: "factory",              label: "مصنع",             icon: Factory },
+      { value: "industrial-warehouse", label: "مستودع صناعي",     icon: Warehouse },
+      { value: "workshop",             label: "ورشة",             icon: Factory },
+      { value: "industrial-facility",  label: "منشأة صناعية",     icon: Factory },
+    ],
+  },
 ] as const;
 
 export type PropertyGroupValue = typeof PROPERTY_GROUPS[number]["value"];
-
-export const PROPERTY_TYPES = [
-  { value: "شقة",        label: "شقة",        icon: Home,        desc: "في عمارة أو مجمع" },
-  { value: "فيلا",       label: "فيلا",       icon: Building2,   desc: "منزل مستقل" },
-  { value: "أرض سكنية",  label: "أرض سكنية",  icon: Trees,       desc: "قطعة أرض" },
-  { value: "مكتب",       label: "مكتب",       icon: Briefcase,   desc: "إداري أو تجاري" },
-  { value: "محل تجاري",  label: "محل تجاري",  icon: ShoppingBag, desc: "على الشارع" },
-  { value: "مستودع",     label: "مستودع",     icon: Warehouse,   desc: "للتخزين" },
-  { value: "عمارة",      label: "عمارة",      icon: Building2,   desc: "مبنى كامل" },
-  { value: "استراحة",    label: "استراحة",    icon: Home,        desc: "للإيجار اليومي" },
-];
 
 export const FINISHING = [
   { value: "super_lux",     label: "سوبر لوكس",  desc: "تشطيبات راقية جداً" },

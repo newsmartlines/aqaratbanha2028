@@ -116,6 +116,27 @@ type PropertyView = {
   regionNameAr: string | null;
 };
 
+// ── Shared classification label maps (module scope) ──────────────────────────
+const MAIN_CATEGORY_AR: Record<string, string> = {
+  residential: "سكني", commercial: "تجاري", land: "أراضي", industrial: "صناعي",
+};
+
+/** Canonical subCategory slug → Arabic display label */
+const SUB_CATEGORY_AR: Record<string, string> = {
+  // Residential
+  apartment: "شقة", villa: "فيلا", duplex: "دوبلكس", studio: "استوديو",
+  chalet: "شاليه", standalone: "منزل مستقل", "single-room": "غرفة مفردة", "full-floor": "طابق كامل",
+  // Commercial
+  shop: "محل تجاري", office: "مكتب", warehouse: "مستودع", showroom: "معرض",
+  "commercial-building": "عمارة تجارية", pharmacy: "صيدلية", restaurant: "مطعم",
+  // Land
+  "land-residential": "أرض سكنية", "land-commercial": "أرض تجارية",
+  "land-agricultural": "أرض زراعية", "land-industrial": "أرض صناعية", "land-service": "أرض خدمية",
+  // Industrial
+  factory: "مصنع", "industrial-warehouse": "مستودع صناعي",
+  workshop: "ورشة", "industrial-facility": "منشأة صناعية",
+};
+
 function mapDbToView(p: Record<string, unknown>): PropertyView {
   const images = tryJson<string[]>(p.images as string, []);
   const features = tryJson<string[]>(p.features as string, []);
@@ -128,19 +149,13 @@ function mapDbToView(p: Record<string, unknown>): PropertyView {
     sale: "للبيع", rent: "للإيجار", investment: "للاستثمار",
     للبيع: "للبيع", للإيجار: "للإيجار", للاستثمار: "للاستثمار",
   };
-  const mainCategoryAr: Record<string, string> = {
-    residential: "سكني", commercial: "تجاري", land: "أرض",
-    administrative: "إداري", industrial: "صناعي", hotel: "فندقي",
-    agricultural: "زراعي", medical: "طبي", educational: "تعليمي",
-    سكني: "سكني", تجاري: "تجاري", أرض: "أرض", إداري: "إداري",
-  };
 
   return {
     id: p.id as number,
     title: (p.title as string) ?? "",
     type: listingTypeAr[(p.listingType as string) ?? ""] ?? (p.listingType as string) ?? "للبيع",
     listingTypeRaw: (p.listingType as string) ?? "sale",
-    kind: mainCategoryAr[(p.mainCategory as string) ?? ""] ?? (p.mainCategory as string) ?? "سكني",
+    kind: MAIN_CATEGORY_AR[(p.mainCategory as string) ?? ""] ?? (p.mainCategory as string) ?? "سكني",
     featured: (p.featured as boolean) ?? false,
     address: (p.address as string) ?? "",
     location: (p.address as string) ?? "",
@@ -733,7 +748,7 @@ export default function PropertyDetail() {
                 href={`/properties?mainCategory=${encodeURIComponent(property.mainCategory)}`}
                 className="hover:text-primary transition-colors shrink-0 whitespace-nowrap"
               >
-                {property.subCategory}
+                {SUB_CATEGORY_AR[property.subCategory] ?? property.subCategory}
               </Link>
             </>
           )}

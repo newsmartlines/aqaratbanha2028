@@ -37,6 +37,14 @@ const GROUP_PALETTE: Record<string, {
     iconColor: "#92400e",
     chipBg: "#fffbeb",
   },
+  industrial: {
+    bg: "rgba(254,242,232,0.65)",
+    border: "#fed7aa",
+    activeBorder: "#ea580c",
+    iconBg: "#ffedd5",
+    iconColor: "#7c2d12",
+    chipBg: "#fff7ed",
+  },
 };
 
 const LISTING_PALETTE: Record<string, {

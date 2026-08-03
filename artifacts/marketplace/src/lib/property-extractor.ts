@@ -55,7 +55,7 @@ function resolveNum(s: string): number | null {
 }
 
 /* ─── Property type dictionaries ──────────────────────────────────────────── */
-interface TypeEntry { ar: string; category: "residential" | "commercial" | "land"; }
+interface TypeEntry { ar: string; category: "residential" | "commercial" | "land" | "industrial"; }
 
 const PROPERTY_TYPES: { patterns: RegExp; entry: TypeEntry }[] = [
   { patterns: /\bشق[هة]\b|\bشقق\b|\bapartment\b|\bflat\b/i,             entry: { ar: "شقة",         category: "residential" } },
@@ -76,8 +76,13 @@ const PROPERTY_TYPES: { patterns: RegExp; entry: TypeEntry }[] = [
   { patterns: /\bمطعم\b|\bكافيه\b|\brestaurant\b|\bcafe\b/i,              entry: { ar: "مطعم",         category: "commercial" } },
   { patterns: /\bمعرض\b|\bshowroom\b|\bshow\s*room\b/i,                   entry: { ar: "معرض",         category: "commercial" } },
   { patterns: /\bفندق\b|\bhotel\b/i,                                       entry: { ar: "فندق",         category: "commercial" } },
-  { patterns: /\bأرض\b|\bارض\b|\bقطعة\b|\bland\b|\bplot\b/i,             entry: { ar: "أرض",          category: "land" } },
-  { patterns: /\bمزرعة\b|\bفارم\b|\bfarm\b/i,                             entry: { ar: "مزرعة",        category: "land" } },
+  { patterns: /\bأرض\b|\bارض\b|\bقطعة\b|\bland\b|\bplot\b/i,             entry: { ar: "أرض",              category: "land"       } },
+  { patterns: /\bمزرعة\b|\bفارم\b|\bfarm\b/i,                             entry: { ar: "مزرعة",            category: "land"       } },
+  // Industrial — compound phrases first so they take priority over single-word matches
+  { patterns: /مستودع\s*صناعي|industrial\s+warehouse/i,   entry: { ar: "مستودع صناعي",  category: "industrial" } },
+  { patterns: /منشأة\s*صناعية|منشآت\s*صناعية|industrial\s+facility/i, entry: { ar: "منشأة صناعية", category: "industrial" } },
+  { patterns: /مصنع|مصانع|factory|factories/i,             entry: { ar: "مصنع",           category: "industrial" } },
+  { patterns: /ورشة|ورش|workshop/i,                        entry: { ar: "ورشة",           category: "industrial" } },
 ];
 
 /* ─── Listing type ────────────────────────────────────────────────────────── */
@@ -93,7 +98,6 @@ const GOVERNORATES: Record<string, string> = {
   "القاهرة": "القاهرة", "كايرو": "القاهرة", "cairo": "القاهرة",
   "الجيزة": "الجيزة", "جيزة": "الجيزة", "giza": "الجيزة",
   "الإسكندرية": "الإسكندرية", "اسكندرية": "الإسكندرية", "اسكندريه": "الإسكندرية", "alexandria": "الإسكندرية",
-  "الإسكندرية": "الإسكندرية", "اسكندرية": "الإسكندرية", "اسكندريه": "الإسكندرية",
   "الشرقية": "الشرقية", "شرقية": "الشرقية",
   "الغربية": "الغربية", "غربية": "الغربية",
   "المنوفية": "المنوفية", "منوفية": "المنوفية",
@@ -198,17 +202,6 @@ const CITIES_MAP: Record<string, string> = {
   "روض الفرج": "روض الفرج",
   "المنيل": "المنيل",
   "الأميرية": "الأميرية",
-  // الإسكندرية
-  "سموحة": "سموحة",
-  "العجمي": "العجمي",
-  "برج العرب": "برج العرب",
-  "المنتزه": "المنتزه",
-  "الرمل": "الرمل",
-  "باكوس": "باكوس",
-  "لوران": "لوران",
-  "جليم": "جليم",
-  "محرم بك": "محرم بك",
-  "المعمورة": "المعمورة",
   // الساحل الشمالي
   "العلمين": "العلمين", "الساحل الشمالي": "الساحل الشمالي",
   "مرسى مطروح": "مرسى مطروح",
@@ -619,7 +612,7 @@ function buildTitles(ex: ExtractedData): [string, string, string] {
 export interface ExtractedData {
   listingType:        "sale" | "rent" | "investment" | null;
   propertyTypeAr:     string | null;
-  propertyCategory:   "residential" | "commercial" | "land" | null;
+  propertyCategory:   "residential" | "commercial" | "land" | "industrial" | null;
   area:               number | null;
   price:              number | null;
   rooms:              number | null;

@@ -16,6 +16,38 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { extractPropertyInfo, type ExtractedData } from "@/lib/property-extractor";
 
+/* ─── Arabic property-type label → canonical subCategory slug ────────────── */
+const AR_TYPE_TO_SLUG: Record<string, string> = {
+  // Residential
+  "شقة":           "apartment",
+  "فيلا":          "villa",
+  "منزل":          "standalone",
+  "دوبلكس":        "duplex",
+  "تريبلكس":       "duplex",
+  "روف":           "apartment",
+  "استوديو":       "studio",
+  "وحدة فندقية":   "apartment",
+  "تاون هاوس":     "standalone",
+  "عمارة":         "full-floor",
+  // Commercial
+  "محل تجاري":     "shop",
+  "مكتب":          "office",
+  "مستودع":        "warehouse",
+  "عيادة":         "office",
+  "صيدلية":        "pharmacy",
+  "مطعم":          "restaurant",
+  "معرض":          "showroom",
+  "فندق":          "commercial-building",
+  // Land
+  "أرض":           "land-residential",
+  "مزرعة":         "land-agricultural",
+  // Industrial
+  "مصنع":          "factory",
+  "ورشة":          "workshop",
+  "منشأة صناعية":  "industrial-facility",
+  "مستودع صناعي":  "industrial-warehouse",
+};
+
 /* ─── Geocoding via Nominatim (OpenStreetMap, no API key) ────────────────── */
 interface GeoResult { lat: number; lon: number; displayName: string; }
 
@@ -301,7 +333,7 @@ function QuickAdForm() {
           ...(effectiveLocation    ? { district:     effectiveLocation  } : {}),
           ...(ex?.compound         ? { compound:     ex.compound       } : {}),
           ...(ex?.street           ? { street:       ex.street         } : {}),
-          ...(ex?.propertyTypeAr   ? { subCategory:  ex.propertyTypeAr } : {}),
+          ...(ex?.propertyTypeAr   ? { subCategory:  AR_TYPE_TO_SLUG[ex.propertyTypeAr] ?? undefined } : {}),
           ...(ex?.phone            ? { phone:        ex.phone          } : {}),
           ...(ex?.whatsapp         ? { whatsapp:     ex.whatsapp       } : {}),
           ...(ex?.allPhones?.length ? { allPhones:   ex.allPhones      } : {}),
