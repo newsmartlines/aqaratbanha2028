@@ -88,7 +88,7 @@ export default function AddPropertyPage() {
 
   // Pre-check active subscription so we can skip the plan-selection step
   // when the user already has an active subscription with remaining quota.
-  const { data: userSub, isLoading: subLoading } = useQuery<UserCurrentSub | null>({
+  const { data: userSub, isLoading: subLoading, isFetching: subFetching } = useQuery<UserCurrentSub | null>({
     queryKey: ["userCurrentSub", user?.id],
     queryFn: () => api.userSubscription.current(user!.id),
     enabled: !!user && subsEnabled && !isProvider,
@@ -114,7 +114,7 @@ export default function AddPropertyPage() {
     // userSub === null → no active subscription → showPlans remains true
   }
 
-  if (loading || (subsEnabled && !isProvider && !!user && subLoading)) {
+  if (loading || (subsEnabled && !isProvider && !!user && (subLoading || subFetching))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-10 h-10 animate-spin text-teal-600" />

@@ -272,8 +272,11 @@ export function usePropertyForm(
         await doCreate();
         if (user?.id && selectedPlan?.id) {
           await api.userSubscription.subscribe(user.id, selectedPlan.id).catch(() => {});
-          // Immediately refresh the subscription widget on the dashboard
-          queryClient.invalidateQueries({ queryKey: ["userCurrentSub"] });
+          // Await the refetch so that add-property.tsx re-evaluates showPlans=false
+          // before the success screen is interactive. Using invalidateQueries (fire-and-forget)
+          // caused a race where the user could click "إضافة عقار آخر" before the cache
+          // updated, making showPlans still appear true on the next form reset.
+          await queryClient.refetchQueries({ queryKey: ["userCurrentSub"] });
           queryClient.invalidateQueries({ queryKey: ["subscriptionHistory"] });
         }
       } catch (e: any) {
