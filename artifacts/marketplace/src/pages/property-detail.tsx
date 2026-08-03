@@ -1029,211 +1029,114 @@ export default function PropertyDetail() {
           {/* ── LEFT COLUMN ── */}
           <div className="lg:col-span-2 space-y-8">
 
-            {/* ── Overview ── */}
-            <div className="bg-white rounded-xl border border-border shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4">
-                <h2 className="text-lg font-bold text-gray-900">نظرة عامة</h2>
-                <span className="text-sm text-gray-500">رقم الإعلان: <span className="font-semibold text-gray-800">#{property.id}</span></span>
-              </div>
-              <hr className="border-border" />
-              <div className="px-6 py-5 flex flex-wrap gap-8">
-                <div className="flex flex-col gap-1 min-w-[80px]">
-                  <span className="font-bold text-gray-900 text-base leading-tight">{property.kind}</span>
-                  <span className="text-xs text-gray-500">نوع العقار</span>
-                </div>
+            {/* Specs */}
+            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">مواصفات العقار</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {property.beds > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <BedDouble className="w-4 h-4 text-gray-500 shrink-0" />
-                      <span className="font-bold text-gray-900 text-base">{property.beds}</span>
-                    </div>
-                    <span className="text-xs text-gray-500">غرف النوم</span>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <BedDouble className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.beds}</span>
+                    <span className="text-xs text-muted-foreground">غرف النوم</span>
                   </div>
                 )}
                 {property.baths > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <Bath className="w-4 h-4 text-gray-500 shrink-0" />
-                      <span className="font-bold text-gray-900 text-base">{property.baths}</span>
-                    </div>
-                    <span className="text-xs text-gray-500">دورات المياه</span>
-                  </div>
-                )}
-                {property.garage > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <Car className="w-4 h-4 text-gray-500 shrink-0" />
-                      <span className="font-bold text-gray-900 text-base">{property.garage}</span>
-                    </div>
-                    <span className="text-xs text-gray-500">مواقف</span>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Bath className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.baths}</span>
+                    <span className="text-xs text-muted-foreground">دورات المياه</span>
                   </div>
                 )}
                 {property.area > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <Maximize2 className="w-4 h-4 text-gray-500 shrink-0" />
-                      <span className="font-bold text-gray-900 text-base">{property.area} م²</span>
-                    </div>
-                    <span className="text-xs text-gray-500">المساحة</span>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Maximize2 className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.area}</span>
+                    <span className="text-xs text-muted-foreground">م² المساحة</span>
                   </div>
                 )}
                 {property.floors > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <Layers className="w-4 h-4 text-gray-500 shrink-0" />
-                      <span className="font-bold text-gray-900 text-base">{property.floors}</span>
-                    </div>
-                    <span className="text-xs text-gray-500">الطوابق</span>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Layers className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.floors}</span>
+                    <span className="text-xs text-muted-foreground">الطوابق</span>
+                  </div>
+                )}
+                {property.garage > 0 && (
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Car className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.garage}</span>
+                    <span className="text-xs text-muted-foreground">مواقف السيارات</span>
                   </div>
                 )}
                 {property.year > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
-                      <span className="font-bold text-gray-900 text-base">{property.year}</span>
-                    </div>
-                    <span className="text-xs text-gray-500">سنة البناء</span>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
+                    <Calendar className="w-6 h-6 text-primary" />
+                    <span className="text-xl font-extrabold text-gray-900">{property.year}</span>
+                    <span className="text-xs text-muted-foreground">سنة البناء</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* ── Description ── */}
+            {/* Description */}
             {property.description && (
-              <div className="bg-white rounded-xl border border-border shadow-sm">
-                <div className="px-6 py-4">
-                  <h2 className="text-lg font-bold text-gray-900">الوصف</h2>
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">وصف العقار</h2>
+                <p className="text-gray-600 leading-relaxed text-base">{property.description}</p>
+              </div>
+            )}
+
+            {/* مميزات العقار */}
+            {property.amenities.length > 0 && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">مميزات العقار</h2>
                 </div>
-                <hr className="border-border" />
-                <div className="px-6 py-5">
-                  <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line">{property.description}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[...new Set(property.amenities)].map((a, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-teal-50/60 border border-teal-100 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0">
+                        <FeatureIconByName featureName={a} className="w-3.5 h-3.5 text-teal-600" />
+                      </div>
+                      <span className="font-medium">{a}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* ── Address ── */}
-            {(property.address || property.cityNameAr || property.regionNameAr || property.district) && (
-              <div className="bg-white rounded-xl border border-border shadow-sm">
-                <div className="flex items-center justify-between px-6 py-4">
-                  <h2 className="text-lg font-bold text-gray-900">العنوان</h2>
-                  {(!isNaN(property.lat) && !isNaN(property.lng)) && (
-                    <a
-                      href={`https://maps.google.com/?q=${property.lat},${property.lng}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      فتح في خرائط جوجل
-                    </a>
-                  )}
+            {/* الخدمات القريبة */}
+            {property.nearbyServices.length > 0 && (
+              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">الخدمات القريبة</h2>
                 </div>
-                <hr className="border-border" />
-                <div className="px-6 py-2">
-                  {(() => {
-                    const rows = [
-                      [
-                        { label: "العنوان", value: property.address },
-                        { label: "المدينة", value: property.cityNameAr || "الإسكندرية" },
-                      ],
-                      [
-                        { label: "المنطقة", value: property.regionNameAr },
-                        { label: "الدولة", value: "مصر" },
-                      ],
-                      [
-                        { label: "الحي / الدائرة", value: property.district },
-                        { label: "الموقع", value: property.location !== property.address ? property.location : null },
-                      ],
-                    ].filter(row => row.some(cell => cell.value));
-                    return rows.map((row, ri) => (
-                      <div key={ri} className="grid grid-cols-2 border-b border-border/40 last:border-0">
-                        {row.map((cell, ci) => (
-                          <div key={ci} className="py-3 flex items-start gap-2">
-                            <span className="text-sm font-semibold text-gray-700 shrink-0">{cell.label}:</span>
-                            <span className="text-sm text-gray-600">{cell.value || "—"}</span>
-                          </div>
-                        ))}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[...new Set(property.nearbyServices)].map((s, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-blue-50/60 border border-blue-100 text-sm text-gray-800">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0">
+                        <FeatureIconByName featureName={s} className="w-3.5 h-3.5 text-blue-600" />
                       </div>
-                    ));
-                  })()}
+                      <span className="font-medium">{s}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* ── Details ── */}
-            <div className="bg-white rounded-xl border border-border shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4">
-                <h2 className="text-lg font-bold text-gray-900">التفاصيل</h2>
-                {property.createdAt && (
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {new Date(property.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })}
-                  </span>
-                )}
-              </div>
-              <hr className="border-border" />
-              <div className="p-5">
-                <div className="border border-teal-200 rounded-xl overflow-hidden">
-                  {(() => {
-                    const rows: Array<[{ label: string; value: string | number | null }, { label: string; value: string | number | null }]> = [
-                      [{ label: "رقم الإعلان", value: `#${property.id}` }, { label: "السعر", value: `${property.price} ج.م` }],
-                      ...(property.area > 0 || property.beds > 0 ? [[{ label: "مساحة العقار", value: property.area > 0 ? `${property.area} م²` : null }, { label: "غرف النوم", value: property.beds > 0 ? property.beds : null }] as [{ label: string; value: string | number | null }, { label: string; value: string | number | null }]] : []),
-                      ...(property.baths > 0 || property.floors > 0 ? [[{ label: "دورات المياه", value: property.baths > 0 ? property.baths : null }, { label: "الطوابق", value: property.floors > 0 ? property.floors : null }] as [{ label: string; value: string | number | null }, { label: string; value: string | number | null }]] : []),
-                      ...(property.year > 0 ? [[{ label: "سنة البناء", value: property.year }, { label: "نوع الإعلان", value: property.type }] as [{ label: string; value: string | number | null }, { label: string; value: string | number | null }]] : []),
-                      [{ label: "نوع العقار", value: property.kind }, { label: "حالة الإعلان", value: property.type }],
-                    ];
-                    return rows.map((row, ri) => (
-                      <div key={ri} className="grid grid-cols-2 divide-x divide-x-reverse divide-teal-100 border-b border-teal-100 last:border-0">
-                        {row.map((cell, ci) => (
-                          <div key={ci} className="flex items-center justify-between px-4 py-3 gap-4">
-                            <span className="text-sm font-semibold text-gray-700">{cell.label}</span>
-                            <span className="text-sm text-gray-900">{cell.value ?? "—"}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            </div>
-
-            {/* ── Additional Details (amenities + nearby) ── */}
-            {(property.amenities.length > 0 || property.nearbyServices.length > 0) && (
-              <div className="bg-white rounded-xl border border-border shadow-sm">
-                <div className="px-6 py-4">
-                  <h2 className="text-lg font-bold text-gray-900">تفاصيل إضافية</h2>
-                </div>
-                <hr className="border-border" />
-                <div className="px-6 py-2">
-                  {(() => {
-                    const allItems = [
-                      ...[...new Set(property.amenities)].map(a => ({ label: a, kind: "amenity" as const })),
-                      ...[...new Set(property.nearbyServices)].map(s => ({ label: s, kind: "service" as const })),
-                    ];
-                    const pairs: Array<[typeof allItems[0], typeof allItems[0] | null]> = [];
-                    for (let i = 0; i < allItems.length; i += 2) {
-                      pairs.push([allItems[i], allItems[i + 1] ?? null]);
-                    }
-                    return pairs.map((pair, ri) => (
-                      <div key={ri} className="grid grid-cols-2 border-b border-border/40 last:border-0">
-                        {pair.map((item, ci) => item ? (
-                          <div key={ci} className="flex items-center justify-between py-3 gap-2">
-                            <span className="text-sm font-semibold text-gray-700">{item.label}</span>
-                            <FeatureIconByName featureName={item.label} className={`w-3.5 h-3.5 shrink-0 ${item.kind === "amenity" ? "text-teal-500" : "text-blue-500"}`} />
-                          </div>
-                        ) : <div key={ci} />)}
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            )}
-
-            {/* ── Video ── */}
+            {/* Video */}
             {property.videoId && (
-              <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                <div className="px-6 py-4 border-b border-border flex items-center gap-3">
-                  <Play className="w-4 h-4 text-primary fill-primary" />
+              <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-border flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Play className="w-4 h-4 text-primary fill-primary" />
+                  </div>
                   <h2 className="text-lg font-bold text-gray-900">جولة افتراضية بالفيديو</h2>
                 </div>
                 <div className="relative aspect-video bg-gray-900">
@@ -1248,14 +1151,16 @@ export default function PropertyDetail() {
               </div>
             )}
 
-            {/* ── Map ── */}
-            <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            {/* Map */}
+            <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-primary" />
-                  <h2 className="text-lg font-bold text-gray-900">الموقع على الخريطة</h2>
                 </div>
-                {property.address && <span className="text-xs text-muted-foreground truncate max-w-[200px]">{property.address}</span>}
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">الموقع على الخريطة</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
+                </div>
               </div>
               {(!isNaN(property.lat) && !isNaN(property.lng)) ? (
                 <PropertyMap lat={property.lat} lng={property.lng} />
@@ -1263,7 +1168,9 @@ export default function PropertyDetail() {
                 <div className="h-36 flex flex-col items-center justify-center gap-2 text-gray-400 bg-gray-50">
                   <MapPin className="w-7 h-7 text-gray-300" />
                   <p className="text-sm font-medium">لم يتم تحديد موقع هذا العقار على الخريطة</p>
-                  {property.address && <p className="text-xs text-gray-400">{property.address}</p>}
+                  {property.address && (
+                    <p className="text-xs text-gray-400">{property.address}</p>
+                  )}
                 </div>
               )}
             </div>
