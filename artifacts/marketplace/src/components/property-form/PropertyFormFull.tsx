@@ -52,7 +52,7 @@ export function PropertyFormFull({ mode, backPath, showPlans = false, editProper
     goBack,
   } = form;
 
-  const cfg = getPropertyTypeConfig(v.mainCategory);
+  const cfg = getPropertyTypeConfig(v.subCategory, v.mainCategory);
 
   const { data: regions = [] } = useQuery<RegionRow[]>({
     queryKey: ["regions-public"],

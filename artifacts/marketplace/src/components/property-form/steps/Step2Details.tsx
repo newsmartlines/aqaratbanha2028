@@ -44,7 +44,7 @@ export function Step2Details({
   isCompany, amenitiesData, servicesData,
   fieldErrors = {},
 }: Step2DetailsProps) {
-  const cfg = getPropertyTypeConfig(v.mainCategory);
+  const cfg = getPropertyTypeConfig(v.subCategory, v.mainCategory);
 
   return (
     <div className="space-y-6">

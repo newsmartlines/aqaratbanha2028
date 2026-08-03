@@ -2,11 +2,11 @@
   "version": "1.0",
   "group": "locations",
   "label": "المواقع الجغرافية",
-  "exportedAt": "2026-08-02T22:47:54.376Z",
+  "exportedAt": "2026-08-03T11:27:43.466Z",
   "tables": {
     "regions": [
       {
-        "id": 1,
+        "id": 2,
         "nameAr": "محافظة الإسكندرية",
         "nameEn": "Alexandria Governorate",
         "order": 1,
@@ -15,64 +15,64 @@
     ],
     "cities": [
       {
-        "id": 1,
-        "regionId": 1,
+        "id": 2,
+        "regionId": 2,
         "nameAr": "حي المنتزه",
         "nameEn": "Montaza District",
         "enabled": true
       },
       {
-        "id": 2,
-        "regionId": 1,
+        "id": 3,
+        "regionId": 2,
         "nameAr": "حي شرق",
         "nameEn": "East District",
         "enabled": true
       },
       {
-        "id": 3,
-        "regionId": 1,
+        "id": 4,
+        "regionId": 2,
         "nameAr": "حي وسط",
         "nameEn": "Central District",
         "enabled": true
       },
       {
-        "id": 4,
-        "regionId": 1,
+        "id": 5,
+        "regionId": 2,
         "nameAr": "حي الجمرك",
         "nameEn": "Gomrok District",
         "enabled": true
       },
       {
-        "id": 5,
-        "regionId": 1,
+        "id": 6,
+        "regionId": 2,
         "nameAr": "حي العجمي",
         "nameEn": "Agami District",
         "enabled": true
       },
       {
-        "id": 6,
-        "regionId": 1,
+        "id": 7,
+        "regionId": 2,
         "nameAr": "حي العامرية",
         "nameEn": "Ameriya District",
         "enabled": true
       },
       {
-        "id": 7,
-        "regionId": 1,
+        "id": 8,
+        "regionId": 2,
         "nameAr": "حي الدخيلة",
         "nameEn": "Dekheila District",
         "enabled": true
       },
       {
-        "id": 8,
-        "regionId": 1,
+        "id": 9,
+        "regionId": 2,
         "nameAr": "مركز أبو قير",
         "nameEn": "Abu Qir Center",
         "enabled": true
       },
       {
-        "id": 9,
-        "regionId": 1,
+        "id": 10,
+        "regionId": 2,
         "nameAr": "مركز برج العرب",
         "nameEn": "Borg El Arab Center",
         "enabled": true
@@ -80,400 +80,400 @@
     ],
     "areas": [
       {
-        "id": 1,
-        "cityId": 1,
+        "id": 2,
+        "cityId": 2,
         "nameAr": "سيدي بشر",
         "nameEn": "سيدي بشر",
         "enabled": true
       },
       {
-        "id": 2,
-        "cityId": 1,
+        "id": 3,
+        "cityId": 2,
         "nameAr": "ميامي",
         "nameEn": "ميامي",
         "enabled": true
       },
       {
-        "id": 3,
-        "cityId": 1,
+        "id": 4,
+        "cityId": 2,
         "nameAr": "المندرة",
         "nameEn": "المندرة",
         "enabled": true
       },
       {
-        "id": 4,
-        "cityId": 1,
+        "id": 5,
+        "cityId": 2,
         "nameAr": "المنتزه",
         "nameEn": "المنتزه",
         "enabled": true
       },
       {
-        "id": 5,
-        "cityId": 1,
+        "id": 6,
+        "cityId": 2,
         "nameAr": "المعمورة",
         "nameEn": "المعمورة",
         "enabled": true
       },
       {
-        "id": 6,
-        "cityId": 1,
+        "id": 7,
+        "cityId": 2,
         "nameAr": "طيبة",
         "nameEn": "طيبة",
         "enabled": true
       },
       {
-        "id": 7,
-        "cityId": 1,
+        "id": 8,
+        "cityId": 2,
         "nameAr": "زيزينيا",
         "nameEn": "زيزينيا",
         "enabled": true
       },
       {
-        "id": 8,
-        "cityId": 1,
+        "id": 9,
+        "cityId": 2,
         "nameAr": "سموحة",
         "nameEn": "سموحة",
         "enabled": true
       },
       {
-        "id": 9,
-        "cityId": 1,
+        "id": 10,
+        "cityId": 2,
         "nameAr": "عصافرة",
         "nameEn": "عصافرة",
         "enabled": true
       },
       {
-        "id": 10,
-        "cityId": 2,
+        "id": 11,
+        "cityId": 3,
         "nameAr": "الشاطبي",
         "nameEn": "الشاطبي",
         "enabled": true
       },
       {
-        "id": 11,
-        "cityId": 2,
+        "id": 12,
+        "cityId": 3,
         "nameAr": "كليوباترا",
         "nameEn": "كليوباترا",
         "enabled": true
       },
       {
-        "id": 12,
-        "cityId": 2,
+        "id": 13,
+        "cityId": 3,
         "nameAr": "سبورتنج",
         "nameEn": "سبورتنج",
         "enabled": true
       },
       {
-        "id": 13,
-        "cityId": 2,
+        "id": 14,
+        "cityId": 3,
         "nameAr": "رشدي",
         "nameEn": "رشدي",
         "enabled": true
       },
       {
-        "id": 14,
-        "cityId": 2,
+        "id": 15,
+        "cityId": 3,
         "nameAr": "محطة الرمل",
         "nameEn": "محطة الرمل",
         "enabled": true
       },
       {
-        "id": 15,
-        "cityId": 2,
+        "id": 16,
+        "cityId": 3,
         "nameAr": "سيدي جابر",
         "nameEn": "سيدي جابر",
         "enabled": true
       },
       {
-        "id": 16,
-        "cityId": 2,
+        "id": 17,
+        "cityId": 3,
         "nameAr": "جليم",
         "nameEn": "جليم",
         "enabled": true
       },
       {
-        "id": 17,
-        "cityId": 2,
+        "id": 18,
+        "cityId": 3,
         "nameAr": "لوران",
         "nameEn": "لوران",
         "enabled": true
       },
       {
-        "id": 18,
-        "cityId": 2,
+        "id": 19,
+        "cityId": 3,
         "nameAr": "بكوس",
         "nameEn": "بكوس",
         "enabled": true
       },
       {
-        "id": 19,
-        "cityId": 2,
+        "id": 20,
+        "cityId": 3,
         "nameAr": "فيكتوريا",
         "nameEn": "فيكتوريا",
         "enabled": true
       },
       {
-        "id": 20,
-        "cityId": 3,
+        "id": 21,
+        "cityId": 4,
         "nameAr": "المنشية",
         "nameEn": "المنشية",
         "enabled": true
       },
       {
-        "id": 21,
-        "cityId": 3,
+        "id": 22,
+        "cityId": 4,
         "nameAr": "محطة مصر",
         "nameEn": "محطة مصر",
         "enabled": true
       },
       {
-        "id": 22,
-        "cityId": 3,
+        "id": 23,
+        "cityId": 4,
         "nameAr": "باب شرق",
         "nameEn": "باب شرق",
         "enabled": true
       },
       {
-        "id": 23,
-        "cityId": 3,
+        "id": 24,
+        "cityId": 4,
         "nameAr": "الأزاريطة",
         "nameEn": "الأزاريطة",
         "enabled": true
       },
       {
-        "id": 24,
-        "cityId": 3,
+        "id": 25,
+        "cityId": 4,
         "nameAr": "الفلكي",
         "nameEn": "الفلكي",
         "enabled": true
       },
       {
-        "id": 25,
-        "cityId": 3,
+        "id": 26,
+        "cityId": 4,
         "nameAr": "العطارين",
         "nameEn": "العطارين",
         "enabled": true
       },
       {
-        "id": 26,
-        "cityId": 3,
+        "id": 27,
+        "cityId": 4,
         "nameAr": "محرم بك",
         "nameEn": "محرم بك",
         "enabled": true
       },
       {
-        "id": 27,
-        "cityId": 3,
+        "id": 28,
+        "cityId": 4,
         "nameAr": "وسط البلد",
         "nameEn": "وسط البلد",
         "enabled": true
       },
       {
-        "id": 28,
-        "cityId": 3,
+        "id": 29,
+        "cityId": 4,
         "nameAr": "الشلالات",
         "nameEn": "الشلالات",
         "enabled": true
       },
       {
-        "id": 29,
-        "cityId": 3,
+        "id": 30,
+        "cityId": 4,
         "nameAr": "كوم الدكة",
         "nameEn": "كوم الدكة",
         "enabled": true
       },
       {
-        "id": 30,
-        "cityId": 4,
+        "id": 31,
+        "cityId": 5,
         "nameAr": "الجمرك",
         "nameEn": "الجمرك",
         "enabled": true
       },
       {
-        "id": 31,
-        "cityId": 4,
+        "id": 32,
+        "cityId": 5,
         "nameAr": "اللبان",
         "nameEn": "اللبان",
         "enabled": true
       },
       {
-        "id": 32,
-        "cityId": 4,
+        "id": 33,
+        "cityId": 5,
         "nameAr": "بحري",
         "nameEn": "بحري",
         "enabled": true
       },
       {
-        "id": 33,
-        "cityId": 4,
+        "id": 34,
+        "cityId": 5,
         "nameAr": "الورديان",
         "nameEn": "الورديان",
         "enabled": true
       },
       {
-        "id": 34,
-        "cityId": 4,
+        "id": 35,
+        "cityId": 5,
         "nameAr": "الأنفوشي",
         "nameEn": "الأنفوشي",
         "enabled": true
       },
       {
-        "id": 35,
-        "cityId": 4,
+        "id": 36,
+        "cityId": 5,
         "nameAr": "قايتباي",
         "nameEn": "قايتباي",
         "enabled": true
       },
       {
-        "id": 36,
-        "cityId": 4,
+        "id": 37,
+        "cityId": 5,
         "nameAr": "المكس",
         "nameEn": "المكس",
         "enabled": true
       },
       {
-        "id": 37,
-        "cityId": 5,
+        "id": 38,
+        "cityId": 6,
         "nameAr": "العجمي",
         "nameEn": "العجمي",
         "enabled": true
       },
       {
-        "id": 38,
-        "cityId": 5,
+        "id": 39,
+        "cityId": 6,
         "nameAr": "المتراس",
         "nameEn": "المتراس",
         "enabled": true
       },
       {
-        "id": 39,
-        "cityId": 5,
+        "id": 40,
+        "cityId": 6,
         "nameAr": "الهانوفيل",
         "nameEn": "الهانوفيل",
         "enabled": true
       },
       {
-        "id": 40,
-        "cityId": 5,
+        "id": 41,
+        "cityId": 6,
         "nameAr": "الزعفران",
         "nameEn": "الزعفران",
         "enabled": true
       },
       {
-        "id": 41,
-        "cityId": 5,
+        "id": 42,
+        "cityId": 6,
         "nameAr": "سيدي كرير",
         "nameEn": "سيدي كرير",
         "enabled": true
       },
       {
-        "id": 42,
-        "cityId": 5,
+        "id": 43,
+        "cityId": 6,
         "nameAr": "أبو تلات",
         "nameEn": "أبو تلات",
         "enabled": true
       },
       {
-        "id": 43,
-        "cityId": 6,
+        "id": 44,
+        "cityId": 7,
         "nameAr": "العامرية",
         "nameEn": "العامرية",
         "enabled": true
       },
       {
-        "id": 44,
-        "cityId": 6,
+        "id": 45,
+        "cityId": 7,
         "nameAr": "المحمودية",
         "nameEn": "المحمودية",
         "enabled": true
       },
       {
-        "id": 45,
-        "cityId": 6,
+        "id": 46,
+        "cityId": 7,
         "nameAr": "الفردوس",
         "nameEn": "الفردوس",
         "enabled": true
       },
       {
-        "id": 46,
-        "cityId": 6,
+        "id": 47,
+        "cityId": 7,
         "nameAr": "العرب",
         "nameEn": "العرب",
         "enabled": true
       },
       {
-        "id": 47,
-        "cityId": 6,
+        "id": 48,
+        "cityId": 7,
         "nameAr": "الحضرة",
         "nameEn": "الحضرة",
         "enabled": true
       },
       {
-        "id": 48,
-        "cityId": 6,
+        "id": 49,
+        "cityId": 7,
         "nameAr": "الأمل",
         "nameEn": "الأمل",
         "enabled": true
       },
       {
-        "id": 49,
-        "cityId": 7,
+        "id": 50,
+        "cityId": 8,
         "nameAr": "الدخيلة",
         "nameEn": "الدخيلة",
         "enabled": true
       },
       {
-        "id": 50,
-        "cityId": 7,
+        "id": 51,
+        "cityId": 8,
         "nameAr": "صفر",
         "nameEn": "صفر",
         "enabled": true
       },
       {
-        "id": 51,
-        "cityId": 7,
+        "id": 52,
+        "cityId": 8,
         "nameAr": "المنيرة",
         "nameEn": "المنيرة",
         "enabled": true
       },
       {
-        "id": 52,
-        "cityId": 7,
+        "id": 53,
+        "cityId": 8,
         "nameAr": "الزهراء",
         "nameEn": "الزهراء",
         "enabled": true
       },
       {
-        "id": 53,
-        "cityId": 8,
+        "id": 54,
+        "cityId": 9,
         "nameAr": "أبو قير",
         "nameEn": "أبو قير",
         "enabled": true
       },
       {
-        "id": 54,
-        "cityId": 8,
+        "id": 55,
+        "cityId": 9,
         "nameAr": "إيدكو",
         "nameEn": "إيدكو",
         "enabled": true
       },
       {
-        "id": 55,
-        "cityId": 9,
+        "id": 56,
+        "cityId": 10,
         "nameAr": "برج العرب",
         "nameEn": "برج العرب",
         "enabled": true
       },
       {
-        "id": 56,
-        "cityId": 9,
+        "id": 57,
+        "cityId": 10,
         "nameAr": "مدينة برج العرب الجديدة",
         "nameEn": "مدينة برج العرب الجديدة",
         "enabled": true
       },
       {
-        "id": 57,
-        "cityId": 9,
+        "id": 58,
+        "cityId": 10,
         "nameAr": "العلمين الجديدة",
         "nameEn": "العلمين الجديدة",
         "enabled": true
@@ -481,103 +481,103 @@
     ],
     "featuredAreas": [
       {
-        "id": 1,
+        "id": 2,
         "nameAr": "المنتزه",
         "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=600&q=80",
         "cityName": "المنتزه",
         "displayOrder": 1,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 2,
+        "id": 3,
         "nameAr": "سيدي بشر",
         "image": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80",
         "cityName": "سيدي بشر",
         "displayOrder": 2,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 3,
+        "id": 4,
         "nameAr": "سموحة",
         "image": "https://images.unsplash.com/photo-1560472355-536de3962603?w=600&q=80",
         "cityName": "سموحة",
         "displayOrder": 3,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 4,
+        "id": 5,
         "nameAr": "كليوباترا",
         "image": "https://images.unsplash.com/photo-1502005097973-6a7082348e28?w=600&q=80",
         "cityName": "كليوباترا",
         "displayOrder": 4,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 5,
+        "id": 6,
         "nameAr": "العجمي",
         "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80",
         "cityName": "العجمي",
         "displayOrder": 5,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 6,
+        "id": 7,
         "nameAr": "برج العرب",
         "image": "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=600&q=80",
         "cityName": "برج العرب",
         "displayOrder": 6,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 7,
+        "id": 8,
         "nameAr": "وسط البلد",
         "image": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80",
         "cityName": "وسط البلد",
         "displayOrder": 7,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 8,
+        "id": 9,
         "nameAr": "سيدي جابر",
         "image": "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=600&q=80",
         "cityName": "سيدي جابر",
         "displayOrder": 8,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 9,
+        "id": 10,
         "nameAr": "المعمورة",
         "image": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80",
         "cityName": "المعمورة",
         "displayOrder": 9,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 10,
+        "id": 11,
         "nameAr": "زيزينيا",
         "image": "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80",
         "cityName": "زيزينيا",
         "displayOrder": 10,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       },
       {
-        "id": 11,
+        "id": 12,
         "nameAr": "لوران",
         "image": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80",
         "cityName": "لوران",
         "displayOrder": 11,
         "enabled": true,
-        "createdAt": "2026-08-02T22:35:02.840Z"
+        "createdAt": "2026-08-03T11:02:50.670Z"
       }
     ]
   }
