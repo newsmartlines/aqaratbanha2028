@@ -433,7 +433,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
 
                       {/* Price — right-aligned */}
                       <div className="mb-2 text-right">
-                        <span dir="ltr" className="inline-block text-primary text-xl leading-tight tracking-tight">
+                        <span className="inline-block text-primary text-xl leading-tight tracking-tight">
                           {formatPrice(property.price, listType)}
                         </span>
                       </div>
