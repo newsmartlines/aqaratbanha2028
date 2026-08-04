@@ -1031,47 +1031,75 @@ export default function PropertyDetail() {
 
             {/* Specs */}
             <div className="bg-white p-6 border-b border-border/40">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">مواصفات العقار</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-1">مواصفات العقار</h2>
+              <div className="h-px bg-border/40 mb-5" />
+              <div className="flex flex-wrap items-stretch gap-y-5">
                 {property.beds > 0 && (
-                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                    <BedDouble className="w-6 h-6 text-primary" />
-                    <span className="text-xl font-extrabold text-gray-900">{property.beds}</span>
-                    <span className="text-xs text-muted-foreground">غرف النوم</span>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-1 px-6 first:pr-0">
+                      <div className="flex items-center gap-2">
+                        <BedDouble className="w-5 h-5 text-gray-500" />
+                        <span className="text-lg font-bold text-gray-900">{property.beds}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">غرف النوم</span>
+                    </div>
+                    <div className="w-px bg-border/50 self-stretch" />
+                  </>
                 )}
                 {property.baths > 0 && (
-                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                    <Bath className="w-6 h-6 text-primary" />
-                    <span className="text-xl font-extrabold text-gray-900">{property.baths}</span>
-                    <span className="text-xs text-muted-foreground">دورات المياه</span>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-1 px-6">
+                      <div className="flex items-center gap-2">
+                        <Bath className="w-5 h-5 text-gray-500" />
+                        <span className="text-lg font-bold text-gray-900">{property.baths}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">حمام</span>
+                    </div>
+                    <div className="w-px bg-border/50 self-stretch" />
+                  </>
                 )}
                 {property.area > 0 && (
-                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                    <Maximize2 className="w-6 h-6 text-primary" />
-                    <span className="text-xl font-extrabold text-gray-900">{property.area}</span>
-                    <span className="text-xs text-muted-foreground">م² المساحة</span>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-1 px-6">
+                      <div className="flex items-center gap-2">
+                        <Maximize2 className="w-5 h-5 text-gray-500" />
+                        <span className="text-lg font-bold text-gray-900">{property.area}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">م² المساحة</span>
+                    </div>
+                    <div className="w-px bg-border/50 self-stretch" />
+                  </>
                 )}
                 {property.floors > 0 && (
-                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                    <Layers className="w-6 h-6 text-primary" />
-                    <span className="text-xl font-extrabold text-gray-900">{property.floors}</span>
-                    <span className="text-xs text-muted-foreground">الطوابق</span>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-1 px-6">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-5 h-5 text-gray-500" />
+                        <span className="text-lg font-bold text-gray-900">{property.floors}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">الطوابق</span>
+                    </div>
+                    <div className="w-px bg-border/50 self-stretch" />
+                  </>
                 )}
                 {property.garage > 0 && (
-                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                    <Car className="w-6 h-6 text-primary" />
-                    <span className="text-xl font-extrabold text-gray-900">{property.garage}</span>
-                    <span className="text-xs text-muted-foreground">مواقف السيارات</span>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-1 px-6">
+                      <div className="flex items-center gap-2">
+                        <Car className="w-5 h-5 text-gray-500" />
+                        <span className="text-lg font-bold text-gray-900">{property.garage}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">مواقف السيارات</span>
+                    </div>
+                    <div className="w-px bg-border/50 self-stretch" />
+                  </>
                 )}
                 {property.year > 0 && (
-                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 border border-border">
-                    <Calendar className="w-6 h-6 text-primary" />
-                    <span className="text-xl font-extrabold text-gray-900">{property.year}</span>
+                  <div className="flex flex-col gap-1 px-6">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-gray-500" />
+                      <span className="text-lg font-bold text-gray-900">{property.year}</span>
+                    </div>
                     <span className="text-xs text-muted-foreground">سنة البناء</span>
                   </div>
                 )}
