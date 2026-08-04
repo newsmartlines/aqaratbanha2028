@@ -109,7 +109,7 @@ function getInitial(settings: Partial<SiteSettings>): ThemeState {
     primaryColorHsl:   settings.primaryColorHsl    ?? "180 65% 35%",
     secondaryColorHsl: settings.secondaryColorHsl  ?? "35 50% 88%",
     accentColorHsl:    settings.accentColorHsl     ?? "25 80% 60%",
-    fontFamily:        settings.fontFamily         ?? "Tajawal",
+    fontFamily:        settings.fontFamily         ?? "Proxima Nova",
     borderRadius:      settings.borderRadius       ?? "0.75rem",
   };
 }

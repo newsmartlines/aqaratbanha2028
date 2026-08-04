@@ -15,7 +15,7 @@ const CDN_FONTS: Record<string, string> = {
 };
 
 export function loadGoogleFont(family: string) {
-  if (!family || family === "Tajawal" || FONTS_LOADED.has(family)) return;
+  if (!family || family === "Proxima Nova" || FONTS_LOADED.has(family)) return;
   if (isCustomFontUrl(family)) return; // custom fonts handled separately
   FONTS_LOADED.add(family);
   const cdnUrl = CDN_FONTS[family];

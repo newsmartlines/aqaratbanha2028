@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-08-04T22:30:31.415Z",
+  "exportedAt": "2026-08-04T22:33:44.168Z",
   "tables": {
     "siteSettings": [
       {
@@ -69,7 +69,7 @@
         "id": 12,
         "key": "themePreset",
         "value": "royal-blue",
-        "updatedAt": "2026-08-04T22:30:31.382Z"
+        "updatedAt": "2026-08-04T22:33:44.088Z"
       },
       {
         "id": 13,
@@ -123,31 +123,31 @@
         "id": 21,
         "key": "primaryColorHsl",
         "value": "220 70% 45%",
-        "updatedAt": "2026-08-04T22:30:31.393Z"
+        "updatedAt": "2026-08-04T22:33:44.127Z"
       },
       {
         "id": 22,
         "key": "secondaryColorHsl",
         "value": "220 30% 90%",
-        "updatedAt": "2026-08-04T22:30:31.397Z"
+        "updatedAt": "2026-08-04T22:33:44.142Z"
       },
       {
         "id": 23,
         "key": "accentColorHsl",
         "value": "35 85% 58%",
-        "updatedAt": "2026-08-04T22:30:31.401Z"
+        "updatedAt": "2026-08-04T22:33:44.145Z"
       },
       {
         "id": 24,
         "key": "fontFamily",
-        "value": "Almarai",
-        "updatedAt": "2026-08-04T22:30:31.405Z"
+        "value": "Proxima Nova",
+        "updatedAt": "2026-08-04T22:33:44.150Z"
       },
       {
         "id": 25,
         "key": "borderRadius",
         "value": "0rem",
-        "updatedAt": "2026-08-04T22:30:31.410Z"
+        "updatedAt": "2026-08-04T22:33:44.154Z"
       }
     ]
   }

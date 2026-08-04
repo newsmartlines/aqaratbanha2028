@@ -131,7 +131,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   primaryColorHsl: "180 65% 35%",
   secondaryColorHsl: "35 50% 88%",
   accentColorHsl: "25 80% 60%",
-  fontFamily: "Tajawal",
+  fontFamily: "Proxima Nova",
   borderRadius: "0.75rem",
   aboutContent: "نحن منصة عقارات الإسكندرية، الوجهة الأولى لبيع وشراء وإيجار العقارات في محافظة الإسكندرية. نربطك بأفضل العروض العقارية بسرعة وأمان وشفافية تامة.",
   contactEmail: "info@aqaratalexandria.com",
