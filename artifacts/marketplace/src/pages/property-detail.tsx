@@ -1030,7 +1030,7 @@ export default function PropertyDetail() {
           <div className="lg:col-span-2 space-y-8">
 
             {/* Specs */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+            <div className="bg-white p-6 border-b border-border/40">
               <h2 className="text-lg font-bold text-gray-900 mb-5">مواصفات العقار</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {property.beds > 0 && (
@@ -1080,7 +1080,7 @@ export default function PropertyDetail() {
 
             {/* Description */}
             {property.description && (
-              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <div className="bg-white p-6 border-b border-border/40">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">وصف العقار</h2>
                 <p className="text-gray-600 leading-relaxed text-base">{property.description}</p>
               </div>
@@ -1088,7 +1088,7 @@ export default function PropertyDetail() {
 
             {/* مميزات العقار */}
             {property.amenities.length > 0 && (
-              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <div className="bg-white p-6 border-b border-border/40">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-4 h-4 text-teal-600" />
@@ -1110,7 +1110,7 @@ export default function PropertyDetail() {
 
             {/* الخدمات القريبة */}
             {property.nearbyServices.length > 0 && (
-              <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+              <div className="bg-white p-6 border-b border-border/40">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                     <MapPin className="w-4 h-4 text-blue-600" />
@@ -1132,8 +1132,8 @@ export default function PropertyDetail() {
 
             {/* Video */}
             {property.videoId && (
-              <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
-                <div className="p-5 border-b border-border flex items-center gap-3">
+              <div className="bg-white overflow-hidden border-b border-border/40">
+                <div className="p-5 border-b border-border/40 flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Play className="w-4 h-4 text-primary fill-primary" />
                   </div>
@@ -1152,8 +1152,8 @@ export default function PropertyDetail() {
             )}
 
             {/* Map */}
-            <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
-              <div className="p-5 border-b border-border flex items-center gap-3">
+            <div className="bg-white overflow-hidden border-b border-border/40">
+              <div className="p-5 border-b border-border/40 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-primary" />
                 </div>
@@ -1181,7 +1181,7 @@ export default function PropertyDetail() {
 
             {/* ── Agent Info Card (TOP) ── */}
             {(property.agentName || property.agentCity) && (
-              <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+              <div className="bg-white overflow-hidden border border-border/60">
                 {/* Header strip */}
                 <div className="bg-gradient-to-l from-teal-600 to-teal-500 px-5 pt-5 pb-10 relative">
                   <p className="text-white/80 text-xs font-medium mb-0.5">صاحب الإعلان</p>
@@ -1260,7 +1260,7 @@ export default function PropertyDetail() {
             )}
 
             {/* ── Price Card ── */}
-            <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+            <div className="bg-white p-6 border border-border/60">
               <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-1">السعر</p>
                 <p dir="ltr" className="text-3xl font-extrabold text-gray-900">{property.price}</p>
@@ -1398,7 +1398,7 @@ export default function PropertyDetail() {
             </div>
 
             {/* Safety Tips Card */}
-            <div className="bg-white rounded-3xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm">
+            <div className="bg-amber-50/40 border border-amber-200/60 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
                 <h3 className="text-base font-extrabold text-gray-900">سلامتك تهمنا</h3>
