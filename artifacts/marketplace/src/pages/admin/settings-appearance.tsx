@@ -73,6 +73,7 @@ export const THEME_PRESETS = [
 ];
 
 export const ARABIC_FONTS = [
+  { value: "Proxima Nova",         label: "بروكسيما نوفا",     preview: "خط بروكسيما نوفا العصري والأنيق" },
   { value: "Tajawal",              label: "تجوال",             preview: "الخط الافتراضي الأنيق والعصري" },
   { value: "Cairo",                label: "القاهرة",           preview: "خط القاهرة المميز والجميل" },
   { value: "Almarai",              label: "المراعي",           preview: "خط المراعي الرفيع والمقروء" },

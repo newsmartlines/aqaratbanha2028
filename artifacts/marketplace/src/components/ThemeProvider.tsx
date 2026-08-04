@@ -9,10 +9,26 @@ export function isCustomFontUrl(family: string): boolean {
   return family.startsWith("/uploads/fonts/") || family.startsWith("http");
 }
 
+/** Fonts served from third-party CDNs (not Google Fonts) */
+const CDN_FONTS: Record<string, string> = {
+  "Proxima Nova": "https://fonts.cdnfonts.com/css/proxima-nova-2",
+};
+
 export function loadGoogleFont(family: string) {
   if (!family || family === "Tajawal" || FONTS_LOADED.has(family)) return;
   if (isCustomFontUrl(family)) return; // custom fonts handled separately
   FONTS_LOADED.add(family);
+  const cdnUrl = CDN_FONTS[family];
+  if (cdnUrl) {
+    const existing = document.querySelector(`link[data-cdnfont="${family}"]`);
+    if (existing) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.dataset.cdnfont = family;
+    link.href = cdnUrl;
+    document.head.appendChild(link);
+    return;
+  }
   const existing = document.querySelector(`link[data-gfont="${family}"]`);
   if (existing) return;
   const link = document.createElement("link");
