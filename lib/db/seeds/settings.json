@@ -2,7 +2,7 @@
   "version": "1.0",
   "group": "settings",
   "label": "إعدادات الموقع",
-  "exportedAt": "2026-08-04T19:43:06.072Z",
+  "exportedAt": "2026-08-04T20:28:00.683Z",
   "tables": {
     "siteSettings": [
       {
@@ -69,7 +69,7 @@
         "id": 11,
         "key": "themePreset",
         "value": "teal-sand",
-        "updatedAt": "2026-08-04T19:43:06.039Z"
+        "updatedAt": "2026-08-04T20:28:00.651Z"
       },
       {
         "id": 12,
@@ -123,31 +123,31 @@
         "id": 20,
         "key": "primaryColorHsl",
         "value": "180 65% 35%",
-        "updatedAt": "2026-08-04T19:43:06.044Z"
+        "updatedAt": "2026-08-04T20:28:00.656Z"
       },
       {
         "id": 21,
         "key": "secondaryColorHsl",
         "value": "35 50% 88%",
-        "updatedAt": "2026-08-04T19:43:06.051Z"
+        "updatedAt": "2026-08-04T20:28:00.660Z"
       },
       {
         "id": 22,
         "key": "accentColorHsl",
         "value": "25 80% 60%",
-        "updatedAt": "2026-08-04T19:43:06.056Z"
+        "updatedAt": "2026-08-04T20:28:00.665Z"
       },
       {
         "id": 23,
         "key": "fontFamily",
         "value": "Tajawal",
-        "updatedAt": "2026-08-04T19:43:06.060Z"
+        "updatedAt": "2026-08-04T20:28:00.673Z"
       },
       {
         "id": 24,
         "key": "borderRadius",
-        "value": "0.25rem",
-        "updatedAt": "2026-08-04T19:43:06.064Z"
+        "value": "0rem",
+        "updatedAt": "2026-08-04T20:28:00.677Z"
       }
     ]
   }
