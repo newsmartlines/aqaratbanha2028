@@ -373,7 +373,7 @@ export function FeaturedPropertiesSection({ settings, categories }: Props) {
                   className="relative"
                 >
                   <div
-                    className={`group bg-white border overflow-hidden transition-all duration-200 cursor-pointer ${
+                    className={`group bg-white border overflow-hidden transition-all duration-200 cursor-pointer rounded-lg ${
                       property.activePromotion ? "" : isHovered
                         ? "border-primary/40 -translate-y-0.5"
                         : "border-border/70 hover:border-primary/30"

@@ -85,7 +85,7 @@ export const ARABIC_FONTS = [
 ];
 
 const RADIUS_OPTIONS = [
-  { label: "مربع", value: "0.25rem", icon: "▪" },
+  { label: "مربع", value: "0rem",    icon: "▪" },
   { label: "خفيف", value: "0.5rem",  icon: "▫" },
   { label: "متوسط", value: "0.75rem", icon: "◻" },
   { label: "دائري", value: "1rem",   icon: "⬜" },
