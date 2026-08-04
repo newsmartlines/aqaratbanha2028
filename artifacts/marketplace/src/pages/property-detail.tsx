@@ -1642,6 +1642,7 @@ export default function PropertyDetail() {
             </div>
           ) : (
             <form
+              noValidate
               className="space-y-4 pt-2"
               onSubmit={async (e) => {
                 e.preventDefault();
