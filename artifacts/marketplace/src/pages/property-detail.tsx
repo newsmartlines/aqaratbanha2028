@@ -1152,7 +1152,7 @@ export default function PropertyDetail() {
             )}
 
             {/* Map */}
-            <div className="bg-white overflow-hidden border-b border-border/40">
+            <div className="bg-white overflow-hidden border-b border-border/40 isolate">
               <div className="p-5 border-b border-border/40 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-primary" />
