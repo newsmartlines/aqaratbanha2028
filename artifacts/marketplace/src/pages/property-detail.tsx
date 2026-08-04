@@ -1033,11 +1033,11 @@ export default function PropertyDetail() {
             <div className="bg-white p-6 border-b border-border/40">
               <h2 className="text-lg font-bold text-gray-900 mb-1">مواصفات العقار</h2>
               <div className="h-px bg-border/40 mb-5" />
-              <div className="flex flex-wrap items-stretch gap-y-5">
+              <div className="flex flex-wrap items-stretch gap-y-6">
                 {property.beds > 0 && (
                   <>
-                    <div className="flex flex-col gap-1 px-6 first:pr-0">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 px-10 first:pr-0">
+                      <div className="flex items-center gap-2.5">
                         <BedDouble className="w-5 h-5 text-gray-500" />
                         <span className="text-lg font-bold text-gray-900">{property.beds}</span>
                       </div>
@@ -1048,8 +1048,8 @@ export default function PropertyDetail() {
                 )}
                 {property.baths > 0 && (
                   <>
-                    <div className="flex flex-col gap-1 px-6">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 px-10">
+                      <div className="flex items-center gap-2.5">
                         <Bath className="w-5 h-5 text-gray-500" />
                         <span className="text-lg font-bold text-gray-900">{property.baths}</span>
                       </div>
@@ -1060,8 +1060,8 @@ export default function PropertyDetail() {
                 )}
                 {property.area > 0 && (
                   <>
-                    <div className="flex flex-col gap-1 px-6">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 px-10">
+                      <div className="flex items-center gap-2.5">
                         <Maximize2 className="w-5 h-5 text-gray-500" />
                         <span className="text-lg font-bold text-gray-900">{property.area}</span>
                       </div>
@@ -1072,8 +1072,8 @@ export default function PropertyDetail() {
                 )}
                 {property.floors > 0 && (
                   <>
-                    <div className="flex flex-col gap-1 px-6">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 px-10">
+                      <div className="flex items-center gap-2.5">
                         <Layers className="w-5 h-5 text-gray-500" />
                         <span className="text-lg font-bold text-gray-900">{property.floors}</span>
                       </div>
@@ -1084,8 +1084,8 @@ export default function PropertyDetail() {
                 )}
                 {property.garage > 0 && (
                   <>
-                    <div className="flex flex-col gap-1 px-6">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 px-10">
+                      <div className="flex items-center gap-2.5">
                         <Car className="w-5 h-5 text-gray-500" />
                         <span className="text-lg font-bold text-gray-900">{property.garage}</span>
                       </div>
@@ -1095,8 +1095,8 @@ export default function PropertyDetail() {
                   </>
                 )}
                 {property.year > 0 && (
-                  <div className="flex flex-col gap-1 px-6">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-1 px-10">
+                    <div className="flex items-center gap-2.5">
                       <Calendar className="w-5 h-5 text-gray-500" />
                       <span className="text-lg font-bold text-gray-900">{property.year}</span>
                     </div>
